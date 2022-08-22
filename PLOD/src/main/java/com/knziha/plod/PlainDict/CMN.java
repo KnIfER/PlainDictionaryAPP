@@ -28,6 +28,7 @@ public class CMN{
 	public static /*volatile*/ int instanceCount;
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
+	public static final String Assets = "/ASSET";
 	public static final Boolean OccupyTag = true;
 	public static final WeakReference EmptyRef = new WeakReference(null);
 	

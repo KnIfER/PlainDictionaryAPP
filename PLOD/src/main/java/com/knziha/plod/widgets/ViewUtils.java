@@ -161,6 +161,8 @@ public class ViewUtils {
 	/** 刷机后检测rom而不是检测生厂商。 set manually。  */
 	public static boolean checkRom;
 	
+	public final static List EmptyArray = Arrays.asList();
+	
 	public final static Cursor EmptyCursor=new AbstractWindowedCursor() {
 		@Override
 		public int getCount() {
@@ -1251,6 +1253,19 @@ public class ViewUtils {
 		while(v!=null) {
 			if ((tag = v.getTag()) instanceof RecyclerView.ViewHolder) {
 				return (RecyclerView.ViewHolder) tag;
+			}
+			vp = v.getParent();
+			v = vp instanceof View?(View) vp:null;
+		}
+		return null;
+	}
+	
+	public static Object getViewHolderInParents(View v, Class clazz) {
+		ViewParent vp;
+		Object tag;
+		while(v!=null) {
+			if ((tag = v.getTag())!=null && tag.getClass()==clazz) {
+				return tag;
 			}
 			vp = v.getParent();
 			v = vp instanceof View?(View) vp:null;

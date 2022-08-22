@@ -765,9 +765,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public ArrayList<PlaceHolder> placeArray;
 	public boolean rolesChanged;
 	public void markDirty() {
-		isDirty = true;
-		if (placeArray==null) {
-			placeArray = new ArrayList<>(loadMan.lazyMan.placeHolders);
+		if (!isDirty) {
+			isDirty = true;
+			if (placeArray==null) {
+				placeArray = new ArrayList<>(loadMan.lazyMan.placeHolders);
+			}
 		}
 	}
 }

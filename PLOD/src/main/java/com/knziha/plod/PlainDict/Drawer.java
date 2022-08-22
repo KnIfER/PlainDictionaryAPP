@@ -145,7 +145,6 @@ public class Drawer extends Fragment implements
 			mDrawerList.ensureNewNestedScrollHelper();
 			mDrawerList.setNestedScrollingEnabled(true);
 			
-			
 			int[] basicArr;
 			if (GlobalOptions.isLarge) {
 				basicArr = new int[]{
@@ -193,6 +192,11 @@ public class Drawer extends Fragment implements
 			mDrawerList.setAdapter(myAdapter);
 			
 			HeaderView = inflater.inflate(R.layout.activity_main_navi_drawer_header, null);
+			sw1 = HeaderView.findViewById(R.id.sw1);
+			sw2 = HeaderView.findViewById(R.id.sw2);
+			sw3 = HeaderView.findViewById(R.id.sw3);
+			sw4 = HeaderView.findViewById(R.id.sw4);
+			sw5 = HeaderView.findViewById(R.id.sw5);
 			
 			mDrawerList.addHeaderView(HeaderView);
 
@@ -391,7 +395,6 @@ public class Drawer extends Fragment implements
 		if(PDICMainAppOptions.getShowPasteBin())
 			SetupPasteBin();
 
-		sw1 = HeaderView.findViewById(R.id.sw1);
 		swRow = (ViewGroup) sw1.getParent();
 		sw1.setOnCheckedChangeListener(this);
 		sw1.setChecked(PDICMainAppOptions.isFullScreen());
@@ -401,16 +404,13 @@ public class Drawer extends Fragment implements
 		});
 
 		boolean val = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
-		sw2 = HeaderView.findViewById(R.id.sw2);
 		sw2.setChecked(val);
 		sw2.setOnCheckedChangeListener(this);
 
-		sw3 = HeaderView.findViewById(R.id.sw3);
 		sw3.setOnCheckedChangeListener(this);
 		//sw3.setChecked(!a.opt.isViewPagerEnabled());
 		sw3.setChecked(a.opt.getServerStarted());
 
-		sw4 = HeaderView.findViewById(R.id.sw4);
 		sw4.setOnLongClickListener(this);
 		val = GlobalOptions.isDark;
 		sw4.setChecked(val);
@@ -419,7 +419,6 @@ public class Drawer extends Fragment implements
 			a.changeToDarkMode();
 		}
 
-		sw5 = HeaderView.findViewById(R.id.sw5);
 		sw5.setChecked(a.opt.getUseVolumeBtn());
 		sw5.setOnCheckedChangeListener(this);
 

@@ -2,13 +2,16 @@ package com.knziha.plod.dictionarymanager.files;
 
 import com.knziha.plod.dictionarymanager.BookManagerWebsites;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class mFile extends File{
-	public int shrinked;
+	public List<mFile> children = ViewUtils.EmptyArray;
 	public String CSTR;//子系文件标识符
 	public boolean bInIntrestedDir=false;
 	protected boolean isDirectory=false;
@@ -16,7 +19,11 @@ public class mFile extends File{
 	public mFile(File parent, String child) {
 		super(parent, child);
 	}
-
+	
+	public boolean getIsDirectory() {
+		return isDirectory;
+	}
+	
 	public mFile(String pathname) {
 		super(pathname);
 	}
@@ -24,6 +31,9 @@ public class mFile extends File{
 	public mFile(String pathname, BookManagerWebsites.WebAssetDesc webAsset) {
 		super(pathname);
 		this.webAsset = webAsset;
+		if (!pathname.endsWith(".webx")) {
+			children = new ArrayList<>();
+		}
 	}
 	
 	public mFile(File to) {
@@ -33,6 +43,9 @@ public class mFile extends File{
 	public mFile(String pathname,boolean isDir) {
 		super(pathname);
 		isDirectory=isDir;
+		if (isDir) {
+			children = new ArrayList<>();
+		}
 	}
 	
 	public mFile(String parent, String child) {
@@ -48,6 +61,9 @@ public class mFile extends File{
 	public mFile init(PDICMainAppOptions opt) {
 		//Log.e("init__fatal",getAbsolutePath());
 		isDirectory=isDirectory();
+		if (isDirectory && children == ViewUtils.EmptyArray) {
+			children = new ArrayList<>();
+		}
 		if(getPath().length()>1) {
 			String ParentPath = getParent();
 			if (ParentPath!=null) {
@@ -103,7 +119,7 @@ public class mFile extends File{
 		}else if(b1 && ! b2) {
 			if(!isScionOf(this, other))//若无父子关系，则比价父文件夹
 				THIS=THIS.getParentFile();
-		}else if(!b1 && b2) {
+		} else if(!b1 && b2) {
 			if(!isScionOf(other, this))
 				other=other.getParentFile();
 		}
@@ -159,5 +175,8 @@ public class mFile extends File{
         if (p == null) return null;
         return new mFile(p,true);
 	}
-
+	
+	public mFile getRealPath() {
+		return webAsset==null?this:webAsset.realPath;
+	}
 }

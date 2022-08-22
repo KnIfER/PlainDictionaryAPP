@@ -7,7 +7,7 @@
 	<!--4 --><item android:title="@string/disable_all" android:id="@+id/toolbar_action4" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--5 --><item android:title="@string/enable_all" android:id="@+id/toolbar_action5" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--6 --><item android:title="@string/show_all_dictionaries" android:id="@+id/remPagePos" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
-	<!--7 --><item android:title="选择全部 | 间选" android:id="@+id/toolbar_action7" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--7 --><item android:title="选择全部 | 全不选" android:id="@+id/toolbar_action7" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--8 --><item android:title="@string/select_all_invalid" android:id="@+id/toolbar_action8" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--9 --><item android:title="@string/add_selection_to_set" android:id="@+id/toolbar_action9" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--10--><item android:title="@string/remove_selection_from_set" android:id="@+id/toolbar_action10" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
@@ -17,4 +17,5 @@
 	<!--14--><item android:title="@string/unfold_all" android:id="@+id/tapSch" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--15--><item android:title="@string/new___" android:id="@+id/toolbar_action15" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--16--><item android:title="menu_search" android:id="@+id/action_search" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
+	<!--17--><item android:title="间选 | 不~" android:id="@+id/inter_sel" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
 </menu>

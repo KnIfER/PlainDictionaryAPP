@@ -1,12 +1,10 @@
 package com.knziha.plod.dictionarymanager;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,11 +38,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
-import com.knziha.filepicker.model.DialogConfigs;
-import com.knziha.filepicker.model.DialogProperties;
-import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
-import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
@@ -62,7 +56,6 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.ViewUtils;
-import com.knziha.rbtree.RashSet;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -106,7 +99,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public List<MenuItemImpl> Menu2;
 	public List<MenuItemImpl> Menu3;
 	public List<MenuItemImpl> Menu3Sel;
-	public List<MenuItemImpl> Menu4;
 	
 	public BookManager() { }
 	
@@ -337,8 +329,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 3, 4, 5, 6, 16);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 0, 3, 15, 16);
 		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 13, 14, 16);
-		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 9, 7, 8, 10, 11, 12, 13, 14, 16);
-		Menu4 = ViewUtils.MapNumberToMenu(AllMenus);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 9, 7, 17, 8, 10, 11, 12, 13, 14, 16);
 		AllMenus.setItems(Menu1);
   
 		fragments= new ArrayList<>();
@@ -348,41 +339,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		fragments.addAll(Arrays.asList(f1 = new BookManagerMain(), f2 = new BookManagerModules(), f4 = new BookManagerWebsites(), f3 = new BookManagerFolderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;
 
-		f3.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
-			public void onEnterSelection(boolean enter){
+		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
+			public void onEnterSelection(BookManagerFolderAbs f, boolean enter){
 				AllMenus.setItems(enter?Menu3Sel:Menu3);
 			}
-			public int addIt(final mFile fn) {
+			public int addIt(BookManagerFolderAbs f, final mFile fn) {
 				boolean found=false;
-				for(int i=0;i<f1.manager_group().size();i++) {
-					if(f1.getPathAt(i).equals(fn.getAbsolutePath())) {
-						if(f1.getPlaceRejected(i)) {
-							f1.setPlaceRejected(i, false);
-							f1.dataSetChanged();
-							return 1;
-						}
-						found=true;
-						break;
-					}
-				}
-				if(!found) {
-					//show("adding new!"+fn.getAbsolutePath());
-					f3.mDslv.post(() -> f1.add(fn.getPath()));
-					return 1;
-				} else {
-					return 0;
-				}
-			};
-		};
-		f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
-			public void onEnterSelection(boolean enter){
-			}
-			public int addIt(final mFile fn) {
-				boolean found=false;
-				String path = fn.getAbsolutePath();
-				if (fn.webAsset !=null) {
-					path = fn.webAsset.realPath;
-				}
+				String path = fn.getRealPath().getAbsolutePath();
 				for(int i=0;i<f1.manager_group().size();i++) {
 					if(f1.getPathAt(i).equals(path)) {
 						if(f1.getPlaceRejected(i)) {
@@ -395,10 +358,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				}
 				if(!found) {
-					// showT("adding new!"+path);
-					CMN.debug("adding new!"+path);
-					String finalPath = path;
-					f4.mDslv.post(() -> f1.add(finalPath));
+					//show("adding new!"+fn.getAbsolutePath());
+					f.mDslv.post(() -> f1.add(path));
 					return 1;
 				}
 				else return 0;
@@ -418,7 +379,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				} else if (fI == f3) {
 					menu = f3.SelectionMode ? Menu3Sel : Menu3;
 				} else {
-					menu = Menu4;
+					menu = f4.SelectionMode ? Menu3Sel : Menu3;
 				}
 				AllMenus.setItems(menu);
 				super.onPageSelected(CurrentPage = page);
@@ -824,6 +785,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		boolean ret=isLongClicked;
 		boolean closeMenu=!isLongClicked;
 		AlertDialog d;
+		BookManagerFolderAbs f3=CurrentPage==2?f4:this.f3;
+		ArrayList<mFile> list = f3.dataTree;
 		switch (item.getItemId()) {
 			/* 保存 | 词典选项 */
 			case R.id.toolbar_action0:{
@@ -1013,78 +976,86 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f1.dataSetChanged();
 			} break;
-            case R.id.toolbar_action13:{//折叠
+			/* 折叠全部 */
+            case R.id.toolbar_action13:{
 				if(isLongClicked) {ret=false; break;}
-				ArrayList<mFile> list = f3.data.getList();
 				for(int i=0;i<list.size();i++) {
 					mFile mdTmp = list.get(i);
 					if(mdTmp.isDirectory()) {
-						f3.hiddenParents.insert(mdTmp);
-						mdTmp.shrinked=0;
+						f3.hiddenParents.add(mdTmp);
 						for(i++;i<list.size();i++) {
 							if(!mFile.isDirScionOf(list.get(i), mdTmp)) {break;}
 							if(list.get(i).isDirectory()) {break;}
-							mdTmp.shrinked++;
+							mdTmp.children.add(list.remove(i));
+							i--;
 						}
 						i--;
 					}
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.tapSch:{//展开
+			/* 展开全部 */
+            case R.id.tapSch:{
 				if(isLongClicked) {ret=false; break;}
-				ArrayList<mFile> list1 = f3.data.getList();
-				for(int i=0;i<list1.size();i++) {
+				for(int i=0;i<list.size();i++) {
 					f3.hiddenParents.clear();
-					mFile mdTmp = list1.get(i);
+					mFile mdTmp = list.get(i);
 					if(mdTmp.isDirectory()) {
-						mdTmp.shrinked=0;
+						list.addAll(i + 1, mdTmp.children);
+						i += mdTmp.children.size();
+						mdTmp.children.clear();
 					}
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-			/* 全部选择 */
+			/* 全选 | 全不选 */
             case R.id.toolbar_action7:{
-            	if(isLongClicked){//间选
-					int[] positions = f3.lastClickedPos;
-					if(positions[0]!=-1 && positions[1]!=-1){
-						int start=positions[0];
-						int end=positions[1];
-						if(end<start){
-							int tmp=end;
-							end=start;
-							start=tmp;
-						}
-						ArrayList<mFile> data = f3.data.getList();
-						for (int i = start; i <= end; i++) {
-							f3.Selection.put(data.get(i).getPath());
-						}
-					}
-				}
-            	else if(f3.alreadySelectedAll) {
+				if (isLongClicked) {
 					f3.Selection.clear();
-					f3.alreadySelectedAll=false;
-				}else {
-					for(int i=0;i<f3.data.size();i++) {
-						f3.Selection.put(f3.data.getList().get(i).getAbsolutePath());
+				} else {
+					for(int i=0;i<list.size();i++) {
+						f3.Selection.add(list.get(i).getRealPath());
 					}
-					f3.alreadySelectedAll=true;
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-			/* 全选失效项 | 全不选*/
-            case R.id.toolbar_action8:{
-				f3.Selection.clear();
-				ArrayList<mFile> data = f3.data.getList();
-				f3.alreadySelectedAll=false;
-				if(!isLongClicked) {
-					for(int i=0;i<f3.data.size();i++) {
-						mFile fI = data.get(i);
-						if(!fI.exists())
-							f3.Selection.put(fI.getAbsolutePath());
+			/* 间选 */
+            case R.id.inter_sel:{
+				int[] positions = f3.lastClickedPos;
+				if (positions[0] != -1 && positions[1] != -1) {
+					int start = positions[0];
+					int end = positions[1];
+					if (end < start) {
+						int tmp = end;
+						end = start;
+						start = tmp;
 					}
-				} else {
-					f3.Selection.clear();
+					for (int i = start; i <= end; i++) {
+						if (!list.get(i).getIsDirectory()) {
+							if (!isLongClicked) {
+								f3.Selection.add(list.get(i).getRealPath());
+							} else {
+								f3.Selection.remove(list.get(i).getRealPath());
+							}
+						}
+					}
+				}
+				f3.adapter.notifyDataSetChanged();
+			} break;
+			/* 全选失效项 */
+            case R.id.toolbar_action8:{
+				for(int i=0;i<list.size();i++) {
+					mFile fI = list.get(i);
+					if(fI.webAsset==null && !fI.getPath().startsWith(CMN.Assets)
+							&& !fI.exists()
+							&& !fI.getIsDirectory()
+					) {
+						if (!isLongClicked) {
+							f3.Selection.add(fI.getRealPath());
+						} else {
+							f3.Selection.remove(fI.getRealPath());
+						}
+					}
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
@@ -1101,19 +1072,22 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					dv.findViewById(R.id.confirm).setOnClickListener(v -> {
 						int toPos = Math.min(f1.manager_group().size(), np.getValue());
 						int cc = 0;
-						ArrayList<String> arr = f3.Selection.flatten();
+						mFile[] arr = f3.Selection.toArray(new mFile[0]);
+						Arrays.sort(arr);
 						final boolean insert = checker1.isChecked();
 						final boolean select = checker2.isChecked();
-						HashSet<String> map = new HashSet<>(arr.size());
-						ArrayList<File> files = new ArrayList<>(arr.size());
-						for (int i = 0; i < arr.size(); i++) {
-							File fn = new File(arr.get(i));
-							if (!fn.isDirectory()) {
+						HashSet<String> map = new HashSet<>(arr.length);
+						ArrayList<mFile> files = new ArrayList<>(arr.length);
+						for (int i = 0; i < arr.length; i++) {
+							mFile fn = arr[i];
+							if (!fn.getIsDirectory()) {
 								files.add(fn);
-								if(insert||select) map.add(fn.getPath());
+								String key = fn/*.getRealPath()*/.getPath();
+								if(insert||select) map.add(key);
 							}
 						}
 						if(insert) {
+							f1.markDirty();
 							for (int i = 0; i < f1.manager_group().size(); i++) {
 								if (map.contains(f1.getPathAt(i))) {
 									f1.setPlaceRejected(i, false);
@@ -1122,11 +1096,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								}
 							}
 							for (int i = 0; i < files.size(); i++) {
-								File fn = files.get(i);
-								if (fn.exists()) {
+								mFile fn = files.get(i);
+								if (fn.exists() || fn.webAsset!=null) {
 									cc++;
 								}
-								String key = fn.getPath();
+								String key = fn.getRealPath().getPath();
 								//loadMan.lazyMan.newChair();
 								BookPresenter mdTmp = mdict_cache.get(key);
 								PlaceHolder placeHolder;
@@ -1145,7 +1119,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								if(select){
 									f1.setPlaceSelected(toPos+i, true);
 								}
-								f1.markDirty();
 							}
 							f1.refreshSize();
 							ThisIsDirty = true;
@@ -1178,25 +1151,27 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				else { // 添加到末尾
 					int cc = 0;
-					ArrayList<String> arr = f3.Selection.flatten();
-					int count=arr.size();
+					mFile[] arr = f3.Selection.toArray(new mFile[0]);
+					Arrays.sort(arr);
+					int count=arr.length;
 					
 					HashMap<String, Integer> map = new HashMap<>(f1.manager_group().size());
 					for (int i = 0; i < f1.manager_group().size(); i++) {
 						map.put(f1.getPathAt(i), i);
 					}
-					for(int i=0;i<arr.size();i++) {
-						File fn=new File(arr.get(i));
+					for(int i=0;i<arr.length;i++) {
+						mFile fn=arr[i];
 						if(fn.isDirectory()) {
 							count--;
 							continue;
 						}
-						String key = fn.getAbsolutePath();
+						String key = fn/*.getRealPath()*/.getPath();
 						Integer idx = map.get(key);
 						if(idx!=null) { // 已经有了
 							f1.setPlaceRejected(idx, false);
 						}
 						else {
+							f1.markDirty();
 							//loadMan.lazyMan.newChair();
 							BookPresenter mdTmp = mdict_cache.get(key);
 							PlaceHolder placeHolder;
@@ -1211,7 +1186,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							loadMan.md.add(mdTmp);
 							loadMan.lazyMan.placeHolders.add(placeHolder);
 							loadMan.lazyMan.chairCount++;
-							f1.markDirty();
 							cc++;
 						}
 					}
@@ -1227,14 +1201,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					new AlertDialog.Builder(BookManager.this)
 							.setTitle(R.string.surerrecords)
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
-								deleteRecordsHard();
+								deleteRecordsHard(f3);
 								dialog.dismiss();
 							})
 					.create().show();
 				} else {
 					int cc1 = 0;
 					for(int i=0;i<f1.manager_group().size();i++) {
-						if(f3.Selection.contains(f1.getPathAt(i))) {
+						if(f3.Selection.contains(new mFile(f1.getPathAt(i)))) {
 							f1.setPlaceRejected(i, true);
 							cc1++;
 							f1.markDirty();
@@ -1256,36 +1230,34 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
-								HashSet<String> removePool = new HashSet<>();
-								ArrayList<String> arr1 = f3.Selection.flatten();
-								for (int i = 0; i < arr1.size(); i++) {
-									removePool.add(arr1.get(i));
-								}
-								ArrayList<mFile> list = f3.data.getList();
+								mFile[] arr = f3.Selection.toArray(new mFile[0]);
+								HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
 								int s2 = list.size();
 								for (int i = 0; i < s2; i++) {
-									mFile item1 = list.get(i);
-									if (item1 instanceof mAssetFile)
-										continue;
-									if (item1.isDirectory())
-										continue;
-									if (removePool.contains(item1.getAbsolutePath())) {
-										list.remove(i--);
-										s2--;
-										mdlibsCon.remove(mFile.tryDeScion(item1, opt.lastMdlibPath));
-										f3.isDirty = true;
-										mFile p = item1.getParentFile();
-										if (p != null) {
-											int idx = f3.data.indexOf(p);
-											if (idx != -1)
-												if (idx == s2 - 1 || !mFile.isDirScionOf(list.get(idx + 1), p)){
+									mFile fn = list.get(i)/*.getRealPath()*/;
+									if (fn.webAsset==null) {
+										if (fn instanceof mAssetFile)
+											continue;
+										if (fn.isDirectory())
+											continue;
+										if (removePool.contains(fn)) {
+											list.remove(i--);
+											s2--;
+											mdlibsCon.remove(mFile.tryDeScion(fn, opt.lastMdlibPath));
+											f3.isDirty = true;
+											mFile p = fn.getParentFile();
+											if (p != null) {
+												mFile pTmp = s2 - 1<list.size()?list.get(s2 - 1):null;
+												if (p.equals(pTmp) && pTmp.children.size()==0
+														&& (s2>=list.size() || !mFile.isDirScionOf(list.get(s2), p))) {
 													list.remove(i--);
 													s2--;
 												}
+											}
 										}
 									}
 								}
-								deleteRecordsHard();
+								deleteRecordsHard(f3);
 
 								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(((CheckBox) dv.findViewById(R.id.ck)).isChecked(), f3.isDirty);
 
@@ -1306,7 +1278,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 													if(idx>=2) key = key.substring(idx+1);
 												}
 												key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
-												if (removePool.contains(key) || removePool.contains(new File(key).getCanonicalPath())) {
+												if (removePool.contains(new mFile(key)) || removePool.contains(new mFile(new File(key).getCanonicalPath()))) {
 													bNeedRewrite = true;
 													continue;
 												}
@@ -1338,182 +1310,182 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 移动文件 */
             case R.id.peruseMode:{
             	if (true) {
-            		showT("功能关闭，请等待5.0版本");
+            		showT("功能关闭，请等待6.0版本");
 					ret=false;break;
 				}
-				if(isLongClicked) {
-					ret=false;break;
-				}
-				else {
-					DialogProperties properties = new DialogProperties();
-					properties.selection_mode = DialogConfigs.SINGLE_MODE;
-					properties.selection_type = DialogConfigs.DIR_SELECT;
-					properties.root = new File("/");
-					properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-					properties.offset = opt.lastMdlibPath;
-					properties.opt_dir = new File(opt.pathToDatabases() + "favorite_dirs/");
-					properties.opt_dir.mkdirs();
-					FilePickerDialog dialog = new FilePickerDialog(this, properties);
-					dialog.setTitle(R.string.pickdestineFolder);
-					dialog.setDialogSelectionListener(new DialogSelectionListener() {
-						@Override
-						public void
-						onSelectedFilePaths(String[] files, File n) {
-							File p = new File(files[0]);//新家
-							if (p.isDirectory()) {
-								ArrayList<String> arr = f3.Selection.flatten();
-								RashSet<String> renameList = new RashSet<>();
-								ArrayList<String> renameListe;
-								HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(f1.manager_group().size());
-								for(int i=0;i<f1.manager_group().size();i++) {
-									if (loadMan.md.get(i)!=null) {
-										mdict_cache.put(f1.getPathAt(i), loadMan.md.get(i));
-									}
-								}
-//								for (mngr_agent_manageable mmTmp : mdmng) {
-//									//if (mmTmp instanceof mdict)
-//
+//				if(isLongClicked) {
+//					ret=false;break;
+//				}
+//				else {
+//					DialogProperties properties = new DialogProperties();
+//					properties.selection_mode = DialogConfigs.SINGLE_MODE;
+//					properties.selection_type = DialogConfigs.DIR_SELECT;
+//					properties.root = new File("/");
+//					properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
+//					properties.offset = opt.lastMdlibPath;
+//					properties.opt_dir = new File(opt.pathToDatabases() + "favorite_dirs/");
+//					properties.opt_dir.mkdirs();
+//					FilePickerDialog dialog = new FilePickerDialog(this, properties);
+//					dialog.setTitle(R.string.pickdestineFolder);
+//					dialog.setDialogSelectionListener(new DialogSelectionListener() {
+//						@Override
+//						public void
+//						onSelectedFilePaths(String[] files, File n) {
+//							File p = new File(files[0]);//新家
+//							if (p.isDirectory()) {
+//								ArrayList<String> arr = f3.Selection.flatten();
+//								RashSet<String> renameList = new RashSet<>();
+//								ArrayList<String> renameListe;
+//								HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(f1.manager_group().size());
+//								for(int i=0;i<f1.manager_group().size();i++) {
+//									if (loadMan.md.get(i)!=null) {
+//										mdict_cache.put(f1.getPathAt(i), loadMan.md.get(i));
+//									}
 //								}
-								//todo 保证mdict移动文件的同时性。
-								int cc = 0;
-								for (String sI : arr) {//do actual rename. rename a lot of files..
-									mFile mF = new mFile(sI).init(opt);
-									//ommitting directory.
-									//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
-									if (mF.isDirectory()) continue;
-									if (f3.data.get(mF).isDirectory()) continue;
-									mngr_agent_manageable mmTmp = mdict_cache.get(sI);
-									if (mmTmp == null) {
-										mmTmp = new_MagentTransient(sI, opt, null, true);
-									}
-									File OldF = mmTmp.f();
-									String OldFName = mmTmp.getDictionaryName();
-									File toF = new File(p, OldF.getName());
-									boolean ret = mmTmp.moveFileTo(BookManager.this, toF);
-									//CMN.Log("移动？？？", ret, toF);
-									if (ret) {
-										RebasePath(OldF, OldFName, toF, null, OldF.getName());
-										mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
-										mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
-										f3.Selection.remove(sI);//移出f3的选择
-										renameList.put(sI);//然后记录
-										cc++;
-									}
-								}
-								mdict_cache.clear();
-								f1.markDirty();
-								renameListe = renameList.flatten();
-								for (String fnI : renameListe) {
-									mFile fOld = new mFile(fnI).init(opt);
-									int idx = f3.data.remove(fOld);
-									if (idx != -1) {
-										mFile p2 = fOld.getParentFile().init(opt);
-										if (p2 != null) {
-											int idx2 = f3.data.indexOf(p2);
-											if (idx2 != -1) {//如有必要，移除多余的父文件夹
-												if (idx2 == f3.data.size() - 1 || !mFile.isDirScionOf(f3.data.getList().get(idx2 + 1), p2))
-													f3.data.getList().remove(idx2);
-												f3.data.OverFlow.remove(p2);
-											}
-											//showT(System.currentTimeMillis()+" "+idx2);
-										} else {
-											f3.data.OverFlow.remove(p2);
-											//f3.data.OverFlow.clear();
-										}
-										//f3.data.OverFlow.clear();
-										mFile val = new mFile(p, new File(fnI).getName());
-										f3.data.insert(val.init(opt));
-										f3.Selection.insert(val.getAbsolutePath());
-										if (!mFile.isDirScionOf(val, opt.lastMdlibPath))
-											f3.data.insertOverFlow(val.getParentFile().init(opt));
-									}
-								}
-								f3.adapter.notifyDataSetChanged();
-								f3.isDirty = true;
-
-								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(true, true);
-								if(DefordFile.length()>0) moduleFullScannerArr.add(DefordFile);
-								HashSet<String> mdlibs = new HashSet<>();
-								AgentApplication app = ((AgentApplication) getApplication());
-								char[] cb = app.get4kCharBuff();
-								for (File fI : moduleFullScannerArr) {
-									boolean modified = false;
-									mdlibs.clear();
-									StringBuilder sb = new StringBuilder();
-									String line;
-									try {
-										ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
-										while ((line = br.readLine()) != null) {
-											String key = line;
-											String prefix = null;
-											try {
-												if(key.startsWith("[:")){
-													int idx = key.indexOf("]",2);
-													if(idx>=2) {
-														idx+=1;
-														prefix = key.substring(0, idx);
-														key = key.substring(idx);
-													}
-												}
-												line = key;
-												key = key.startsWith("/") ? key : (opt.lastMdlibPath + "/" + key);
-												if (renameList.contains(key)) {// 搬到新家
-													modified = true;
-													key = mFile.tryDeScion(new File(p, new File(key).getName()), opt.lastMdlibPath);
-												} else { //复原
-													key = line;
-												}
-											} catch (Exception ignored) { }
-											if (!mdlibs.contains(key)) {
-												mdlibs.add(key);
-												if (prefix!=null)
-													key = prefix + key;
-												sb.append(key).append("\n");
-											} else {
-												modified = true;
-											}
-										}
-										br.close();
-										cb = br.cb;
-										if (modified) {
-											ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
-											bw.write(sb.toString());
-											bw.flush(); bw.close();
-											cb = br.cb;
-										}
-									}
-									catch (IOException e) {
-										CMN.Log(e);
-									}
-								}
-								app.set4kCharBuff(cb);
-								renameList.clear();
-								renameListe.clear();
-							}
-						}
-
-						@Override
-						public void onEnterSlideShow(Window win, int delay) {
-
-						}
-
-						@Override
-						public void onExitSlideShow() {
-
-						}
-
-						@Override
-						public Activity getDialogActivity() {
-							return null;
-						}
-
-						@Override
-						public void onDismiss() {
-
-						}
-					});
-					dialog.show();
-				}
+////								for (mngr_agent_manageable mmTmp : mdmng) {
+////									//if (mmTmp instanceof mdict)
+////
+////								}
+//								//todo 保证mdict移动文件的同时性。
+//								int cc = 0;
+//								for (String sI : arr) {//do actual rename. rename a lot of files..
+//									mFile mF = new mFile(sI).init(opt);
+//									//ommitting directory.
+//									//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
+//									if (mF.isDirectory()) continue;
+//									if (f3.data.get(mF).isDirectory()) continue;
+//									mngr_agent_manageable mmTmp = mdict_cache.get(sI);
+//									if (mmTmp == null) {
+//										mmTmp = new_MagentTransient(sI, opt, null, true);
+//									}
+//									File OldF = mmTmp.f();
+//									String OldFName = mmTmp.getDictionaryName();
+//									File toF = new File(p, OldF.getName());
+//									boolean ret = mmTmp.moveFileTo(BookManager.this, toF);
+//									//CMN.Log("移动？？？", ret, toF);
+//									if (ret) {
+//										RebasePath(OldF, OldFName, toF, null, OldF.getName());
+//										mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
+//										mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
+//										f3.Selection.remove(sI);//移出f3的选择
+//										renameList.put(sI);//然后记录
+//										cc++;
+//									}
+//								}
+//								mdict_cache.clear();
+//								f1.markDirty();
+//								renameListe = renameList.flatten();
+//								for (String fnI : renameListe) {
+//									mFile fOld = new mFile(fnI).init(opt);
+//									int idx = f3.data.remove(fOld);
+//									if (idx != -1) {
+//										mFile p2 = fOld.getParentFile().init(opt);
+//										if (p2 != null) {
+//											int idx2 = f3.data.indexOf(p2);
+//											if (idx2 != -1) {//如有必要，移除多余的父文件夹
+//												if (idx2 == f3.data.size() - 1 || !mFile.isDirScionOf(f3.data.getList().get(idx2 + 1), p2))
+//													f3.data.getList().remove(idx2);
+//												f3.data.OverFlow.remove(p2);
+//											}
+//											//showT(System.currentTimeMillis()+" "+idx2);
+//										} else {
+//											f3.data.OverFlow.remove(p2);
+//											//f3.data.OverFlow.clear();
+//										}
+//										//f3.data.OverFlow.clear();
+//										mFile val = new mFile(p, new File(fnI).getName());
+//										f3.data.insert(val.init(opt));
+//										f3.Selection.insert(val.getAbsolutePath());
+//										if (!mFile.isDirScionOf(val, opt.lastMdlibPath))
+//											f3.data.insertOverFlow(val.getParentFile().init(opt));
+//									}
+//								}
+//								f3.adapter.notifyDataSetChanged();
+//								f3.isDirty = true;
+//
+//								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(true, true);
+//								if(DefordFile.length()>0) moduleFullScannerArr.add(DefordFile);
+//								HashSet<String> mdlibs = new HashSet<>();
+//								AgentApplication app = ((AgentApplication) getApplication());
+//								char[] cb = app.get4kCharBuff();
+//								for (File fI : moduleFullScannerArr) {
+//									boolean modified = false;
+//									mdlibs.clear();
+//									StringBuilder sb = new StringBuilder();
+//									String line;
+//									try {
+//										ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+//										while ((line = br.readLine()) != null) {
+//											String key = line;
+//											String prefix = null;
+//											try {
+//												if(key.startsWith("[:")){
+//													int idx = key.indexOf("]",2);
+//													if(idx>=2) {
+//														idx+=1;
+//														prefix = key.substring(0, idx);
+//														key = key.substring(idx);
+//													}
+//												}
+//												line = key;
+//												key = key.startsWith("/") ? key : (opt.lastMdlibPath + "/" + key);
+//												if (renameList.contains(key)) {// 搬到新家
+//													modified = true;
+//													key = mFile.tryDeScion(new File(p, new File(key).getName()), opt.lastMdlibPath);
+//												} else { //复原
+//													key = line;
+//												}
+//											} catch (Exception ignored) { }
+//											if (!mdlibs.contains(key)) {
+//												mdlibs.add(key);
+//												if (prefix!=null)
+//													key = prefix + key;
+//												sb.append(key).append("\n");
+//											} else {
+//												modified = true;
+//											}
+//										}
+//										br.close();
+//										cb = br.cb;
+//										if (modified) {
+//											ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+//											bw.write(sb.toString());
+//											bw.flush(); bw.close();
+//											cb = br.cb;
+//										}
+//									}
+//									catch (IOException e) {
+//										CMN.Log(e);
+//									}
+//								}
+//								app.set4kCharBuff(cb);
+//								renameList.clear();
+//								renameListe.clear();
+//							}
+//						}
+//
+//						@Override
+//						public void onEnterSlideShow(Window win, int delay) {
+//
+//						}
+//
+//						@Override
+//						public void onExitSlideShow() {
+//
+//						}
+//
+//						@Override
+//						public Activity getDialogActivity() {
+//							return null;
+//						}
+//
+//						@Override
+//						public void onDismiss() {
+//
+//						}
+//					});
+//					dialog.show();
+//				}
 			} break;
 			/* 新建 */
             case R.id.toolbar_action15:{
@@ -1525,7 +1497,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				btn_Done.setOnClickListener(v -> {
 					File source  = new File(ConfigFile, SU.legacySetFileName(etNew.getText().toString()));
 					if(!mFile.isDirScionOf(source, ConfigFile)) {
-						showT("名称非法！");
+						showT("名称无效！");
 						return;
 					}
 					if(source.exists()) {
@@ -1592,26 +1564,27 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	private void deleteRecordsHard() {
+	private void deleteRecordsHard(BookManagerFolderAbs f3) {
 		int cc1 = 0;
 		int size = f1.manager_group().size();
 		int total = f3.Selection.size();
 		for(int i=0;i<size;i++) {
-			if(f3.Selection.remove(f1.getPathAt(i))) {
+			if(f3.Selection.remove(new mFile(f1.getPathAt(i)))) {
+				f1.markDirty();
 				f1.replace(i--, -1);
 				size--;
 				cc1++;
-				f1.markDirty();
 			}
 		}
-		if(f3.Selection.size()>0){
-			ArrayList<mFile> list = f3.data.getList();
-			int s2 = list.size();
-			for (int i = 0; i < s2; i++) {
-				if(f3.Selection.contains(list.get(i).getPath()))
-					total--;
-			}
-		}
+		// wtf???
+//		if(f3.Selection.size()>0){
+//			ArrayList<mFile> list = f3.dataTree;
+//			int s2 = list.size();
+//			for (int i = 0; i < s2; i++) {
+//				if(f3.Selection.contains(list.get(i).getRealPath()))
+//					total--;
+//			}
+//		}
 		ThisIsDirty=true;
 		f1.refreshSize();
 		showT("移除完毕!("+cc1+"/"+total+")");
