@@ -10,16 +10,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.BookManager.transferRunnable;
-import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -205,28 +207,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		mDslv.setOnItemClickListener((parent, view, position, id) -> {
 			if(position>=mDslv.getHeaderViewsCount()) {
 				position = position - mDslv.getHeaderViewsCount();
-				String name = adapter.getItem(position);
-				File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
-				int cc=0;
-				try {
-					BookManagerMain f1 = ((BookManager)getActivity()).f1;
-					f1.markDirty();
-					a.ThisIsDirty=true;
-					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-						f1.setPlaceSelected(i, false);
-					}
-					a.loadMan.lazyMan.chairCount = -1;
-					a.loadMan.LoadLazySlots(newf, true, name);
-					f1.refreshSize();
-					((BookManager)getActivity()).scrollTo(0);
-					a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
-					dataSetChanged();
-					f1.dataSetChanged();
-					a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
-				} catch (Exception e2) {
-					e2.printStackTrace();
-					a.showT("加载异常!LOAD ERRO: "+e2.getLocalizedMessage());
-				}
+				showLoadModuleDlg(PDICMainAppOptions.getWarnLoadModule(), position);
 			}
 		});
 
@@ -244,6 +225,17 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 								public void onClick(DialogInterface dialog, int pos) {
 									final String name = adapter.getItem(actualPosition);
 									switch(pos) {
+										case 3://选中 / 取消选中
+										{
+											String key = scanInList.get(actualPosition);
+											if(!selector.remove(key))
+												selector.add(key);
+											adapter.notifyDataSetChanged();
+										} break;
+										case 4://加载分组
+										{
+											showLoadModuleDlg(true, actualPosition);
+										} break;
 										case 0://模块的 重命名
 											((BookManager)getActivity()).showRenameDialog(name, new transferRunnable() {
 												@Override
@@ -359,7 +351,50 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				return true;
 			}});
 	}
-
+	
+	private void showLoadModuleDlg(boolean warn, int position) {
+		if (warn) {
+			final View dv = getActivity().getLayoutInflater().inflate(R.layout.dialog_sure_and_all, null);
+			CheckBox ck = dv.findViewById(R.id.ck);
+			TextView tv = dv.findViewById(R.id.title);
+			tv.setOnClickListener(v -> ck.toggle());
+			ck.setChecked(!PDICMainAppOptions.getWarnLoadModule());
+			ck.setOnCheckedChangeListener((buttonView, isChecked) -> PDICMainAppOptions.setWarnLoadModule(!buttonView.isChecked()));
+			tv.setText("重启前不再确认");
+			AlertDialog.Builder builder2 = new AlertDialog.Builder(getActivity());
+			builder2.setView(dv).setTitle("是否确认加载 " + adapter.getItem(position) + "?")
+					.setPositiveButton(R.string.confirm, (dialog, which) -> {
+						showLoadModuleDlg(false, position);
+					})
+					.setNeutralButton(R.string.cancel, null);
+			builder2.create().show();
+		} else {
+			String name = adapter.getItem(position);
+			File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
+			int cc=0;
+			a.checkModuleDirty();
+			try {
+				BookManagerMain f1 = a.f1;
+				f1.markDirty(-1);
+				a.ThisIsDirty=true;
+				for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+					f1.setPlaceSelected(i, false);
+				}
+				a.loadMan.lazyMan.chairCount = -1;
+				a.loadMan.LoadLazySlots(newf, true, name);
+				f1.refreshSize();
+				((BookManager)getActivity()).scrollTo(0);
+				a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
+				dataSetChanged();
+				f1.dataSetChanged();
+				a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
+			} catch (Exception e) {
+				CMN.debug(e);
+				a.showT("加载异常!LOAD ERRO: "+e.getLocalizedMessage());
+			}
+		}
+	}
+	
 	private char[] get4kCharBuff() {
 		if(a==null) return null;
 		return ((AgentApplication)a.getApplication()).get4kCharBuff();

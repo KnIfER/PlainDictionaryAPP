@@ -760,7 +760,8 @@ public class DBroswer extends DialogFragment implements
 //				//CMN.show(""+hasKeyBoard); //111
 //				if(!hasKeyBoard) searchView.clearFocus();
 				AlertDialog d = new AlertDialog.Builder(getActivity())
-						.setMessage(getResources().getString(R.string.warn_delete, Selection.size()))
+						.setTitle(getResources().getString(R.string.warn_delete, Selection.size()))
+						.setMessage("不可撤销!")
 						.setIcon(android.R.drawable.ic_dialog_alert)
 						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
 							lv.suppressLayout(true); // important

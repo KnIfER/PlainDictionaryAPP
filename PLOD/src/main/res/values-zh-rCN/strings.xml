@@ -1,11 +1,11 @@
 <resources>
 	<string name="app_name">平典搜索</string>
 	<string name="wenj_fugai">文件已存在，覆盖保存？</string>
-	<string name="warn_delete">确认删除选中的  %d 项内容?(不可撤销)</string>
+	<string name="warn_delete">确认删除选中的  %d 项内容?</string>
 	<string name="warnDelete">确认删除分组 %s?</string>
 	<string name="warn_move">确认将  %1$d 个收藏从 [ %2$s ] 移动到 [ %3$s ]?</string>
 	<string name="warn_exit0">确认退出?</string>
-	<string name="surerrecords">确认删除选中的 %d 项记录?(不会删除文件)</string>
+	<string name="surerrecords">确认删除选中的 %d 项记录?</string>
 	<string name="applyallset">应用到所有分组</string>
 	<string name="pickdestineFolder">选择目标文件夹</string>
 	<string name="warn_exit1">清空历史纪录</string>
@@ -153,7 +153,7 @@
 	<string name="rem_position">记忆位置</string>
 	<string name="direct_update">直接更新</string>
 	<string name="bring_from_background">后台唤醒</string>
-	<string name="show_all_dictionaries">全部词典 | 间选</string>
+	<string name="show_all_dictionaries">添加全部词典</string>
 	<string name="show_bookmark_add_button">书签添加按钮</string>
 	<string name="show_bookmark_delete_button">书签删除按钮</string>
 	<string name="auto_search_on_switch">切换时搜索</string>
@@ -162,14 +162,13 @@
 	<string name="save_bookmark">保存书签</string>
 	<string name="hint_search_result">提示结果</string>
 	<string name="fold_all">折叠全部</string>
-	<string name="Commit">提交 | 词典选项</string>
-	<string name="reset">重置 | 全不选</string>
-	<string name="refresd">刷新 | 全选</string>
+	<string name="Commit">词典选项</string>
+	<string name="inter_sel">间选 | 间不选</string>
 	<string name="save_as">另存为</string>
-	<string name="disable_all">禁用全部 | 禁用选择</string>
-	<string name="enable_all">启用全部 | 启用选择</string>
-	<string name="select_all_invalid">选择失效项 | 不~</string>
-	<string name="add_selection_to_set">启用选中词典 | 插入到…</string>
+	<string name="disable_all">禁用全部 | 禁用选中项</string>
+	<string name="enable_all">启用全部 | 启用选中项</string>
+	<string name="select_all_invalid">选择失效项 | 不选失效</string>
+	<string name="add_selection_to_set">启用选中词典 | 插入至…</string>
 	<string name="remove_selection_from_set">禁用选中词典 | 删除</string>
 	<string name="remove_records">删除记录</string>
 	<string name="move_files">移动文件</string>

@@ -112,7 +112,9 @@
 	    <item>@string/rename</item>
 	    <item>@string/delete</item>
 	    <item>@string/duplicate</item>
-	</string-array> 
+	    <item>选中 / 取消选中</item>
+	    <item>加载</item>
+	</string-array>
     
     <string-array name="dict_spec"> 
 	    <item>@string/dict_specs</item>

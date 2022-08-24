@@ -37,8 +37,8 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 
 	private void pullData() {
 		dataPrepared = true;
-		//CMN.Log("拉取数据！");
 		File rec = a.fRecord;
+		CMN.debug("拉取数据！", rec);
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(rec));
 			String line;

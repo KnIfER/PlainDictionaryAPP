@@ -13,6 +13,7 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
 
@@ -27,7 +28,9 @@ import com.knziha.plod.widgets.ViewUtils;
 import org.jcodings.constants.PosixBracket;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class BookManagerFolderAbs extends ListFragment
@@ -35,7 +38,42 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	int type=0;
 	String parentFile;
 	public boolean SelectionMode=false;
-	public HashSet<mFile> Selection = new HashSet<>();
+	HashSet<mFile> selFolders = new HashSet<>();
+	public HashSet<mFile> Selection = new HashSet<mFile>(){
+		@Override
+		public boolean add(mFile mFile) {
+			boolean ret = super.add(mFile);
+			if (ret && mFile.getIsDirectory()) {
+				selFolders.add(mFile);
+			}
+			return ret;
+		}
+		
+		@Override
+		public boolean removeAll(@NonNull Collection<?> c) {
+			return super.removeAll(c);
+		}
+	};
+	
+	public int calcSelectionSz() {
+		int ret = Selection.size(), sfz=selFolders.size();
+		if (sfz>0) {
+			if (ret > 0) {
+				for (Iterator<mFile> i = selFolders.iterator(); i.hasNext(); ){
+					mFile fn = i.next();
+					if (Selection.contains(fn)) {
+						ret--;
+					} else {
+						i.remove();
+					}
+				}
+			} else {
+				selFolders.clear();
+			}
+		}
+		return ret;
+	}
+	
 	HashSet<mFile> hiddenParents=new HashSet<>();
 	
 	ArrayListBookTree<mFile> data=new ArrayListBookTree<>();
@@ -55,6 +93,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public interface OnEnterSelectionListener{
 		void onEnterSelection(BookManagerFolderAbs f, boolean enter);
 		int addIt(BookManagerFolderAbs f, mFile fn);
+	}
+	
+	public void enterSelectionMode() {
+		if (!SelectionMode) {
+			SelectionMode = true;
+			if (oes!=null) oes.onEnterSelection(this, true);
+		}
 	}
 	
 	@Override

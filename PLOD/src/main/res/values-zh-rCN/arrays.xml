@@ -21,6 +21,8 @@
 		    <item name="shan">重命名</item>
 		    <item name="to1">删除</item>
 		    <item name="to2">复制</item>
+			<item>选中 / 取消选中</item>
+			<item>加载分组</item>
 	</string-array> 
 	
 <!--   <string-array name="dict_spec">

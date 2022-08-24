@@ -2583,7 +2583,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	/** 每次都重建界面与重载数据 */
 //	@Metaline(flagPos=30, flagSize=2, debug=2) public int debuggingDBrowser() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	public static int debuggingDBrowser() { return 1; }
-
+	
+	@Metaline(flagPos=32) public static boolean getDelRecApplyAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static void setDelRecApplyAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, debug=0) public static boolean getDebuggingRemoveRec() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=33, shift=1) public static boolean getWarnLoadModule() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static void setWarnLoadModule(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	
 	public int getPseudoInitCode(int pseudoInit) {
 		return (getPseudoInitCode()&~3)|pseudoInit;
 	}

@@ -39,7 +39,7 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 8);
 			opt.setTypeFlag_11_AtQF(0, 22);
 			opt.setInPeruseMode(false);
-			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall);
+			opt.menuOverlapAnchor(GlobalOptions.isSmall);
 			PDICMainAppOptions.setUseBackKeyGoWebViewBack(false);
 			opt.slidePage1D(true);
 			opt.slidePageMD(true);

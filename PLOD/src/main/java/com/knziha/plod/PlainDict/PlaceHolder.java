@@ -28,7 +28,7 @@ public class PlaceHolder {
 	public PlaceHolder() {
 
 	}
-
+	
 	public File getPath(PDICMainAppOptions opt) {
 		File ret;
 		if (!pathname.startsWith("/")){
@@ -64,5 +64,11 @@ public class PlaceHolder {
 	
 	public boolean NeedsBuildIndex() {
 		return TextUtils.equals(ErrorMsg, "Needs Index Building!");
+	}
+	
+	public PlaceHolder clone() {
+		PlaceHolder ret = new PlaceHolder(pathname);
+		ret.tmpIsFlag = tmpIsFlag;
+		return ret;
 	}
 }

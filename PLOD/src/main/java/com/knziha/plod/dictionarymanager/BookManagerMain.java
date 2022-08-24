@@ -48,6 +48,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.FlowTextView;
+import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
@@ -57,12 +58,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener {
-	//HashSet<String> rejector = new HashSet<>();
+	HashSet<PlaceHolder> Selection = new HashSet<>();
 	BookManager aaa;
 	private boolean bDictTweakerOnceShowed;
 	public MainActivityUIBase.LoadManager loadMan;
@@ -71,7 +73,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private Drawable mFilterDrawable;
 	private Drawable mAudioDrawable;
 	private Drawable mRightDrawable;
-	private int selected_size;
 	
 	public BookManagerMain(){
 		super();
@@ -105,7 +106,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	}
 
 	public void add(String mmTmp) {
-		markDirty();
+		markDirty(-1);
 		loadMan.md.add(null);
 		loadMan.lazyMan.placeHolders.add(new PlaceHolder(mmTmp));
 		loadMan.lazyMan.chairCount++;
@@ -115,12 +116,15 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 
 	@Override
 	public boolean exitSelectionMode() {
-		if(selected_size>0){
-			selected_size = 0;
-			for (int i = 0; i < loadMan.md.size(); i++) {
-				setPlaceSelected(i, false);
+		if(true && selected_size()>0){
+			for (PlaceHolder ph : Selection) {
+				setPlaceSelectedInter(ph, false);
 			}
+			Selection.clear();
 			adapter.notifyDataSetChanged();
+//			for (int i = 0; i < loadMan.md.size(); i++) {
+//				setPlaceSelected(i, false);
+//			}
 			return true;
 		}
 		return false;
@@ -184,7 +188,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 									break;
 									case 2://词典设置
 										if (isOnSelected) {
-											ArrayList<BookPresenter> mdTmps = new ArrayList<>(selected_size);
+											ArrayList<BookPresenter> mdTmps = new ArrayList<>(selected_size());
 											int cc = 0;
 											for (BookPresenter mI : manager_group()) {
 												if (getPlaceSelected(cc++))
@@ -199,7 +203,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 										break;
 									case 3://词典设置
 										if (isOnSelected) {
-											ArrayList<BookPresenter> mdTmps = new ArrayList<>(selected_size);
+											ArrayList<BookPresenter> mdTmps = new ArrayList<>(selected_size());
 											int cc = 0;
 											for (BookPresenter mI : manager_group()) {
 												if (getPlaceSelected(cc++))
@@ -235,7 +239,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						switch (pos) {
 							case 0: {
 								if (true) {
-									a.showT("功能关闭，请等待5.0版本");
+									a.showT("功能关闭，请等待6.0版本");
 									break;
 								}
 								View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
@@ -288,7 +292,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 											if (suc) {
 												a.RebasePath(oldf, OldFName, to, newName, oldFn);
 												adapter.notifyDataSetChanged();
-												markDirty();
+												markDirty(-1);
 												d.dismiss();
 												dd.dismiss();
 												a.show(R.string.renD);
@@ -355,7 +359,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							}
 							break;
 							case 2: {//移至顶部
-								markDirty();
+								markDirty(-1);
 								replace(actualPosition, 0);
 								d.dismiss();
 								adapter.notifyDataSetChanged();
@@ -363,7 +367,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							}
 							break;
 							case 3: {//移至底部
-								markDirty();
+								markDirty(-1);
 								int last = manager_group().size() - 1;
 								replace(actualPosition, last);
 								d.dismiss();
@@ -381,7 +385,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 											switch (pos3) {
 												/* 设为滤器 */
 												case 0: {
-													markDirty();
+													markDirty(actualPosition);
 													boolean isF = !PDICMainAppOptions.getTmpIsFiler(getPlaceFlagAt(actualPosition));
 													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), isF));
 													if (isOnSelected) {
@@ -396,7 +400,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												break;
 												/* 设为点译词库 */
 												case 1: {
-													markDirty();
+													markDirty(actualPosition);
 													boolean isCS = !PDICMainAppOptions.getTmpIsClicker(getPlaceFlagAt(actualPosition));
 													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(actualPosition), isCS));
 													if (isOnSelected) {
@@ -411,7 +415,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												break;
 												/* 设为默认折叠 */
 												case 2: {
-													markDirty();
+													markDirty(actualPosition);
 													boolean isCL = !PDICMainAppOptions.getTmpIsCollapsed(getPlaceFlagAt(actualPosition));
 													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsCollapsed(getPlaceFlagAt(actualPosition), isCL));
 													if (isOnSelected) {
@@ -427,7 +431,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												/* 设为发音库( mdd 专有 ) */
 												case 3: {
 													if (isMddResourceAt(actualPosition)) {
-														markDirty();
+														markDirty(actualPosition);
 														boolean isCS = PDICMainAppOptions.toggleTmpIsAudior(magent);
 														if (isCS)
 															setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
@@ -477,6 +481,10 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			int idx = lastClickedPos[(lastClickedPosIndex+1)%2];
 			if(idx<0||idx>=adapter.getCount()){
 				idx = getListView().getHeaderViewsCount();
+				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(getListView().getChildAt(0), ViewHolder.class);
+				if (vh != null) {
+					idx = vh.position;
+				}
 			}
 			onItemLongClick(null, null, idx, 0);
 		}
@@ -583,13 +591,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			aaa = (BookManager) getActivity();
 			mDslv.setOnItemClickListener((parent, view, position, id) -> {
 				//CMN.show(""+(adapter==null)+" "+(((dict_manager_activity)getActivity()).f1.adapter==null));
-				markDirty();
 				//adapter.getItem(position).value = !adapter.getItem(position).value;//TODO optimize
 				if (position >= mDslv.getHeaderViewsCount()) {
-					position = position - mDslv.getHeaderViewsCount();
+					position -= mDslv.getHeaderViewsCount();
+					markDirty(position);
 					setPlaceRejected(position, !getPlaceRejected(position));
 					adapter.notifyDataSetChanged();
-					markDirty();
 					refreshSize();
 				}
 			});
@@ -606,8 +613,8 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//CMN.Log("to", to);
 			//if(true) return;
 			if(a.opt.getDictManager1MultiSelecting() && getPlaceSelected(from)){
-				ArrayList<BookPresenter> md_selected = new ArrayList<>(selected_size);
-				ArrayList<PlaceHolder> ph_selected = new ArrayList<>(selected_size);
+				ArrayList<BookPresenter> md_selected = new ArrayList<>(selected_size());
+				ArrayList<PlaceHolder> ph_selected = new ArrayList<>(selected_size());
 				if(to>from) to++;
 				for (int i = loadMan.md.size()-1; i >= 0; i--) {
 					if(getPlaceSelected(i)){
@@ -643,7 +650,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//v.getBackground().setLevel(500);
 			mDslv.setFloatAlpha(1.0f);
 			v.setBackgroundColor(Color.parseColor("#ffff00"));//TODO: get primary color
-			markDirty();
+			markDirty(-1);
 			return v;
 		}
 
@@ -680,6 +687,15 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	
 	void setPlaceSelected(int position, boolean val) {
 		PlaceHolder ph = loadMan.lazyMan.placeHolders.get(position);
+		setPlaceSelectedInter(ph, val);
+		if (val) {
+			Selection.add(ph);
+		} else {
+			Selection.remove(ph);
+		}
+	}
+	
+	private void setPlaceSelectedInter(PlaceHolder ph, boolean val) {
 		ph.lineNumber &= ~0x80000000;
 		if(val) ph.lineNumber |= 0x80000000;
 	}
@@ -700,12 +716,26 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		return loadMan.md;
 	}
 	
+	final ArrayList<PlaceHolder> place_group() {
+		return loadMan.lazyMan.placeHolders;
+	}
+	
+	final int selected_size() {
+		return Selection.size();
+	}
+	
+	public void remove(int i) {
+		markDirty(-1);
+		replace(i, -1);
+	}
+	
 	public void replace(int from, int to) {
 		if (to < 0) {
 			BookPresenter rmd = loadMan.md.remove(from);
 			if(rmd!=null) a.mdict_cache.put(rmd.getPath(), rmd);
-			loadMan.lazyMan.placeHolders.remove(from);
+			PlaceHolder ph = loadMan.lazyMan.placeHolders.remove(from);
 			loadMan.lazyMan.chairCount--;
+			Selection.remove(ph);
 		} else {
 			loadMan.md.add(to, loadMan.md.remove(from));
 			loadMan.lazyMan.placeHolders.add(to, loadMan.lazyMan.placeHolders.remove(from));
@@ -737,6 +767,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	}
 	
 	private void setPlaceFlagAt(int position, int flag) {
+		markDirty(position);
 		BookPresenter mdTmp = loadMan.md.get(position);
 		if (mdTmp!=null) {
 			mdTmp.tmpIsFlag = flag;
@@ -746,7 +777,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			mdTmp.tmpIsFlag = flag;
 		}
 		loadMan.lazyMan.placeHolders.get(position).tmpIsFlag = flag;
-		rolesChanged = true;
 	}
 	
 	public CharSequence getNameAt(int position) {
@@ -762,14 +792,38 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		return path.length()>4 && path.substring(path.length()-4).equalsIgnoreCase(".mdd");
 	}
 	
-	public ArrayList<PlaceHolder> placeArray;
-	public boolean rolesChanged;
-	public void markDirty() {
-		if (!isDirty) {
-			isDirty = true;
-			if (placeArray==null) {
-				placeArray = new ArrayList<>(loadMan.lazyMan.placeHolders);
+	public void markDirty(int attrPos) {
+		if (attrPos >= 0/* && !isDataDirty()*/) {
+			PlaceHolder ph = loadMan.lazyMan.placeHolders.get(attrPos);
+			Integer val = dirtyAttrArray.get(ph);
+			if (val==null) {
+				dirtyAttrArray.put(ph, ph.tmpIsFlag);
+			} else if(val==ph.tmpIsFlag){
+				dirtyAttrArray.remove(ph);
 			}
 		}
+		else markDataDirty(true);
+		if (!isDirty) {
+			isDirty = true;
+			a.markDirty();
+		}
+	}
+	
+	public final boolean isDataDirty(){ return placeArray!=null; };
+	private PlaceHolder[] placeArray;
+	HashMap<PlaceHolder, Integer> dirtyAttrArray = new HashMap<>();
+	public PlaceHolder[] markDataDirty(boolean dirty) {
+		if (dirty!=isDataDirty()) {
+			if (dirty) {
+				placeArray = new PlaceHolder[loadMan.lazyMan.placeHolders.size()];
+				for (int i = 0; i < placeArray.length; i++) {
+					placeArray[i] = loadMan.lazyMan.placeHolders.get(i).clone();
+				}
+			} else {
+				placeArray = null;
+				dirtyAttrArray.clear();
+			}
+		}
+		return placeArray;
 	}
 }

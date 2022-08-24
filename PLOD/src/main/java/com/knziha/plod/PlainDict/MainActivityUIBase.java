@@ -2375,7 +2375,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public int lastCheckedPos;
 		long currMdlTime;
 		boolean lazyLoaded;
-		String lastLoadedModule;
+		public String lastLoadedModule;
 		
 		public void newChair() {
 			if (CosyChair.length<=chairCount) {
@@ -2632,7 +2632,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				md.addAll(Arrays.asList(new BookPresenter[lazyMan.chairCount]));
 				return;
 			}
-			CMN.debug("LoadLazySlots…");
+			CMN.debug("LoadLazySlots…",  moduleName);
 			AgentApplication app = ((AgentApplication) getApplication());
 			ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
 			lazyMan.do_LoadLazySlots(in);
@@ -10531,12 +10531,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		app.slots=CosyChair;
 		app.opt=opt;
 		app.loadManager=loadManager;
-//		app.mdlibsCon=mdlibsCon;
+		app.mdlibsCon=mdlibsCon;
 //		app.mdict_cache=mdict_cache;
 //		CosySofa.clear();
 //		HdnCmfrt.clear();
 		//todo 123
-		lazyLoadManager().lastLoadedModule=null;
+		// lazyLoadManager().lastLoadedModule=null;
 		Intent intent = new Intent();
 		intent.setClass(MainActivityUIBase.this, BookManager.class);
 		startActivityForResult(intent, BookManager.id);

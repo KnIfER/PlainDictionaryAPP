@@ -17,7 +17,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.PopupWindow;
@@ -58,7 +61,6 @@ import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -68,7 +70,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 public class BookManager extends Toastable_Activity implements OnMenuItemClickListener
@@ -99,6 +103,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public List<MenuItemImpl> Menu2;
 	public List<MenuItemImpl> Menu3;
 	public List<MenuItemImpl> Menu3Sel;
+	private String initialModuleName;
+	private boolean initialModuleChanged;
+	private String lastLoadedModule;
 	
 	public BookManager() { }
 	
@@ -117,6 +124,31 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				bookOptionsDialog.getDialog().show();
 			}
 		} catch (Exception ignored) { }
+	}
+	
+	public void markDirty() {
+		if (toolbar.mNavButtonView==toolbar.mNavButtonLayout) {
+			ImageButton navBtn = toolbar.mNavButtonView;
+			ImageButton cross = new ImageButton(this);
+			cross.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					
+				}
+			});
+			ViewGroup.LayoutParams lp = navBtn.getLayoutParams();
+			cross.setLayoutParams(lp);
+			cross.setBackground(navBtn.getBackground().getConstantState().newDrawable());
+			cross.setImageResource(R.drawable.ic_baseline_clear_24);
+			LinearLayout fram = new LinearLayout(this);
+			lp.width = -2;
+			fram.setLayoutParams(lp);
+			fram.setOrientation(LinearLayout.HORIZONTAL);
+			fram.setPadding(0,0, (int) (GlobalOptions.density*2.5),0);
+			ViewUtils.replaceView(toolbar.mNavButtonLayout=fram, navBtn, false);
+			ViewUtils.addViewToParent(navBtn, fram);
+			ViewUtils.addViewToParent(cross, fram);
+		}
 	}
 	
 	public interface transferRunnable{
@@ -165,83 +197,119 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		super.onBackPressed();
 	}
 
-	private void checkAll() {
-		AgentApplication app = ((AgentApplication)getApplication());
-		CMN.Log("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
+	private void checkF1() {
 		if(f1.isDirty) {
 			intent.putExtra("result", true);
-			int size = f1.manager_group().size();
-			boolean identical = size==f1.placeArray.size();
-			int i;
-			loadMan.lazyMan.chairCount=0;
-			loadMan.lazyMan.filterCount=0;
-			for (i = 0; i < size; i++) {
-				PlaceHolder ph = loadMan.lazyMan.placeHolders.get(i);
-				ph.lineNumber = i | (ph.lineNumber & 0x80000000);
-				final int flag = ph.tmpIsFlag;
-				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
-					loadMan.lazyMan.chairCount++;
-					if (PDICMainAppOptions.getTmpIsClicker(flag)) {
-						loadMan.lazyMan.filterCount++;
-					}
-				}
-				if(identical) {
-					BookPresenter mdTmp = getMagentAt(i, false);
-					if(mdTmp!=loadMan.EmptyBook && !mdTmp.equalsToPlaceHolder(ph)
-						|| !ph.getPath(opt).equals(f1.placeArray.get(i).getPath(opt)))
-						identical=false;
-				}
-			}
-			if (identical) {
-				if (loadMan.lazyMan.chairCount>loadMan.lazyMan.CosyChair.length
-					|| loadMan.lazyMan.filterCount>loadMan.lazyMan.CosySofa.length) {
-				}
-				identical = false;
-			}
-			if(identical && !f1.rolesChanged){
+			int result = checkModuleDirty();
+			boolean isInitialModule = initialModuleName !=null && initialModuleName.equals(loadMan.lazyMan.lastLoadedModule);
+			boolean identical = (result&0x1)!=0 && isInitialModule;
+			if (isInitialModule && !initialModuleChanged) {
 				CMN.debug("一成不变");
 			} else {
 				CMN.debug("变化了", identical);
 				intent.putExtra("changed", true);
 				intent.putExtra("identical", identical);
-				try {
-					final File def = opt.getCacheCurrentGroup()?new File(getExternalFilesDir(null),"default.txt")
-							:opt.fileToSet(ConfigFile, opt.getLastPlanName("LastPlanName"));      //!!!原配
-					ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), app.get4kCharBuff(), 4096);
-					String parent = opt.lastMdlibPath.getPath();
-					output.write("[:S]");
-					output.write(Integer.toString(f1.manager_group().size()));
-					output.write("\n");
-					for(i=0;i<f1.manager_group().size();i++) {
-						writeForOneLine(output, i, parent);
-					}
-					output.flush();
-					output.close();
-				} catch (IOException e2) {
-					e2.printStackTrace();
-				}
 			}
 			f1.isDirty=false;
 		}
-
-		if(f3.isDirty) {
+	}
+	
+	/** 检查模组是否有结构变化或属性变化，并保存。 */
+	public int checkModuleDirty() {
+		int i;
+		ArrayList<BookPresenter> md = f1.manager_group();
+		int size = md.size(); // 现有列表，可能被修改了！包括结构修改与属性修改！
+		MainActivityUIBase.LazyLoadManager neoLM = loadMan.lazyMan;
+		ArrayList<PlaceHolder> da = neoLM.placeHolders; // 现有列表列表
+		PlaceHolder[] nda = f1.markDataDirty(f1.isDataDirty()); // 看看比对原列表，是否变化了？
+		boolean identical = nda==null || size==nda.length;
+		boolean rolesChanged = false;
+		if (f1.dirtyAttrArray.size()>0) { // 属性变化啦！
+			for (Map.Entry<PlaceHolder, Integer> node : f1.dirtyAttrArray.entrySet()) {
+				if (node.getKey().tmpIsFlag != node.getValue()) {
+					rolesChanged = true;
+					break;
+				}
+			}
+		}
+		if (neoLM.chairCount>neoLM.CosyChair.length
+				|| neoLM.filterCount>neoLM.CosySofa.length) {
+			identical = false;
+		}
+		if (nda!=null) { // 结构变化啦！
+			neoLM.chairCount=0;
+			neoLM.filterCount=0;
+			for (i = 0; i < size; i++) {
+				PlaceHolder ph = da.get(i);
+				ph.lineNumber = i | (ph.lineNumber & 0x80000000);
+				final int flag = ph.tmpIsFlag;
+				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
+					neoLM.chairCount++;
+					if (PDICMainAppOptions.getTmpIsClicker(flag)) {
+						neoLM.filterCount++;
+					}
+				}
+				if(identical) {
+					BookPresenter mdTmp = getMagentAt(i, false);
+					if(mdTmp!=loadMan.EmptyBook && !mdTmp.equalsToPlaceHolder(ph)
+							|| !ph.getPath(opt).equals(nda[i].getPath(opt)))
+						identical = false;
+					else if(!rolesChanged && ph.tmpIsFlag != nda[i].tmpIsFlag) {
+						rolesChanged = true;
+					}
+				}
+			}
+		}
+		if (rolesChanged || !identical) {
+			if (initialModuleName != null && initialModuleName.equals(lastLoadedModule)) {
+				initialModuleChanged = true;
+			}
 			try {
-				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(fRecord), app.get4kCharBuff(), 4096);
-				String parent = opt.lastMdlibPath.getPath()+File.separator;
-				for(mFile mdTmp:f3.data.getList()) {
-					if(mdTmp.getClass()==mAssetFile.class) continue;
-					if(mdTmp.isDirectory()) continue;
-					String name = mdTmp.getPath();
-					if(name.startsWith(parent))
-						name = name.substring(parent.length());
-					output.write(name);
-					output.write("\n");
+				final File def = opt.getCacheCurrentGroup() ? new File(getExternalFilesDir(null), "default.txt")
+						: opt.fileToSet(ConfigFile, opt.getLastPlanName("LastPlanName"));      //!!!原配
+				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), ((AgentApplication) getApplication()).get4kCharBuff(), 4096);
+				String parent = opt.lastMdlibPath.getPath();
+				output.write("[:S]");
+				output.write(Integer.toString(md.size()));
+				output.write("\n");
+				for (i = 0; i < md.size(); i++) {
+					writeForOneLine(output, i, parent);
 				}
 				output.flush();
 				output.close();
-			} catch (IOException e2) {
-				e2.printStackTrace();
+				f1.markDataDirty(false);
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
+		} else {
+			f1.markDataDirty(false);
+		}
+		return (identical?1:0) | (rolesChanged?2:0);
+	}
+	
+	private void checkAll() {
+		AgentApplication app = ((AgentApplication)getApplication());
+		CMN.Log("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
+		checkF1();
+
+		if(f3.isDirty) {
+//			try {
+//				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(fRecord), app.get4kCharBuff(), 4096);
+//				String parent = opt.lastMdlibPath.getPath()+File.separator;
+//				for(mFile mdTmp:f3.data.getList()) { dataTree
+//					if(mdTmp.getClass()==mAssetFile.class) continue;
+//					if(mdTmp.isDirectory()) continue;
+//					String name = mdTmp.getPath();
+//					if(name.startsWith(parent))
+//						name = name.substring(parent.length());
+//					output.write(name);
+//					output.write("\n");
+//				}
+//				output.flush();
+//				output.close();
+//			} catch (IOException e2) {
+//				e2.printStackTrace();
+//			}
 			f3.isDirty=false;
 		}
 
@@ -323,13 +391,15 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
         mTabLayout = findViewById(R.id.mTabLayout);
 		inflater=LayoutInflater.from(getApplicationContext());
         toolbar = findViewById(R.id.toolbar);
+		toolbar_setTitle(initialModuleName =loadMan.lazyMan.lastLoadedModule);
 		final long resId = R.xml.menu_dict_manager;
         toolbar.inflateMenu((int)resId);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
-		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 3, 4, 5, 6, 16);
+		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
+		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 2, 1, 18, 19, 3, 20, 4, 5, 6, 16);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 0, 3, 15, 16);
-		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 13, 14, 16);
-		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 9, 7, 17, 8, 10, 11, 12, 13, 14, 16);
+		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 7, 8, 13, 14, 16);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 7, 17, 8, 9, 10, 11, 12, 13, 14, 16);
 		AllMenus.setItems(Menu1);
   
 		fragments= new ArrayList<>();
@@ -374,6 +444,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				List<MenuItemImpl> menu;
 				if(fI==f1) {
 					menu = Menu1;
+					if (loadMan.lazyMan.lastLoadedModule!=lastLoadedModule) {
+						toolbar_setTitle(loadMan.lazyMan.lastLoadedModule);
+					}
 	    		} else if(fI==f2) {
 					menu = Menu2;
 				} else if (fI == f3) {
@@ -420,8 +493,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		toolbar.setNavigationOnClickListener(v1 -> {
 			onBackPressed();
 		});
-        
-        toolbar.setTitle(R.string.manager);
         
  		MenuItem searchItem = ViewUtils.findInMenu(Menu3, R.id.action_search);
  		searchItem.setShowAsAction(2);
@@ -510,10 +581,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	//onCreate结束
 	
-	
-
-	
-	
+	private void toolbar_setTitle(String lastLoadedModule) {
+		if (lastLoadedModule!=null) {
+			this.lastLoadedModule=lastLoadedModule;
+			toolbar.setTitle(lastLoadedModule.endsWith(".set")?lastLoadedModule.substring(0,lastLoadedModule.length()-4):lastLoadedModule);
+		}
+	}
 	
 	protected void showRenameDialog(final String lastPlanName,final transferRunnable tr) {//哈哈这么长的代码。。。
 		View dialog = getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
@@ -787,85 +860,133 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		AlertDialog d;
 		BookManagerFolderAbs f3=CurrentPage==2?f4:this.f3;
 		ArrayList<mFile> list = f3.dataTree;
+		int szf1 = f1.manager_group().size();
+		boolean sf1 = !opt.getDictManager1MultiSelecting() && !isLongClicked && szf1>0;
 		switch (item.getItemId()) {
-			/* 保存 | 词典选项 */
+			/* 词典选项 */
 			case R.id.toolbar_action0:{
-				if(isLongClicked) {
-					f1.performLastItemLongClick();
-					ret=true; break;
-				}
-				try {
-					String name = opt.getLastPlanName("LastPlanName");
-					File to = new File(ConfigFile, name);
-					boolean shouldInsert = false;
-					if(!to.exists())
-						shouldInsert=true;
-					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
-					
-					String parent = opt.lastMdlibPath.getPath();
-					
-					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-						writeForOneLine(output, i, parent);
-					}
-//					for(mngr_agent_manageable mmTmp:mdmng) {
-//						if(!f1.rejector.contains(mmTmp.getPath())){
-//							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
-//							writeForOneLine(output, mmTmp, parent);
-//						}
-//					} //todo
-
-					output.flush();
-					output.close();
-					show(R.string.savedone,name);
-					if(shouldInsert) f2.adapter.add(String.valueOf(name));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				f1.performLastItemLongClick();
+//				if(isLongClicked) {
+//				}
+//				try {
+//					String name = opt.getLastPlanName("LastPlanName");
+//					File to = new File(ConfigFile, name);
+//					boolean shouldInsert = false;
+//					if(!to.exists())
+//						shouldInsert=true;
+//					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
+//
+//					String parent = opt.lastMdlibPath.getPath();
+//
+//					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+//						writeForOneLine(output, i, parent);
+//					}
+////					for(mngr_agent_manageable mmTmp:mdmng) {
+////						if(!f1.rejector.contains(mmTmp.getPath())){
+////							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
+////							writeForOneLine(output, mmTmp, parent);
+////						}
+////					} //todo
+//
+//					output.flush();
+//					output.close();
+//					show(R.string.savedone,name);
+//					if(shouldInsert) f2.adapter.add(String.valueOf(name));
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 			} break;
-			/* 刷新 | 全选 */
-            case R.id.toolbar_action1:{
-				if(isLongClicked){
-					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-						f1.setPlaceSelected(i, true);
-					}
-					f1.dataSetChanged();
-				} else {
-					f1.refreshDicts(true);
-					f1.refreshSize();
-				}
-			} break;
-			/* 重置 | 全不选 */
+			/* 全选 | 全不选, f1 */
             case R.id.toolbar_action2:{
+				closeMenu = false;
+				if(sf1) opt.setDictManager1MultiSelecting(true);
 				if(isLongClicked){
-					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+					for (int i = 0; i < szf1; i++) {
 						f1.setPlaceSelected(i, false);
 					}
-					f1.dataSetChanged();
 				}
 				else {
-					ThisIsDirty = true;
-					try {
-						String name = opt.getLastPlanName("LastPlanName");
-						File from = new File(ConfigFile, SU.legacySetFileName(name));
-						if (from.exists()) {
-							for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-								f1.setPlaceSelected(i, false);
-							}
-							loadMan.lazyMan.chairCount = -1;
-							loadMan.LoadLazySlots(from, true, name);
-							f1.markDirty();
-							f1.refreshSize();
-							f1.dataSetChanged();
-							show(R.string.loadsucc2, name);
-						} else {
-							show(R.string.loadfail2, name);
+					for (int i = 0; i < szf1; i++) {
+						f1.setPlaceSelected(i, true);
+					}
+				}
+				f1.dataSetChanged();
+			} break;
+			/* 刷新 | 全选 */
+			/* 间选 | 间不选, f1 */
+			case R.id.toolbar_action1:{
+				closeMenu = false;
+//				if(isLongClicked){
+//
+//				} else {
+//					f1.refreshDicts(true);
+//					f1.refreshSize();
+//				}
+				int[] positions = f1.lastClickedPos;
+				if(positions[0]!=-1 && positions[1]!=-1){
+					int start=positions[0];
+					int end=positions[1];
+					if(end<start){
+						int tmp=end;
+						end=start;
+						start=tmp;
+					}
+					for (int i = start; i <= end; i++) {
+						f1.setPlaceSelected(i, !isLongClicked);
+						if(sf1) {
+							opt.setDictManager1MultiSelecting(true);
+							sf1 = false;
 						}
-					} catch (IOException e) {
-						e.printStackTrace();
 					}
 				}
 			} break;
-			/*另存为*/
+			/* 选择失效项, f1 */
+			case R.id.inval_sel:{
+				closeMenu = false;
+				for (int i = 0; i < szf1; i++) {
+					String path = f1.getPathAt(i);
+					if (!path.startsWith(CMN.Assets) && !new File(path).exists()) {
+						f1.setPlaceSelected(i, !isLongClicked);
+						if (sf1) {
+							opt.setDictManager1MultiSelecting(true);
+							sf1 = false;
+						}
+					}
+				}
+				f1.dataSetChanged();
+			} break;
+			/* 选择禁用, f1 */
+			case R.id.inena_sel:{
+				closeMenu = false;
+				for (int i = 0; i < szf1; i++) {
+					if (f1.getPlaceRejected(i)) {
+						f1.setPlaceSelected(i, !isLongClicked);
+						if (sf1) {
+							opt.setDictManager1MultiSelecting(true);
+							sf1 = false;
+						}
+					}
+				}
+				f1.dataSetChanged();
+			} break;
+			/* 删除记录, f1 */
+			case R.id.del_rec:{
+				new AlertDialog.Builder(BookManager.this)
+						.setTitle(mResource.getString(R.string.surerrecords, f1.Selection.size()))
+						.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
+						.setPositiveButton(R.string.confirm, (dialog, which) -> {
+							for (int i = szf1-1; i >= 0; i--) {
+								if (f1.getPlaceSelected(i)) {
+									f1.remove(i);
+								}
+							}
+							f1.refreshSize();
+							f1.dataSetChanged();
+							dialog.dismiss();
+						})
+						.create().show();
+			} break;
+			/* 另存为 */
             case R.id.toolbar_action3:{
 				if(isLongClicked) {ret=false; break;}
 				final String oldFn = opt.getLastPlanName("LastPlanName");
@@ -893,10 +1014,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 禁用全部 | 禁用选中部分 */
             case R.id.toolbar_action4:{
-				f1.markDirty();
+				f1.markDirty(-1);
             	if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){
-						for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						for (int i = 0; i < szf1; i++) {
 							if(f1.getPlaceSelected(i))
 								f1.setPlaceRejected(i, true);
 						}
@@ -904,7 +1025,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						f1.dataSetChanged();
 					}
 				} else {
-					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+					for (int i = 0; i < szf1; i++) {
 						f1.setPlaceRejected(i, true);
 					}
 					ThisIsDirty=true;
@@ -916,7 +1037,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
             case R.id.toolbar_action5:{
 				if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){
-						for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						for (int i = 0; i < szf1; i++) {
 							if(f1.getPlaceSelected(i))
 								f1.setPlaceRejected(i, false);
 						}
@@ -924,39 +1045,24 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						f1.dataSetChanged();
 					}
 				}else {
-					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+					for (int i = 0; i < szf1; i++) {
 						f1.setPlaceRejected(i, false);
 					}
 					f1.dataSetChanged();
-					f1.markDirty();
+					f1.markDirty(-1);
 					ThisIsDirty = true;
 					f1.refreshSize();
 				}
 			} break;
-			/*显示全部 | 间选*/
+			/* 添加全部词典 */
 			case R.id.remPagePos:{
 				if(isLongClicked){
-					if(opt.getDictManager1MultiSelecting()){//间选1
-						int[] positions = f1.lastClickedPos;
-						if(positions[0]!=-1 && positions[1]!=-1){
-							int start=positions[0];
-							int end=positions[1];
-							if(end<start){
-								int tmp=end;
-								end=start;
-								start=tmp;
-							}
-							for (int i = start; i <= end; i++) {
-								f1.setPlaceSelected(i, true);
-							}
-						}
-					}
 				} else {
 					try {
 						BufferedReader in = new BufferedReader(new FileReader(fRecord));
 						String line;
-						HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(f1.manager_group().size());
-						for(int i=0;i<f1.manager_group().size();i++) {
+						HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(szf1);
+						for(int i = 0; i< szf1; i++) {
 							mdict_cache.put(f1.getPathAt(i), null);
 						}
 						while ((line = in.readLine()) != null) {
@@ -965,7 +1071,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							line = new File(line).getAbsolutePath();
 							if (!mdict_cache.containsKey(line)) {
 								f1.add(line);
-								f1.setPlaceRejected(f1.manager_group().size()-1, true);
+								f1.setPlaceRejected(f1.manager_group().size() -1, true);
 							}
 						}
 						//mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,md.size()-f1.rejector.size()));
@@ -1008,11 +1114,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-			/* 全选 | 全不选 */
+			/* 全选 | 全不选, f3 & f4 */
             case R.id.toolbar_action7:{
 				if (isLongClicked) {
 					f3.Selection.clear();
 				} else {
+					f3.enterSelectionMode();
+					closeMenu = false;
 					for(int i=0;i<list.size();i++) {
 						f3.Selection.add(list.get(i).getRealPath());
 					}
@@ -1021,6 +1129,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 间选 */
             case R.id.inter_sel:{
+				closeMenu = false;
 				int[] positions = f3.lastClickedPos;
 				if (positions[0] != -1 && positions[1] != -1) {
 					int start = positions[0];
@@ -1044,6 +1153,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 全选失效项 */
             case R.id.toolbar_action8:{
+				closeMenu = false;
 				for(int i=0;i<list.size();i++) {
 					mFile fI = list.get(i);
 					if(fI.webAsset==null && !fI.getPath().startsWith(CMN.Assets)
@@ -1052,6 +1162,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					) {
 						if (!isLongClicked) {
 							f3.Selection.add(fI.getRealPath());
+							f3.enterSelectionMode();
 						} else {
 							f3.Selection.remove(fI.getRealPath());
 						}
@@ -1067,10 +1178,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					NumberPicker np = dv.findViewById(R.id.numberpicker);
 					CheckBox checker1 = dv.findViewById(R.id.check1);
 					CheckBox checker2 = dv.findViewById(R.id.check2);
-					np.setMaxValue(f1.manager_group().size());
+					np.setMaxValue(szf1);
 					AlertDialog dTmp = builder2.setView(dv).create();
 					dv.findViewById(R.id.confirm).setOnClickListener(v -> {
-						int toPos = Math.min(f1.manager_group().size(), np.getValue());
+						int toPos = Math.min(szf1, np.getValue());
 						int cc = 0;
 						mFile[] arr = f3.Selection.toArray(new mFile[0]);
 						Arrays.sort(arr);
@@ -1087,7 +1198,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							}
 						}
 						if(insert) {
-							f1.markDirty();
+							f1.markDirty(-1);
 							for (int i = 0; i < f1.manager_group().size(); i++) {
 								if (map.contains(f1.getPathAt(i))) {
 									f1.setPlaceRejected(i, false);
@@ -1124,7 +1235,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							ThisIsDirty = true;
 						}
 						else if (select) {
-							for (int i = 0; i < f1.manager_group().size(); i++) {
+							for (int i = 0; i < szf1; i++) {
 								if (map.contains(f1.getPathAt(i))){
 									f1.setPlaceSelected(i, true);
 									cc++;
@@ -1155,8 +1266,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					Arrays.sort(arr);
 					int count=arr.length;
 					
-					HashMap<String, Integer> map = new HashMap<>(f1.manager_group().size());
-					for (int i = 0; i < f1.manager_group().size(); i++) {
+					HashMap<String, Integer> map = new HashMap<>(szf1);
+					for (int i = 0; i < szf1; i++) {
 						map.put(f1.getPathAt(i), i);
 					}
 					for(int i=0;i<arr.length;i++) {
@@ -1171,7 +1282,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							f1.setPlaceRejected(idx, false);
 						}
 						else {
-							f1.markDirty();
+							f1.markDirty(-1);
 							//loadMan.lazyMan.newChair();
 							BookPresenter mdTmp = mdict_cache.get(key);
 							PlaceHolder placeHolder;
@@ -1199,24 +1310,25 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
             case R.id.toolbar_action10:{
 				if(isLongClicked) {
 					new AlertDialog.Builder(BookManager.this)
-							.setTitle(R.string.surerrecords)
+							.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()))
+							.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
-								deleteRecordsHard(f3);
+								deleteRecordsHard(f3, true);
 								dialog.dismiss();
 							})
 					.create().show();
 				} else {
 					int cc1 = 0;
-					for(int i=0;i<f1.manager_group().size();i++) {
+					for(int i = 0; i< szf1; i++) {
 						if(f3.Selection.contains(new mFile(f1.getPathAt(i)))) {
+							f1.markDirty(-1);
 							f1.setPlaceRejected(i, true);
 							cc1++;
-							f1.markDirty();
 						}
 					}
 					ThisIsDirty=true;
 					f1.refreshSize();
-					showT("移除完毕!("+cc1+"/"+f3.Selection.size()+")");
+					showT("移除完毕!("+cc1+"/"+f3.calcSelectionSz()+")");
 					f1.dataSetChanged();
 				}
 			} break;
@@ -1227,8 +1339,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				else {
 					final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
+					CheckBox ck = dv.findViewById(R.id.ck);
+					ck.setChecked(PDICMainAppOptions.getDelRecApplyAll());
+					dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
+							.setMessage("从分组和全部词典记录中删除记录，不会删除文件，但不可撤销。")
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
 								mFile[] arr = f3.Selection.toArray(new mFile[0]);
 								HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
@@ -1247,9 +1363,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 											f3.isDirty = true;
 											mFile p = fn.getParentFile();
 											if (p != null) {
-												mFile pTmp = s2 - 1<list.size()?list.get(s2 - 1):null;
+												mFile pTmp = i<list.size()?list.get(i):null;
 												if (p.equals(pTmp) && pTmp.children.size()==0
-														&& (s2>=list.size() || !mFile.isDirScionOf(list.get(s2), p))) {
+														&& (i+1>=list.size() || !mFile.isDirScionOf(list.get(i+1), p))) {
 													list.remove(i--);
 													s2--;
 												}
@@ -1257,49 +1373,53 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 										}
 									}
 								}
-								deleteRecordsHard(f3);
-
-								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(((CheckBox) dv.findViewById(R.id.ck)).isChecked(), f3.isDirty);
-
-								AgentApplication app = ((AgentApplication) getApplication());
-								char[] cb = app.get4kCharBuff();
-								boolean bNeedRewrite;
-								for (File fI : moduleFullScannerArr) {
-									StringBuilder sb = new StringBuilder();
-									String line;
-									try {
-										ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
-										bNeedRewrite = false;
-										while ((line = br.readLine()) != null) {
-											try {
-												String key = line;
-												if(key.startsWith("[:")){
-													int idx = key.indexOf("]",2);
-													if(idx>=2) key = key.substring(idx+1);
+								PDICMainAppOptions.setDelRecApplyAll(ck.isChecked());
+								deleteRecordsHard(f3, false);
+								if (!PDICMainAppOptions.getDebuggingRemoveRec()) {
+									ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(PDICMainAppOptions.getDelRecApplyAll(), f3.isDirty);
+									AgentApplication app = ((AgentApplication) getApplication());
+									char[] cb = app.get4kCharBuff();
+									boolean bNeedRewrite;
+									for (File fI : moduleFullScannerArr) {
+										StringBuilder sb = new StringBuilder();
+										String line;
+										try {
+											ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+											bNeedRewrite = false;
+											while ((line = br.readLine()) != null) {
+												try {
+													String key = line;
+													if(key.startsWith("[:")){
+														int idx = key.indexOf("]",2);
+														if(idx>=2) key = key.substring(idx+1);
+													}
+													key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
+													//CMN.debug("rewrite::", key, removePool.contains(new mFile(key)));
+													if (removePool.contains(new mFile(key)) || removePool.contains(new mFile(new File(key).getCanonicalPath()))) {
+														bNeedRewrite = true;
+														continue;
+													}
+												} catch (Exception e) {
+													CMN.debug(e);
 												}
-												key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
-												if (removePool.contains(new mFile(key)) || removePool.contains(new mFile(new File(key).getCanonicalPath()))) {
-													bNeedRewrite = true;
-													continue;
-												}
-											} catch (Exception ignored) {
+												sb.append(line).append("\n");
 											}
-											sb.append(line).append("\n");
-										}
-										br.close();
-										cb = br.cb;
-										if (bNeedRewrite) {
-											ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
-											bw.write(sb.toString());
-											bw.flush();
-											bw.close();
+											br.close();
 											cb = br.cb;
+											if (bNeedRewrite) {
+												CMN.debug("rewrite::", fI);
+												ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+												bw.write(sb.toString());
+												bw.flush();
+												bw.close();
+												cb = br.cb;
+											}
+										} catch (Exception e) {
+											CMN.debug(e);
 										}
-									} catch (IOException e) {
-										e.printStackTrace();
 									}
+									app.set4kCharBuff(cb);
 								}
-								app.set4kCharBuff(cb);
 								showT("移除完毕!");
 							})
 							.setNeutralButton(R.string.cancel, null);
@@ -1311,6 +1431,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
             case R.id.peruseMode:{
             	if (true) {
             		showT("功能关闭，请等待6.0版本");
+					closeMenu = false;
 					ret=false;break;
 				}
 //				if(isLongClicked) {
@@ -1545,6 +1666,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	
 	public ArrayList<File> ScanInModlueFiles(boolean all, boolean addAllLibs) {
+		CMN.debug("ScanInModlueFiles::", all, "addAllLibs="+addAllLibs);
 		ArrayList<File> ret = new ArrayList<>();
 		if (all) {
 			String[] names = ConfigFile.list();
@@ -1564,30 +1686,23 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	private void deleteRecordsHard(BookManagerFolderAbs f3) {
+	private void deleteRecordsHard(BookManagerFolderAbs f3, boolean toast) {
 		int cc1 = 0;
 		int size = f1.manager_group().size();
-		int total = f3.Selection.size();
+		int total = f3.calcSelectionSz();
 		for(int i=0;i<size;i++) {
 			if(f3.Selection.remove(new mFile(f1.getPathAt(i)))) {
-				f1.markDirty();
+				f1.markDirty(-1);
 				f1.replace(i--, -1);
 				size--;
 				cc1++;
 			}
 		}
-		// wtf???
-//		if(f3.Selection.size()>0){
-//			ArrayList<mFile> list = f3.dataTree;
-//			int s2 = list.size();
-//			for (int i = 0; i < s2; i++) {
-//				if(f3.Selection.contains(list.get(i).getRealPath()))
-//					total--;
-//			}
-//		}
 		ThisIsDirty=true;
 		f1.refreshSize();
-		showT("移除完毕!("+cc1+"/"+total+")");
+		if (toast) {
+			showT("移除完毕!("+cc1+"/"+total+")");
+		}
 		f1.dataSetChanged();
 		f3.adapter.notifyDataSetChanged();
 	}
