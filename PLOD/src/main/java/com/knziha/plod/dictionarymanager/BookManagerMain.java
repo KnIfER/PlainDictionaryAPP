@@ -480,15 +480,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		if(adapter.getCount()>0){
 			int idx = lastClickedPos[(lastClickedPosIndex+1)%2];
 			int hc = mDslv.getHeaderViewsCount();
-			CMN.debug("performLastItemLongClick::", idx, hc);
+			// CMN.debug("performLastItemLongClick::", idx, hc);
 			if(idx<hc||idx>=adapter.getCount()){
 				idx = hc;
 				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(mDslv.getChildAt(0), ViewHolder.class);
 				if (vh != null) {
-					idx = vh.position;
+					idx = vh.position + hc;
 				}
-				CMN.recurseLog(mDslv.getChildAt(0), null);
-				//CMN.debug("performLastItemLongClick::", idx, vh, ((ViewGroup)mDslv.getChildAt(0)).getChildAt(0).getTag());
 			}
 			onItemLongClick(null, null, idx, 0);
 		}
