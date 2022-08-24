@@ -2591,6 +2591,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=33, shift=1) public static boolean getWarnLoadModule() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=33, shift=1) public static void setWarnLoadModule(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=34) public static boolean getRevertExitManager() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34) public static void setRevertExitManager(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=34, shift=1) public static boolean getWarnDisenaddAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34, shift=1) public static void setWarnDisenaddAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
 	
 	public int getPseudoInitCode(int pseudoInit) {
 		return (getPseudoInitCode()&~3)|pseudoInit;

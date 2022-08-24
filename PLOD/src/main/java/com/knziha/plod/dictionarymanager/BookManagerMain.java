@@ -479,12 +479,16 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public void performLastItemLongClick() {
 		if(adapter.getCount()>0){
 			int idx = lastClickedPos[(lastClickedPosIndex+1)%2];
-			if(idx<0||idx>=adapter.getCount()){
-				idx = getListView().getHeaderViewsCount();
-				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(getListView().getChildAt(0), ViewHolder.class);
+			int hc = mDslv.getHeaderViewsCount();
+			CMN.debug("performLastItemLongClick::", idx, hc);
+			if(idx<hc||idx>=adapter.getCount()){
+				idx = hc;
+				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(mDslv.getChildAt(0), ViewHolder.class);
 				if (vh != null) {
 					idx = vh.position;
 				}
+				CMN.recurseLog(mDslv.getChildAt(0), null);
+				//CMN.debug("performLastItemLongClick::", idx, vh, ((ViewGroup)mDslv.getChildAt(0)).getChildAt(0).getTag());
 			}
 			onItemLongClick(null, null, idx, 0);
 		}
@@ -500,7 +504,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			ViewHolder vh;
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
-				convertView.setTag(vh = new ViewHolder(convertView));
+				vh = new ViewHolder(convertView);
 			} else {
 				vh = (ViewHolder) convertView.getTag();
 			}
@@ -798,8 +802,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			Integer val = dirtyAttrArray.get(ph);
 			if (val==null) {
 				dirtyAttrArray.put(ph, ph.tmpIsFlag);
-			} else if(val==ph.tmpIsFlag){
-				dirtyAttrArray.remove(ph);
 			}
 		}
 		else markDataDirty(true);

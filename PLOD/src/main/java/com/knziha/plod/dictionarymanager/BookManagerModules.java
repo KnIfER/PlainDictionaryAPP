@@ -137,7 +137,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			BookManagerMain.ViewHolder vh;
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
-				convertView.setTag(vh = new BookManagerMain.ViewHolder(convertView));
+				vh = new BookManagerMain.ViewHolder(convertView);
 			} else {
 				vh = (BookManagerMain.ViewHolder) convertView.getTag();
 			}
@@ -360,7 +360,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			tv.setOnClickListener(v -> ck.toggle());
 			ck.setChecked(!PDICMainAppOptions.getWarnLoadModule());
 			ck.setOnCheckedChangeListener((buttonView, isChecked) -> PDICMainAppOptions.setWarnLoadModule(!buttonView.isChecked()));
-			tv.setText("重启前不再确认");
+			tv.setText("重启前不再提示");
 			AlertDialog.Builder builder2 = new AlertDialog.Builder(getActivity());
 			builder2.setView(dv).setTitle("是否确认加载 " + adapter.getItem(position) + "?")
 					.setPositiveButton(R.string.confirm, (dialog, which) -> {
@@ -376,7 +376,6 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			try {
 				BookManagerMain f1 = a.f1;
 				f1.markDirty(-1);
-				a.ThisIsDirty=true;
 				for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
 					f1.setPlaceSelected(i, false);
 				}

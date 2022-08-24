@@ -167,7 +167,7 @@
 	<string name="save_as">另存为</string>
 	<string name="disable_all">禁用全部 | 禁用选中项</string>
 	<string name="enable_all">启用全部 | 启用选中项</string>
-	<string name="select_all_invalid">选择失效项 | 不选失效</string>
+	<string name="select_all_invalid">选中失效项 | 不选失效</string>
 	<string name="add_selection_to_set">启用选中词典 | 插入至…</string>
 	<string name="remove_selection_from_set">禁用选中词典 | 删除</string>
 	<string name="remove_records">删除记录</string>

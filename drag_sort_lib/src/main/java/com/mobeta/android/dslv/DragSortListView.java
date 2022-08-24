@@ -746,6 +746,7 @@ public class DragSortListView extends ListView {
                 v.setLayoutParams(new AbsListView.LayoutParams(
                         ViewGroup.LayoutParams.FILL_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT));
+				v.setTag(child.getTag());
                 v.addView(child);
             }
 

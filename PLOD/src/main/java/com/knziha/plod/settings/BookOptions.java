@@ -312,7 +312,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				if (a.opt.getIgnoreReloadWarning() || BuildConfig.isDebug) {
 					optprc.processOptionChanged(null, null, 1, 0);
 				} else {
-					final String[] DictOpt = new String[]{"重启前不再确认", "重新加载视图"};
+					final String[] DictOpt = new String[]{"重启前不再提示", "重新加载视图"};
 					final String[] Coef = " ×_ √".split("_");
 					final SpannableStringBuilder ssb = new SpannableStringBuilder();
 					TextView tv = a.buildStandardConfigDialog(optprc, false, 1, 0, "确认重新加载"+(data.length>1?"选中的"+data.length+"本":"当前")+"词典？");

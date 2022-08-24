@@ -17,7 +17,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,6 +34,7 @@ import androidx.appcompat.widget.ActionMenuView.LayoutParams;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.core.view.MenuCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -70,7 +70,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -133,7 +132,26 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			cross.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					
+					final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
+					CheckBox ck = dv.findViewById(R.id.ck);
+					ck.setChecked(PDICMainAppOptions.getRevertExitManager());
+					TextView tv = dv.findViewById(R.id.title);
+					tv.setOnClickListener(v1 -> ck.toggle());
+					tv.setText("并退出");
+					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
+					builder2.setView(dv).setTitle("确认取消修改吗？")
+							.setPositiveButton(R.string.confirm, (dialog, which) -> {
+								revertModule();
+								PDICMainAppOptions.setRevertExitManager(ck.isChecked());
+								f1.dataSetChanged();
+								if (ck.isChecked()) {
+									checkAll();
+									finish();
+								}
+							})
+							.setNeutralButton(R.string.cancel, null);
+					d = builder2.create();
+					d.show();
 				}
 			});
 			ViewGroup.LayoutParams lp = navBtn.getLayoutParams();
@@ -212,6 +230,51 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			}
 			f1.isDirty=false;
 		}
+	}
+	
+	/** 放弃修改。 */
+	public void revertModule() {
+		ArrayList<BookPresenter> md = f1.manager_group();
+		PlaceHolder[] nda = f1.markDataDirty(f1.isDataDirty());
+		MainActivityUIBase.LazyLoadManager neoLM = loadMan.lazyMan;
+		ArrayList<PlaceHolder> da = neoLM.placeHolders; // 现有列表列表
+		if (f1.dirtyAttrArray.size()>0) {
+			for (Map.Entry<PlaceHolder, Integer> node : f1.dirtyAttrArray.entrySet()) {
+				int orgVal = node.getValue();
+				if (orgVal!=node.getKey().tmpIsFlag) {
+					node.getKey().tmpIsFlag = orgVal;
+					neoLM.chairCount += PDICMainAppOptions.getTmpIsHidden(orgVal)?-1:1;
+				}
+			}
+			f1.dirtyAttrArray.clear();
+		}
+		if (nda!=null) {
+			da.clear();
+			md.clear();
+			for (PlaceHolder ph : nda) {
+				String key = ph.getPath(opt).toString();
+				BookPresenter ret = mdict_cache.get(key);
+				if (ret!=null && ret.getClass()!=BookPresenter.class)
+					ret = null;
+				da.add(ph);
+				md.add(ret);
+			}
+			neoLM.chairCount=0;
+			neoLM.filterCount=0;
+			for (int i = 0; i < nda.length; i++) {
+				PlaceHolder ph = da.get(i);
+				ph.lineNumber = i | (ph.lineNumber & 0x80000000);
+				final int flag = ph.tmpIsFlag;
+				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
+					neoLM.chairCount++;
+					if (PDICMainAppOptions.getTmpIsClicker(flag)) {
+						neoLM.filterCount++;
+					}
+				}
+			}
+		}
+		f1.refreshSize();
+		f1.markDataDirty(false);
 	}
 	
 	/** 检查模组是否有结构变化或属性变化，并保存。 */
@@ -395,8 +458,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		final long resId = R.xml.menu_dict_manager;
         toolbar.inflateMenu((int)resId);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
+		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
-		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 2, 1, 18, 19, 3, 20, 4, 5, 6, 16);
+		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 2, 1, 19, 18, 5, 20, 3, 6, 4, 16);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 0, 3, 15, 16);
 		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 7, 8, 13, 14, 16);
 		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 7, 17, 8, 9, 10, 11, 12, 13, 14, 16);
@@ -781,7 +845,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	
 	public boolean isDebug=false;
-	boolean ThisIsDirty;
 
     public static class FragAdapter extends FragmentPagerAdapter {
     	private List<Fragment> mFragments;
@@ -865,7 +928,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		switch (item.getItemId()) {
 			/* 词典选项 */
 			case R.id.toolbar_action0:{
-				f1.performLastItemLongClick();
+				if(!isLongClicked) f1.performLastItemLongClick();
 //				if(isLongClicked) {
 //				}
 //				try {
@@ -1012,75 +1075,22 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				});
 			} break;
-			/* 禁用全部 | 禁用选中部分 */
-            case R.id.toolbar_action4:{
-				f1.markDirty(-1);
-            	if(isLongClicked){
-					if(opt.getDictManager1MultiSelecting()){
-						for (int i = 0; i < szf1; i++) {
-							if(f1.getPlaceSelected(i))
-								f1.setPlaceRejected(i, true);
-						}
-						f1.refreshSize();
-						f1.dataSetChanged();
-					}
-				} else {
-					for (int i = 0; i < szf1; i++) {
-						f1.setPlaceRejected(i, true);
-					}
-					ThisIsDirty=true;
-					f1.dataSetChanged();
-					f1.refreshSize();
-				}
-			} break;
-			/* 启用全部 | 启用选中部分 */
+			/* 禁用选中项 | 启用选中项 */
             case R.id.toolbar_action5:{
-				if(isLongClicked){
-					if(opt.getDictManager1MultiSelecting()){
-						for (int i = 0; i < szf1; i++) {
-							if(f1.getPlaceSelected(i))
-								f1.setPlaceRejected(i, false);
-						}
-						f1.refreshSize();
-						f1.dataSetChanged();
-					}
-				}else {
+				if(opt.getDictManager1MultiSelecting()){
 					for (int i = 0; i < szf1; i++) {
-						f1.setPlaceRejected(i, false);
-					}
-					f1.dataSetChanged();
-					f1.markDirty(-1);
-					ThisIsDirty = true;
-					f1.refreshSize();
-				}
-			} break;
-			/* 添加全部词典 */
-			case R.id.remPagePos:{
-				if(isLongClicked){
-				} else {
-					try {
-						BufferedReader in = new BufferedReader(new FileReader(fRecord));
-						String line;
-						HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(szf1);
-						for(int i = 0; i< szf1; i++) {
-							mdict_cache.put(f1.getPathAt(i), null);
-						}
-						while ((line = in.readLine()) != null) {
-							if (!line.startsWith("/"))
-								line = opt.lastMdlibPath + "/" + line;
-							line = new File(line).getAbsolutePath();
-							if (!mdict_cache.containsKey(line)) {
-								f1.add(line);
-								f1.setPlaceRejected(f1.manager_group().size() -1, true);
-							}
-						}
-						//mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,md.size()-f1.rejector.size()));
-						in.close();
-					} catch (Exception e2) {
-						e2.printStackTrace();
+						if(f1.getPlaceSelected(i))
+							f1.setPlaceRejected(i, !isLongClicked);
 					}
 				}
+				f1.refreshSize();
 				f1.dataSetChanged();
+			} break;
+			/* 禁用全部 | 启用全部 | 添加全部词典 */
+            case R.id.toolbar_action4:
+			case R.id.remPagePos:
+			{
+				disenaddAll(item.getTitle().toString(), isLongClicked, item.getItemId()==R.id.toolbar_action4, PDICMainAppOptions.getWarnDisenaddAll());
 			} break;
 			/* 折叠全部 */
             case R.id.toolbar_action13:{
@@ -1232,7 +1242,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								}
 							}
 							f1.refreshSize();
-							ThisIsDirty = true;
 						}
 						else if (select) {
 							for (int i = 0; i < szf1; i++) {
@@ -1302,7 +1311,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 					showT("添加完毕!("+cc+"/"+count+")");
 					f1.refreshSize();
-					ThisIsDirty=true;
 					f1.dataSetChanged();
 				}
 			} break;
@@ -1326,7 +1334,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							cc1++;
 						}
 					}
-					ThisIsDirty=true;
 					f1.refreshSize();
 					showT("移除完毕!("+cc1+"/"+f3.calcSelectionSz()+")");
 					f1.dataSetChanged();
@@ -1657,6 +1664,61 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
+	private void disenaddAll(String title, boolean isLongClicked, boolean dis, boolean warnDisenaddAll) {
+		if (!warnDisenaddAll) {
+			int szf1 = f1.manager_group().size();
+			if (isLongClicked) {
+				if (dis) {
+					try {
+						BufferedReader in = new BufferedReader(new FileReader(fRecord));
+						String line;
+						HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(szf1);
+						for (int i = 0; i < szf1; i++) {
+							mdict_cache.put(f1.getPathAt(i), null);
+						}
+						while ((line = in.readLine()) != null) {
+							if (!line.startsWith("/"))
+								line = opt.lastMdlibPath + "/" + line;
+							line = new File(line).getAbsolutePath();
+							if (!mdict_cache.containsKey(line)) {
+								f1.add(line);
+								f1.setPlaceRejected(f1.manager_group().size() - 1, true);
+							}
+						}
+						//mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,md.size()-f1.rejector.size()));
+						in.close();
+					} catch (Exception e2) {
+						e2.printStackTrace();
+					}
+				}
+			} else {
+				for (int i = 0; i < szf1; i++) {
+					f1.setPlaceRejected(i, dis);
+				}
+			}
+			f1.dataSetChanged();
+			f1.refreshSize();
+		} else {
+			final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
+			CheckBox ck = dv.findViewById(R.id.ck);
+			ck.setChecked(!PDICMainAppOptions.getWarnDisenaddAll());
+			TextView tv = dv.findViewById(R.id.title);
+			tv.setOnClickListener(v1 -> ck.toggle());
+			tv.setText("重启前不再提示");
+			AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
+			int sep = title.indexOf("|");
+			if (sep>0) title=isLongClicked?title.substring(sep + 1):title.substring(0, sep);
+			builder2.setView(dv).setTitle("确认"+title+"吗？")
+					.setPositiveButton(R.string.confirm, (dialog, which) -> {
+						disenaddAll(null, isLongClicked, dis, false);
+						PDICMainAppOptions.setWarnDisenaddAll(!ck.isChecked());
+					})
+					.setNeutralButton(R.string.cancel, null);
+			d = builder2.create();
+			d.show();
+		}
+	}
+	
 	public MagentTransient new_MagentTransient(Object key, PDICMainAppOptions opt, Integer isF, boolean bIsPreempter) {
 		try {
 			return new MagentTransient(this, key, opt, isF, bIsPreempter);
@@ -1698,7 +1760,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				cc1++;
 			}
 		}
-		ThisIsDirty=true;
 		f1.refreshSize();
 		if (toast) {
 			showT("移除完毕!("+cc1+"/"+total+")");
