@@ -923,41 +923,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		AlertDialog d;
 		BookManagerFolderAbs f3=CurrentPage==2?f4:this.f3;
 		ArrayList<mFile> list = f3.dataTree;
-		int szf1 = f1.manager_group().size();
+		int szf1 = f1.manager_group().size(), cnt=0;
 		boolean sf1 = !opt.getDictManager1MultiSelecting() && !isLongClicked && szf1>0;
 		switch (item.getItemId()) {
 			/* 词典选项 */
 			case R.id.toolbar_action0:{
 				if(!isLongClicked) f1.performLastItemLongClick();
-//				if(isLongClicked) {
-//				}
-//				try {
-//					String name = opt.getLastPlanName("LastPlanName");
-//					File to = new File(ConfigFile, name);
-//					boolean shouldInsert = false;
-//					if(!to.exists())
-//						shouldInsert=true;
-//					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
-//
-//					String parent = opt.lastMdlibPath.getPath();
-//
-//					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-//						writeForOneLine(output, i, parent);
-//					}
-////					for(mngr_agent_manageable mmTmp:mdmng) {
-////						if(!f1.rejector.contains(mmTmp.getPath())){
-////							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
-////							writeForOneLine(output, mmTmp, parent);
-////						}
-////					} //todo
-//
-//					output.flush();
-//					output.close();
-//					show(R.string.savedone,name);
-//					if(shouldInsert) f2.adapter.add(String.valueOf(name));
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
 			} break;
 			/* 全选 | 全不选, f1 */
             case R.id.toolbar_action2:{
@@ -975,16 +946,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f1.dataSetChanged();
 			} break;
-			/* 刷新 | 全选 */
 			/* 间选 | 间不选, f1 */
 			case R.id.toolbar_action1:{
 				closeMenu = false;
-//				if(isLongClicked){
-//
-//				} else {
-//					f1.refreshDicts(true);
-//					f1.refreshSize();
-//				}
 				int[] positions = f1.lastClickedPos;
 				if(positions[0]!=-1 && positions[1]!=-1){
 					int start=positions[0];
@@ -1010,13 +974,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					String path = f1.getPathAt(i);
 					if (!path.startsWith(CMN.Assets) && !new File(path).exists()) {
 						f1.setPlaceSelected(i, !isLongClicked);
-						if (sf1) {
-							opt.setDictManager1MultiSelecting(true);
-							sf1 = false;
-						}
+						cnt++;
 					}
 				}
-				f1.dataSetChanged();
+				if (cnt>0) {
+					if (sf1) opt.setDictManager1MultiSelecting(true);
+					f1.dataSetChanged();
+					showT("已处理"+cnt+"项");
+				}
 			} break;
 			/* 选择禁用, f1 */
 			case R.id.inena_sel:{
@@ -1024,13 +989,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				for (int i = 0; i < szf1; i++) {
 					if (f1.getPlaceRejected(i)) {
 						f1.setPlaceSelected(i, !isLongClicked);
-						if (sf1) {
-							opt.setDictManager1MultiSelecting(true);
-							sf1 = false;
-						}
 					}
+					cnt++;
 				}
-				f1.dataSetChanged();
+				if (cnt>0) {
+					if (sf1) opt.setDictManager1MultiSelecting(true);
+					f1.dataSetChanged();
+					showT("已处理"+cnt+"项");
+				}
 			} break;
 			/* 删除记录, f1 */
 			case R.id.del_rec:{
@@ -1176,9 +1142,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						} else {
 							f3.Selection.remove(fI.getRealPath());
 						}
+						cnt++;
 					}
 				}
-				f3.adapter.notifyDataSetChanged();
+				if (cnt>0) {
+					f3.adapter.notifyDataSetChanged();
+					showT("已处理"+cnt+"项");
+				}
 			} break;
 			/* 添加 */
             case R.id.toolbar_action9:{ // add_selection_to_set
@@ -1664,11 +1634,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
+	// 缝合怪
 	private void disenaddAll(String title, boolean isLongClicked, boolean dis, boolean warnDisenaddAll) {
 		if (!warnDisenaddAll) {
 			int szf1 = f1.manager_group().size();
 			if (isLongClicked) {
-				if (dis) {
+				if (!dis) {
 					try {
 						BufferedReader in = new BufferedReader(new FileReader(fRecord));
 						String line;
