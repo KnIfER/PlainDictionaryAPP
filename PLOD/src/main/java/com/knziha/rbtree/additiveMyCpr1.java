@@ -41,11 +41,12 @@ public class additiveMyCpr1 implements Comparable<additiveMyCpr1>{
 		int offset=0;
 		int length=Math.min(searchKey.length(), key.length());
 		while (offset<length) {
-			if (Character.toLowerCase(key.charAt(offset)) != searchKey.charAt(offset)) {
-				return offset;
+			if (Character.toLowerCase(key.charAt(offset)) == searchKey.charAt(offset)) {
+				offset++;
+			} else {
+				break;
 			}
-			offset++;
 		}
-		return offset-1;
+		return offset;
 	}
 }
