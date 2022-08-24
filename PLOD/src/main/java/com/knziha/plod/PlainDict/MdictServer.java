@@ -241,12 +241,14 @@ public abstract class MdictServer extends NanoHTTPD {
 				}
 				if(key.endsWith("\\"))
 					key=key.substring(0, key.length()-1);
+				if(key.contains("%"))
+					key = URLDecoder.decode(key);
 				SU.Log("jumping...", key);
 				int pos = presenter.bookImpl.lookUp(key);
 				String res = presenter.bookImpl.getRecordsAt(null, pos);
 				return newFixedLengthResponse(constructMdPage(presenter, res, b1, pos));
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				SU.Log(e);
 			}
 			return emptyResponse;
 		}
