@@ -1893,6 +1893,23 @@ function debug(e){console.log(e)};
 		mWebView.word = word;
 	}
 	
+	@SuppressLint("JavascriptInterface")
+	public void setCurrentStar(WebViewmy mWebView, String word) {
+		WebViewListHandler wlh = mWebView.weblistHandler;
+		if (wlh ==a.weblistHandler) {
+			currentDisplaying = word;
+		}
+		if (wlh.isViewSingle()) {
+			wlh.setStar(word);
+		}
+		if (wlh.isPopupShowing()) {
+			wlh.alloydPanel.toolbar.setTitle(word);
+		}
+		else if (mWebView.toolbar_title!=null) {
+			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
+		}
+		mWebView.word = word;
+	}
 	
 	public void checkTint() {
 		if(mWebView!=null) {
@@ -2668,7 +2685,17 @@ function debug(e){console.log(e)};
         	CMN.Log(val);
         }
 		
-        @JavascriptInterface
+		@JavascriptInterface
+		public void setStar(int sid, String val) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					presenter.a.hdl.post(() -> presenter.setCurrentStar(wv, val));
+				}
+			}
+		}
+	
+		@JavascriptInterface
         public String decodeExp(String val) {
 			String ret = "";
 			if (presenter!=null) {

@@ -28,9 +28,25 @@
 			e.style.opacity=0.15;
 		}}
 		e.onclick=toggle;
+		function tc() {
+			var t = document.title;
+			var idx=t.indexOf(' Definition,', 1);
+			if(idx>0) {
+				t = t.slice(0, idx);
+				app.setStar(sid.get(), t.toLowerCase());
+			}
+		}
+		new MutationObserver(function(mutations) {
+			// console.log(document.title);
+			tc();
+		}).observe(
+			document.querySelector('title'),
+			{ subtree: 1, characterData: true, childList: 1 }
+		);
+		tc();
 	}
 "
-	,"entrance": "/play/\r交互式学习
+	,"entrance": "/play/\r学习卡片
 /lists/\r词汇列表
 //randomword\r随机一词
 	"
@@ -57,4 +73,5 @@
 	,"keyPattern": "^[a-zA-Z-]{0,38}$"
 	,"onload": ""
 	,"cacheResx": "ahuh4v.css"
+	,"premature":"70"
 }

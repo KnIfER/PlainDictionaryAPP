@@ -34,6 +34,7 @@ import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
@@ -157,6 +158,7 @@ public class PlainWeb extends DictionaryAdapter {
 	Object k3client;
 	private JSONObject dopt;
 	private int lastMirror;
+	private int premature = 85;
 	
 	public boolean hasHosts() {
 		return jinkeSheaths!=null && jinkeSheaths.size()>0;
@@ -573,6 +575,7 @@ public class PlainWeb extends DictionaryAdapter {
 		isTranslator = website.getBooleanValue("translator");
 		hasModifiers = website.containsKey("modifiers");
 		bReplaceLetToVar = website.containsKey("kikLetVar");
+		premature = IU.parsint(website.get("premature"), 85);
 		if (bReplaceLetToVar) {
 			String str = website.getString("kikLetVar");
 			kikUrlPatterns = "true".equals(str)?new String[]{".js"}:str.split("\\|");
@@ -1817,7 +1820,8 @@ public class PlainWeb extends DictionaryAdapter {
 		if(newProgress>89) {
 			mWebView.wvclient.onPageFinished(mWebView, mWebView.getUrl());
 		}
-		else if(newProgress>=85) {
+		else if(newProgress>=premature) {
+			// CMN.debug("postFinished!");
 			//fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, newProgress>87);
 			mWebView.postFinished();
 		}
