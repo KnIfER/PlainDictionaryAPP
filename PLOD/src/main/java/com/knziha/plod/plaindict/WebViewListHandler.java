@@ -555,25 +555,29 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void toggleFoldAll() {
-		int targetVis=View.VISIBLE;
-		int cc=getChildCount();
-		if(cc>0) {
-			for (int i = 0; i < cc; i++) {
-				if (getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
-					targetVis = View.GONE;
-					break;
+		if (isMergingFrames()) {
+			getMergedFrame().evaluateJavascript("togFoldAll()", null);
+		} else {
+			int targetVis=View.VISIBLE;
+			int cc=getChildCount();
+			if(cc>0) {
+				for (int i = 0; i < cc; i++) {
+					if (getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
+						targetVis = View.GONE;
+						break;
+					}
 				}
-			}
-			if(targetVis==View.GONE) {
-				a.awaiting = false;
-			}
-			for (int i = 0; i < cc; i++) {
-				View childAt = getChildAt(i);
-				WebViewmy targetView = childAt.findViewById(R.id.webviewmy);
 				if(targetVis==View.GONE) {
-					targetView.setVisibility(targetVis);
-				} else if(targetView.getVisibility()!=View.VISIBLE){
-					childAt.findViewById(R.id.toolbar_title).performClick();
+					a.awaiting = false;
+				}
+				for (int i = 0; i < cc; i++) {
+					View childAt = getChildAt(i);
+					WebViewmy targetView = childAt.findViewById(R.id.webviewmy);
+					if(targetVis==View.GONE) {
+						targetView.setVisibility(targetVis);
+					} else if(targetView.getVisibility()!=View.VISIBLE){
+						childAt.findViewById(R.id.toolbar_title).performClick();
+					}
 				}
 			}
 		}

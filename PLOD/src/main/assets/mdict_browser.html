@@ -3016,6 +3016,19 @@
 			}
 		}
 
+		function togFoldAll(){
+			var fold=false;
+			for (var i=0,fx; fx=frames[i++];) {
+				if(!fx.fold){
+					fold = true;
+					foldFrame(fx);
+				}
+			}
+			if(!fold) {
+				unfoldAll();
+			}
+		}
+
 		function unfoldAll(){
 			//if(opt.focusMode==1) set...
 			for (var i=0,fx; fx=frames[i++];) {
