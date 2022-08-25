@@ -26,9 +26,11 @@ import android.webkit.WebView;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.util.TypeUtils;
 import com.knziha.plod.ArrayList.SerializedLongArray;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -75,8 +77,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -545,84 +549,174 @@ public class PlainWeb extends DictionaryAdapter {
 		return value==null?defValue:value;
 	}
 	
+	
+	public JSONArray getJSONArray(Object value) {
+		if (value instanceof JSONArray) {
+			return (JSONArray)value;
+		} else if (value instanceof List) {
+			return new JSONArray((List)value);
+		} else {
+			return value instanceof String ? (JSONArray) JSON.parse((String)value) : (JSONArray)JSONObject.toJSON(value);
+		}
+	}
+	
 	private void parseJsonFile(Context context) throws IOException {
 		website = JSONObject.parseObject(ViewUtils.fileToString(context, f));
-		String _host = website.getString("host");
+		String _host = null, tmp;
+		Map.Entry<String, Object> node; Object val;
+		for(Iterator<Map.Entry<String, Object>> iter = website.entrySet().iterator(); iter.hasNext();) {
+			node = iter.next();
+			val = node.getValue();
+			switch (node.getKey()) {
+				case "host":
+					_host = val.toString();
+				break;
+				case "index":
+					index = val.toString();
+				break;
+				case "name":
+					name = val.toString();
+				break;
+				case "js":
+					jsCode = val.toString();
+				break;
+				case "onstart":
+					onstart = val.toString();
+				break;
+				case "onload":
+					onload = val.toString();
+				break;
+				case "search":
+					search = val.toString();
+				break;
+				case "searchJs":
+					searchJs = val.toString();
+				break;
+				case "style":
+					style = val.toString();
+				break;
+				case "stylex":
+					stylex = getJSONArray(val);
+				break;
+				case "excludeAll":
+					excludeAll = TypeUtils.castToBoolean(val);
+					break;
+				case "cacheRes":
+					tmp = val.toString();
+					if(canSaveResource=tmp.length()>0){
+						cacheExtensions = tmp.split("\\|");
+						//InternalResourcePath = CachedPathSubToDBStorage("Caches");
+					}
+					break;
+				case "excludeRes":
+					tmp = val.toString();
+					if(hasExcludedResV4=tmp.length()>0){
+						excludeResourcesV4 = tmp.split("\\|");
+						//InternalResourcePath = CachedPathSubToDBStorage("Caches");
+					}
+					break;
+				case "fastFonts":
+					fastGStaticFonts = TypeUtils.castToBoolean(val);
+					break;
+				case "readRes":
+					butReadonly = TypeUtils.castToBoolean(val);
+					break;
+				case "php":
+					andEagerForParms = TypeUtils.castToBoolean(val);
+					break;
+				case "CDROPT":
+					// _exclude_db_save_extensions
+					tmp = val.toString();
+					if(tmp.length()>0){
+						if(tmp.equalsIgnoreCase("All")){
+							cleanExtensions = default_cleanExtensions;
+						} else {
+							cleanExtensions = tmp.split("\\|");
+						}
+					}
+					break;
+				case "noImage":
+					noImage = TypeUtils.castToBoolean(val);
+					break;
+				case "forceText":
+					forceText = TypeUtils.castToBoolean(val);
+					break;
+				case "cpau":
+					computerFace = TypeUtils.castToBoolean(val);
+					break;
+				case "translator":
+					isTranslator = TypeUtils.castToBoolean(val);
+					break;
+				case "modifiers":
+					hasModifiers = val.toString().length()>0; //todo
+					break;
+				case "kikLetVar":
+					String str = val.toString();
+					bReplaceLetToVar = str.length()>1;
+					if (bReplaceLetToVar) {
+						kikUrlPatterns = "true".equals(str)?new String[]{".js"}:str.split("\\|");
+					}
+					break;
+				case "premature":
+					premature = IU.parsint(val, 85);
+					break;
+				case "svg":
+					tmp = val.toString();
+					svgKeywords = tmp.length()>0?tmp.split("\r"):null;
+					break;
+				case "keyPattern":
+					try {
+						keyPattern = Pattern.compile(val.toString());
+					} catch (Exception e) { /*CMN.Log(e);*/ }
+					break;
+				case "entrance":
+					tmp = val.toString();
+					if(tmp.length()>0){
+						//read json defined entrances
+						entrance = new ArrayList<>(Arrays.asList(tmp.split("\n")));
+						int sz = entrance.size();
+						if (sz>0) {
+							if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
+							if(sz>1 && 0==TextUtils.getTrimmedLength(entrance.get(0))) entrance.remove(0);
+						}
+						//todo read entrances that saved in db.
+					}
+					break;
+				case "reroute":
+					tmp = val.toString();
+					if(tmp.length()>0){
+						hasReroutedUrl =true;
+						String[] list = tmp.split("\n");
+						int size = list.length;
+						routefrom = new ArrayList<>(size);
+						routeto = new ArrayList<>(size);
+						for (int i = 0; i < size; i++) {
+							String[] urls = list[i].split("\r");
+							if (urls.length==2) {
+								routefrom.add(urls[0]);
+								routeto.add(urls[1]);
+							}
+						}
+						CMN.Log("重定向", routefrom.size());
+					}
+					break;
+				case "message": // testCode
+					tmp = val.toString();
+					this.message = tmp;
+					CMN.Log(context, tmp);
+					break;
+			}
+		}
 		if(_host==null) _host=getRandomHost();
 		if(_host.endsWith("/")) _host=_host.substring(0, _host.length()-1);
 		host=_host;
-		index = website.getString("index");
-		name = getString("name", "index");
-		if(index==null) index="";
-		jsCode = website.getString("js");
-		onstart = website.getString("onstart");
-		onload = website.getString("onload");
-		search = website.getString("search");
-		searchJs = website.getString("searchJs");
-		style = website.getString("style");
-		stylex = website.getJSONArray("stylex");
+		
+		if (name==null) name = "index";
 		abSearch = search!=null&&search.startsWith("http");
-		excludeAll = website.getBooleanValue("excludeAll");
-		String _extensions  = website.getString("cacheRes");
-		String _excludeRes  = website.getString("excludeRes");
-		fastGStaticFonts  = website.getBooleanValue("fastFonts");
-		butReadonly  = website.getBooleanValue("readRes");
-		andEagerForParms  = website.getBooleanValue("php");
-		String _exclude_db_save_extensions  = website.getString("CDROPT");
-		noImage = website.getBooleanValue("noImage");
-		forceText = website.getBooleanValue("forceText");
-		computerFace = website.getBooleanValue("cpau");
-		isTranslator = website.getBooleanValue("translator");
-		hasModifiers = website.containsKey("modifiers");
-		bReplaceLetToVar = website.containsKey("kikLetVar");
-		premature = IU.parsint(website.get("premature"), 85);
-		if (bReplaceLetToVar) {
-			String str = website.getString("kikLetVar");
-			kikUrlPatterns = "true".equals(str)?new String[]{".js"}:str.split("\\|");
-		}
-		String svg = website.getString("svg");
-		String _keyPattern = website.getString("keyPattern");
-		if(_keyPattern!=null) {
-			try {
-				keyPattern = Pattern.compile(_keyPattern);
-			} catch (Exception e) { /*CMN.Log(e);*/ }
-		}
+		
 		/*CMN.Log("_keyPattern", _keyPattern, keyPattern);*/
 		//banJs = json.getBooleanValue("banJs");
 		//reEnableJs = json.getBooleanValue("reEnableJs");
-		String _entrance = website.getString("entrance");
-		if(!TextUtils.isEmpty(_entrance)){
-			//read json defined entrances
-			entrance = new ArrayList<>(Arrays.asList(_entrance.split("\n")));
-			int sz = entrance.size();
-			if (sz>0) {
-				if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
-				if(sz>1 && 0==TextUtils.getTrimmedLength(entrance.get(0))) entrance.remove(0);
-			}
-			//todo read entrances that saved in db.
-		}
-		String _routes = website.getString("reroute");
-		if(_routes!=null){
-			hasReroutedUrl =true;
-			String[] list = _routes.split("\n");
-			int size = list.length;
-			routefrom = new ArrayList<>(size);
-			routeto = new ArrayList<>(size);
-			for (int i = 0; i < size; i++) {
-				String[] urls = list[i].split("\r");
-				if (urls.length==2) {
-					routefrom.add(urls[0]);
-					routeto.add(urls[1]);
-				}
-			}
-			CMN.Log("重定向", routefrom.size());
-		}
-		
-		String testCode = website.getString("message");
-		if (testCode!=null) {
-			this.message = testCode;
-			CMN.Log(context, testCode);
-		}
 //		if(bgColor==null) {
 //			bgColor = CMN.GlobalPageBackground;
 //		}
@@ -642,30 +736,6 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		
 //		bNeedCheckSavePathName=true;
-		
-		if(_excludeRes!=null){
-			excludeResourcesV4 = _excludeRes.split("\\|");
-			hasExcludedResV4=true;
-			//InternalResourcePath = CachedPathSubToDBStorage("Caches");
-		}
-		
-		if(_extensions!=null){
-			cacheExtensions = _extensions.split("\\|");
-			canSaveResource=true;
-			//InternalResourcePath = CachedPathSubToDBStorage("Caches");
-		}
-		
-		if(_exclude_db_save_extensions!=null){
-			if(_exclude_db_save_extensions.equalsIgnoreCase("All")){
-				cleanExtensions = default_cleanExtensions;
-			} else {
-				cleanExtensions = _exclude_db_save_extensions.split("\\|");
-			}
-		}
-		
-		if(svg!=null){
-			svgKeywords = svg.split("\r");
-		}
 		
 		int idx = host.indexOf("://");
 		hostName = idx>0?host.substring(idx+3):host;
@@ -1795,7 +1865,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {
-		//CMN.debug("onProgressChanged", newProgress, mWebView.getProgress());
+		//CMN.debug("onProgressChanged::webx", newProgress, mWebView.getProgress());
 		if(mWebView.titleBar!=null) {
 			Drawable d = mWebView.titleBar.getBackground();
 			int start = d.getLevel();
@@ -1821,7 +1891,7 @@ public class PlainWeb extends DictionaryAdapter {
 			mWebView.wvclient.onPageFinished(mWebView, mWebView.getUrl());
 		}
 		else if(newProgress>=premature) {
-			// CMN.debug("postFinished!");
+			// CMN.debug("postFinished!", newProgress);
 			//fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, newProgress>87);
 			mWebView.postFinished();
 		}

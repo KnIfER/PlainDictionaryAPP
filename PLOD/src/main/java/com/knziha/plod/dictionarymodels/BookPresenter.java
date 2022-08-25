@@ -1346,7 +1346,7 @@ function debug(e){console.log(e)};
 					String url = getSaveUrl(mWebView);
 					if(a.getUsingDataV2()) {
 						a.prepareHistoryCon().removePage(bookImpl.getBooKID(), url);
-						if(mWebView.fromNet) {
+						if(mWebView.fromNet()) {
 							mWebView.reload();
 						} else {
 							renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
@@ -2004,7 +2004,6 @@ function debug(e){console.log(e)};
 			//mWebView.History = this.HistoryOOP;
 		}
 	
-		mWebView.fromNet=mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 		mWebView.active=true;
 		boolean fromCombined = mWebView.fromCombined==1;
 

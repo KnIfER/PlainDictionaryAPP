@@ -660,7 +660,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							i=0;
 						}
 						if(prvNxtABC.collide()) { // pass
-							CMN.Log("collide");
+							CMN.debug("collide");
 						} else { // snack and return
 							rejected=true;
 						}
@@ -1074,7 +1074,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		} catch (Exception e) {
 			showT("启动失败 "+e);
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 	}
 
@@ -1183,16 +1183,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void onAudioPause() {
-		CMN.Log("onAudioPause", !AutoBrowsePaused, opt.isAudioActuallyPlaying, mThenReadEntryCount, bThenReadContent);
+		CMN.debug("onAudioPause", !AutoBrowsePaused, opt.isAudioActuallyPlaying, mThenReadEntryCount, bThenReadContent);
 		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething()){
 			if(true || opt.isAudioActuallyPlaying || 0==(foreground&(1<<thisActType.ordinal()))){
 				if(mThenReadEntryCount>0){
 					//CMN.Log(root.post(this::performReadEntry), "posting...");
-					CMN.Log("posting...3322123");
+					CMN.debug("posting...3322123");
 					hdl.sendEmptyMessage(3322123);
 				} else {
 					opt.isAudioActuallyPlaying=false;
-					CMN.Log("posting...3322124");
+					CMN.debug("posting...3322124");
 					hdl.sendEmptyMessage(3322124);
 					//root.post(this::enqueueNextAutoReadProcess);
 				}
@@ -1200,7 +1200,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			if(bThenReadContent){
 				opt.isAudioActuallyPlaying=false;
-				CMN.Log("posting...3322124");
+				CMN.debug("posting...3322124");
 				hdl.sendEmptyMessage(3322124);
 			} else {
 				opt.isAudioActuallyPlaying=false;
@@ -1210,7 +1210,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void onAudioPlay() {
-		CMN.Log("onAudioPlay", forbidVolumeAjustmentsForTextRead, !AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething());
+		CMN.debug("onAudioPlay", forbidVolumeAjustmentsForTextRead, !AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething());
 		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething()){
 			opt.isAudioActuallyPlaying=opt.isAudioPlaying=true;
 			removeAAdjustment();
@@ -1595,7 +1595,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	boolean animateProgress = true;
 	boolean bRequestingAutoReading;
 	public void startAutoReadProcess(){
-		CMN.Log("发起 startAutoReadProcess");
+		CMN.debug("发起 startAutoReadProcess");
 		bThenReadContent=false;
 		bRequestingAutoReading=true;
 		//animation delay
@@ -1713,10 +1713,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	long lastreadtime;
 	public void performAutoReadProcess() {
-		CMN.Log("自动读下一个", opt.isAudioActuallyPlaying, bRequestingAutoReading, AutoBrowsePaused);
+		CMN.debug("自动读下一个", opt.isAudioActuallyPlaying, bRequestingAutoReading, AutoBrowsePaused);
 		long now = System.currentTimeMillis();
 		if(now-lastreadtime<AutoBrowseTimeOut){
-			CMN.Log("abuse detected!!!!");
+			CMN.debug("abuse detected!!!!");
 			return;
 		}
 		lastreadtime = now;
@@ -1742,7 +1742,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void enqueueNextAutoReadProcess() {
-		CMN.Log("enqueueNextAutoReadProcess");
+		CMN.debug("enqueueNextAutoReadProcess");
 		if(bThenReadContent && pendingWebView!=null){
 			performReadContent(pendingWebView);
 			bThenReadContent=false;
@@ -1754,10 +1754,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						mAutoReadProgressAnimator.setTarget(null);
 						mAutoReadProgressAnimator.cancel();
 						mAutoReadProgressAnimator = null;
-						CMN.Log("如果能重来");
+						CMN.debug("如果能重来");
 						startAutoReadProcess();
 					} else {
-						CMN.Log("2");
+						CMN.debug("2");
 						mAutoReadProgressAnimator.pause();
 						mAutoReadProgressAnimator.setIntValues(0, 10000);
 						mAutoReadProgressAnimator.start();
@@ -1800,7 +1800,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				jnFanMap=_jnFanMap;
-			} catch (IOException e) { CMN.Log(e); }
+			} catch (IOException e) { CMN.debug(e); }
 		}
 		if (SearchLayer!=null) {
 			if(jnFanMap==null) {
@@ -1898,7 +1898,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
 		
-		CMN.Log("floatBtn::", PDICMainAppOptions.floatBtn(opt.SixthFlag() >> (30 + thisActType.ordinal())), PDICMainAppOptions.floatBtn(), thisActType);
+		CMN.debug("floatBtn::", PDICMainAppOptions.floatBtn(opt.SixthFlag() >> (30 + thisActType.ordinal())), PDICMainAppOptions.floatBtn(), thisActType);
 		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
 			getFloatBtn().reInitBtn(0);
 		}
@@ -1945,7 +1945,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								//CMN.Log("fontName:", name, System.currentTimeMillis());
 							}
 						} catch (Exception e) {
-							CMN.Log(e);
+							CMN.debug(e);
 						}
 					return false;
 				}
@@ -1964,7 +1964,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		File SpecificationFile =  opt.SpecificationFile = new File(opt.pathToDatabases().append("/.spec.bin").toString());
 		CMN.rt();
-		CMN.Log(CMN.LastConfigReadTime, SpecificationFile.lastModified());
+		CMN.debug(CMN.LastConfigReadTime, SpecificationFile.lastModified());
 		if(SpecificationFile.exists()){ // 读取词典配置。
 			if(CMN.LastConfigReadTime<SpecificationFile.lastModified()) {
 				if(!(CMN.bForbidOneSpecFile = SpecificationFile.isDirectory()))
@@ -2017,7 +2017,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 													//dirtyMap.add("1");
 													//dirtyMap.add("2");
 												}
-												CMN.Log("配置大小 =", mConfigSize);
+												CMN.debug("配置大小 =", mConfigSize);
 											} else {
 												i += targetCount;
 												RealOffset = prevBlock * SpecificationBlockSize + i;
@@ -2050,7 +2050,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					fin.close();
 					CMN.LastConfigReadTime = System.currentTimeMillis();
 				} catch (Exception e) {
-					CMN.Log(e);
+					CMN.debug(e);
 				}
 				if (mConfigSize < 50) {
 					SpecificationFile.delete();
@@ -2342,14 +2342,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			} catch (Exception e) {
-				CMN.Log(e);
+				CMN.debug(e);
 			}
 		}
 		else try {
 			boolean lazyLoad = opt.getLazyLoadDicts();
 			loadManager.LoadLazySlots(def, lazyLoad, opt.getLastPlanName(LastPlanName));
 			loadManager.buildUpDictionaryList(lazyLoad, null);
-		} catch (Exception e) { CMN.Log(e); }
+		} catch (Exception e) { CMN.debug(e); }
 	}
 	
 	protected File getStartupFile(File ConfigFile){
@@ -2506,7 +2506,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public int refreshSlots() {
-			CMN.Log("refreshSlots:::");
+			CMN.debug("refreshSlots:::");
 			int pickerIdx=-1;
 			int filterCount=0;
 			int chairCount=0;
@@ -2575,7 +2575,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					} catch (Exception e) {
 						phI.tmpIsFlag|=0x8;
 						//lazyMan.HiddenDicts[lazyMan.hiddenCount++]=i;  /* 兵解轮回 */
-						CMN.Log(e);
+						CMN.debug(e);
 						if (trialCount == -1) if (bShowLoadErr)
 							show(R.string.err, phI.getName(), phI.pathname, e.getLocalizedMessage());
 						mdTmp = null;
@@ -2659,7 +2659,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						return prepareHistoryCon().getBookID(null, name);
 					}
 				} catch (Exception e) {
-					CMN.Log(e);
+					CMN.debug(e);
 				}
 			}
 			return -1;
@@ -2726,7 +2726,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					try {
 						md.set(i, ret = new_book(phTmp, MainActivityUIBase.this));
 					} catch (Exception e) {
-						if(GlobalOptions.debug) CMN.Log(phTmp, e);
+						if(GlobalOptions.debug) CMN.debug(phTmp, e);
 						phTmp.ErrorMsg = e.getLocalizedMessage();
 //						if (bShowLoadErr && isOnMainThread()) {
 //							if(!phTmp.NeedsBuildIndex())
@@ -2795,7 +2795,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					flag = PDICMainAppOptions.setDFFStarLevel(flag, val);
 					md_set_firstFlag_internal(name, flag);
 				}
-				CMN.Log("新的星级", md_getName(i, -1), PDICMainAppOptions.getDFFStarLevel(flag), val);
+				CMN.debug("新的星级", md_getName(i, -1), PDICMainAppOptions.getDFFStarLevel(flag), val);
 			}
 		}
 		
@@ -2923,7 +2923,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					try {
 						md.set(i, mdTmp= new_book(placeHolder, MainActivityUIBase.this));
 						mdTmp.tmpIsFlag=placeHolder.tmpIsFlag;
-					} catch (Exception e) { CMN.Log(e); }
+					} catch (Exception e) { CMN.debug(e); }
 				}
 				if(mdTmp!=null){
 					return mdTmp;
@@ -3316,7 +3316,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			opt.putCurrFavoriteDBName(dateBaseName);
 		}
 		if(_favoriteCon==null) {
-			CMN.Log("打开数据库", dateBaseName, opt.getCurrFavoriteDBName());
+			CMN.debug("打开数据库", dateBaseName, opt.getCurrFavoriteDBName());
 			CheckInternalDataBaseDirExist(false);
 			_favoriteCon = new LexicalDBHelper(getApplicationContext(), opt, dateBaseName, false);
 			if(selectedPos!=-1){
@@ -3360,7 +3360,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, 0, weblist);
 					lastInsertedKey = key;
 				} catch (Exception e) {
-					CMN.Log(e);
+					CMN.debug(e);
 				}
 			}
 		}
@@ -3713,7 +3713,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
 //							, currentDictionary.bookImpl.getBooKID());
 				} catch (Exception e) {
-					CMN.Log(e);
+					CMN.debug(e);
 				}
 				if (impl!=null) {
 					fileName = impl.getFile().getPath();
@@ -3725,7 +3725,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		if(ret==null)
 			ret=EmptyBook;
@@ -3739,7 +3739,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return impl.hasVirtualIndex();
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		return false;
 	}
@@ -3755,7 +3755,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
 //							, currentDictionary.bookImpl.getBooKID());
 				} catch (Exception e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 				if (impl!=null) {
 					fileName = impl.getFile().getPath();
@@ -3765,7 +3765,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		if(ret==null)
 			ret=EmptyBook;
@@ -3790,7 +3790,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return prepareHistoryCon().getBookName(bid);
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		return null;
 	}
@@ -3991,7 +3991,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								invoker.setContentBackground(color);
 								invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 							} else {
-								CMN.Log("应用全局颜色变更中…");
+								CMN.debug("应用全局颜色变更中…");
 								opt.putGlobalPageBackground(GlobalPageBackground=color);
 							}
 							int ManFt_invoker_bgColor=invoker.getContentBackground();
@@ -4032,7 +4032,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						@Override
 						public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
-							CMN.Log("onDialogDismissed");
+							CMN.debug("onDialogDismissed");
 							d.show();
 							WebViewmy mWebView= VerseKit.this.mWebView;
 							int ManFt_invoker_bgColor=invoker.getContentBackground();
@@ -4593,7 +4593,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			} catch (Exception e){
-				CMN.Log(e);
+				CMN.debug(e);
 			}
 			
 			clearTextFocus();
@@ -4710,7 +4710,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									dTmp.dismiss();
 								}
 								catch (Exception e) {
-									CMN.Log(e);
+									CMN.debug(e);
 									showT("保存失败！" + e);
 								}
 								break;
@@ -4783,7 +4783,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("重建对话???", hasText());
 			if(GlobalOptions.isDark!=lastInDark || d==null)
 			{
-				CMN.Log("重建对话框…");
+				CMN.debug("重建对话框…");
 				needRecreate=false;
 				d = new AlertDialog.Builder(MainActivityUIBase.this
 						,GlobalOptions.isDark?R.style.DialogStyle3Line
@@ -5015,7 +5015,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
 						//showT(id+", "+value);
 					}
-				} catch (JSONException e) { CMN.Log(e); }
+				} catch (JSONException e) { CMN.debug(e); }
 			}
 		}:null);
 	}
@@ -5025,7 +5025,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private void checkMultiVSTGO() {
-		CMN.Log("checkMultiVSTGO...", ((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled , opt.getVSPanelGOTransient());
+		CMN.debug("checkMultiVSTGO...", ((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled , opt.getVSPanelGOTransient());
 		if(((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled && !getPinVSDialog()) {
 			root.postDelayed(()->moveTaskToBack(false), 200);
 			//moveTaskToBack(false);
@@ -5035,7 +5035,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	static int[] VersatileShareSlots = new int[]{7,9,10,18,20,21};
 	
 	public void execVersatileShare(String text, int id) {
-		CMN.Log("execVersatileShare", id);
+		CMN.debug("execVersatileShare", id);
 		id=0;
 		if(id==0) {
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(Activity.CLIPBOARD_SERVICE);
@@ -5123,7 +5123,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(neo.length()>0){
 				neo.put("b", 1);
 			}
-			CMN.Log("好哎！！！",neo.toString());
+			CMN.debug("好哎！！！",neo.toString());
 		} catch (Exception e) {
 			return true;
 		}
@@ -5146,7 +5146,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				data.add(json.has(vI)?json.getString(vI):"%s");
 			}
 		} catch (JSONException e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 	}
 
@@ -5451,9 +5451,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		TextView tv = ((TextView)d.getWindow().findViewById(R.id.alertTitle));
 		tv.setTextSize(60.f/opt.dm.density);
 		tv.setTextSize(20);
-		CMN.Log(60.f/opt.dm.density);
-		CMN.Log(tv.getPaddingTop());
-		CMN.Log(((ViewGroup)tv.getParent()).getPaddingTop());
+		CMN.debug(60.f/opt.dm.density);
+		CMN.debug(tv.getPaddingTop());
+		CMN.debug(((ViewGroup)tv.getParent()).getPaddingTop());
 	}
 	
 	
@@ -5604,7 +5604,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void changeToDarkMode() {
-		CMN.Log("changeToDarkMode");
+		CMN.debug("changeToDarkMode");
 		try {
 			getReferenceObject(WeakReferenceHelper.quick_settings).clear();
 			boolean dark=GlobalOptions.isDark;
@@ -5646,7 +5646,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			animateUIColorChanges();
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 	}
 
@@ -5696,7 +5696,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(DBrowser==null || opt.debuggingDBrowser()>0) {
 			DBrowser = DBrowserHolder.get();
 			if(DBrowser==null || opt.debuggingDBrowser()>0){
-				CMN.Log("重建收藏夹历史记录视图");
+				CMN.debug("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
@@ -6310,7 +6310,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			for(BookPresenter bookPresenter:md) {
 				if (bookPresenter!=null && bookPresenter.bookImpl.getBooKID()==-1) {
 					BookPresenter.keepBook(this, bookPresenter.bookImpl);
-					CMN.Log("激活DBV2::", bookPresenter.bookImpl);
+					CMN.debug("激活DBV2::", bookPresenter.bookImpl);
 					mdns.add(bookPresenter.bookImpl.getFile());
 				}
 			}
@@ -6330,17 +6330,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				in.close();
 			} catch (Exception e2) {
-				CMN.Log(e2);
+				CMN.debug(e2);
 			}
 			File[] mdnsArr = mdns.toArray(new File[mdns.size()]);
 			for(File bookName:mdnsArr) {
-				CMN.Log("激活DBV2::", bookName);
+				CMN.debug("激活DBV2::", bookName);
 				String path = bookName.getPath();
 				String name = bookName.getName();
 				try {
 					path = bookName.getCanonicalPath();
 				} catch (IOException e) {
-					CMN.Log(e);
+					CMN.debug(e);
 				}
 				dbCon.getBookID(path, name);
 			}
@@ -6462,7 +6462,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String val) {
-						CMN.Log("onReceiveValue::", val);
+						CMN.debug("onReceiveValue::", val);
 						try {
 							val = val.substring(1, val.length() - 1);
 							String[] arr=val.split("_");
@@ -6566,7 +6566,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 语音控制器 */
 			case R.id.browser_widget12:{
 				findWebList(v);
-				CMN.Log("weblist::", weblist==wordPopup.weblistHandler);
+				CMN.debug("weblist::", weblist==wordPopup.weblistHandler);
 				showSoundTweaker();
 				contentUIData.webcontentlister.judger = false;
 			} return true;
@@ -6628,7 +6628,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.id.viewMode:{
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
-				CMN.Log("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
+				CMN.debug("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null) {
 					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
@@ -6905,7 +6905,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			randomPageHandler.getMergedFrame(wikibook);
 			//String testUrl="https://en.m.wiktionary.org/randx";
 			String testUrl=webx.getHost()+"/randx";
-			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
+			CMN.debug("testUrl::", randomPage.getUrl(), testUrl);
 			refreshingRandom = refresh;
 			if(refresh || !TextUtils.equals(randomPage.getUrl(), testUrl)) {
 				CMN.debug("加载::", testUrl);
@@ -6993,7 +6993,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		Bag bag;
 		if(dTmp==null) {
 			SecordTime = SecordPime = 0;
-			CMN.Log("重建对话框……");
+			CMN.debug("重建对话框……");
 			ArrayList<String> scanInList = new ArrayList<>();
 			bag = new Bag(opt.getTwoColumnSetView());
 			{
@@ -7155,7 +7155,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ArrayList<String> scanInList = (ArrayList) lv.getTag();
 			final HashSet<String> con = new HashSet<>();
 			if(b1) {
-				CMN.Log("扫描1……");
+				CMN.debug("扫描1……");
 				scanInList.clear();
 				try {
 					AgentApplication app = ((AgentApplication) getApplication());
@@ -7173,7 +7173,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					in.close();
 				}
-				catch (Exception e) {  CMN.Log(e);  }
+				catch (Exception e) {  CMN.debug(e);  }
 				SecordTime = l1;
 			}
 			if(l2!=SecordPime) {
@@ -7189,14 +7189,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					if(scanInList.size()>start) {
-						CMN.Log("扫描2……");
+						CMN.debug("扫描2……");
 						String addition = StringUtils.join(scanInList.subList(start, scanInList.size()), "\n");
 						BU.appendToFile(def, "\n", addition, "\n");
 					}
 				}
 				SecordPime = l2;
 			}
-			CMN.Log("扫描分组……", scanInList.size(), def.getParentFile().lastModified());
+			CMN.debug("扫描分组……", scanInList.size(), def.getParentFile().lastModified());
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
 			if(lastCheckedPos>=0) {
 				dTmp.getListView().setSelection(bag.val?lastCheckedPos/2:lastCheckedPos);
@@ -7241,13 +7241,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-			CMN.Log("onJsPrompt 0");
+			CMN.debug("onJsPrompt 0");
 			result.confirm();
 			return true;
 		}
 		@Override
 		public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
-			CMN.Log("onJsPrompt 1");
+			CMN.debug("onJsPrompt 1");
 			result.confirm();
 			return true;
 		}
@@ -7263,14 +7263,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-			CMN.Log("onJsPrompt 2");
+			CMN.debug("onJsPrompt 2");
 			result.confirm(defaultValue);
 			return true;//super.onJsPrompt(view, url, message, defaultValue, result);
 		}
 		
 		@Override
 		public void onShowCustomView(View view, CustomViewCallback callback) {
-			CMN.Log("onShowCustomView", BookPresenter._req_fvw, BookPresenter._req_fvh);
+			CMN.debug("onShowCustomView", BookPresenter._req_fvw, BookPresenter._req_fvh);
 			bShowCustomView = true;
 			if(opt.getFullScreenLandscapeMode()!=2)fixVideoFullScreen();
 			if(d ==null){
@@ -7354,16 +7354,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public void onProgressChanged(final WebView view, int newProgress) {
-			CMN.Log("ProgressChanged", newProgress);
+			CMN.debug("ProgressChanged", newProgress);
 			WebViewmy mWebView = (WebViewmy) view;
 			if (mWebView.bPageStarted) {
 				//todo undo changes made to webview by web dictionaries.
 				//if(mWebView.fromCombined==4){
-				if (mWebView.fromNet) {
+				if (mWebView.fromNet()) {
 					final BookPresenter invoker = mWebView.presenter;
-					if (invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
-						((PlainWeb) invoker.bookImpl).onProgressChanged(invoker, mWebView, newProgress);
-					}
+					invoker.getWebx().onProgressChanged(invoker, mWebView, newProgress);
 				}
 			}
 			
@@ -7431,7 +7429,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	void doTranslation(WebViewListHandler weblistHandler, int which, DialogInterface dialog) {
 		WebViewmy mWebView = weblistHandler.getWebContext();
 		final int szTranslators = 2;
-		CMN.Log("doTranslation::", mWebView, weblistHandler.bMergingFrames);
+		CMN.debug("doTranslation::", mWebView, weblistHandler.bMergingFrames);
 		if(mWebView!=null) {
 			String field;
 			if(which==szTranslators) {
@@ -7453,7 +7451,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					mWebView.evaluateJavascript(webx.getSyntheticField(field), null);
 					if(dialog!=null) dialog.dismiss();
-				} catch (Exception e) { CMN.Log(e); }
+				} catch (Exception e) { CMN.debug(e); }
 			}
 		}
 	}
@@ -7464,7 +7462,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			CMN.Log("onPageStarted::"+mWebView.wvclient);
+			CMN.debug("onPageStarted::"+mWebView.wvclient);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
 				final BookPresenter invoker = mWebView.presenter;
@@ -7542,7 +7540,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//mWebView.clearHistory();
 					}
 				}
-				CMN.Log("ivk::raw::", invoker);
+				CMN.debug("ivk::raw::", invoker);
 //				else if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
 //					int st = schemaIdx+12+7+1;
 //					int ed = url.indexOf("-", st);
@@ -7770,7 +7768,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (url.startsWith("http://") || url.startsWith("https://")) {
 				//CMN.Log("shouldOverrideUrlLoading_http",url);
 				int schemaIdx = url.indexOf(":");
-				CMN.Log("invoker.isMergedBook()::", invoker.isMergedBook(), url.regionMatches(schemaIdx+12, "base", 0, 4), !wlh.bShowingInPopup && opt.popViewEntry(), url.regionMatches(url.indexOf("/", schemaIdx+12+1+4+2)+1, "entry", 0, 5));
+				CMN.debug("invoker.isMergedBook()::", invoker.isMergedBook(), url.regionMatches(schemaIdx+12, "base", 0, 4), !wlh.bShowingInPopup && opt.popViewEntry(), url.regionMatches(url.indexOf("/", schemaIdx+12+1+4+2)+1, "entry", 0, 5));
 				if(invoker.isMergedBook() || url.indexOf("mdbr.com")>0) {
 					//todo
 					return false;
@@ -7941,7 +7939,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					catch (Exception e) {
 						//TODO !!!
 						msg=e.toString();
-						if(true) CMN.Log(e);
+						if(true) CMN.debug(e);
 					}
 				}
 				/* 跳转失败 */
@@ -8035,13 +8033,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								} else {
 									key=url.substring(slashIdx+1);
 								}
-								CMN.Log("[fetching internal res : ]", key);
+								CMN.debug("[fetching internal res : ]", key);
 								String mime="*/*";
 								if(key.endsWith(".css")) mime = "text/css";
 								if(key.endsWith(".js")) mime = "text/js";
 								return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
 							} catch (Exception e) {
-								CMN.Log(e);
+								CMN.debug(e);
 							}
 						}
 						if (!merge && (url.regionMatches(schemaIdx+12, "content", 0, 7)
@@ -8072,7 +8070,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 								Response ret = getMdictServer().handle(req);
 								if(ret!=null) {
-									CMN.Log("WebResourceResponse::", ret.getMimeType());
+									CMN.debug("WebResourceResponse::", ret.getMimeType());
 									String mime = ret.getMimeType();
 									int idx=mime.indexOf(";");
 									if(idx>0) mime = mime.substring(0, idx);
@@ -8165,7 +8163,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 														name = "plod-index";
 													}
 													path=new File(pathDownload, name);
-													CMN.Log("pathDownload", path);
+													CMN.debug("pathDownload", path);
 													pathDownload = path.getParentFile();
 													boolean saveit = !webx.butReadonly;
 													if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
@@ -8178,14 +8176,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 														}
 														/* 下载 */
 														if(saveit && !path.exists()) {
-															CMN.Log("shouldInterceptRequest 下载中...！", url);
-															CMN.Log("shouldInterceptRequest 下载目标: ", name);
+															CMN.debug("shouldInterceptRequest 下载中...！", url);
+															CMN.debug("shouldInterceptRequest 下载目标: ", name);
 															try {
 																ViewUtils.downloadToStream(url, new OutputStream[]{null}, path.getPath()
 																		, accept, refer, origin, request, webx);
-																CMN.Log("shouldInterceptRequest 已下载！", url);
+																CMN.debug("shouldInterceptRequest 已下载！", url);
 															} catch (Exception e) {
-																CMN.Log(e);
+																CMN.debug(e);
 																path.delete();
 																return emptyResponse;
 															}
@@ -8223,7 +8221,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									}
 									catch (Exception e) {
-										CMN.Log(e);
+										CMN.debug(e);
 									}
 								}
 							}
@@ -8247,7 +8245,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 								Response ret = getMdictServer().handle(req);
 								if(ret!=null) {
-									CMN.Log("WebResourceResponse::", ret.getMimeType());
+									CMN.debug("WebResourceResponse::", ret.getMimeType());
 									String mime = ret.getMimeType();
 									int idx=mime.indexOf(";");
 									if(idx>0) mime = mime.substring(0, idx);
@@ -8276,7 +8274,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							url = URLDecoder.decode(url,"UTF-8");
 						} catch (Exception ignored) { }
 						String soundKey="\\"+url+".";
-						CMN.Log("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
+						CMN.debug("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
 						InputStream restmp=null;
 						WebResourceResponse ret=null;
 						BookPresenter mdTmp;
@@ -8297,7 +8295,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											ret = decodeSpxStream(restmp);
 											if (ret != null) break;
 										} catch (Exception e) {
-											CMN.Log(e);
+											CMN.debug(e);
 										}
 									}
 									ret = new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
@@ -8306,7 +8304,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 						if(ret!=null){
-							CMN.Log("返回音频");
+							CMN.debug("返回音频");
 							return ret;
 						} else {
 							ReadEntryPlanB(mWebView, url);
@@ -8334,7 +8332,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				key = URLDecoder.decode(key,"UTF-8");
 			} catch (Exception ignored) { }
 			key=key.replace("/", SepWindows);
-			CMN.Log("chrochro_inter_key is",key, fakedDomainResponse);
+			CMN.debug("chrochro_inter_key is",key, fakedDomainResponse);
 			if(!key.startsWith(SepWindows)) key=SepWindows+key;
 			if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
 			
@@ -8376,7 +8374,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			if(!invoker.bookImpl.hasMdd())
 				return fakedDomainResponse;
-			if(mWebView.fromCombined==0 && !mWebView.fromNet && invoker.getIsolateImages() && RegImg.matcher(key).find()){
+			if(mWebView.fromCombined==0 && !mWebView.fromNet() && invoker.getIsolateImages() && RegImg.matcher(key).find()){
 				//CMN.Log("Isolating Images...");
 				new_photo = key;
 				PhotoPager.removeCallbacks(PhotoRunnable);
@@ -8385,7 +8383,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			try {
 				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
-				CMN.Log("getResourceByKey::",key, restmp);
+				CMN.debug("getResourceByKey::",key, restmp);
 				if(restmp==null) {
 					if(shouldLoadFiles) {
 						WebResourceResponse ret = getPlugRes(invoker, key);
@@ -8426,7 +8424,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					case ".spx":{
 						mime = "audio/*";
 						WebResourceResponse ret = decodeSpxStream(restmp);
-						CMN.Log(url, "spx : ", ret);
+						CMN.debug(url, "spx : ", ret);
 						if(ret!=null) return ret;
 					} break;
 					case ".tif":
@@ -8452,7 +8450,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return new WebResourceResponse(mime,"UTF-8",restmp);
 			}
 			catch (IOException e) {
-				CMN.Log(e);
+				CMN.debug(e);
 				return super.shouldInterceptRequest(view, url);
 			}
 		}
@@ -8545,7 +8543,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private void ReadEntryPlanB(WebViewmy mWebView, String url) {
 		opt.supressAudioResourcePlaying=!AutoBrowsePaused;
-		CMN.Log("ReadEntryPlanB");
+		CMN.debug("ReadEntryPlanB");
 		if(AutoBrowsePaused /*自动读时绕过*/ && PDICMainAppOptions.getUseSoundsPlaybackFirst() && hasMddForWeb(mWebView)){
 			root.post(() -> mWebView.evaluateJavascript(WebviewSoundJS, value -> {
 				if (!"10".equals(value)) {
@@ -8698,7 +8696,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		try {
 			decoder.decode(new DataInputStream(restmp) , bos, JSpeexDec.FILE_FORMAT_WAVE);
 			return new WebResourceResponse("audio/mpeg","UTF-8",new ByteArrayInputStream(bos.bytes(),0,bos.size()));
-		} catch (Exception e) { CMN.Log(e); }
+		} catch (Exception e) { CMN.debug(e); }
 		return null;
 	}
 
@@ -8707,12 +8705,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		JSpeexDec decoder = new JSpeexDec();
 		try {
 			decoder.decode(new DataInputStream(restmp) , f, JSpeexDec.FILE_FORMAT_WAVE);
-		} catch (Exception e) { CMN.Log(e); }
+		} catch (Exception e) { CMN.debug(e); }
 		return null;
 	}
 
 	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {
-		CMN.Log("jumpNaughtyFirstHighlight...");
+		CMN.debug("jumpNaughtyFirstHighlight...");
 		long mJumpNaughtyTimeToken = jumpNaughtyTimeToken = System.currentTimeMillis();
 		NaughtyJumpper=()-> mWebView.evaluateJavascript("window.bOnceHighlighted", value -> {
 			if(mJumpNaughtyTimeToken!=jumpNaughtyTimeToken)
@@ -8851,7 +8849,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	Runnable forceNextTextRunnable = new Runnable() {
 		@Override
 		public void run() {
-			CMN.Log("forceNextTextRunnable");
+			CMN.debug("forceNextTextRunnable");
 			onAudioPause();
 		}
 	};
@@ -8875,7 +8873,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					parms.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, Integer.toString(i));
 					parms.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(TTSVolume));
 					TTSController_engine.speak(speakPool[i].trim(),TextToSpeech.QUEUE_ADD, parms);
-					CMN.Log("缓存了句子", i, speakPool[i]);
+					CMN.debug("缓存了句子", i, speakPool[i]);
 					if(!AutoBrowsePaused){
 						root.postDelayed(forceNextTextRunnable, 800);
 					}
@@ -8966,7 +8964,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				public void onStart(String utteranceId) {
 					speakPoolIndex = IU.parsint(utteranceId);
 					root.removeCallbacks(forceNextTextRunnable);
-					CMN.Log("tts onStart" ,speakPoolIndex);
+					CMN.debug("tts onStart" ,speakPoolIndex);
 					if(opt.getTTSHighlightWebView()) {
 						WebViewmy CRC = mCurrentReadContext;
 						if(CRC!=null)
@@ -8979,13 +8977,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				public void onDone(String utteranceId) {
 					speakPoolEndIndex = IU.parsint(utteranceId);
 					int speakPoolIndex = speakPoolEndIndex+1;
-					CMN.Log("tts onDone" ,speakPoolIndex, speakCacheEndIndex);
+					CMN.debug("tts onDone" ,speakPoolIndex, speakCacheEndIndex);
 					if(speakPoolIndex>=speakCacheEndIndex){
 						mPullReadTextRunnable.run();
 					}
 					if(speakPoolIndex>=speakPool.length){
 						onAudioPause();
-						CMN.Log("tts onPause");
+						CMN.debug("tts onPause");
 					}
 					//onAudioPause();
 				}
@@ -8997,7 +8995,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 				@Override
 				public void onError(String utteranceId, int code) {
-					CMN.Log("tts onError" ,utteranceId, code);
+					CMN.debug("tts onError" ,utteranceId, code);
 				}
 			});
 		}
@@ -9479,7 +9477,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			try {
 				playCachedSoundFile(wv, soundKey, invoker, true);
 			} catch (IOException e) {
-				CMN.Log(e);
+				CMN.debug(e);
 			}
 		} else {
 			opt.supressAudioResourcePlaying=false;
@@ -9629,7 +9627,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//showT(text);
 		BottomSheetDialog _bottomPlaylist = bottomPlaylist.get();
 		if(_bottomPlaylist==null) {
-			CMN.Log("重建底部弹出");
+			CMN.debug("重建底部弹出");
 			bottomPlaylist = new WeakReference<>(_bottomPlaylist = new BottomSheetDialog(this));
 			View ll = LayoutInflater.from(this).inflate(R.layout.favorite_bottom_sheet, null);
 			ListView lv = ll.findViewById(R.id.favorList);
@@ -9660,7 +9658,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											if(prepareHistoryCon().remove(text, oldFav)>=0) {
 												delCnt++;
 											}
-										} catch (Exception ignored) { CMN.Log(ignored); }
+										} catch (Exception e) { CMN.debug(e); }
 									}
 								}
 								selection.removeAll(Arrays.asList(selectionArr));
@@ -9671,7 +9669,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
 											addCnt++;
 										}
-									} catch (Exception ignored) { CMN.Log(ignored); }
+									} catch (Exception e) { CMN.debug(e); }
 								}
 								String msg = "";
 								if (addNum>0) {
@@ -9751,7 +9749,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showChooseFavorDialog(int reason) {
 		AlertDialog d = ChooseFavorDialog.get();
 		if(d==null){
-			CMN.Log("重建选择器……");
+			CMN.debug("重建选择器……");
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.pickfavor);
 			builder.setPositiveButton(R.string.newfc, null);
@@ -9892,7 +9890,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		if (ret==null) {
-			CMN.Log("空的::", key);
+			CMN.debug("空的::", key);
 		}
 		return ret==null?"":ret;
 	}
@@ -9928,7 +9926,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			
-			CMN.Log("单本搜索 ： ", normal_idx, normal_idx==-1?"":currentDictionary.bookImpl.getEntryAt(normal_idx<0?(-normal_idx-3):normal_idx), formation_key);
+			CMN.debug("单本搜索 ： ", normal_idx, normal_idx==-1?"":currentDictionary.bookImpl.getEntryAt(normal_idx<0?(-normal_idx-3):normal_idx), formation_key);
 			if(normal_idx!=-1) {
 				int tmpIdx = normal_idx;
 				if(normal_idx<0) {
@@ -9970,7 +9968,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(normal_idx<0 && !fastPreview) {
 				DetachContentView(false);
 			}
-		} catch (Exception e) { CMN.Log(e); }
+		} catch (Exception e) { CMN.debug(e); }
 	}
 	
 	void execBatchSearch(CharSequence cs) {
@@ -10006,7 +10004,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MergeSingleResultsAfter(null, formation_idx);
 		MergeSingleResultsAfter(key, ConfidentMergeStart=normal_idx);
 		if(ConfidentMergeShift ==-1) ConfidentMergeShift =0;
-		CMN.Log("mergedKeyHeaders", mergedKeyHeaders, ConfidentMergeShift);
+		CMN.debug("mergedKeyHeaders", mergedKeyHeaders, ConfidentMergeShift);
 	}
 	
 	private void ClearMerges() {
@@ -10446,7 +10444,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	};
 	
 	public void setScreenOrientation(int idx) {
-		CMN.Log("setScreenOrientation::", idx, ScreenOrientation[idx]);
+		CMN.debug("setScreenOrientation::", idx, ScreenOrientation[idx]);
 		//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 		if(opt.getLockStartOrientation()) {
 			opt.setUserOrientation(idx);
@@ -10470,7 +10468,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dialog.getDialog().show();
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 	}
 	
@@ -10498,7 +10496,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (quickSettings==null) {
 			quickSettings = new QuickBookSettingsPanel(this);
 			putReferencedObject(jd, quickSettings);
-			CMN.Log("重建QuickBrowserSettingsPanel...");
+			CMN.debug("重建QuickBrowserSettingsPanel...");
 		}
 		quickSettings.refresh();
 		quickSettings.toggle(getMenuGridRootViewForPanel(quickSettings), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
@@ -10531,13 +10529,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		try {
 			if(server==null) {
 				if(Thread.currentThread().getId()!=CMN.mid) {
-					CMN.Log("在异常建立MdictServer！");
+					CMN.debug("在异常建立MdictServer！");
 				}
 				server = new MdictServerMobile(8080, this, opt, this.loadManager);
 				((AgentApplication)getApplication()).mServer = server;
 			}
 		} catch (IOException e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		return server;
 	}

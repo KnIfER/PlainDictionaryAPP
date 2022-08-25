@@ -76,7 +76,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式。*/
 	public int fromCombined;
 	//public boolean fromPeruseview;
-	public boolean fromNet;
+	public final boolean fromNet(){ return presenter.isWebx; };
 	
 	public PeruseView peruseView;
 	
