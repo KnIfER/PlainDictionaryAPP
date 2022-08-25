@@ -2158,7 +2158,9 @@
 					var e = wbf.box = wbf.item = craft();
 					e.style='overflow: hidden;height: 100%;';
 					e.contentWindow={document:e, scrollTo:function(a,b){wbf.item.scrollTo(a,b)}
-						, addEventListener:function(a,b,c){e.body.addEventListener(a,b,c)}};
+						, addEventListener:function(a,b,c){e.body.addEventListener(a,b,c)}
+						, getSelection:function(){}
+					};
 					e.body = wbf.p = craft(0,'webxP',e);
 					e.id=wbf.id;
 					e.dictInfo=wbf;
