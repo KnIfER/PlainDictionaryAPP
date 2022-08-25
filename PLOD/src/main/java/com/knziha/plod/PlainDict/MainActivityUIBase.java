@@ -7310,12 +7310,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			String urlKey = null;
 			if (presenter == null) {
 				int idx = url.indexOf("/entry/");
-				if (idx>0) urlKey = URLDecoder.decode(url.substring(idx+7));
+				if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 7));
 				else {
 					idx = url.indexOf("entry://");
-					if (idx>0) urlKey = URLDecoder.decode(url.substring(idx+8));
+					if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 8));
 				}
 				presenter = ((WebViewmy) view).presenter;
+			} else {
+				try {
+					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo optimise
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			}
 			// getRandomPageHandler(true, false, null);
 			WebViewListHandler wlh = getRandomPageHandler(true, false, presenter);

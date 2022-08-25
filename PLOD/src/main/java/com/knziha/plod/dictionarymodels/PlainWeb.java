@@ -1833,7 +1833,7 @@ public class PlainWeb extends DictionaryAdapter {
 	/** 接管进入黑暗模式、编辑模式 */
 	@StripMethods(strip=!BuildConfig.isDebug, keys={"getSyntheticField"})
 	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
-		CMN.debug("chromium", "web  - onPageFini_NWPshed", currentUrl);
+		CMN.debug("chromium", "web  - onPageFini_NWPshed", currentUrl, getDictionaryName());
 		mWebView.removePostFinished();
 		fadeOutProgressbar(bookPresenter, mWebView, updateTitle);
 		currentUrl=mWebView.getUrl();
