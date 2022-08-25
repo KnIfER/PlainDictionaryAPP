@@ -7474,7 +7474,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale, mWebView.presenter.isWebx);
+			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale, mWebView.presenter.isWebx, mWebView.bRequestedSoundPlayback);
 			if (false) {
 				mWebView.initPos();
 			}
@@ -9387,10 +9387,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		mThenReadEntryCount--;
 		
 		WebViewmy wv = weblist.scrollFocus;
-		BookPresenter reader = wv==null?null:wv.presenter;
+		BookPresenter reader = wv==null?EmptyBook:wv.presenter;
 		String target = wlh.displaying;
-		//showT("PRE "+mCurrentDictionary.getDictionaryName()+"-"+wv+"-"+target);
-		if(reader!=null && wv!=null && target!=null) {
+		// CMN.debug("performReadEntry PRE "+reader.getDictionaryName()+"-"+wv+"-"+target);
+		if(reader!=EmptyBook && wv!=null && target!=null) {
 			if (reader.isMddResource() && target.length() > 1) {
 				int end = target.lastIndexOf(".");
 				if (end < target.length() - 6) end = -1;
@@ -9416,7 +9416,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void postReadEntry() {
-		CMN.Log("postReadEntry");
+		CMN.debug("postReadEntry");
 		if(opt.getUseTTSToReadEntry()){
 			pauseTTS();
 		}
@@ -9434,7 +9434,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	private void performReadContent(WebViewmy mWebView) {
-		CMN.Log("bThenReadContent");
+		CMN.debug("bThenReadContent");
 		if(mWebView!=null){
 			mWebView.evaluateJavascript("document.documentElement.innerText", value -> {
 				value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
@@ -10711,9 +10711,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		mWebView.bRequestedSoundPlayback=false;
 		weblist = mWebView.weblistHandler;
 		
+		CMN.debug("readEntry!!!", AutoBrowsePaused, PDICMainAppOptions.getAutoBrowsingReadSomething(), opt.getThenAutoReadContent());
+		
 		if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
 			postReadEntry();
-			CMN.Log("hey!!!", opt.getThenAutoReadContent());
 			if(bThenReadContent=opt.getThenAutoReadContent()){
 				pendingWebView=mWebView;
 			}

@@ -368,6 +368,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			mWebView.currentPos = did;
 			weblistHandler.resetScrollbar(mWebView, true, false);
 			weblistHandler.pageSlider.setWebview(mWebView, null);
+			if(checkReadEntry){
+				mWebView.bRequestedSoundPlayback=true;
+			}
 		}
 		else {
 //			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
