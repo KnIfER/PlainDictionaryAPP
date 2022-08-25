@@ -1854,6 +1854,9 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		if (onload != null) mWebView.evaluateJavascript(onload, null);
 		if (onstart != null) mWebView.evaluateJavascript(onstart, null);
+		if (mWebView.weblistHandler.isPopupShowing() && mWebView.weblistHandler.alloydPanel.toolbar.getTitle()==null) {
+			mWebView.weblistHandler.alloydPanel.toolbar.setTitle(mWebView.getTitle());
+		}
 		//mWebView.evaluateJavascript("window.loadJsCb=function(){erdo.init()};app.loadJs(sid.get(), 'erdo.js')", null);
 	}
 

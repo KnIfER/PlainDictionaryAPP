@@ -10,7 +10,6 @@ import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Spannable;
@@ -84,7 +83,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -588,7 +586,7 @@ public class Drawer extends Fragment implements
 						@Override
 						public void onClick(@NonNull View widget) {
 							try {
-								WebViewListHandler weblist = a.getRandomPageHandler(true, false);
+								WebViewListHandler weblist = a.getRandomPageHandler(true, false, null);
 								WebViewmy randomPage = weblist.getMergedFrame();
 								BookPresenter socialbook = a.new_book(a.defDicts[4], a);
 								weblist.getMergedFrame(socialbook);

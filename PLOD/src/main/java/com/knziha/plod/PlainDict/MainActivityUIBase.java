@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -6859,7 +6858,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return menuDialog;
 	}
 	
-	public WebViewListHandler getRandomPageHandler(boolean initPopup, boolean random) {
+	public WebViewListHandler getRandomPageHandler(boolean initPopup, boolean random, BookPresenter presenter) {
 		WebViewListHandler weblistHandler = randomPageHandler;
 		if(weblistHandler==null)
 			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()), schuiMain);
@@ -6867,13 +6866,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, random?"随机页面":null);
-			weblistHandler.setViewMode(null, 1, randomPage);
-			weblistHandler.initMergedFrame(1, true, false);
+			if (presenter == null) {
+				randomPage.setPresenter(weblistHandler.mMergedBook);
+				weblistHandler.setViewMode(null, 1, randomPage);
+				weblistHandler.initMergedFrame(1, true, false);
+			} else {
+				randomPage.setPresenter(presenter);
+				weblistHandler.setViewMode(null, 1, randomPage);
+				weblistHandler.viewContent();
+				weblistHandler.bShowInPopup=true;
+				weblistHandler.bMergeFrames=0;
+				weblistHandler.initMergedFrame(1, true, false);
+				weblistHandler.pageSlider.setWebview(randomPage, null);
+				weblistHandler.resetScrollbar();
+			}
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
 			randomPage.active = true;
 			randomPage.jointResult = null;
-			randomPage.presenter = weblistHandler.mMergedBook;
 		}
 		return randomPageHandler;
 	}
@@ -6881,7 +6891,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showRandomShuffles(boolean refresh) {
 		try {
 			getMdictServer();
-			WebViewmy randomPage = getRandomPageHandler(true, true).getMergedFrame();
+			WebViewmy randomPage = getRandomPageHandler(true, true, null).getMergedFrame();
 			randomPage.presenter = new_book(defDicts[2], this);
 //			if(randomPage==null) {
 //				init=true;
@@ -7289,19 +7299,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-			CMN.Log("onCreateWindow::");
-			WebViewListHandler weblistHandler = getRandomPageHandler(true, true);
-			WebViewmy randomPage = getRandomPageHandler(true, true).getMergedFrame();
-			randomPage.presenter = ((WebViewmy)view).presenter;
 			//((WebView.WebViewTransport)resultMsg.obj).setWebView(randomPage);
-			//resultMsg.sendToTarget(); New WebView for popup window must not have been  previously navigated. fuck.
+			//resultMsg.sendToTarget(); New WebView for popup window must not have been  previously navigated. ???
 			// https://stackoverflow.com/questions/9654529/handle-url-from-oncreatewindow-webview
 			Message href = view.getHandler().obtainMessage();
 			view.requestFocusNodeHref(href);
 			String url = href.getData().getString("url");
+			CMN.debug("onCreateWindow::", url);
+			BookPresenter presenter = webxford.get(SubStringKey.new_hostKey(url));
+			String urlKey = null;
+			if (presenter == null) {
+				int idx = url.indexOf("/entry/");
+				if (idx>0) urlKey = URLDecoder.decode(url.substring(idx+7));
+				else {
+					idx = url.indexOf("entry://");
+					if (idx>0) urlKey = URLDecoder.decode(url.substring(idx+8));
+				}
+				presenter = ((WebViewmy) view).presenter;
+			}
+			// getRandomPageHandler(true, false, null);
+			WebViewListHandler wlh = getRandomPageHandler(true, false, presenter);
+			WebViewmy randomPage = wlh.getMergedFrame();
+			wlh.setStar(urlKey);
 			try {
-				href.recycle(); // This message cannot be recycled because it is still in use. fuck.
-			} catch (Exception e) { }
+				href.recycle(); // This message cannot be recycled because it is still in use. ???
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
 			randomPage.loadUrl(url);
 			return true;
 		}
@@ -7860,7 +7884,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
 								if(pop) { // 新窗口打开词条跳转
-									wlh = getRandomPageHandler(true, true);
+									wlh = getRandomPageHandler(true, true, null);
 									if (mWebView.toTag!=null) {
 										wlh.getMergedFrame().toTag = mWebView.toTag;
 										mWebView.toTag = null;
@@ -10800,5 +10824,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void startActivity(Intent intent) {
 		intent.putExtra(FloatBtn.EXTRA_INVOKER, BuildConfig.APPLICATION_ID);
 		super.startActivity(intent);
+	}
+	
+	public Map<SubStringKey, BookPresenter> webxford = new HashMap<>();
+	public void registerWebx(BookPresenter presenter) {
+		PlainWeb webx = presenter.getWebx();
+		webxford.put(SubStringKey.new_hostKey(webx.getHost()), presenter);
 	}
 }

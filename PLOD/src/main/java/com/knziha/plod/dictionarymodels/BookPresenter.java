@@ -736,7 +736,12 @@ function debug(e){console.log(e)};
 		}
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
 		bAutoRecordHistory = isWebx = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
-		mWebx = isWebx? (PlainWeb) bookImpl :null;
+		if (isWebx) {
+			mWebx = (PlainWeb) bookImpl;
+			if(THIS!=null) THIS.registerWebx(this);
+		} else {
+			mWebx =null;
+		}
 		
 		if(THIS!=null){
 			a = THIS;
@@ -3202,7 +3207,7 @@ function debug(e){console.log(e)};
 				WebViewmy wv = findWebview(sid);
 				if(wv!=null){
 					wv.post(() -> {
-						WebViewListHandler wlh = presenter.a.getRandomPageHandler(true, true);
+						WebViewListHandler wlh = presenter.a.getRandomPageHandler(true, true, null);
 						WebViewmy mWebView = wlh.getMergedFrame();
 						wlh.setViewMode(null, 0, mWebView);
 						wlh.viewContent();
@@ -3431,7 +3436,7 @@ function debug(e){console.log(e)};
 				book.a.hdl.post(new Runnable() {
 					@Override
 					public void run() {
-						WebViewListHandler weblist = book.a.getRandomPageHandler(true, true);
+						WebViewListHandler weblist = book.a.getRandomPageHandler(true, true, null);
 						WebViewmy randomPage = weblist.getMergedFrame(book);
 						randomPage.loadUrl(url);
 						weblist.resetScrollbar(randomPage, false, false);

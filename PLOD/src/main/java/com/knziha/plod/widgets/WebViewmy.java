@@ -508,8 +508,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if(presenter!=book) {
 			//clearHistory();
 			//clearIfNewADA(book);
-			presenter=book;
-			pBc = book.IBC;
 			if (weblistHandler.bShowingInPopup) {
 				if (presenter.isWebx) {
 					try {
@@ -524,15 +522,17 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				if (book.isWebx) {
 					try {
 						String reset = book.getWebx().getField("webSetttingsReset");
-						String set = book.getWebx().getField("webSetttings");
-						if (reset!=null && set!=null) {
-							ViewUtils.execSimple(set, null, getSettings());
+						if (reset!=null) {
+							String set = book.getWebx().getField("webSetttings");
+							if(set!=null) ViewUtils.execSimple(set, null, getSettings());
 						}
 					} catch (Exception e) {
 						CMN.debug(e);
 					}
 				}
 			}
+			presenter=book;
+			pBc = book.IBC;
 		}
 	}
 	

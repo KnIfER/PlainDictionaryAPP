@@ -852,7 +852,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		boolean multiDicts = multi && record.jointResult!=null && (int) record.jointResult.realmCount > 1;
 		int viewMode = multi && bMerge==0? WEB_LIST_MULTI : WEB_VIEW_SINGLE;
 		boolean changed = bMerge!=bMergingFrames;
-		CMN.debug("setViewMode:: ", slideDirty);
+		// CMN.debug("setViewMode:: ", slideDirty);
 		if (slideDirty) {
 			pageSlider.tapZoomV--;
 			entrySeek.setEnabled(true);
@@ -871,6 +871,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			this.multiDicts=multiDicts;
 			changed = true;
 		}
+		CMN.debug("setViewMode:: changed=", changed);
 		if(changed) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
@@ -954,7 +955,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	AlloydPanel alloydPanel;
+	public AlloydPanel alloydPanel;
 	public void popupContentView(ViewGroup root, String key) {
 		if(alloydPanel==null) {
 			alloydPanel = new AlloydPanel(a, this);
@@ -1717,12 +1718,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void setStar(String key) {
 		if (!TextUtils.equals(displaying, key)) {
 			displaying = key;
-			if (ViewUtils.isVisibleV2(browserWidget8)) {
-				if (a.DBrowser!=null && this==a.DBrowser.weblistHandler && a.DBrowser.getFragmentType()==DB_FAVORITE) {
-					browserWidget8.setActivated(!a.DBrowser.toDeleteV2.contains(a.DBrowser.currentRowId));
-				} else {
-					browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+			if (key!=null) {
+				if (ViewUtils.isVisibleV2(browserWidget8)) {
+					if (a.DBrowser!=null && this==a.DBrowser.weblistHandler && a.DBrowser.getFragmentType()==DB_FAVORITE) {
+						browserWidget8.setActivated(!a.DBrowser.toDeleteV2.contains(a.DBrowser.currentRowId));
+					} else {
+						browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+					}
 				}
+			}
+			boolean b1=key==null;
+			if (browserWidget8.isEnabled() == b1) {
+				browserWidget8.setEnabled(!b1);
+				browserWidget8.setAlpha(b1?0.5f:1);
 			}
 			if (bShowingInPopup) {
 				alloydPanel.toolbar.setTitle(key);
