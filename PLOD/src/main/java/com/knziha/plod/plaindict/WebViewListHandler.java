@@ -875,7 +875,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			this.multiDicts=multiDicts;
 			changed = true;
 		}
-		CMN.debug("setViewMode:: changed=", changed);
+		CMN.debug("view::setViewMode:: changed=", changed, bMerge);
 		if(changed) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
@@ -925,12 +925,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				if (view.titleBar!=null) {
 					ViewUtils.setVisible(view.titleBar, false);
 				}
+				bMergingFrames = 1;
 			} else {
 				ViewUtils.setVisible(entrySeek, false);
 				vis = PDICMainAppOptions.showDictName();
 				if (view.titleBar!=null) {
 					ViewUtils.setVisible(view.titleBar, true);
 				}
+				bMergingFrames = 0;
 			}
 			ViewUtils.setVisible(contentUIData.dictNameStroke, vis);
 			ViewUtils.setVisible(contentUIData.dictName, vis);

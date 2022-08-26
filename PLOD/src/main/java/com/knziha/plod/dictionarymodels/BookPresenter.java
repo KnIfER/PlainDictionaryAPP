@@ -158,7 +158,7 @@ public class BookPresenter
 	
 	/**app.viewChanged(sid.get(), entryKey, frameAt);*/
 	@Metaline()
-	public final static String jsChanged="";
+	public final static String jsViewChanged ="";
 	
 	/**
 	 	var w=window, d=document;

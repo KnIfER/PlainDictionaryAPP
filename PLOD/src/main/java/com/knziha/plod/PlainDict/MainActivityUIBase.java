@@ -254,7 +254,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
@@ -7643,7 +7642,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					finalInvoker.tintBackground(mWebView);
 				}
 				wlh.changeViewMode(mWebView, url);
-				mWebView.evaluateJavascript(BookPresenter.jsChanged, new ValueCallback<String>() {
+				mWebView.evaluateJavascript(BookPresenter.jsViewChanged, new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String value) {
 						finalInvoker.setCurrentDis(mWebView, mWebView.currentPos);
