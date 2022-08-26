@@ -7318,7 +7318,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				presenter = ((WebViewmy) view).presenter;
 			} else {
 				try {
-					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo optimise
+					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
@@ -8104,7 +8104,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									}
 								}
-								if(false) { }
+								if(true) { // requesting web data on mergedframe.
+									BookPresenter socialbook = new_book(defDicts[4], MainActivityUIBase.this);
+									WebResourceResponse resp = (WebResourceResponse)socialbook.getWebx().getClientResponse(MainActivityUIBase.this, url, null, null, null, false);
+									return resp;
+								}
 							} catch (Exception e) {
 								CMN.debug(url,"\n",e);
 							}

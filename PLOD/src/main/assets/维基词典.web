@@ -3,10 +3,26 @@
 	,"index": ""
 	,"style": ""
 	,"keyPattern": "*"
-	,"js": ""
+	,"js": "
+	function tc() {
+		var t = document.title;
+		var idx=t.indexOf(' - Wiktionary', 1);
+		if(idx>0) {
+			t = t.slice(0, idx);
+			app.setStar(sid.get(), t.toLowerCase());
+		}
+	}
+	new MutationObserver(function(mutations) {
+		// console.log(document.title);
+		tc();
+	}).observe(
+		document.querySelector('title'),
+		{ subtree: 1, characterData: true, childList: 1 }
+	);
+	tc();"
 	,"mirrors": [
 		["https://en.wiktionary.wikimirror.org", "Wikimirror"]
-		,["https://en.wiktionary.ahau.cf", "Iefnuy"]
+		,["https://en.m.wiktionary.ahau.cf", "Iefnuy"]
 ]
 	,"defUseMirror":-1
 	,"search": "/w/index.php?search=%s&title=Special%3ASearch&go=Go&ns0=1"
@@ -387,7 +403,7 @@
 91.198.174.208 upload.wikimedia.org
 208.80.154.160 irc.wikimedia.org
 208.80.154.53 ganglia.wikimedia.org"
-	,"synthesis":"
+	,"synthesis":"<dopt/>
 		<div id='text'></div>
 		<style>
 			html, body {
@@ -408,11 +424,15 @@
 				return x;
 			}
 			//location.href='https://en.wiktionary.org/w/index.php?title=%E5%A6%82%E6%84%8F&printable=yes'
-			// 
-			load('https://en.m.wiktionary.org/w/index.php?title='+parent.getText()+'&printable=false', function(e){
+
+			var host = window.host||'https://en.m.wiktionary.org';
+			//host = 'https://en.wiktionary.ahau.cf'; function getText(){return 'happy'}
+			//debug('host::', window.host);
+			
+			load(host+'/w/index.php?title='+parent.getText()+'&printable=false', function(e){
 			//load('https://en.wiktionary.org/wiki/Special:RandomInCategory/English_lemmas#English', function(e){
-				//debug(e);
-				e=e.replaceAll(/=\"\\/([a-z])/ig, '=\"https://en.m.wiktionary.org/$1');
+				// debug(e); //});	
+				e=e.replaceAll(/=\"\\/([a-z])/ig, '=\"'+host+'/$1');
 				document.documentElement.innerHTML=e;
 				function craft(c, t, p) {
 					var e=document.createElement(t);

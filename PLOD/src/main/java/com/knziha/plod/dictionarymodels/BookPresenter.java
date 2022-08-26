@@ -737,9 +737,9 @@ function debug(e){console.log(e)};
 		}
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
 		bAutoRecordHistory = isWebx = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+		
 		if (isWebx) {
 			mWebx = (PlainWeb) bookImpl;
-			if(THIS!=null) THIS.registerWebx(this);
 		} else {
 			mWebx =null;
 		}
@@ -785,10 +785,6 @@ function debug(e){console.log(e)};
 		idStr10 = sb.append(id).append(".com").toString();
 		sb.setLength(0);
 		mBaseUrl = sb.append("http://mdbr.").append("d").append(idStr10).append("/base.html").toString();
-		
-		if (getIsWebx() && getUseMirrors()) {
-			getWebx().setMirroredHost(getMirrorIdx());
-		}
 	}
 	
 	public static void keepBook(MainActivityUIBase THIS, UniversalDictionaryInterface bookImpl) {
@@ -3466,7 +3462,6 @@ function debug(e){console.log(e)};
 					public void run() {
 						BookPresenter presenter = book.a.webxford.get(SubStringKey.new_hostKey(url));
 						CMN.debug("handleWebLink::", url, presenter, presenter!=null&&presenter.isWebx);
-						WebViewListHandler wlh = book.a.getRandomPageHandler(true, false, presenter);
 						if (presenter!=null) {
 							try {
 								presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx
@@ -3476,6 +3471,7 @@ function debug(e){console.log(e)};
 						} else {
 							presenter = book;
 						}
+						WebViewListHandler wlh = book.a.getRandomPageHandler(true, false, presenter);
 						WebViewmy randomPage = wlh.getMergedFrame(presenter);
 						wlh.setStar(null);
 						randomPage.loadUrl(url);
@@ -3844,6 +3840,9 @@ function debug(e){console.log(e)};
 				uncheckVersionBefore_5_4(false);
 			}
 			setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
+			
+			if (getUseMirrors()) getWebx().setMirroredHost(getMirrorIdx());
+			if(a!=null) a.registerWebx(this);
 		}
 	}
 	
@@ -4344,6 +4343,8 @@ function debug(e){console.log(e)};
 			}
 			// todo peruse view
 		}
+		if(isWebx)
+			a.registerWebx(this);
 	}
 
 	public void setNestedScrollingEnabled(boolean enabled) {
@@ -4457,6 +4458,7 @@ function debug(e){console.log(e)};
 		setUseMirrorsInternal(val);
 		if (getIsWebx()) {
 			getWebx().setMirroredHost(val?-2:-1);
+			a.registerWebx(this);
 		}
 	}
 }
