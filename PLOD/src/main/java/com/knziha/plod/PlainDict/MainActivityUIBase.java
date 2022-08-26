@@ -254,6 +254,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
@@ -3782,7 +3783,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
 //							, currentDictionary.bookImpl.getBooKID());
 				} catch (Exception e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 				if (impl!=null) {
 					return impl.getFile().getPath();
@@ -7573,7 +7574,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					// naive reset zoom : view.zoomBy(0.02f);
 					if(toHash!=null)
 					{
-						// CMN.debug("toHash::", toHash);
+						CMN.debug("toHash::", toHash);
 						mWebView.toTag=null;
 						View rl = (View) mWebView.getParent();
 						mWebView.expectedPos = -100;
@@ -7597,8 +7598,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//CMN.debug("toTag::", toTag);
 							if("===???".equals(toHash))
 								recCom.handleNavJump(MainActivityUIBase.this, mWebView);
-							else if(!toHash.equals("===000"))
-								view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
+							else if(!toHash.equals("===000")) {
+//								view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
+								view.evaluateJavascript("var h='"+toHash+"',d=document;(d.getElementById(h)||d.getElementsByName(h)[0]).scrollIntoView()", null);
+							}
 						}
 					}
 					else if(PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView))
@@ -7704,7 +7707,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			WebViewmy mWebView = (WebViewmy) view;
+			final WebViewmy mWebView = (WebViewmy) view;
 			CMN.debug("chromium SOUL::",url,view.getTag());
 			if(mWebView.forbidLoading) {
 				return true;
@@ -7815,7 +7818,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						ScrollerRecord PageState;
 						mWebView.expectedPos = -100;
 						((WebViewmy) view).isloading = true;
-						view.evaluateJavascript("location.replace(\"" + url.substring(entryTag.length()) + "\");", null);
+//						view.evaluateJavascript("location.replace(\"" + url.substring(entryTag.length()) + "\");", null);
+						view.evaluateJavascript("var h='"+url.substring(entryTag.length())+"',d=document;(d.getElementById(h)||d.getElementsByName(h)[0]).scrollIntoView()", null);
 					}
 					else {//TODO 精确之
 						view.evaluateJavascript("var item=document.getElementsByName(\"" + url.substring(entryTag.length() + 1) + "\")[0]; item?item.getBoundingClientRect().top:-1;"
@@ -7885,7 +7889,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						else {
 							/* 查询跳转目标 */
 							int idx = invoker.bookImpl.lookUp(url, true);
-							//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
+							CMN.debug("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), (URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
 								if(pop) { // 新窗口打开词条跳转
 									wlh = getRandomPageHandler(true, true, null);
@@ -7893,17 +7897,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										wlh.getMergedFrame().toTag = mWebView.toTag;
 										mWebView.toTag = null;
 									}
-									mWebView = wlh.getMergedFrame();
+									WebViewmy wv = wlh.getMergedFrame();
 									wlh.viewContent();
-									wlh.setViewMode(null, 0, mWebView);
+									wlh.setViewMode(null, 0, wv);
 									wlh.bShowInPopup=true;
 									wlh.bMergeFrames=0;
 									wlh.initMergedFrame(0, true, false);
 									wlh.popupContentView(null, url);
-									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
-									wlh.pageSlider.setWebview(mWebView, null);
+									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,wv, idx);
+									wlh.pageSlider.setWebview(wv, null);
 									wlh.resetScrollbar();
-									if(mWebView.getBackgroundColor()==0) mWebView.setBackgroundColor(GlobalPageBackground); //todo optimize
+									if(wv.getBackgroundColor()==0) wv.setBackgroundColor(GlobalPageBackground); //todo optimize
 									return true;
 								}
 								else if(!fromPopup) {
@@ -7921,6 +7925,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										mWebView.expectedPos = -100;
 									}
 								}
+//								invoker.renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, idx);
 								float initialScale = BookPresenter.def_zoom;
 								mWebView.setInitialScale((int) (100 * (initialScale / BookPresenter.def_zoom) * opt.dm.density));
 								mWebView.isloading = true;
@@ -7963,7 +7968,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				CMN.debug(e);
 			}
 			return false;
 		}

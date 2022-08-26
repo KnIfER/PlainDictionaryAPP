@@ -1780,7 +1780,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	void NavWeb(int d) {
 		WebViewmy wv = getWebContext();
 		if (wv !=null) {
-			CMN.debug("NavWeb", wv.getUrl());
+			CMN.debug("NavWeb", wv.getUrl(), d, wv.canGoBack(), wv.canGoForward());
 			if (d>0) wv.goForward();
 			else wv.goBack();
 		}
