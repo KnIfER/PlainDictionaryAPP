@@ -7478,7 +7478,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale, mWebView.presenter.isWebx, mWebView.bRequestedSoundPlayback);
+			CMN.debug("onPageFinished::", "st="+mWebView.bPageStarted, url, "st1="+mWebView.isloading, "scl="+mWebView.webScale, "web="+mWebView.presenter.isWebx, "aud="+mWebView.bRequestedSoundPlayback);
 			if (false) {
 				mWebView.initPos();
 			}

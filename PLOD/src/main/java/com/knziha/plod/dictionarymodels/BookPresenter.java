@@ -59,6 +59,7 @@ import com.knziha.plod.dictionary.Utils.Base64;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.BookManager;
@@ -3463,12 +3464,21 @@ function debug(e){console.log(e)};
 				book.a.hdl.post(new Runnable() {
 					@Override
 					public void run() {
-						WebViewListHandler weblist = book.a.getRandomPageHandler(true, true, null);
-						WebViewmy randomPage = weblist.getMergedFrame(book);
+						BookPresenter presenter = book.a.webxford.get(SubStringKey.new_hostKey(url));
+						CMN.debug("handleWebLink::", url, presenter, presenter!=null&&presenter.isWebx);
+						WebViewListHandler wlh = book.a.getRandomPageHandler(true, false, presenter);
+						if (presenter!=null) {
+							try {
+								presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx
+							} catch (IOException e) {
+								CMN.debug(e);
+							}
+						} else {
+							presenter = book;
+						}
+						WebViewmy randomPage = wlh.getMergedFrame(presenter);
+						wlh.setStar(null);
 						randomPage.loadUrl(url);
-						weblist.resetScrollbar(randomPage, false, false);
-						weblist.setViewMode(null, 0, randomPage);
-						weblist.viewContent();
 					}
 				});
 			}
