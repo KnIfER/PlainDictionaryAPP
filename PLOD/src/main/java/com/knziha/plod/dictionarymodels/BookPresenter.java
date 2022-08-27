@@ -3378,6 +3378,7 @@ function debug(e){console.log(e)};
 			{
 				//upsended = true;
 				WebViewmy view = findWebview(sid);
+				//view.lastSuppressLnkTm = CMN.now();
 				CMN.Log("knock", view.weblistHandler);
 //				view.postDelayed(new Runnable() {
 //					@Override
@@ -3397,11 +3398,19 @@ function debug(e){console.log(e)};
 		}
 		
 		@JavascriptInterface
+		public void knockX(int sid) {
+			WebViewmy view = findWebview(sid);
+			view.lastSuppressLnkTm = CMN.now();
+			CMN.debug("knockX::");
+		}
+		
+		@JavascriptInterface
 		public void knock1(int sid, int x, int y) {
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
 				WebViewmy view = findWebview(sid);
+				//view.lastSuppressLnkTm = CMN.now();
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {

@@ -163,6 +163,7 @@ function wrappedDown(e){
 	if(frameElement && ((e.button||0)==0)) {
 		parent.window.tFrame(frameElement.dictInfo);
 	}
+	stopLnk = 0;
 	if(t && t.href) { //  && (e.button==1||e.button==0)
 		stopLnk = 1;
 		debug("01! found link : "+t.href+" : "+regSound.test(t.href));
