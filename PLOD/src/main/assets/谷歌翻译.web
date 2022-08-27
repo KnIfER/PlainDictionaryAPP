@@ -339,6 +339,7 @@ succ"
 				var cc=0;
 				clearTimeout(window.gTransTime);
 				var combo;
+				var bh = window.getComputedStyle(document.body).overflow=='hidden';
 				function tryInit(off) {
 					combo = document.getElementsByClassName('goog-te-combo')[0];
 					if(combo) {
@@ -408,12 +409,14 @@ succ"
 								if(dis!='none') {
 									yw.style.position = 'absolute';//
 									yw.style.marginTop = Math.round(sY)+'px'; 
-									document.body.style.paddingBottom='1024px'//
+									document.body.style.paddingBottom='1024px';//
+									if(bh) document.body.style.overflow='scroll';
 								} else {
 									yw.style.position = 'fixed';//
 									document.documentElement.scrollTop=sY;
-									document.body.style.paddingBottom='0px'//blacksmith, 
+									document.body.style.paddingBottom='0px';//blacksmith, 
 									// fix scroll reset bug. after showing 'absolute' when scroll at page bottom
+									if(bh) document.body.style.overflow='hidden';
 								}
 							}
 						}).observe(yw , { attributes: true, attributeFilter: ['style']});
@@ -429,6 +432,9 @@ succ"
 									ttdis=dis;
 									if(dis=='none') {
 										document.documentElement.scrollTop=app.getScrollY(sid.get());
+										if(bh) document.body.style.overflow='hidden';
+									} else {
+										if(bh) document.body.style.overflow='scroll';
 									}
 								}
 							}).observe(tt , { attributes: true, attributeFilter: ['style']});
