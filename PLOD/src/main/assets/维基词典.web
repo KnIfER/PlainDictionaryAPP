@@ -8,7 +8,7 @@
 	}
 	,"settingsArray":"
 		['首选项'
-			, [1, 'directRandx', ['获取随机单词时，访问原页面', '不访问处理的页面，试在加载不出时使用。'], dopt.directRandx]
+			, [1, 'directRandx', ['获取随机单词时，访问原页面', '不访问处理的页面，请在加载不了时使用。'], dopt.directRandx]
 		]
 	"
 	,"js": "
@@ -474,35 +474,6 @@
 	function debug(e){console.log('fatal wiki123',e)};
 	window.debug=function(){var e=arguments,s=['fatal wiki123 ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
 	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
-	document.addEventListener('click', function(e){
-		var t=e.srcElement;
-		debug('addEventListener...'+ t.tagName);
-		if(t.id==='WOTD-rss-title') {
-			debug(t.innerText);
-			//t.parentElement.href='javascript:';
-			e.preventDefault();
-			e.stopPropagation();
-			app.wordtoday(t.innerText);
-			return true;
-		}
-		if(t.tagName==='A') {
-			debug(t.innerText);
-			e.preventDefault();
-			e.stopPropagation();
-			app.wordtoday(t.innerText);
-			if(1)return true;
-			
-			var br = t.getBoundingClientRect();
-			var pX = br.left;
-			var pY = br.top;
-			var pW = br.width;
-			var pH = br.height;
-
-			//app.popupWord(sid.get(), t.innerText, e.clientX, e.clientY, -1);
-			app.popupWord(sid.get(), t.innerText, -1, document.documentElement.scrollLeft+pX, document.documentElement.scrollTop+pY, pW, pH);
-			return true;
-		}
-	},true);
 	function generate(e){
 		var parser = new DOMParser();
 		e = parser.parseFromString(e, 'text/html');
