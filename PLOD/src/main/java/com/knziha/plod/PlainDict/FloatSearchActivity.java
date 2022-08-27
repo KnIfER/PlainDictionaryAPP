@@ -41,6 +41,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
@@ -288,6 +289,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 		toolbar.inflateMenu(R.xml.menu_float);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
+		AllMenusStamp = Arrays.asList(AllMenus.getItems().toArray(new MenuItemImpl[AllMenus.size()]));
 	
 		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
 		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
