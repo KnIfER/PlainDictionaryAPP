@@ -3,6 +3,14 @@
 	,"index": ""
 	,"style": ""
 	,"keyPattern": "*"
+	,"settings":{
+		directRandx:false
+	}
+	,"settingsArray":"
+		['首选项'
+			, [1, 'directRandx', ['获取随机单词时，访问原页面', '不访问处理的页面，试在加载不出时使用。'], dopt.directRandx]
+		]
+	"
 	,"js": "
 	function tc() {
 		var t = document.title;
@@ -448,7 +456,7 @@
 		</script>
 		<body></>
 	"
-	,"wordtoday":"var date=new Date, months=[
+	,"randx":"<dopt/><script>var date=new Date, months=[
 		'January'
 		,'February'
 		,'March'
@@ -463,7 +471,8 @@
 		,'December'
 	],yearFrom=2016;
 	var month, yearNow;
-	function debug(...e){console.log('fatal wiki123',e)};
+	function debug(e){console.log('fatal wiki123',e)};
+	window.debug=function(){var e=arguments,s=['fatal wiki123 ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
 	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
 	document.addEventListener('click', function(e){
 		var t=e.srcElement;
@@ -562,45 +571,49 @@
 		// 	app.wordtoday('');
 		// }
 	}
-	var stored = app.getRandomPage(sid.get());
-	if(stored) {
-		generate(stored);
-	} else {
-		function getRandomPage() {
-			var host = app.getHost()||'https://en.m.wiktionary.org';
-			yearNow=date.getFullYear();
-			var yd=yearNow-yearFrom+2;
-			yearNow = yearFrom + Math.min(parseInt(date%100/100*yd), yd-3);
-			var m=Math.min(parseInt((new Date*Math.random()) % 175/175*13), 11);
-			month=months[m];
-			//debug('加载完成::',yearNow, m);
-			return host+'/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
-			// return host+'/w/index.php?title=Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month+'&printable=false';
-			// return host+'/wiki/Wiktionary:Word_of_the_day/Archive/2017/January';
-		}
-		getRandomPage();
+	function getRandomPage() {
+		var host = window.host||'https://en.m.wiktionary.org';
+		yearNow=date.getFullYear();
+		var yd=yearNow-yearFrom+2;
+		yearNow = yearFrom + Math.min(parseInt(date%100/100*yd), yd-3);
+		var m=Math.min(parseInt((new Date*Math.random()) % 175/175*13), 11);
+		month=months[m];
+		return host+'/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
+		// return host+'/w/index.php?title=Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month+'&printable=false';
+		// return host+'/wiki/Wiktionary:Word_of_the_day/Archive/2017/January';
+	}
+	if(dopt.directRandx) {
 		var url=getRandomPage();
-		debug('word!!!',url);
-		function load(url,cb){
-			var x = new XMLHttpRequest();
-			x.open('POST', url, true);
-			//x.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
-			//x.responseType = 'document';
-			if(cb)x.onload = function() {
-				cb(x.response);
-			};
-			//x.setRequestHeader('Content-Type', 'text/html; charset=utf-8');
-			x.setRequestHeader('Content-Type', 'text/html');
-			// x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-			x.send();
-			debug(x)
-			return x;
+		debug('getRandomPage::', url);
+		location.replace(url);
+	} else {
+		var stored = app.getRandomPage(sid.get());
+		if(stored) {
+			generate(stored);
+		} else {
+			var url=getRandomPage();
+			debug('word!!!',url);
+			function load(url,cb){
+				var x = new XMLHttpRequest();
+				x.open('POST', url, true);
+				//x.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
+				//x.responseType = 'document';
+				if(cb)x.onload = function() {
+					cb(x.response);
+				};
+				//x.setRequestHeader('Content-Type', 'text/html; charset=utf-8');
+				x.setRequestHeader('Content-Type', 'text/html');
+				// x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+				x.send();
+				debug(x)
+				return x;
+			}
+			load(url, function(e){
+				debug('加载完成::',yearNow+'_'+month, e);
+				app.saveRandomPage(sid.get(), e);
+				generate(e);
+			})
 		}
-		load(url, function(e){
-			debug('加载完成::',yearNow+'_'+month);
-			app.saveRandomPage(sid.get(), e);
-			generate(e);
-		})
-	}"
+	}</script>"
 	
 }

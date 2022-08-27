@@ -3248,6 +3248,11 @@ function debug(e){console.log(e)};
         }
 		
         @JavascriptInterface
+        public boolean isLowEnd(int sid) {
+			return Build.VERSION.SDK_INT<21;
+		}
+		
+        @JavascriptInterface
         public String getRandomPage(int sid) {
 			if(presenter!=null) {
 				if (presenter.a.refreshingRandom) {

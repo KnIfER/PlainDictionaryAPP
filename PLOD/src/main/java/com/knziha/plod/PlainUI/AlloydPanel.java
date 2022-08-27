@@ -3,6 +3,8 @@ package com.knziha.plod.PlainUI;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -11,6 +13,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -32,6 +35,8 @@ public class AlloydPanel extends PlainAppPanel {
 	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> RandomMenu;
 	public List<MenuItemImpl> PopupMenu;
+	private int MainAppBackground;
+	public MenuItemImpl fetchWordMenu;
 	
 	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler handler) {
 		super(a, true);
@@ -55,13 +60,12 @@ public class AlloydPanel extends PlainAppPanel {
 			Toolbar toolbar = this.toolbar = new Toolbar(context);
 			linearView.addView(toolbar, 0);
 			toolbar.getLayoutParams().height = (int) (GlobalOptions.density * 45);
-			toolbar.setBackgroundColor(a.MainAppBackground);
-			toolbar.setTitleTextColor(Color.WHITE);
 			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			toolbar.inflateMenu(R.xml.menu_popup_content);
 			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
 			AllMenus.tag = handler;
+			AllMenus.checkActDrawable = a.getDrawable(R.drawable.frame_checked);
 			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
 			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach
@@ -69,19 +73,27 @@ public class AlloydPanel extends PlainAppPanel {
 			if(handler.tapSch) {
 				ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
 			}
-			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 3, 4, 5);
-			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 2, 3, 4, 5);//new ArrayList<>(AllMenus.mItems);
+			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 5);
+			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 5);//new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
 			
-			
+			fetchWordMenu = (MenuItemImpl) ViewUtils.findInMenu(RandomMenu, R.id.fetchWord);
 			settingsLayout = linearView;
+			//refresh();
 		}
 	}
 	
 	@Override
 	public void refresh() {
-	
+		if (MainAppBackground != a.MainAppBackground) {
+			MainAppBackground = a.MainAppBackground;
+			toolbar.setBackgroundColor(MainAppBackground);
+			toolbar.setTitleTextColor(Color.WHITE);
+			double lumen = ColorUtils.calculateLuminance(MainAppBackground);
+			int bc = lumen > 0.5 ? Color.BLACK : Color.WHITE;
+			AllMenus.checkActDrawable.setColorFilter(ColorUtils.blendARGB(MainAppBackground, bc, 0.5f)&0xB9FFFFFF, PorterDuff.Mode.SRC_IN);
+		}
 	}
 	
 	@SuppressLint("ResourceType")

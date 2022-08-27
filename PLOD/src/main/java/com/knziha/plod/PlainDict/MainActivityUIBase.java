@@ -422,10 +422,51 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	BufferedWriter output2;
 	public final static String ce_on="document.body.contentEditable=!0";
 	public final static String ce_off="document.body.contentEditable=!1";
+	/**if(!window.randx) {
+		window.randx=1;
+		document.addEventListener('click', function(e){
+			var p=e.path,t=e.srcElement;
+			if(!p && e.composedPath) p=e.composedPath();
+			if(p) for(var i=0;(t=p[i])&&i++<10;) if(t.tagName==='A') {break;}
+			// console.log('addEventListener...', t);
+			if(t && t.tagName==='A') {
+				// console.log(t.innerText);
+	 			if(window.randx_mode!=0){
+					 e.preventDefault();
+					 e.stopPropagation();
+				 	if(randx_mode==1) {
+	 					app.wordtoday(t.innerText);
+					 } else {
+						 var br = t.getBoundingClientRect();
+						 var pX = br.left;
+						 var pY = br.top;
+						 var pW = br.width;
+						 var pH = br.height;
+						 
+						 //app.popupWord(sid.get(), t.innerText, e.clientX, e.clientY, -1);
+						 app.popupWord(sid.get(), t.innerText, -1, document.documentElement.scrollLeft+pX, document.documentElement.scrollTop+pY, pW, pH);
+					 }
+					return true;
+				 }
+			} else { window._touchtarget = t }
+		},true);
+	 } */
+	@Metaline
+	public final static String randx_on="";
+	/**var t=window._touchtarget;if(t) {
+		 var br = t.getBoundingClientRect();
+		 var pX = br.left;
+		 var pY = br.top;
+		 var pW = br.width;
+		 var pH = br.height;
+		 app.popupWord(sid.get(), t.innerText, -1, document.documentElement.scrollLeft+pX, document.documentElement.scrollTop+pY, pW, pH);
+	 } */
+	@Metaline
+	public final static String randx_remake="";
+	public final static String randx_off="window.randx_mode=0";
 	LexicalDBHelper favoriteCon;//public LexicalDBHelper getFDB(){return favoriteCon;};
 	/** Use a a filename-directory map to keep a record of lost files so that users could add them back without the need of restore every specific directory.  */
 	HashMap<String,String> lostFiles;
-
 
 	public PeruseView peruseView;
 	/** 主程有 */
@@ -6702,6 +6743,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
+			case R.id.fetchWord: {
+				if(wlh!=null)
+					wlh.setFetchWord(-2);
+			}  break;
 			/* 跳转翻阅模式 */
 			case R.id.peruseMode:{
 				ret = closeMenu = true;
@@ -6862,6 +6907,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				weblistHandler.pageSlider.setWebview(randomPage, null);
 				weblistHandler.resetScrollbar();
 			}
+			if (!random) {
+				randomPageHandler.setFetchWord(0);
+			}
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
 			randomPage.active = true;
@@ -6870,27 +6918,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return randomPageHandler;
 	}
 	
+	// loadWordToday
 	public void showRandomShuffles(boolean refresh) {
 		try {
 			getMdictServer();
 			WebViewmy randomPage = getRandomPageHandler(true, true, null).getMergedFrame();
-			randomPage.presenter = new_book(defDicts[2], this);
-//			if(randomPage==null) {
-//				init=true;
-//				WebViewListHandler handler = new WebViewListHandler(this, contentUIData);
-//				randomPage=handler.getMergedFrame();
-//				mlv.addView(handler.mMergedBook.rl);
-//				handler.mMergedBook.rl.getLayoutParams().height=350;
-//			}
+			randomPage.presenter = new_book(defDicts[2], this); //todo generalize
 			BookPresenter wikibook = randomPage.presenter;
 			PlainWeb webx = wikibook.getWebx();
 			randomPageHandler.getMergedFrame(wikibook);
-			//String testUrl="https://en.m.wiktionary.org/randx";
 			String testUrl=webx.getHost()+"/randx";
-			CMN.debug("testUrl::", randomPage.getUrl(), testUrl);
 			refreshingRandom = refresh;
-			if(refresh || !TextUtils.equals(randomPage.getUrl(), testUrl)) {
-				CMN.debug("加载::", testUrl);
+			if(refresh || randomPageHandler.fetchWord == 0)
+			{
+				randomPageHandler.setFetchWord(-1);
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
@@ -7491,8 +7532,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			int schemaIdx = url.indexOf(":");
 			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4), baseUrl=false;
-			if (wlh==randomPageHandler && url.endsWith("/randx")) { // for random page
-				loadWordToday(mWebView);
+			if (wlh.fetchWord!=0 /*&& !url.endsWith("/randx")*/) { // for random page
+				mWebView.evaluateJavascript("window.randx_mode="+wlh.fetchWord, null);
+				mWebView.evaluateJavascript(randx_on, null);
 			}
 			if(mdbr) {
 				if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
@@ -7699,6 +7741,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(invoker==null) return false;
 			WebViewListHandler wlh = mWebView.weblistHandler;
 			boolean fromPopup = view==wordPopup.mWebView;
+			//if (wlh.fetchWord>0) {
+			//	mWebView.evaluateJavascript(randx_remake, null);
+			//	return true;
+			//}
 			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
 				try {
@@ -7999,7 +8045,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				else if (url.startsWith("http")) {
 					if (wlh==randomPageHandler && url.endsWith("/randx")) { // for random page
-						return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
+						BookPresenter webx = webxford.get(SubStringKey.new_hostKey(url)); //todo opt
+						if (webx!=null && webx.isWebx) {
+							return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(webx.getWebx().getRandx().getBytes()));
+						}
 					}
 					boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
 					boolean merge = invoker.isMergedBook();
@@ -10726,22 +10775,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				postReadContent(mWebView);
 			}
 			pendingWebView=mWebView;
-		}
-	}
-	
-	private void loadWordToday(WebViewmy mWebView) {
-		try {
-			mWebView.evaluateJavascript(new_book(defDicts[2], MainActivityUIBase.this).getWebx().getSyntheticField("wordtoday"), new ValueCallback<String>() {
-				@Override
-				public void onReceiveValue(String value) {
-					CMN.debug("wordtoday::ValueCallback", value);
-					//weblistHandler.alloydPanel.dismiss();
-					
-					//etSearch.setText("mallee");
-				}
-			});
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 	

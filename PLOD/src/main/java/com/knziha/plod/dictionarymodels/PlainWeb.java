@@ -281,7 +281,6 @@ public class PlainWeb extends DictionaryAdapter {
 //						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
 //						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
 //				.build();
-		//enableTls12OnPreLollipop
 		OkHttpClient.Builder builder = new OkHttpClient.Builder()
 				.connectTimeout(5, TimeUnit.SECONDS)
 				.addNetworkInterceptor(headerInterceptor)
@@ -297,6 +296,7 @@ public class PlainWeb extends DictionaryAdapter {
 				//.certificatePinner(getPinnedCerts())
 				//.setSslSocketFactory(NoSSLv3Factory)
 				;
+		enableTls12OnPreLollipop(context, builder);
 		if (jinkeSheaths!=null) {
 			builder.dns(hostname -> {
 				String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
@@ -995,6 +995,23 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public String getSearchUrl() {
 		return search!=null?host+search:host;
+	}
+	
+	public String getRandx() {
+		String randx = "";
+		try {
+			randx = getSyntheticField("randx");
+			if (randx.startsWith("<dopt/>")) { // 插入设置
+				String tmp = "<script>window.host='"+host+"'";
+				if (dopt!=null) {
+					tmp += ";window.dopt="+dopt.toJSONString();
+				}
+				randx = tmp+"</script>"+randx;
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return randx;
 	}
 	
 	public String getSyntheticWebPage() throws IOException {

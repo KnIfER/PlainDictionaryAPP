@@ -3196,7 +3196,7 @@
 			}
 			var className = target.className;
 			if(target.dictInfo) {
-				var p=e.path,d;
+				var p=e.path,d=0;
 				if(!p && e.composedPath) p=e.composedPath();
 				if(p) for(var i=0;(t=p[i])&&i++<5;) if(t==dictsP) {d=1;break;}
 				debug(p,d, dictsP);

@@ -38,6 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
@@ -53,6 +54,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
+import com.knziha.plod.settings.Multiview;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -126,6 +128,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public View toolsBtn;
 	/** 须在render、前后导航时经由{@link #setStar}更新 */
 	public String displaying;
+	
+	/** 取词模式 1=wordToday  2=wordPopup */
+	public int fetchWord;
+	public int lastFetchWord = 1;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
@@ -1134,6 +1140,56 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		mViewMode = mode;
 		if(!ViewUtils.isVisible(this)) {
 			setVisibility(View.VISIBLE);
+		}
+	}
+	
+	public void setFetchWord(int mode) {
+		if (mode == -2) {
+			if (alloydPanel!=null) {
+				MenuItemImpl tagHolder = alloydPanel.fetchWordMenu;
+				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
+				if(dd==null) {
+					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							if(which==2) which = 0;
+							else which++;
+							if (which>=0) {
+								setFetchWord(which);
+							}
+							dialog.dismiss();
+						}
+					};
+					dd = new AlertDialog.Builder(a)
+							.setSingleChoiceLayout(R.layout.singlechoice_plain)
+							.setSingleChoiceItems(new String[]{
+									"直接取词"
+									, "点击翻译"
+									, "关闭"
+							}, 0, listener)
+							.setWikiText("在页面上点击链接进行搜索", null)
+							.setTitle("设置取词模式").show();
+					tagHolder.tag = null;
+				}
+				a.showMenuDialog(tagHolder, tagHolder.mMenu, dd);
+			}
+		} else {
+			if (mode == -1) {
+				mode = lastFetchWord;
+			}
+			if (fetchWord != mode) {
+				lastFetchWord =  fetchWord = mode;
+				if (alloydPanel!=null) {
+					alloydPanel.fetchWordMenu.setChecked(mode > 0);
+				}
+				WebViewmy wv = getWebContext();
+				if (mode > 0) {
+					wv.evaluateJavascript("window.randx_mode=" + mode, null);
+					wv.evaluateJavascript(MainActivityUIBase.randx_on, null);
+				} else {
+					wv.evaluateJavascript(MainActivityUIBase.randx_off, null);
+				}
+			}
 		}
 	}
 	
