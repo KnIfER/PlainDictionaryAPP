@@ -2433,6 +2433,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			placeHolders.clear();
 			chairCount=0;
 			filterCount=0;
+			HashSet<String> map = new HashSet<>();
 			ReadLines:
 			while((line = in.readLine())!=null){
 				int flag = 0;
@@ -2471,12 +2472,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 				}
-				PlaceHolder phI = new PlaceHolder(line);
-				phI.lineNumber = cc++;
-				phI.tmpIsFlag = flag;
-				placeHolders.add(phI);
-				if (chair) {
-					chairCount++;
+				if (map.add(line)) { // 避免重复
+					PlaceHolder phI = new PlaceHolder(line);
+					phI.lineNumber = cc++;
+					phI.tmpIsFlag = flag;
+					placeHolders.add(phI);
+					if (chair) {
+						chairCount++;
+					}
 				}
 			}
 			in.close();
