@@ -124,6 +124,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
+	public long lastSuppressLnkTm;
+	
 	@SuppressLint("StaticFieldLeak")
 	private static BookPresenter EmptyBook;
 	static {

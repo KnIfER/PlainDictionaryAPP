@@ -700,11 +700,22 @@
     	function gn(e,p){return _gn(e, p.firstElementChild);};
 		window.kit |= 0;
 		window.rawAddEvent = window.addEventListener;
-		window.addEventListener = function(a,b,c) {
-			if(b===window.tpshc||b===window.webpc) {
+		window._edEtJts = [];
+		window.addEventListener = function(a,b,c,d) {
+			var b1=b!=window.webpc;
+			// console.log('addEventListener::', a,b,c,d)
+			if(b===window.tpshc||!b1||d) {
 				for(var i=0,fx;fx=frames[i];i++) {
-					if(fx.item && fx.item.contentWindow && (b!=window.webpc||fx.img)) {
-						fx.item.contentWindow.addEventListener(a,b);
+					if(fx.item && (b1||fx.img)) {
+						var w_ = fx.item.contentWindow;
+						if(b1) {
+							if(w_.edEtJts){
+								w_.edEtJts(a, b, c)
+							}
+							_edEtJts.push([a,b,c])
+						} else {
+							w_.addEventListener(a,b,c);
+						}
 					}
 				}
 				return;

@@ -234,7 +234,7 @@ public class BookPresenter
 				app.openImage(sid.get(), current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
 			}
 		}
-	 })*/
+	 }, false, true)*/
 	@Metaline()
 	public final static String imgLoader =StringUtils.EMPTY;
 	
@@ -1075,23 +1075,24 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	static void SelectHtmlObject(MainActivityUIBase a, WebViewmy final_mWebView, int source) {
-		final_mWebView.evaluateJavascript(touchTargetLoader+"selectTouchtarget("+source+")", new ValueCallback<String>() {
+	static void SelectHtmlObject(MainActivityUIBase a, WebViewmy wv, int source) {
+		wv.evaluateJavascript(touchTargetLoader+"selectTouchtarget("+source+")", new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
-				CMN.Log("selectTouchtarget", value);
+				CMN.debug("selectTouchtarget", value);
 				int len = IU.parsint(value, 0);
 				boolean fakePopHandles = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
 				if(len>0) {
 					/* bring in action mode by a fake click on the programmatically  selected text. */
 					if(fakePopHandles) {
-						final_mWebView.forbidLoading=true;
-						final_mWebView.getSettings().setJavaScriptEnabled(false);
-						final_mWebView.getSettings().setJavaScriptEnabled(false);
-						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, final_mWebView.lastX, final_mWebView.lastY, 0);
-						final_mWebView.dispatchTouchEvent(te);
+						wv.forbidLoading=true;
+						wv.getSettings().setJavaScriptEnabled(false);
+						wv.getSettings().setJavaScriptEnabled(false);
+						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, wv.lastX, wv.lastY, 0);
+						wv.lastSuppressLnkTm = CMN.now();
+						wv.dispatchTouchEvent(te);
 						te.setAction(MotionEvent.ACTION_UP);
-						final_mWebView.dispatchTouchEvent(te);
+						wv.dispatchTouchEvent(te);
 						te.recycle();
 						/* restore href attribute */
 					}
@@ -1099,15 +1100,14 @@ function debug(e){console.log(e)};
 					a.showT("选择失败");
 				}
 				if(fakePopHandles) {
-					final_mWebView.postDelayed(() -> {
-						final_mWebView.forbidLoading=false;
-						final_mWebView.getSettings().setJavaScriptEnabled(true);
-						final_mWebView.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
+					wv.postDelayed(() -> {
+						wv.forbidLoading=false;
+						wv.getSettings().setJavaScriptEnabled(true);
+						wv.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
 					}, 300);
 				} else {
-					final_mWebView.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
+					wv.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
 				}
-				
 			}
 		});
 	}
@@ -3134,6 +3134,15 @@ function debug(e){console.log(e)};
 				return presenter.getWebx().getHost();
 			}
 			return "";
+		}
+		
+		@JavascriptInterface
+		public void suppressLnk(int sid) {
+			if(presenter==null) return;
+			WebViewmy wv = findWebview(sid);
+			if (wv!=null) {
+				wv.lastSuppressLnkTm = CMN.now();
+			}
 		}
 		
         @JavascriptInterface

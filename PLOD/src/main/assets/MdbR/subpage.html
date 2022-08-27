@@ -26,7 +26,13 @@ var debug=parent.window.debug;
 if(!debug) debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
-
+window._edEtJts={};
+window.edEtJts=function(a, b, c){
+	if(!_edEtJts[b]) {
+		window.addEventListener(a, b, c);
+		_edEtJts[b] = 1;
+	}
+};
 window.addEventListener('load',wrappedOnLoadFunc,false);
 window.addEventListener('click',wrappedClickFunc);
 window.addEventListener('mousedown',wrappedDown);
@@ -40,7 +46,7 @@ window.addEventListener('touchstart',wrappedDown);
 // 	e.stopPropagation();
 // }
 function wrappedOnLoadFunc(){
-	window.addEventListener('click',parent.window.tpshc);
+	window.addEventListener('click',parent.window.tpshc); //wtf??
 	// //document.body.style.fontSize=35+'px';
 	// highlight(null);
 	// //debug('frameAt !! '+frameAt);
@@ -54,7 +60,10 @@ function wrappedOnLoadFunc(){
 		debug('mdpage loaded', fe.dictInfo.name, 'tpshc!=null:'+parent.tpshc!=null);
 		var inf=fe.dictInfo;
 		if(pw) {
-			window.addEventListener('click',pw.tpshc);
+			// window.addEventListener('click',pw.tpshc);
+			for(var i=0,j;j=pw._edEtJts[i++];) {
+				edEtJts(j[0], j[1], j[2])
+			}
 		}
 		if(!fe.scrollExpand) {
 			if(inf.lastX || inf.lastY)

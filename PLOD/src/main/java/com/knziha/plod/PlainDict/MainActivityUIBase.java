@@ -247,7 +247,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -423,14 +422,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public final static String ce_on="document.body.contentEditable=!0";
 	public final static String ce_off="document.body.contentEditable=!1";
 	/**if(!window.randx) {
+	 	//console.log('randxClick...init');
 		window.randx=1;
-		document.addEventListener('click', function(e){
+	 	window.addEventListener('click', function(e){
 			var p=e.path,t=e.srcElement;
 			if(!p && e.composedPath) p=e.composedPath();
-			if(p) for(var i=0;(t=p[i])&&i++<10;) if(t.tagName==='A') {break;}
-			// console.log('addEventListener...', t);
+			if(p) for(var i=0;(t=p[i])&&i++<5;) if(t.tagName==='A') {break;}
+			//console.log('randxClick...', t);
 			if(t && t.tagName==='A') {
-				// console.log(t.innerText);
+				 console.log(t.innerText);
 	 			if(window.randx_mode!=0){
 					 e.preventDefault();
 					 e.stopPropagation();
@@ -448,8 +448,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					 }
 					return true;
 				 }
-			} else { window._touchtarget = t }
-		},true);
+			} else { window._touchtarget = t; app.suppressLnk(sid.get()) }
+		},true,true);
 	 } */
 	@Metaline
 	public final static String randx_on="";
@@ -7741,10 +7741,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(invoker==null) return false;
 			WebViewListHandler wlh = mWebView.weblistHandler;
 			boolean fromPopup = view==wordPopup.mWebView;
-			//if (wlh.fetchWord>0) {
-			//	mWebView.evaluateJavascript(randx_remake, null);
-			//	return true;
-			//}
+			if (mWebView.lastSuppressLnkTm >0) {
+				if (CMN.now()- mWebView.lastSuppressLnkTm <350) {
+					if (wlh.fetchWord>0) {
+						mWebView.evaluateJavascript(randx_remake, null);
+					}
+					return true;
+				}
+				mWebView.lastSuppressLnkTm = 0;
+			}
 			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
 				try {
