@@ -992,7 +992,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	public boolean isPopupShowing() {
+	public final boolean isPopupShowing() {
 		return alloydPanel!=null && alloydPanel.isVisible();
 	}
 	

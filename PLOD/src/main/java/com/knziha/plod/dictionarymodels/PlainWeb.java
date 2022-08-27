@@ -163,6 +163,8 @@ public class PlainWeb extends DictionaryAdapter {
 	private JSONObject dopt;
 	private int lastMirror;
 	private int premature = 85;
+	private String synthesis_cors;
+	private ArrayList<Pattern> synthesis_cors_regex;
 	
 	public boolean hasHosts() {
 		return jinkeSheaths!=null && jinkeSheaths.size()>0;
@@ -279,36 +281,34 @@ public class PlainWeb extends DictionaryAdapter {
 //						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
 //						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
 //				.build();
-		OkHttpClient klient = enableTls12OnPreLollipop(context,
-				new OkHttpClient.Builder()
+		//enableTls12OnPreLollipop
+		OkHttpClient.Builder builder = new OkHttpClient.Builder()
 				.connectTimeout(5, TimeUnit.SECONDS)
 				.addNetworkInterceptor(headerInterceptor)
 				//.protocols(Collections.singletonList(Protocol.HTTP_1_1))
 				.cache(cacheDir==null ? null :
 						new Cache(new File(cacheDir, "k3cache")
 								, cacheSize)) // 配置缓存
-				.dns(new Dns() {
-					@Override
-					public List<InetAddress> lookup(String hostname) throws UnknownHostException {
-						String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
-						CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
-						if (addr != null) {
-							return Collections.singletonList(InetAddress.getByName(addr));
-						}
-						//else return Collections.singletonList(InetAddress.getByName(hostname));
-						return Dns.SYSTEM.lookup(hostname);
-					}
-				})
+				.hostnameVerifier(DO_NOT_VERIFY)
 //				.sslSocketFactory(NoSSLv3Factory)
 //				.connectionSpecs(Arrays.asList(ConnectionSpec.CLEARTEXT, spec2, spec1))
 				//.readTimeout(5, TimeUnit.SECONDS)
 				//.setCache(getCache())
 				//.certificatePinner(getPinnedCerts())
 				//.setSslSocketFactory(NoSSLv3Factory)
-				.hostnameVerifier(DO_NOT_VERIFY)
-		)
-				.build();
-		return klient;
+				;
+		if (jinkeSheaths!=null) {
+			builder.dns(hostname -> {
+				String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
+				CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
+				if (addr != null) {
+					return Collections.singletonList(InetAddress.getByName(addr));
+				}
+				//else return Collections.singletonList(InetAddress.getByName(hostname));
+				return Dns.SYSTEM.lookup(hostname);
+			});
+		}
+		return builder.build();
 	}
 	public Object getClientResponse(Context context, String url, String host, List<Pair> moders, Map<String, String> headers, boolean forServer) {
 		//if(true) return null;
@@ -405,7 +405,6 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		return null;
 	}
-	
 	
 	/**
 	 if(!app.PLODKit) {
@@ -705,6 +704,23 @@ public class PlainWeb extends DictionaryAdapter {
 					this.message = tmp;
 					CMN.Log(context, tmp);
 					break;
+				case "settings":
+					dopt = website.getJSONObject("settings");
+					break;
+				case "synthesis_cors":
+					synthesis_cors = val.toString();
+					break;
+				case "synthesis_cors_regex":
+					tmp = val.toString();
+					synthesis_cors_regex = new ArrayList<>();
+					for (String r:tmp.split("\r\n")) {
+						try {
+							synthesis_cors_regex.add(Pattern.compile(r));
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+					}
+					break;
 			}
 		}
 		if(_host==null) _host=getRandomHost();
@@ -744,8 +760,6 @@ public class PlainWeb extends DictionaryAdapter {
 		
 		parseJinke(context);
 		CMN.Log("jinkeSheaths::", jinkeSheaths);
-		
-		getDopt();
 	}
 	
 	//粗暴地排除
@@ -984,25 +998,28 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public String getSyntheticWebPage() throws IOException {
-		String synthesis;
+		String synthesis = getField("synthesis");
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			try {
 				String p = f.getPath();
-				SU.Log("getSyntheticWebPage asset path::", p, p.substring(p.indexOf("/", 5)));
+				CMN.debug("getSyntheticWebPage asset path::", dopt, p, p.substring(p.indexOf("/", 5)));
 				InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
 				if(input!=null) {
 					JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
 					synthesis = json.getString("synthesis");
-					if(synthesis!=null) {
-						return synthesis;
-					}
 				}
 			} catch (IOException e) {
 				CMN.Log(e);
 			}
 		}
-		synthesis = getField("synthesis");
 		if(synthesis!=null) {
+			if (synthesis.startsWith("<dopt/>")) { // 插入设置
+				String tmp = "<script>window.host='"+host+"'";
+				if (dopt!=null) {
+					tmp += ";window.dopt="+dopt.toJSONString();
+				}
+				synthesis = tmp+"</script>"+synthesis;
+			}
 			return synthesis;
 		}
 		return "当前模式（合并的多页面视图）暂不支持查看在线内容";
@@ -1038,7 +1055,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
-	public InputStream modifyRes(Context context, String url) {
+	public WebResourceResponse modifyRes(Context context, String url, boolean merge) {
 		JSONArray mods = null;
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			String p = f.getPath();
@@ -1067,11 +1084,20 @@ public class PlainWeb extends DictionaryAdapter {
 						//CMN.Log("modifyRes::???:::", file.getName());
 						InputStream ret = ViewUtils.fileToStream(context, file);
 						//CMN.Log("modifyRes::", file.getPath());
-						return ret;
+						WebResourceResponse resp=new WebResourceResponse("*/*", "utf8", ret);
+						return resp;
 					} catch (Exception e) {
 						CMN.debug(url,"\n",e);
 						return null;
 					}
+				}
+			}
+		}
+		if (merge && synthesis_cors!=null && url.contains(synthesis_cors)) {
+			for (Pattern p:synthesis_cors_regex) {
+				if (p.matcher(url).find()) {
+					CMN.debug("代访资源绕过跨域::", url);
+					return (WebResourceResponse) getClientResponse(context, url, null, null, null, false);
 				}
 			}
 		}

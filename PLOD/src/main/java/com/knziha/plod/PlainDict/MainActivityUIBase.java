@@ -3556,13 +3556,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	/** see{@link #collectDisplayingBooks} */
 	public String retrieveDisplayingBooks(String books) {
 		String ret = "";
 		if (!TextUtils.isEmpty(books)) {
 			String[] booksArr = books.split(";");
 			int cc=0;
 			boolean needDunhao = false;
-			for (int i = 0; i < booksArr.length && cc<3; i++) {
+			for (int i = 0; i < booksArr.length && cc<15; i++) {
 				if (needDunhao) {
 					ret += "、 ";
 					needDunhao = false;
@@ -3581,7 +3582,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ret += bookName;
 					cc++;
 					needDunhao = true;
-				} catch (Exception e) { }
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			}
 		}
 		return ret;
@@ -3595,52 +3598,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return prepareHistoryCon().getBookName(bid);
 	}
 	
+	
+	/** see{@link #retrieveDisplayingBooks} */
 	public String collectDisplayingBooks(String books, WebViewListHandler wlh) {
 		String ret=books==null?"":books;
 		if (wlh.isViewSingle()) {
 			WebViewmy wv = wlh.getWebContext();
 			String url = wv.getUrl();
-			long bid = wv.presenter.getId();
 			if (url!=null) {
-				int schemaIdx = url.indexOf(":");
-				CMN.debug("bid::url::", url);
-				boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4), baseUrl=false;
-				if(mdbr) {
-					if (url.regionMatches(schemaIdx + 12, "merge", 0, 5)) {
-						StringTokenizer tokens = new StringTokenizer(url, "-");
-						boolean first = true;
-						while (tokens.hasMoreTokens()) {
-							String tk = tokens.nextToken();
-							if (first) {
-								int idx = tk.indexOf("&exp=");
-								if (idx > 0) {
-									tk = tk.substring(idx + 5);
-									first = false;
-								} else {
-									continue;
-								}
-							}
-							if (tk.startsWith("d")) {
-								int ed1 = tk.indexOf("_"); if(ed1<0) ed1=Integer.MAX_VALUE;
-								int ed2 = tk.indexOf("&"); if(ed2<0) ed2=Integer.MAX_VALUE;
-								int ed = Math.min(ed1, ed2);
-								if(ed<0) ed=tk.length();
-								tk = tk.substring(1, ed);
-								bid = IU.TextToNumber_SIXTWO_LE(tk);
-								CMN.debug("bid::", tk, bid, loadManager.getBookById(bid).getDictionaryName());
-								String thisIs = bid + ";";
-								if (books!=null) {
-									if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
-										ret += thisIs;
-									}
-								} else {
+				wv.recUrl(url);
+				if(wv.mdbr) {
+					if (wv.merge) {
+						for (BookPresenter bp:wv.frames) {
+							String thisIs = bp.getId() + ";";
+							if (books!=null) {
+								if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
 									ret += thisIs;
 								}
+							} else {
+								ret += thisIs;
 							}
 						}
-						bid = -1;
 					}
 					else {
+						int schemaIdx = url.indexOf(":");
+						long bid = -1;
 						if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
 							int idx = schemaIdx + 12 + 7 + 1, ed=url.indexOf("_", idx);
 							//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
@@ -3653,17 +3635,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								bid = getMdictServer().getBookIdByURLPath(url, idx+1, ed);
 							}
 						}
-					}
-				}
-				if (bid!=-1) {
-					CMN.debug("bid::", bid, loadManager.getBookById(bid).getDictionaryName());
-					String thisIs = bid + ";";
-					if (books!=null) {
-						if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
-							ret += thisIs;
+						if (bid!=-1) {
+							CMN.debug("bid::", bid, loadManager.getBookById(bid).getDictionaryName());
+							String thisIs = bid + ";";
+							if (books!=null) {
+								if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
+									ret += thisIs;
+								}
+							} else {
+								ret += thisIs;
+							}
 						}
-					} else {
-						ret += thisIs;
 					}
 				}
 			}
@@ -7470,6 +7452,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
 				}
 				mWebView.initScale();
+				mWebView.recUrl(url);
 			}
 			if(view==wordPopup.mWebView) {
 				wordPopup.onPageStart(url);
@@ -7484,6 +7467,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (mWebView.bPageStarted) {
 				mWebView.bPageStarted = false;
+				mWebView.recUrl(url);
 			} else {
 				return;
 			}
@@ -8057,13 +8041,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else {
 						for (PlainWeb book : wlh.moders) { // java.util.ConcurrentModificationException
-							InputStream input = book.modifyRes(MainActivityUIBase.this, url);
-							if (input != null) {
+							WebResourceResponse resp = book.modifyRes(MainActivityUIBase.this, url, false);
+							if (resp != null) {
 								CMN.debug("修改了::", url);
-								WebResourceResponse webResourceResponse;
-								webResourceResponse = new WebResourceResponse("*/*", "utf8", input);
-								//webResourceResponse.setResponseHeaders(headers);
-								return webResourceResponse;
+								return resp;
 							}
 						}
 					}
@@ -8085,29 +8066,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 						else {
-							if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
-								//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
-								if(server.webResHandler.shouldUseClientResponse(url)) {
-									return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
-								}
-							}
 							try { //todo opt
-								InputStream input = null;
-								for (BookPresenter book:weblistHandler.frames) { // java.util.ConcurrentModificationException
-									if(book!=null && book.getIsWebx()) {
-										input = book.getWebx().modifyRes(MainActivityUIBase.this, url);
-										if(input!=null) {
+								if (mWebView.merge) {
+									for (BookPresenter wb:mWebView.webx_frames) {
+										PlainWeb webx = wb.getWebx();
+										if (webx.shouldUseClientResponse(url)) {
+											return (WebResourceResponse) webx.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+										}
+										WebResourceResponse resp = webx.modifyRes(MainActivityUIBase.this, url, true);
+										if(resp!=null) { //todo opt
+											// requesting web data on merged page. or...
 											CMN.debug("修改了::", url);
 											WebResourceResponse webResourceResponse;
-											webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
-											return webResourceResponse;
+											return resp;
 										}
 									}
-								}
-								if(true) { // requesting web data on mergedframe.
-									BookPresenter socialbook = new_book(defDicts[4], MainActivityUIBase.this);
-									WebResourceResponse resp = (WebResourceResponse)socialbook.getWebx().getClientResponse(MainActivityUIBase.this, url, null, null, null, false);
-									return resp;
+									//if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
+									//	//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
+									//	if(server.webResHandler.shouldUseClientResponse(url)) {
+									//		return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+									//	}
+									//}
 								}
 							} catch (Exception e) {
 								CMN.debug(url,"\n",e);

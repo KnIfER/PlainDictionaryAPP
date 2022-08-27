@@ -48,6 +48,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.math.MathUtils;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PeruseView;
@@ -67,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
 	public long currentPos;
@@ -288,6 +290,59 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		super.loadUrl(url);
 		drawRect=false;
 		isloading=true;
+		recUrl(url);
+	}
+	
+	public String url;
+	public boolean mdbr;
+	public boolean merge;
+	public ArrayList<BookPresenter> frames = new ArrayList<>();
+	public ArrayList<BookPresenter> webx_frames = new ArrayList<>();
+	
+	public final void recUrl(String url) {
+		if (url!=null && !url.equals(this.url)) {
+			this.url = url;
+			int schemaIdx = url.indexOf(":");
+			mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
+			merge = mdbr && url.regionMatches(schemaIdx + 12, "merge", 0, 5);
+			if (mdbr && merge) {
+				long bid;
+				StringTokenizer tokens = new StringTokenizer(url, "-");
+				boolean first = true;
+				frames.clear();
+				webx_frames.clear();
+				MainActivityUIBase a = presenter.a;
+				if(a!=null)
+				while (tokens.hasMoreTokens()) {
+					String tk = tokens.nextToken();
+					if (first) {
+						int idx = tk.indexOf("&exp=");
+						if (idx > 0) {
+							tk = tk.substring(idx + 5);
+							first = false;
+						} else {
+							continue;
+						}
+					}
+					char fc = tk.length() == 0 ? 0 : tk.charAt(0);
+					if (fc=='d' || fc=='w') {
+						int ed1 = tk.indexOf("_"); if(ed1<0) ed1=Integer.MAX_VALUE;
+						int ed2 = tk.indexOf("&"); if(ed2<0) ed2=Integer.MAX_VALUE;
+						int ed = Math.min(ed1, ed2);
+						if(ed<0) ed=tk.length();
+						tk = tk.substring(1, ed);
+						bid = IU.TextToNumber_SIXTWO_LE(tk);
+						BookPresenter book = a.getBookByIdNoCreation(bid);
+						if (book!=a.EmptyBook) {
+							frames.add(book);
+							if (fc=='w') {
+								webx_frames.add(book);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@Override

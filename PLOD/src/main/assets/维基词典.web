@@ -403,6 +403,8 @@
 91.198.174.208 upload.wikimedia.org
 208.80.154.160 irc.wikimedia.org
 208.80.154.53 ganglia.wikimedia.org"
+	,"synthesis_cors":"wik"
+	,"synthesis_cors_regex":"wik.(ionary|.edia|source|data|quote|news|books|versity|voyage)|mediawiki"
 	,"synthesis":"<dopt/>
 		<div id='text'></div>
 		<style>
