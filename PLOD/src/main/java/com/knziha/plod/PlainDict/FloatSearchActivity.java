@@ -846,6 +846,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
             case R.id.toolbar_action5:
 				weblistHandler.togSchPage();
             break;
+			default:
+				return super.onMenuItemClick(item);
         }
 		if(closeMenu)
 			closeIfNoActionView(mmi);

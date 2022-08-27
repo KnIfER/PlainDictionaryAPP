@@ -6869,6 +6869,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				AllMenus = new MenuBuilder(this);
 				AllMenus.tag = weblistHandler;
 			}
+			if (!(AllMenusStamp instanceof ArrayList)) {
+				AllMenusStamp = new ArrayList<>(AllMenusStamp);
+			}
 			AllMenusStamp.add(ret=new MenuItemImpl(AllMenus, 0, id, 0, 0, null, 0));
 		}
 		return ret;

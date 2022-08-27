@@ -303,7 +303,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				dictPicker.toggle();
 			} break;
 			case R.id.gTrans:{
-				CMN.Log("R.id.gTrans::!!!)");
+				CMN.debug("R.id.gTrans::!!!");
 				MenuItemImpl mSTd = a.getMenuSTd(R.id.translate);
 				mSTd.isLongClicked = false;
 				a.onMenuItemClick(mSTd);
