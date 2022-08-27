@@ -490,6 +490,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			try {
 				mMergedBook = new BookPresenter(new File("empty"), null, 1);
 				mMergedBook.isMergedBook(true);
+				mMergedBook.a = a;
 				mMergedBook.opt = a.opt;
 			} catch (IOException ignored) { }
 		}
