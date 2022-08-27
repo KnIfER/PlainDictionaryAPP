@@ -131,7 +131,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	/** 取词模式 1=wordToday  2=wordPopup */
 	public int fetchWord;
-	public int lastFetchWord = 1;
+	public int lastFetchWord = 2;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
@@ -1179,12 +1179,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				mode = lastFetchWord;
 			}
 			if (fetchWord != mode) {
-				lastFetchWord =  fetchWord = mode;
+				fetchWord = mode;
 				if (alloydPanel!=null) {
 					alloydPanel.fetchWordMenu.setChecked(mode > 0);
 				}
 				WebViewmy wv = getWebContext();
 				if (mode > 0) {
+					lastFetchWord = mode;
 					wv.evaluateJavascript("window.randx_mode=" + mode, null);
 					wv.evaluateJavascript(MainActivityUIBase.randx_on, null);
 				} else {

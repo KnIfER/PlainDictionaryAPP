@@ -128,17 +128,6 @@
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
 					/>
-				<ImageView
-					android:id="@+id/bundle"
-					android:layout_width="@dimen/_35_"
-					android:layout_height="match_parent"
-					android:background="@drawable/listviewselector0"
-					android:src="@drawable/book_bundle"
-					android:padding="-1dp"
-					android:tint="@color/SelHeaderBlue"
-					android:foreground="@drawable/popup_background3__"
-					android:alpha="0.2"
-					/>
 				<com.knziha.plod.widgets.CheckableImageView
 					android:id="@+id/autoBtn"
 					android:layout_width="@dimen/_35_"
@@ -150,6 +139,17 @@
 					android:padding="5dp"
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
+					/>
+				<ImageView
+					android:id="@+id/bundle"
+					android:layout_width="@dimen/_35_"
+					android:layout_height="match_parent"
+					android:background="@drawable/listviewselector0"
+					android:src="@drawable/book_bundle"
+					android:padding="-1dp"
+					android:tint="@color/SelHeaderBlue"
+					android:foreground="@drawable/popup_background3__"
+					android:alpha="0.2"
 					/>
 			</LinearLayout>
 		</HorizontalScrollView>
