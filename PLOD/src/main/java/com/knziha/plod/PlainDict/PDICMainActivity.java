@@ -2231,7 +2231,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	protected void onResume() {
-		CMN.debug("onResume");
+		//CMN.debug("onResume");
 		super.onResume();
 		if (bNeedSaveViewStates && systemIntialized &&!PDICMainAppOptions.getSimpleMode()){
 			bNeedSaveViewStates = false;

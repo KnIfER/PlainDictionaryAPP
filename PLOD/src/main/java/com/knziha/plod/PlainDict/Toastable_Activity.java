@@ -216,7 +216,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		GlobalOptions.width=(int)(dm.widthPixels/GlobalOptions.density);
 		GlobalOptions.height=(int)(dm.heightPixels/GlobalOptions.density);
 		GlobalOptions.btnMaxWidth=Math.min((int)mResource.getDimension(R.dimen.btnMaxWidth), dm.widthPixels/8);
-		CMN.Log("MaxWidth::", (int)mResource.getDimension(R.dimen.btnMaxWidth), GlobalOptions.btnMaxWidth);
+		CMN.debug("MaxWidth::", (int)mResource.getDimension(R.dimen.btnMaxWidth), GlobalOptions.btnMaxWidth);
 	}
 	
 	@Override
@@ -256,7 +256,7 @@ public class Toastable_Activity extends AppCompatActivity {
 						checkLaunch(savedInstanceState);
 					}, false);
 				}
-			} catch (Exception e) { CMN.Log(e); }finally {
+			} catch (Exception e) { CMN.debug(e); }finally {
 				if(!launching[0])
 					checkLaunch(savedInstanceState);
 			}

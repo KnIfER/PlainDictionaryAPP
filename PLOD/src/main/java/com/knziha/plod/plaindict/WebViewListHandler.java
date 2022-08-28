@@ -297,7 +297,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void removeAllViews() {
-		CMN.Log("removeAllViews!!!");
+		//CMN.Log("removeAllViews!!!");
 		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:contentUIData.webholder).removeAllViews();
 	}
 	
@@ -532,7 +532,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			bShowingInPopup = false;
 		}
 		if(bMergingFrames!=mergeWebHolder) {
-			CMN.Log("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
+			CMN.debug("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
 			if(mergeWebHolder==0) {
 				contentUIData.webcontentlister.setAlpha(1);
 				//if(mMergedBook!=null) {
@@ -881,7 +881,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			this.multiDicts=multiDicts;
 			changed = true;
 		}
-		CMN.debug("view::setViewMode:: changed=", changed, bMerge);
+		//CMN.debug("view::setViewMode:: changed=", changed, bMerge);
 		if(changed) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;

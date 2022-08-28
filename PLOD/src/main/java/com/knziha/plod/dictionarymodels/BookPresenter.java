@@ -2787,7 +2787,7 @@ function debug(e){console.log(e)};
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv!=null) {
-					CMN.debug("view::", presenter, presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
+					//CMN.debug("view::", presenter, presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
 					boolean changed = presenter.getId()!=bid || wv.presenter!=presenter;
 					if (changed) {
 						setBook(presenter.a.getBookByIdNoCreation(bid));
@@ -2802,7 +2802,7 @@ function debug(e){console.log(e)};
 						}
 					}
 					if (changed) {
-						CMN.debug("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
+						//CMN.debug("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
 					}
 					if (presenter.hasFilesTag() && !hasFiles) {
 						//wv.hasFilesTag = true;
@@ -2818,7 +2818,7 @@ function debug(e){console.log(e)};
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
-					CMN.debug("view::changed!!!", entryKey);
+					//CMN.debug("view::changed!!!", entryKey);
 					wv.word = entryKey;
 					wv.frameAt = frameAt;
 				}
@@ -3185,7 +3185,7 @@ function debug(e){console.log(e)};
 				}
 				MainActivityUIBase a = presenter.a;
 				WebViewmy wv = findWebview(sid);
-				CMN.debug("popupWord::ivk::", presenter, wv, mergeView);
+				//CMN.debug("popupWord::ivk::", presenter, wv, mergeView);
 				a.popupWord(key, null, frameAt, wv);
 				a.wordPopup.tapped = true;
 				if (false) {

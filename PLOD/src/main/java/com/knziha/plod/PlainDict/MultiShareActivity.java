@@ -318,8 +318,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		CMN.debug("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
-		CMN.debug("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (peruseView ==null|| peruseView.isWindowDetached()));
+		//CMN.debug("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
+		//CMN.debug("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (peruseView ==null|| peruseView.isWindowDetached()));
 		if(!NewIntentCalled && systemIntialized && startLis) {
 			//RestoreUccOrExit(1);
 			if(allHidden() && (ucc==null||ucc.detached()) && (peruseView ==null|| peruseView.isWindowDetached())) {

@@ -306,7 +306,7 @@ public class PlainWeb extends DictionaryAdapter {
 		if (jinkeSheaths!=null) {
 			builder.dns(hostname -> {
 				String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
-				CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
+				// CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
 				if (addr != null) {
 					return Collections.singletonList(InetAddress.getByName(addr));
 				}
@@ -1048,7 +1048,7 @@ public class PlainWeb extends DictionaryAdapter {
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			try {
 				String p = f.getPath();
-				SU.Log("getSyntheticField asset path::", p, p.substring(p.indexOf("/", 5)));
+				//SU.Log("getSyntheticField asset path::", p, p.substring(p.indexOf("/", 5)));
 				InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
 				if(input!=null) {
 					JSONObject json = JSONObject.parseObject(BU.StreamToString(input));

@@ -27,7 +27,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
 
 public class TestHelper {
 	static{
-		CMN.Log("IC_LOADED!!!");
+		CMN.debug("TestHelper_LOADED!!!");
 	}
 	
 	static long now;

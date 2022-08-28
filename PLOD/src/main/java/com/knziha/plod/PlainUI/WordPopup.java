@@ -796,7 +796,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (moveView.FVDOCKED && moveView.Maximized && PDICMainAppOptions.getResetMaxClickSearch()) {
 				moveView.Dedock();
 			}
-			CMN.Log("poping up ::: ", a.ActivedAdapter);
+//			CMN.Log("poping up ::: ", a.ActivedAdapter);
 			if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !moveView.FVDOCKED) {
 				float ty = 0;
 				float now = 0;
@@ -824,13 +824,13 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 								now += ((ViewGroup.MarginLayoutParams) a.contentview.getLayoutParams()).topMargin;
 							}//333 contentSnackHolder
 						} catch (Exception e) {
-							CMN.Log(e);
+							CMN.debug(e);
 						}
 					}
 					float pad = 56 * a.dm.density;
 					if (a instanceof FloatSearchActivity)
 						now += ((FloatSearchActivity) a).getPadHoldingCS();
-					CMN.Log("now",now);
+//					CMN.debug("now",now);
 					if (now < targetRoot.getHeight() / 2) {
 						ty = now + pad;
 					} else {
@@ -980,7 +980,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private void SearchOne(AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
 		int idx = -1, cc = 0;
 		resetPreviewIdx();
-		CMN.debug("SearchOne::", popupKey);
+		//CMN.debug("SearchOne::", popupKey);
 		if (popupKey != null) {
 			String keykey;
 			int size = loadManager.md_size;
@@ -997,7 +997,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			BookPresenter webx = null;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 			int SearchMode = PDICMainAppOptions.getClickSearchMode();
-			CMN.Log("SearchMode", SearchMode);
+			//CMN.debug("SearchMode", SearchMode);
 			boolean bForceJump = false;
 			BookPresenter CCD = this.CCD;
 			if (SearchMode == 2) {/* 仅搜索当前词典 */
@@ -1230,7 +1230,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
-		CMN.debug("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
+		//CMN.debug("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;

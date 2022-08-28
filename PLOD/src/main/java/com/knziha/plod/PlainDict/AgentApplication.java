@@ -144,7 +144,7 @@ public class AgentApplication extends Application {
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
-		CMN.Log("onTerminate");
+		CMN.debug("onTerminate");
 		System.exit(0);
 	}
 
@@ -180,7 +180,7 @@ public class AgentApplication extends Application {
 	}
 
 	public void closeDataBases() {
-		CMN.Log("关闭数据库");
+		CMN.debug("关闭数据库");
 		LexicalDBHelper vI;
 		for(MyPair<String, LexicalDBHelper> itemI:AppDatabases){
 			vI = itemI.value;

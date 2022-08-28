@@ -278,7 +278,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					}
 				}
 				else {
-					//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
+					//if(Build.VERSION.SDK_INT>=22)...// kitkat's webview ... page height ... wrap_content not work!
 					WebViewmy mWebView;
 					if(bUseDictView) {
 						presenter.initViewsHolder(a);
@@ -334,7 +334,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mWebView.jointResult=jointResult;
 		}
 		else if(bUseMergedUrl) {
-			CMN.debug("mergedUrl::", mergedUrl);
+			//CMN.debug("mergedUrl::", mergedUrl);
+			if(mergedUrl==null)
+				mergedUrl = new StringBuilder("http://mdbr.com/merge.jsp?q=");
 			if (mergedUrl.length()>8000) {
 				int idx = mergedUrl.indexOf("&exp=");
 				String exp = mergedUrl.subSequence(idx+5, mergedUrl.length()).toString();
@@ -352,7 +354,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					}
 					mergedUrl.setLength(idx);
 					mergedUrl.append("&xp=").append(aso);
-					CMN.debug("mergedUrl::compress::", aso.length(), exp.length());
+					//CMN.debug("mergedUrl::compress::", aso.length(), exp.length());
+					//CMN.debug("mergedUrl::", mergedUrl);
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
@@ -360,7 +363,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			if (weblistHandler.bDataOnly) {
 				mergedUrl.append("&popup=true");
 			}
-			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.getSettings().setSupportZoom(true);
 			mWebView.loadUrl(mergedUrl.append("&did=").append(did).toString());
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");

@@ -503,7 +503,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("/")==0) {
 				int sid = uri.lastIndexOf(".");
 				if(sid>0 && sid<uri.length()-2) {
-					SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+					//SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 					if(presenter.isHasExtStyle()
 							&& uri.endsWith(".css")
 							&& uri.regionMatches(1, presenter.getDictionaryName(), 0, sid-1))

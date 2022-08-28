@@ -323,9 +323,9 @@ public class ViewUtils {
 				dialog.dismiss();
 				dialog.show();
 				dialog.setOnDismissListener(disLis);
-				CMN.debug("ensureTopmost::reshow!!!");
+				//CMN.debug("ensureTopmost::reshow!!!");
 			}
-			else CMN.debug("ensureTopmost::same!!!");
+			//else CMN.debug("ensureTopmost::same!!!");
 		}
 	}
 	
@@ -841,7 +841,7 @@ public class ViewUtils {
 	}
 	
 	public final static void TapSch(MainActivityUIBase a, WebViewmy mWebView) {
-		CMN.Log("onPageFinished::popuping...加载");
+		//CMN.debug("onPageFinished::popuping...加载");
 		try {
 			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET2/" + "tapSch.js")), null);
 		} catch (Exception e) { CMN.Log(e);}

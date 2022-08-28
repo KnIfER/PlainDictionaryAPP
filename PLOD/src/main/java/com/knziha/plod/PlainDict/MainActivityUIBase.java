@@ -3662,7 +3662,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (wlh.isViewSingle()) {
 			WebViewmy wv = wlh.getWebContext();
 			String url = wv.getUrl();
-			CMN.debug("collectDisplayingBooks::viewSingle", url, wv.url);
 			if (url!=null) {
 				wv.recUrl(url);
 				long bid = -1;
@@ -3703,7 +3702,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				if (bid!=-1) {
-					CMN.debug("bid::", bid, loadManager.getBookById(bid).getDictionaryName());
 					String thisIs = bid + ";";
 					if (books!=null) {
 						if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
@@ -3736,7 +3734,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
-		CMN.debug("collectDisplayingBooks::ret", ret);
+		//CMN.debug("collectDisplayingBooks::ret", ret);
 		return ret;
 	}
 	
@@ -7583,7 +7581,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						int ed = url.indexOf("&", idx); if(ed<0) ed=url.length();
 						wlh.setStar(/*mWebView.word = */URLDecoder.decode(url.substring(idx, ed)));
 						mWebView.currentPos = did;
-						CMN.debug("view::merged::changed!!!", wlh.displaying);
+						//CMN.debug("view::merged::changed!!!", wlh.displaying);
 						wlh.changeViewMode(mWebView, url);
 					}
 				}
@@ -8145,7 +8143,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 								Response ret = getMdictServer().handle(req);
 								if(ret!=null) {
-									CMN.debug("WebResourceResponse::", ret.getMimeType());
+									//CMN.debug("WebResourceResponse::", ret.getMimeType());
 									String mime = ret.getMimeType();
 									int idx=mime.indexOf(";");
 									if(idx>0) mime = mime.substring(0, idx);
@@ -8322,7 +8320,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 								Response ret = getMdictServer().handle(req);
 								if(ret!=null) {
-									CMN.debug("WebResourceResponse::", ret.getMimeType());
+									//CMN.debug("WebResourceResponse::", ret.getMimeType());
 									String mime = ret.getMimeType();
 									int idx=mime.indexOf(";");
 									if(idx>0) mime = mime.substring(0, idx);
@@ -8538,7 +8536,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
 					int sid = uri.lastIndexOf(".");
 					if(sid>0 && sid<uri.length()-2) {
-						SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+						//SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 						if(presenter.isHasExtStyle()
 								&& uri.endsWith(".css")
 								&& uri.regionMatches(1, presenter.getDictionaryName(), 0, sid-1))
@@ -9263,7 +9261,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		CMN.debug("onActivityResult::", requestCode, resultCode);
+		//CMN.debug("onActivityResult::", requestCode, resultCode);
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
 			case 0: {

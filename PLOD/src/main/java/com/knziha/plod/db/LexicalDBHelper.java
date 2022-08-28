@@ -454,7 +454,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param folder the favorite folder id.
 	 * */
 	public long insert(MainActivityUIBase a, String lex, long folder, WebViewListHandler weblist) {
-    	CMN.Log("insert");
+    	//CMN.debug("insert");
 		isDirty=true;
 		increaseFavVersion(folder);
 		if (folder==-1) {
@@ -569,7 +569,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		if (testDBV2) {
 			return updateHistoryTerm(a, lex, 0, weblist);
 		} else {
-			CMN.Log("insertUpdate");
+			//CMN.debug("insertUpdate");
 			incrementDBVersion(-1L);
 			long ret=-1;
 			if(!GetIsFavoriteTerm(lex, -1)) {

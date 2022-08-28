@@ -113,9 +113,10 @@ public class AlloydPanel extends PlainAppPanel {
 //		}
 	}
 	
+	@SuppressLint("MissingSuperCall")
 	@Override
 	protected void onDismiss() {
-		CMN.Log("onDismiss::");
+//		CMN.Log("onDismiss::");
 //		super.onDismiss();
 //		if (mSettingsChanged!=0) {
 //			//a.currentViewImpl.checkSettings(true, true);
