@@ -3402,7 +3402,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public long GetAddHistory(String key) {
+	public long GetAddHistory(String key, WebViewListHandler wlh) {
 		if(key!=null) {
 			key = key.trim();
 		}
@@ -3410,7 +3410,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (TextUtils.equals(lastInsertedKey, key)) return lastInsertedId;
 			else {
 				try {
-					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, 0, weblist);
+					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, 0, wlh);
 					lastInsertedKey = key;
 				} catch (Exception e) {
 					CMN.debug(e);
@@ -3652,14 +3652,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	
-	/** see{@link #retrieveDisplayingBooks} */
+	/** see{@link #retrieveDisplayingBooks} todo 排除 empty 限制最大长度 */
 	public String collectDisplayingBooks(String books, WebViewListHandler wlh) {
 		String ret=books==null?"":books;
 		if (wlh.isViewSingle()) {
 			WebViewmy wv = wlh.getWebContext();
 			String url = wv.getUrl();
+			CMN.debug("collectDisplayingBooks::viewSingle", url, wv.url);
 			if (url!=null) {
 				wv.recUrl(url);
+				long bid = -1;
 				if(wv.mdbr) {
 					if (wv.merge) {
 						for (BookPresenter bp:wv.frames) {
@@ -3675,7 +3677,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else {
 						int schemaIdx = url.indexOf(":");
-						long bid = -1;
 						if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
 							int idx = schemaIdx + 12 + 7 + 1, ed=url.indexOf("_", idx);
 							//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
@@ -3688,17 +3689,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								bid = getMdictServer().getBookIdByURLPath(url, idx+1, ed);
 							}
 						}
-						if (bid!=-1) {
-							CMN.debug("bid::", bid, loadManager.getBookById(bid).getDictionaryName());
-							String thisIs = bid + ";";
-							if (books!=null) {
-								if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
-									ret += thisIs;
-								}
-							} else {
-								ret += thisIs;
-							}
+					}
+				}
+				else {
+					// 检查在线词典
+					BookPresenter webx = webxford.get(SubStringKey.new_hostKey(url)); //todo opt
+					if (webx!=null && webx.isWebx) {
+						bid = webx.getId();
+					}
+				}
+				if (bid!=-1) {
+					CMN.debug("bid::", bid, loadManager.getBookById(bid).getDictionaryName());
+					String thisIs = bid + ";";
+					if (books!=null) {
+						if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
+							ret += thisIs;
 						}
+					} else {
+						ret += thisIs;
 					}
 				}
 			}
@@ -3724,6 +3732,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
+		CMN.debug("collectDisplayingBooks::ret", ret);
 		return ret;
 	}
 	

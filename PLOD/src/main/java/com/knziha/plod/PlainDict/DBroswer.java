@@ -1218,7 +1218,7 @@ public class DBroswer extends DialogFragment implements
 					}
 				}
 				else {
-					//CMN.Log("单独搜索模式");
+					CMN.debug("单独搜索模式");
 					rendered = queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
 					if (!rendered) {
 						if (a.main.getChildCount() == 1) {
@@ -1436,7 +1436,7 @@ public class DBroswer extends DialogFragment implements
 		int idx;
 		if(offset>0)
 			key = key.substring(0,key.length()-offset);
-		if (currentDictionary.getIsWebx()) {
+		if (currentDictionary.getIsWebSch()) {
 			currentDictionary.SetSearchKey(key);
 			idx = 0;
 		} else {

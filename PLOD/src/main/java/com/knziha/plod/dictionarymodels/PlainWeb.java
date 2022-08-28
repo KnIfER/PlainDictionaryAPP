@@ -46,6 +46,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.SSLSocketFactoryCompat;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebResourceResponseCompat;
@@ -112,6 +113,8 @@ public class PlainWeb extends DictionaryAdapter {
 	String jsCode;
 	String onstart;
 	String onload;
+	/** Searchable */
+	public boolean searchable;
 	/** The search sub url */
 	String search;
 	/** The search action js */
@@ -153,7 +156,7 @@ public class PlainWeb extends DictionaryAdapter {
 	/** 无兴趣文件后缀(仅针对数据库) */
 	public String[] cleanExtensions;
 	private static final String[] default_cleanExtensions = new String[]{".jpg",".png",".gif",".mp4",".mp3",".m3u8",".json",".js",".css"};
-	public Pattern keyPattern;
+	private Pattern keyPattern;
 	private final Context context;
 	private long mLastKeyId;
 	private boolean mRecordsDirty;
@@ -665,7 +668,9 @@ public class PlainWeb extends DictionaryAdapter {
 					break;
 				case "keyPattern":
 					try {
-						keyPattern = Pattern.compile(val.toString());
+						tmp = val.toString();
+						searchable = tmp.length()==0 || !"$^".equals(tmp);
+						keyPattern = Pattern.compile(tmp);
 					} catch (Exception e) { /*CMN.Log(e);*/ }
 					break;
 				case "entrance":
@@ -1308,11 +1313,11 @@ public class PlainWeb extends DictionaryAdapter {
 			String searchKey = bookPresenter.GetSearchKey();
 			if (searchKey!=null)
 			{
-				if (!mWebView.weblistHandler.bShowInPopup) { // 避 DBrowser
-					// 记录一部分搜索历史
-					long id = bookPresenter.GetSearchKeyId(searchKey);
+				WebViewListHandler wlh = mWebView.weblistHandler;
+				if (!wlh.bShowInPopup/*避 DBrowser*//* && !wlh.bDataOnly*//*避 WordPopup*/) {
+					long id = bookPresenter.GetSearchKeyId(searchKey, wlh); // 记录一部分搜索历史
 					if (id>=0 && mLastKeyId!=id) {
-						if (mWebView.weblistHandler==bookPresenter.a.weblistHandler
+						if (wlh ==bookPresenter.a.weblistHandler
 								|| bookPresenter.a.hardSearchKey==searchKey) {
 							searchKeyIds.remove(id);
 							searchKeyIds.add(0, id);
@@ -2085,10 +2090,13 @@ public class PlainWeb extends DictionaryAdapter {
 
 	/** Accept given key keyword or not. */
 	public boolean takeWord(String key) {
-		if(keyPattern!=null){
-			return keyPattern.matcher(key).find();
+		if(searchable){
+			if (keyPattern!=null) {
+				return keyPattern.matcher(key).find();
+			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 	public static class MyX509TrustManager implements X509TrustManager {

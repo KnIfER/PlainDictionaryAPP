@@ -366,6 +366,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			mWebView.jointResult=jointResult;
 			mWebView.currentPos = did;
+			mWebView.setPresenter(weblistHandler.getMergedBook());
 			weblistHandler.resetScrollbar(mWebView, true, false);
 			weblistHandler.pageSlider.setWebview(mWebView, null);
 			if(checkReadEntry){

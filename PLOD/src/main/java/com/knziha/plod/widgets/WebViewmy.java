@@ -49,6 +49,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PeruseView;
@@ -563,8 +564,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public void setPresenter(BookPresenter book) {
 		if(presenter!=book) {
-			//clearHistory();
-			//clearIfNewADA(book);
+//			if (BuildConfig.DEBUG) {
+//				try {
+//					throw new RuntimeException();
+//				} catch (RuntimeException e) {
+//					CMN.debug("setPresenter::", e);
+//				}
+//			}
 			if (weblistHandler.bShowingInPopup) {
 				if (presenter.isWebx) {
 					try {

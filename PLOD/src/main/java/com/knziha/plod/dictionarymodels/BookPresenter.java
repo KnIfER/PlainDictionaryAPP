@@ -1132,8 +1132,8 @@ function debug(e){console.log(e)};
 		searchKey = key;
 	}
 	
-	public long GetSearchKeyId(String key) {
-		return a.GetAddHistory(key);
+	public long GetSearchKeyId(String key, WebViewListHandler wlh) {
+		return a.GetAddHistory(key, wlh);
 	}
 	
 	public boolean getAcceptParagraph(String keyword, boolean isParagraph, int paragraphWords) {
@@ -1187,6 +1187,10 @@ function debug(e){console.log(e)};
 	
 	public final boolean getIsWebx() {
 		return isWebx;
+	}
+	
+	public final boolean getIsWebSch() {
+		return isWebx && getWebx().searchable;
 	}
 	
 	public boolean isMdict() {

@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -141,7 +142,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null)) {
 			while (cursor.moveToNext()) {
 				query = cursor.getString(cursor.getColumnIndex("name"));
-				CMN.Log("columnExists::", query);
+				// CMN.debug("columnExists::", query);
 				if (columnName.equals(query)) {
 					return true;
 				}
@@ -587,10 +588,12 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
 	 *   */
 	public long updateHistoryTerm(MainActivityUIBase a, String lex, int source, WebViewListHandler weblist) {
-//		try {
-//			throw new RuntimeException();
-//		} catch (RuntimeException e) {
-//			CMN.debug(e);
+//		if (BuildConfig.DEBUG) {
+//			try {
+//				throw new RuntimeException();
+//			} catch (RuntimeException e) {
+//				CMN.debug("updateHistoryTerm::", e);
+//			}
 //		}
 		CMN.rt();
 		int count=-1;
