@@ -26,6 +26,7 @@ import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorAdapter;
@@ -54,6 +55,8 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	final static int SelectionMode_select=3;
 	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new DeckListAdapter.HistoryDatabaseReader();
 	private RequestBuilder<Drawable> iconLoader;
+	
+	public final WahahaTextView.ViewRootHolder viewRootHolder = new WahahaTextView.ViewRootHolder();
 	
 	public interface OnItemLongClickListener{
 		boolean onItemLongClick(View view,int position);
@@ -187,6 +190,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 //		CMN.Log("dbr_onCreateViewHolder", CMN.now()); // todo
 		
 		holder.itemView.setOnLongClickListener(longClicker);
+		holder.data.text1.mR = viewRootHolder;
 		holder.data.p.setOnLongClickListener(longClicker);
 
 //			webView = view.findViewById(android.R.id.text1);

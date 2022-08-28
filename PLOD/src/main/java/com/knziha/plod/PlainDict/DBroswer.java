@@ -395,7 +395,7 @@ public class DBroswer extends DialogFragment implements
 				UIData.fastScroller.setVisibility(View.GONE);
 			}
 			
-			WahahaTextView.mR=a.root.getRootView();
+			mAdapter.viewRootHolder.view=a.root.getRootView();
 			loadInAll(a);
 			checkColors();
 			

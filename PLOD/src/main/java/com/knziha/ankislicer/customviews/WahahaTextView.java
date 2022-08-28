@@ -21,6 +21,12 @@ import com.knziha.plod.widgets.EditTextmy;
 public class WahahaTextView extends TextView  implements MenuItem.OnMenuItemClickListener{
 	private boolean bIsActionMenuShown;
 	private callbackme callmeback;
+	
+	public static class ViewRootHolder{
+		public View view;
+	}
+	
+	public ViewRootHolder mR;
 
 	public WahahaTextView(Context context) {
 		this(context, null);
@@ -33,13 +39,9 @@ public class WahahaTextView extends TextView  implements MenuItem.OnMenuItemClic
 		super(context, attrs, defStyleAttr);
 	}
 	
-	public static View mR;
-	
 	@Override
     public View getRootView() {
-        return mR!=null?mR:super.getRootView();
-    	//if(mR==null) mR=super.getRootView();
-    	//return mR;
+		return mR != null && mR.view != null ? mR.view : super.getRootView();
     }
 
 //	@RequiresApi(api = Build.VERSION_CODES.M)

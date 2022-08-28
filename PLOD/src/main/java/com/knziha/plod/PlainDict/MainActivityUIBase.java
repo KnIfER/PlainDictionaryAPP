@@ -876,7 +876,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void onActionModeStarted(ActionMode mode, Dialog dlg) {
-		View v = dlg!=null&&dlg.isShowing()?dlg.getCurrentFocus():getCurrentFocus();
+		View v = dlg != null && dlg.isShowing() ? dlg.getCurrentFocus() : getCurrentFocus();
 		CMN.debug("-->onActionModeStarted", v);
 		Menu menu;
 		if(v instanceof WebViewmy && Build.VERSION.SDK_INT<=Build.VERSION_CODES.M) {
