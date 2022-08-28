@@ -177,7 +177,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	@Override
 	public ViewUtils.ViewDataHolder<CardListItemBinding> onCreateViewHolder(ViewGroup parent, int viewType)
 	{
-		ViewUtils.ViewDataHolder<CardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(CardListItemBinding.inflate(LayoutInflater.from(a), parent, false));
+		ViewUtils.ViewDataHolder<CardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(CardListItemBinding.inflate(a.getLayoutInflater(), parent, false));
 		//holder.setIsRecyclable(false);
 		//if Recyclable, then setText in onBindViewHolder makes textviews unSelectable.
 		//details on this bug:
@@ -192,8 +192,6 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 //			webView = view.findViewById(android.R.id.text1);
 //			time = view.findViewById(R.id.subtext1);
 		
-		holder.data.text1.setTextIsSelectable(false);
-		holder.data.text1.setTextIsSelectable(true);
 		holder.colorStates=new int[3];
 		return holder;
 	}
@@ -253,6 +251,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		
 		//viewdata.icon
 		
+		viewdata.text1.setTextIsSelectable(PDICMainAppOptions.dbTextSelectable());
 		viewdata.text1.setText(text.trim());
 		if(a.opt.debuggingDBrowser()>1) {
 			viewdata.text1.setText(position+" ::"+text.trim());

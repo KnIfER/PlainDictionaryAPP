@@ -1170,6 +1170,13 @@ public class DBroswer extends DialogFragment implements
 	public void onItemClick(View view, int position) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if (a == null) return;
+		/*if (true) */{ // 点灭选区！
+			View v = mDialog!=null && mDialog.isShowing()?mDialog.getCurrentFocus():a.getCurrentFocus();
+			if (v!=null && v.getClass()==WahahaTextView.class && ((WahahaTextView) v).hasSelection()) {
+				v.clearFocus();
+				return;
+			}
+		}
 		if (view != null) {
 			adelta = 0;
 			//TODO retrieve from sibling views
@@ -1797,6 +1804,7 @@ public class DBroswer extends DialogFragment implements
 			weblist = wlh;
 		}
 		boolean dialog = wlh.a.isFloating() || wlh.src==SearchUI.Fye.MAIN || wlh.bShowingInPopup;
+		// if (true) dialog = true;
 		final boolean visible = UIData != null && UIData.getRoot().getParent() == wlh.a.mainF
 				|| (mDialog != null && mDialog.isShowing());
 		if (lastShowType != dialog) {
