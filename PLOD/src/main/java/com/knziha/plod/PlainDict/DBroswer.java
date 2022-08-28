@@ -1882,6 +1882,8 @@ public class DBroswer extends DialogFragment implements
 					UIData.sideBar.getChildAt(newMode).performClick();
 				}
 			}
+		} else if (mode==0 && SelectionMode!=0) {
+			UIData.sideBar.getChildAt(0).performClick();
 		}
 	}
 }
