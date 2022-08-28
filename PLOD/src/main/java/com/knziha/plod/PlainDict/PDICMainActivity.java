@@ -3227,7 +3227,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if (changed){
 					if (duco.getBooleanExtra("identical", false)) {
-						dictPicker.adapter_idx = loadManager.refreshSlots();
+						dictPicker.adapter_idx = loadManager.refreshSlots(duco.getBooleanExtra("moduleChanged", false));
 					} else {
 						loadManager.buildUpDictionaryList(lazyLoadManager().lazyLoaded, mdict_cache);
 					}

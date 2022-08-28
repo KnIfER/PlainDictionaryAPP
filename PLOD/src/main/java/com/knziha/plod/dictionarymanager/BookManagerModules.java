@@ -18,6 +18,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -353,7 +354,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 	}
 	
 	private void showLoadModuleDlg(boolean warn, int position) {
-		if (warn) {
+		if (warn && !PDICMainAppOptions.debug()) {
 			final View dv = getActivity().getLayoutInflater().inflate(R.layout.dialog_sure_and_all, null);
 			CheckBox ck = dv.findViewById(R.id.ck);
 			TextView tv = dv.findViewById(R.id.title);
@@ -372,7 +373,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			String name = adapter.getItem(position);
 			File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
 			int cc=0;
-			a.checkModuleDirty();
+			a.checkModuleDirty(false);
 			try {
 				BookManagerMain f1 = a.f1;
 				f1.markDirty(-1);
@@ -382,11 +383,14 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				a.loadMan.lazyMan.chairCount = -1;
 				a.loadMan.LoadLazySlots(newf, true, name);
 				f1.refreshSize();
+				f1.markDataDirty(false);
 				((BookManager)getActivity()).scrollTo(0);
 				a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
 				dataSetChanged();
 				f1.dataSetChanged();
-				a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
+				//a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
+				MainActivityUIBase.LazyLoadManager neoLM = a.loadMan.lazyMan;
+				CMN.debug("LoadLazySlots::", neoLM.chairCount, neoLM.CosyChair.length, neoLM.filterCount, neoLM.CosySofa.length);
 			} catch (Exception e) {
 				CMN.debug(e);
 				a.showT("加载异常!LOAD ERRO: "+e.getLocalizedMessage());

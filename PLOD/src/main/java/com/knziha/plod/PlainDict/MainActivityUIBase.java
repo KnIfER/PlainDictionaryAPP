@@ -2549,8 +2549,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return 0;
 		}
 		
-		public int refreshSlots() {
-			CMN.debug("refreshSlots:::");
+		public int refreshSlots(boolean moduleChanged) {
+			CMN.debug("refreshSlots:::", moduleChanged);
 			int pickerIdx=-1;
 			int filterCount=0;
 			int chairCount=0;
@@ -2559,6 +2559,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			for (int i = 0; i < lazyMan.placeHolders.size(); i++) {
 				ph = lazyMan.placeHolders.get(i);
 				ph.lineNumber = i | (ph.lineNumber & 0x80000000);
+				if (moduleChanged) {
+					BookPresenter md = mdict_cache.get(ph.getPath(opt).getName());
+					if (md!=null) {
+						md.tmpIsFlag = ph.tmpIsFlag;
+						md.placeHolder = ph;
+					}
+				}
 				final int flag = ph.tmpIsFlag;
 				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
 					if (PDICMainAppOptions.getTmpIsFiler(flag)) {
@@ -2689,6 +2696,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PlaceHolder ph = lazyMan.placeHolders.get(i);
 					md.add(mdict_cache.get(ph.getPath(opt).getName()));
 				}
+				if(lazyMan.CosyChair.length<lazyMan.chairCount)lazyMan.CosyChair=new int[lazyMan.chairCount];
+				if(lazyMan.CosySofa.length<lazyMan.filterCount)lazyMan.CosySofa=new int[lazyMan.filterCount];
 			}
 		}
 		

@@ -757,27 +757,27 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	}
 	
 	public int getPlaceFlagAt(int position) {
-		BookPresenter mdTmp = loadMan.md.get(position);
-		if (mdTmp!=null) {
-			return mdTmp.tmpIsFlag;
-		}
-		mdTmp = getBookManager().getMagentAt(position, false);
-		if (mdTmp!=loadMan.EmptyBook) {
-			return mdTmp.tmpIsFlag;
-		}
+//		BookPresenter mdTmp = loadMan.md.get(position);
+//		if (mdTmp!=null) {
+//			return mdTmp.tmpIsFlag;
+//		}
+//		mdTmp = getBookManager().getMagentAt(position, false);
+//		if (mdTmp!=loadMan.EmptyBook) {
+//			return mdTmp.tmpIsFlag;
+//		}
 		return loadMan.lazyMan.placeHolders.get(position).tmpIsFlag;
 	}
 	
 	private void setPlaceFlagAt(int position, int flag) {
 		markDirty(position);
-		BookPresenter mdTmp = loadMan.md.get(position);
-		if (mdTmp!=null) {
-			mdTmp.tmpIsFlag = flag;
-		}
-		mdTmp = getBookManager().getMagentAt(position, false);
-		if (mdTmp!=loadMan.EmptyBook) {
-			mdTmp.tmpIsFlag = flag;
-		}
+//		BookPresenter mdTmp = loadMan.md.get(position);
+//		if (mdTmp!=null) {
+//			mdTmp.tmpIsFlag = flag;
+//		}
+//		mdTmp = getBookManager().getMagentAt(position, false);
+//		if (mdTmp!=loadMan.EmptyBook) {
+//			mdTmp.tmpIsFlag = flag;
+//		}
 		loadMan.lazyMan.placeHolders.get(position).tmpIsFlag = flag;
 	}
 	
