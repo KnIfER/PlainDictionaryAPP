@@ -742,6 +742,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
+	/** 0=pan; 1=peruse; 2=fetchWord; 3=select */
 	public int getDBMode() {
 		return (int) ((FirstFlag >> 38) & 7);
 	}
@@ -2438,6 +2439,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=1) public static boolean dbTextSelectable() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=1) public static void dbTextSelectable(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=2, flagSize=2, shift=2, max=2/*, min=1*/) public static int dbFetchWord() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, flagSize=2, shift=2, max=2/*, min=1*/) public static void dbFetchWord(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	
 	/////////////////////End Seven Flag///////////////////////////////////

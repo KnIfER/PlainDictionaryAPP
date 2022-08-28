@@ -54,7 +54,6 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
-import com.knziha.plod.settings.Multiview;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -1144,36 +1143,42 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	public void setFetchWord(int mode) {
+	DBroswer dBroswer;// ...
+	
+	public void setFetchWord(int mode, DBroswer dBroswer) {
 		if (mode == -2) {
-			if (alloydPanel!=null) {
-				MenuItemImpl tagHolder = alloydPanel.fetchWordMenu;
-				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
-				if(dd==null) {
-					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							if(which==2) which = 0;
-							else which++;
-							if (which>=0) {
-								setFetchWord(which);
+			MenuItemImpl tagHolder = a.getMenuSTd(R.id.fetchWord);//alloydPanel.fetchWordMenu;
+			AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
+			this.dBroswer = dBroswer;
+			if(dd==null) {
+				DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						WebViewListHandler wlh = (WebViewListHandler)((AlertDialog)dialog).tag;
+						if(which==2) which = 0;
+						else which++;
+						if (which>=0) {
+							if (wlh.dBroswer != null) {
+								wlh.dBroswer.setFetchWord(which);
+							} else {
+								wlh.setFetchWord(which, null);
 							}
-							dialog.dismiss();
 						}
-					};
-					dd = new AlertDialog.Builder(a)
-							.setSingleChoiceLayout(R.layout.singlechoice_plain)
-							.setSingleChoiceItems(new String[]{
-									"直接取词"
-									, "点击翻译"
-									, "关闭"
-							}, 0, listener)
-							.setWikiText("在页面上点击链接进行搜索", null)
-							.setTitle("设置取词模式").show();
-					tagHolder.tag = null;
-				}
-				a.showMenuDialog(tagHolder, tagHolder.mMenu, dd);
+						dialog.dismiss();
+					}
+				};
+				dd = new AlertDialog.Builder(a)
+						.setSingleChoiceLayout(R.layout.singlechoice_plain)
+						.setSingleChoiceItems(new String[]{
+								"直接取词"
+								, "点击翻译"
+								, "关闭"
+						}, 0, listener)
+						.setWikiText("在页面上点击链接进行搜索", null)
+						.setTitle("设置取词模式").show();
+				tagHolder.tag = null;
 			}
+			a.showMenuDialog(tagHolder, this, dd);
 		} else {
 			if (mode == -1) {
 				mode = lastFetchWord;

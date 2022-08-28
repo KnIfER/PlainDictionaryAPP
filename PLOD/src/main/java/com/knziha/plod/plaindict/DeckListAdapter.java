@@ -51,7 +51,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	public final static int DB_HISTORY = 2;
 	final static int SelectionMode_pan=0;
 	final static int SelectionMode_peruseview=1;
-	final static int SelectionMode_txtdropper=2;
+	final static int SelectionMode_fetchWord =2;
 	final static int SelectionMode_select=3;
 	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new DeckListAdapter.HistoryDatabaseReader();
 	private RequestBuilder<Drawable> iconLoader;

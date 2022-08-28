@@ -180,7 +180,7 @@ public class DBroswer extends DialogFragment implements
 					case SelectionMode_peruseview:
 						taregtID=R.id.tools001;
 					break;
-					case SelectionMode_txtdropper:
+					case SelectionMode_fetchWord:
 						taregtID=R.id.toolbar_action2;
 					break;
 					case SelectionMode_pan:
@@ -248,11 +248,12 @@ public class DBroswer extends DialogFragment implements
 			UIData.browserWidget13.setOnClickListener(this);
 			UIData.browserWidget1.setOnClickListener(this);
 			
-			UIData.toolbar.inflateMenu(R.xml.menu_dbrowser);
-			UIData.toolbar.setOnMenuItemClickListener(this);
+			Toolbar toolbar = UIData.toolbar;
+			toolbar.inflateMenu(R.xml.menu_dbrowser);
+			toolbar.setOnMenuItemClickListener(this);
 			
-			UIData.toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
-			UIData.toolbar.setNavigationOnClickListener(v1 -> {
+			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
+			toolbar.setNavigationOnClickListener(v1 -> {
 				if(true && this==getMainActivity().DBrowser)  {
 					getMainActivity().DetachDBrowser();
 				} else {
@@ -261,8 +262,9 @@ public class DBroswer extends DialogFragment implements
 			});
 			
 			if (PDICMainAppOptions.dbTextSelectable()) {
-				UIData.toolbar.getMenu().findItem(R.id.text).setChecked(true);
+				toolbar.getMenu().findItem(R.id.text).setChecked(true);
 			}
+			fetchWordMenu = toolbar.getMenu().findItem(R.id.fetchWord);
 			
 //			if (container.getContext() instanceof MainActivityUIBase) {
 ////			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
@@ -400,9 +402,12 @@ public class DBroswer extends DialogFragment implements
 			checkColors();
 			
 			SelectionMode = opt.getDBMode();
-			UIData.getRoot().post(() -> UIData.sideBar.setRbyPos(opt.getDBMode()));
-			if(opt.getDBMode()==3 && opt.getInRemoveMode()) {
+			UIData.getRoot().post(() -> UIData.sideBar.selectToolIndex(SelectionMode));
+			if(SelectionMode==3 && opt.getInRemoveMode()) {
 				UIData.sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):UIData.sideBar.ShelfDefaultGray);
+			}
+			else if (SelectionMode==2) {
+				fetchWordMenu.setChecked(true);
 			}
 			if(pendingDBClickPos!=-1){
 				onItemClick(null, pendingDBClickPos);
@@ -704,12 +709,13 @@ public class DBroswer extends DialogFragment implements
 				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
 				SelectionMode=SelectionMode_pan;
-				UIData.sideBar.setRbyView(v);
+				UIData.sideBar.selectToolView(v);
 				notifyDataSetChanged();
 				if(v.getTag()==null)
 					msg = "点击查词模式";
 				else
 					v.setTag(null);
+				fetchWordMenu.setChecked(SelectionMode==2);
 				break;
 			case R.id.tools1://选择模式
 				opt.setDBMode(3);
@@ -719,7 +725,7 @@ public class DBroswer extends DialogFragment implements
 				lastFallBackTarget=-100;
 				if(SelectionMode!=SelectionMode_select) {
 					SelectionMode=SelectionMode_select;
-					UIData.sideBar.setRbyView(v);
+					UIData.sideBar.selectToolView(v);
 					notifyDataSetChanged();
 					if(UIData.counter.getVisibility()!=View.VISIBLE) {
 						UIData.counter.setText(Selection.size()+"/"+ getItemCount());
@@ -729,6 +735,7 @@ public class DBroswer extends DialogFragment implements
 						msg = "选择模式";//
 					else
 						v.setTag(null);
+					fetchWordMenu.setChecked(SelectionMode==2);
 				}
 				break;
 			case R.id.tools001://peruse
@@ -738,24 +745,26 @@ public class DBroswer extends DialogFragment implements
 				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
 				SelectionMode=SelectionMode_peruseview;
-				UIData.sideBar.setRbyView(v);
+				UIData.sideBar.selectToolView(v);
 				notifyDataSetChanged();
 				if(v.getTag()==null)
 					msg = "点击翻阅模式";
 				else
 					v.setTag(null);
+				fetchWordMenu.setChecked(SelectionMode==2);
 				break;
 			case R.id.toolbar_action2://eyedropper
 				opt.setDBMode(2);
 				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
-				SelectionMode=SelectionMode_txtdropper;
-				UIData.sideBar.setRbyView(v);
+				SelectionMode= SelectionMode_fetchWord;
+				UIData.sideBar.selectToolView(v);
 				notifyDataSetChanged();
 				if(v.getTag()==null)
-					msg = "取词模式";
+					msg = "取词模式 - " + (PDICMainAppOptions.dbFetchWord()==2?"点击翻译":"直接取词");
 				else
 					v.setTag(null);
+				fetchWordMenu.setChecked(SelectionMode==2);
 				break;
 			case R.id.tools3:
 				if(Selection.size()==0) {
@@ -1309,23 +1318,27 @@ public class DBroswer extends DialogFragment implements
 				a.JumpToPeruseMode(currentDisplaying, records, -2, true);
 			}
 			break;
-			case SelectionMode_txtdropper: {
+			case SelectionMode_fetchWord: {
 				EditText target = null;
-				if (a.thisActType == ActType.MultiShare) {
-					if (a.peruseView != null) {
-						target = a.peruseView.etSearch;
-					} else {
-						a.getVtk().setInvoker(null, null, null, currentDisplaying);
-					}
+				if (PDICMainAppOptions.dbFetchWord()==2) {
+					a.popupWord(currentDisplaying, null, -1, null);
 				} else {
-					a.lastEtString = String.valueOf(a.etSearch.getText());
-					target = a.etSearch;
-					a.etSearch_ToToolbarMode(2);
+					if (a.thisActType == ActType.MultiShare) {
+						if (a.peruseView != null) {
+							target = a.peruseView.etSearch;
+						} else {
+							a.getVtk().setInvoker(null, null, null, currentDisplaying);
+						}
+					} else {
+						a.lastEtString = String.valueOf(a.etSearch.getText());
+						target = a.etSearch;
+						a.etSearch_ToToolbarMode(2);
+					}
+					if (target != null) {
+						target.setText(currentDisplaying);
+					}
+					a.DetachDBrowser();
 				}
-				if (target != null) {
-					target.setText(currentDisplaying);
-				}
-				a.DetachDBrowser();
 			}
 			break;
 			default:
@@ -1755,10 +1768,10 @@ public class DBroswer extends DialogFragment implements
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		if(a==null) return true;
 		int id = item.getItemId();
-		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
-		MenuBuilder menu = mmi.mMenu;
-		boolean isLongClicked = mmi!=null && mmi.isLongClicked;
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:a.getDummyMenuImpl(id);
+		boolean isLongClicked = mmi.isLongClicked;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
@@ -1783,6 +1796,12 @@ public class DBroswer extends DialogFragment implements
 					a.showTopSnack(UIData.snackRoot, "自由选择列表中的文本", 0.5f, -1, -1, 0);
 				} else {
 					a.showTopSnack(UIData.snackRoot, "", 0.5f, -1, -1, 0);
+				}
+			} break;
+			case R.id.fetchWord: {
+				if (isLongClicked) {
+				} else {
+					a.weblistHandler.setFetchWord(-2, this);
 				}
 			} break;
 			case R.id.icon: {
@@ -1838,5 +1857,31 @@ public class DBroswer extends DialogFragment implements
 			}
 		}
 		ViewUtils.removeView(getView());
+	}
+	
+	
+	/** 取词模式 1=直接取词  2=wordPopup */
+	private MenuItem fetchWordMenu;
+	
+	public void setFetchWord(int mode) {
+		if (mode == -1) {
+			mode = PDICMainAppOptions.dbFetchWord();
+		}
+		int fetchWord = SelectionMode == 2 ? PDICMainAppOptions.dbFetchWord() : 0;
+		if (fetchWord != mode) {
+			int newMode;
+			if (mode > 0) {
+				newMode = 2;
+				PDICMainAppOptions.dbFetchWord(mode);
+			} else {
+				newMode = 0;
+			}
+			if (SelectionMode != newMode) {
+				opt.setDBMode(SelectionMode = newMode);
+				if (UIData.sideBar.selectedTool!=UIData.sideBar.getChildAt(newMode)) {
+					UIData.sideBar.getChildAt(newMode).performClick();
+				}
+			}
+		}
 	}
 }

@@ -55,19 +55,23 @@ public class ShelfLinearLayout extends LinearLayout {
 		if(drawRectOver)c.drawRect(r, p);
 	}
 	
-	public void setRbyView(View v) {
-		v.getDrawingRect(r);
-		if(getOrientation()==LinearLayout.VERTICAL) {
-			r.top += v.getTop();
-			r.bottom += v.getTop();
-		}else {
-			r.left += v.getLeft();
-			r.right += v.getLeft();
+	public View selectedTool;
+	public void selectToolView(View v) {
+		if (selectedTool!=v) {
+			selectedTool = v;
+			v.getDrawingRect(r);
+			if(getOrientation()==LinearLayout.VERTICAL) {
+				r.top += v.getTop();
+				r.bottom += v.getTop();
+			}else {
+				r.left += v.getLeft();
+				r.right += v.getLeft();
+			}
+			invalidate();
 		}
-		invalidate();
 	}
-	public void setRbyPos(int i) {
-		setRbyView(getChildAt(i));
+	public void selectToolIndex(int i) {
+		selectToolView(getChildAt(i));
 	}
 	
 	@Override

@@ -7,7 +7,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -66,7 +65,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		main_list = dialog.findViewById(R.id.main_list);
 		((SimpleFloatViewManager)main_list.mFloatViewManager).mFloatBGColor=0xff3185F7;
 		
-		sideBar.setRbyPos(0);
+		sideBar.selectToolIndex(0);
 		sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
 		
 		//ada.projectContext = bottombar_project;
@@ -75,7 +74,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		setLongOnClickListener(sideBar, dialog.getButton(DialogInterface.BUTTON_POSITIVE), dialog.getButton(DialogInterface.BUTTON_NEGATIVE));
 		
 		sideBar.getChildAt(desiredTab).performClick();
-		sideBar.postDelayed(() -> sideBar.setRbyPos(desiredTab), 350);
+		sideBar.postDelayed(() -> sideBar.selectToolIndex(desiredTab), 350);
 	}
 
 	public String MakeProject(){
@@ -266,7 +265,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				}
 				if(projectContext!=null){
 					this.projectContext=projectContext;
-					((ShelfLinearLayout) v.getParent()).setRbyView(v);
+					((ShelfLinearLayout) v.getParent()).selectToolView(v);
 					dialog.setTitle("定制底栏 - "+bottombar_types[bottombar_from]);
 					notifyDataSetChanged();
 				}

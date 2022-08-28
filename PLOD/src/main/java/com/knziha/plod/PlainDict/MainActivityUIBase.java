@@ -6777,7 +6777,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}  break;
 			case R.id.fetchWord: {
 				if(wlh!=null)
-					wlh.setFetchWord(-2);
+					wlh.setFetchWord(-2, null);
 			}  break;
 			/* 跳转翻阅模式 */
 			case R.id.peruseMode:{
@@ -6909,11 +6909,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	protected AlertDialog showMenuDialog(MenuItemImpl tagHolder, MenuBuilder invokerMenu, AlertDialog menuDialog) {
+	protected AlertDialog showMenuDialog(MenuItemImpl tagHolder, Object invoker, AlertDialog menuDialog) {
 		if(tagHolder.tag==null) {
 			tagHolder.tag=new WeakReference<>(menuDialog);
 		}
-		menuDialog.tag = invokerMenu;
+		menuDialog.tag = invoker;
 		ViewUtils.ensureWindowType(menuDialog, this, null);
 		menuDialog.show();
 		menuDialog.getWindow().setDimAmount(0);
@@ -6943,7 +6943,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				weblistHandler.resetScrollbar();
 			}
 			if (!random) {
-				randomPageHandler.setFetchWord(0);
+				randomPageHandler.setFetchWord(0, null);
 			}
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
@@ -6966,7 +6966,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			refreshingRandom = refresh;
 			if(refresh || randomPageHandler.fetchWord == 0)
 			{
-				randomPageHandler.setFetchWord(-1);
+				randomPageHandler.setFetchWord(-1, null);
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
