@@ -2443,6 +2443,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=2, flagSize=2, shift=2, max=2/*, min=1*/) public static int dbFetchWord() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2, flagSize=2, shift=2, max=2/*, min=1*/) public static void dbFetchWord(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=4) public static boolean dbCntFetcingWord() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=4) public static void dbCntFetcingWord(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
 	
 	/////////////////////End Seven Flag///////////////////////////////////
 	

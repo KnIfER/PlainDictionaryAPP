@@ -81,6 +81,9 @@ public class AlloydPanel extends PlainAppPanel {
 			fetchWordMenu = (MenuItemImpl) ViewUtils.findInMenu(RandomMenu, R.id.fetchWord);
 			settingsLayout = linearView;
 			//refresh();
+			if (handler.fetchWord>0) {
+				fetchWordMenu.setChecked(true);
+			}
 		}
 	}
 	

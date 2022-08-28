@@ -1314,7 +1314,7 @@ public class PlainWeb extends DictionaryAdapter {
 			if (searchKey!=null)
 			{
 				WebViewListHandler wlh = mWebView.weblistHandler;
-				if (!wlh.bShowInPopup/*避 DBrowser*//* && !wlh.bDataOnly*//*避 WordPopup*/) {
+				if (!wlh.bShowInPopup/*避 DBrowser*/ && !wlh.bDataOnly/*避 WordPopup*/) {
 					long id = bookPresenter.GetSearchKeyId(searchKey, wlh); // 记录一部分搜索历史
 					if (id>=0 && mLastKeyId!=id) {
 						if (wlh ==bookPresenter.a.weblistHandler

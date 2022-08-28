@@ -349,6 +349,8 @@ public class DBroswer extends DialogFragment implements
 			weblistHandler = new WebViewListHandler(a, contentUIData, a.schuiMain);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			weblistHandler.setUpContentView(a.cbar_key);
+			weblistHandler.dBroswer = this;
+			weblistHandler.setFetchWord(PDICMainAppOptions.dbCntFetcingWord()?2:0, null);
 		}
 		weblistHandler.checkUI();
 	}

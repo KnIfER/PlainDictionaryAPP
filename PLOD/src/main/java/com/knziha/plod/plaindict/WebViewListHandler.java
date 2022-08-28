@@ -1143,42 +1143,51 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	DBroswer dBroswer;// ...
+	public DBroswer dBroswer;// ...
 	
 	public void setFetchWord(int mode, DBroswer dBroswer) {
 		if (mode == -2) {
-			MenuItemImpl tagHolder = a.getMenuSTd(R.id.fetchWord);//alloydPanel.fetchWordMenu;
-			AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
-			this.dBroswer = dBroswer;
-			if(dd==null) {
-				DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						WebViewListHandler wlh = (WebViewListHandler)((AlertDialog)dialog).tag;
-						if(which==2) which = 0;
-						else which++;
-						if (which>=0) {
-							if (wlh.dBroswer != null) {
-								wlh.dBroswer.setFetchWord(which);
-							} else {
-								wlh.setFetchWord(which, null);
-							}
-						}
-						dialog.dismiss();
-					}
-				};
-				dd = new AlertDialog.Builder(a)
-						.setSingleChoiceLayout(R.layout.singlechoice_plain)
-						.setSingleChoiceItems(new String[]{
-								"直接取词"
-								, "点击翻译"
-								, "关闭"
-						}, 0, listener)
-						.setWikiText("在页面上点击链接进行搜索", null)
-						.setTitle("设置取词模式").show();
-				tagHolder.tag = null;
+			if (this.dBroswer != null && this != a.weblistHandler) {
+				// 是 DBrower 的页面处理者，只有两态切换哦
+				boolean v = !PDICMainAppOptions.dbCntFetcingWord();
+				PDICMainAppOptions.dbCntFetcingWord(v);
+				setFetchWord(v ? 2 : 0, null);
 			}
-			a.showMenuDialog(tagHolder, this, dd);
+			else {
+				MenuItemImpl tagHolder = a.getMenuSTd(R.id.fetchWord);//alloydPanel.fetchWordMenu;
+				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
+				this.dBroswer = dBroswer;
+				if(dd==null) {
+					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							WebViewListHandler wlh = (WebViewListHandler)((AlertDialog)dialog).tag;
+							if(which==2) which = 0;
+							else which++;
+							if (which>=0) {
+								if (wlh.dBroswer != null && wlh==a.weblistHandler) {
+									wlh.dBroswer.setFetchWord(which);
+									wlh.dBroswer = null;
+								} else {
+									wlh.setFetchWord(which, null);
+								}
+							}
+							dialog.dismiss();
+						}
+					};
+					dd = new AlertDialog.Builder(a)
+							.setSingleChoiceLayout(R.layout.singlechoice_plain)
+							.setSingleChoiceItems(new String[]{
+									"直接取词"
+									, "点击翻译"
+									, "关闭"
+							}, 0, listener)
+							.setWikiText("在页面上点击链接进行搜索", null)
+							.setTitle("设置取词模式").show();
+					tagHolder.tag = null;
+				}
+				a.showMenuDialog(tagHolder, this, dd);
+			}
 		} else {
 			if (mode == -1) {
 				mode = lastFetchWord;
@@ -1189,12 +1198,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					alloydPanel.fetchWordMenu.setChecked(mode > 0);
 				}
 				WebViewmy wv = getWebContext();
-				if (mode > 0) {
-					lastFetchWord = mode;
-					wv.evaluateJavascript("window.randx_mode=" + mode, null);
-					wv.evaluateJavascript(MainActivityUIBase.randx_on, null);
-				} else {
-					wv.evaluateJavascript(MainActivityUIBase.randx_off, null);
+				if (wv!=null) {
+					if (mode > 0) {
+						lastFetchWord = mode;
+						wv.evaluateJavascript("window.randx_mode=" + mode, null);
+						wv.evaluateJavascript(MainActivityUIBase.randx_on, null);
+					} else {
+						wv.evaluateJavascript(MainActivityUIBase.randx_off, null);
+					}
 				}
 			}
 		}
