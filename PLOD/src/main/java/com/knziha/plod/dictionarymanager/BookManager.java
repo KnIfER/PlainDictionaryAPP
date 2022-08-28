@@ -104,6 +104,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public List<MenuItemImpl> Menu3Sel;
 	private String initialModuleName;
 	private boolean initialModuleChanged;
+	public boolean initialModuleSwitched;
 	private String lastLoadedModule;
 	
 	public BookManager() { }
@@ -218,15 +219,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	private void checkF1() {
 		if(f1.isDirty) {
 			intent.putExtra("result", true);
-			int result = checkModuleDirty();
+			int result = checkModuleDirty(true);
 			boolean isInitialModule = initialModuleName !=null && initialModuleName.equals(loadMan.lazyMan.lastLoadedModule);
 			boolean identical = (result&0x1)!=0 && isInitialModule;
 			if (isInitialModule && !initialModuleChanged) {
 				CMN.debug("一成不变");
 			} else {
-				CMN.debug("变化了", identical);
+				CMN.debug("变化了", (result&0x1)!=0, isInitialModule);
 				intent.putExtra("changed", true);
 				intent.putExtra("identical", identical);
+				intent.putExtra("moduleChanged", initialModuleSwitched);
 			}
 			f1.isDirty=false;
 		}
@@ -278,20 +280,37 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	
 	/** 检查模组是否有结构变化或属性变化，并保存。 */
-	public int checkModuleDirty() {
+	public int checkModuleDirty(boolean exit) {
 		int i;
 		ArrayList<BookPresenter> md = f1.manager_group();
+		BookPresenter bp;
 		int size = md.size(); // 现有列表，可能被修改了！包括结构修改与属性修改！
 		MainActivityUIBase.LazyLoadManager neoLM = loadMan.lazyMan;
 		ArrayList<PlaceHolder> da = neoLM.placeHolders; // 现有列表列表
 		PlaceHolder[] nda = f1.markDataDirty(f1.isDataDirty()); // 看看比对原列表，是否变化了？
 		boolean identical = nda==null || size==nda.length;
 		boolean rolesChanged = false;
-		if (f1.dirtyAttrArray.size()>0) { // 属性变化啦！
-			for (Map.Entry<PlaceHolder, Integer> node : f1.dirtyAttrArray.entrySet()) {
-				if (node.getKey().tmpIsFlag != node.getValue()) {
-					rolesChanged = true;
-					break;
+		if (!exit) {
+			initialModuleSwitched=true;
+		}
+		if (f1. dirtyAttrArray.size()>0) { // 属性变化啦！
+			if (exit && !initialModuleSwitched) {
+				for (Map.Entry<PlaceHolder, Integer> node : f1.dirtyAttrArray.entrySet()) {
+					PlaceHolder ph = node.getKey();
+					if (ph.tmpIsFlag != node.getValue()) {
+						if (!rolesChanged) rolesChanged = true;
+						bp = mdict_cache.get(ph.getPath(opt).getPath());
+						if (bp!=null) {
+							bp.tmpIsFlag = ph.tmpIsFlag;
+						}
+					}
+				}
+			} else {
+				for (Map.Entry<PlaceHolder, Integer> node : f1.dirtyAttrArray.entrySet()) {
+					if (node.getKey().tmpIsFlag != node.getValue()) {
+						rolesChanged = true;
+						break;
+					}
 				}
 			}
 		}
@@ -299,6 +318,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				|| neoLM.filterCount>neoLM.CosySofa.length) {
 			identical = false;
 		}
+		CMN.debug("checkModuleDirty::", nda == null ? -1 : nda.length, size, loadMan.lazyMan.placeHolders.size());
+		CMN.debug("checkModuleDirty::", lastLoadedModule, loadMan.lazyMan.lastLoadedModule);
+		CMN.debug("checkModuleDirty::", neoLM.chairCount, neoLM.CosyChair.length, neoLM.filterCount, neoLM.CosySofa.length);
 		if (nda!=null) { // 结构变化啦！
 			neoLM.chairCount=0;
 			neoLM.filterCount=0;
@@ -341,8 +363,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				output.flush();
 				output.close();
 				f1.markDataDirty(false);
+				if (!exit) showT("配置<"+lastLoadedModule+">已保存！");
 			} catch (Exception e) {
 				CMN.debug(e);
+				if (!exit) showT("配置<"+lastLoadedModule+">保存失败！\n"+e.getLocalizedMessage());
 			}
 		} else {
 			f1.markDataDirty(false);
@@ -989,8 +1013,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				for (int i = 0; i < szf1; i++) {
 					if (f1.getPlaceRejected(i)) {
 						f1.setPlaceSelected(i, !isLongClicked);
+						cnt++;
 					}
-					cnt++;
 				}
 				if (cnt>0) {
 					if (sf1) opt.setDictManager1MultiSelecting(true);
@@ -1284,44 +1308,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					f1.dataSetChanged();
 				}
 			} break;
-			/* 移除 */
+			/* 清理 */
             case R.id.toolbar_action10:{
 				if(isLongClicked) {
-					new AlertDialog.Builder(BookManager.this)
-							.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()))
-							.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
-							.setPositiveButton(R.string.confirm, (dialog, which) -> {
-								deleteRecordsHard(f3, true);
-								dialog.dismiss();
-							})
-					.create().show();
-				} else {
-					int cc1 = 0;
-					for(int i = 0; i< szf1; i++) {
-						if(f3.Selection.contains(new mFile(f1.getPathAt(i)))) {
-							f1.markDirty(-1);
-							f1.setPlaceRejected(i, true);
-							cc1++;
-						}
-					}
-					f1.refreshSize();
-					showT("移除完毕!("+cc1+"/"+f3.calcSelectionSz()+")");
-					f1.dataSetChanged();
-				}
-			} break;
-			/* 删除记录 */
-            case R.id.tintList:{
-				if(isLongClicked) {
-					ret=false;break;
-				}
-				else {
 					final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
 					CheckBox ck = dv.findViewById(R.id.ck);
 					ck.setChecked(PDICMainAppOptions.getDelRecApplyAll());
 					dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
-							.setMessage("从分组和全部词典记录中删除记录，不会删除文件，但不可撤销。")
+							.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！")
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
 								mFile[] arr = f3.Selection.toArray(new mFile[0]);
 								HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
@@ -1402,6 +1398,34 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							.setNeutralButton(R.string.cancel, null);
 					d = builder2.create();
 					d.show();
+				} else {
+					int cc1 = 0;
+					for(int i = 0; i< szf1; i++) {
+						if(f3.Selection.contains(new mFile(f1.getPathAt(i)))) {
+							f1.markDirty(-1);
+							f1.setPlaceRejected(i, true);
+							cc1++;
+						}
+					}
+					f1.refreshSize();
+					showT("移除完毕!("+cc1+"/"+f3.calcSelectionSz()+")");
+					f1.dataSetChanged();
+				}
+			} break;
+			/* 删除记录 */
+            case R.id.tintList:{
+				if(isLongClicked) {
+					ret=false;break;
+				}
+				else {
+					new AlertDialog.Builder(BookManager.this)
+							.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()))
+							.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
+							.setPositiveButton(R.string.confirm, (dialog, which) -> {
+								deleteRecordsHard(f3, true);
+								dialog.dismiss();
+							})
+							.create().show();
 				}
 			} break;
 			/* 移动文件 */

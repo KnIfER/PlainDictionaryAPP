@@ -5,7 +5,7 @@
 	<string name="warnDelete">确认删除分组 %s?</string>
 	<string name="warn_move">确认将  %1$d 个收藏从 [ %2$s ] 移动到 [ %3$s ]?</string>
 	<string name="warn_exit0">确认退出?</string>
-	<string name="surerrecords">确认删除选中的 %d 项记录?</string>
+	<string name="surerrecords">确认_彻底清理_选中的 %d 项记录?</string>
 	<string name="applyallset">应用到所有分组</string>
 	<string name="pickdestineFolder">选择目标文件夹</string>
 	<string name="warn_exit1">清空历史纪录</string>
@@ -169,7 +169,7 @@
 	<string name="enable_all">启用全部 | 启用选中项</string>
 	<string name="select_all_invalid">选中失效项 | 不选失效</string>
 	<string name="add_selection_to_set">启用选中词典 | 插入至…</string>
-	<string name="remove_selection_from_set">禁用选中词典 | 删除</string>
+	<string name="remove_selection_from_set">禁用选中词典 | 清理</string>
 	<string name="remove_records">删除记录</string>
 	<string name="move_files">移动文件</string>
 	<string name="new___">新建</string>
