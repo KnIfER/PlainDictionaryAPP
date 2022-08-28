@@ -571,7 +571,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {
-					getMainActivity().onActionModeStarted(mode);
+					getMainActivity().onActionModeStarted(mode, mDialog);
 				}
 
 				@Override

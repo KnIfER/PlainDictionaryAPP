@@ -872,7 +872,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	public void onActionModeStarted(ActionMode mode) {
-		View v = getCurrentFocus();
+		onActionModeStarted(mode, null);
+	}
+	
+	public void onActionModeStarted(ActionMode mode, Dialog dlg) {
+		View v = dlg!=null&&dlg.isShowing()?dlg.getCurrentFocus():getCurrentFocus();
 		CMN.debug("-->onActionModeStarted", v);
 		Menu menu;
 		if(v instanceof WebViewmy && Build.VERSION.SDK_INT<=Build.VERSION_CODES.M) {
@@ -984,7 +988,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			root.postDelayed(mFeetHeightScalerRunnable, 350);
 		}
-
 		//if(menu!=null)
 	}
 

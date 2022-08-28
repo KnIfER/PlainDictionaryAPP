@@ -1692,7 +1692,7 @@ public class DBroswer extends DialogFragment implements
 				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {
-					getMainActivity().onActionModeStarted(mode);
+					getMainActivity().onActionModeStarted(mode, mDialog);
 				}
 				@Override
 				public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
@@ -1804,7 +1804,7 @@ public class DBroswer extends DialogFragment implements
 			weblist = wlh;
 		}
 		boolean dialog = wlh.a.isFloating() || wlh.src==SearchUI.Fye.MAIN || wlh.bShowingInPopup;
-		// if (true) dialog = true;
+		//if (true) dialog = true;
 		final boolean visible = UIData != null && UIData.getRoot().getParent() == wlh.a.mainF
 				|| (mDialog != null && mDialog.isShowing());
 		if (lastShowType != dialog) {
