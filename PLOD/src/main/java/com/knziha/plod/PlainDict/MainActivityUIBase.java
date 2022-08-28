@@ -6646,10 +6646,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return btm;
 	}
 	
+	MenuItemImpl dummyMenuImpl;
+	protected MenuItemImpl getDummyMenuImpl(int id) {
+		if (dummyMenuImpl == null) {
+			dummyMenuImpl = new MenuItemImpl(AllMenus, 0, id, 0, 0, null, 0);
+		}
+		return dummyMenuImpl;
+	}
+	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		int id = item.getItemId();
-		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:getDummyMenuImpl(id);
 		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
 		WebViewListHandler wlh = (WebViewListHandler) menu.tag;

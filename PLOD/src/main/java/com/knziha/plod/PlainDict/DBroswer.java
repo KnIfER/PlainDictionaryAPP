@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
+import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -259,6 +260,10 @@ public class DBroswer extends DialogFragment implements
 				}
 			});
 			
+			if (PDICMainAppOptions.dbTextSelectable()) {
+				UIData.toolbar.getMenu().findItem(R.id.text).setChecked(true);
+			}
+			
 //			if (container.getContext() instanceof MainActivityUIBase) {
 ////			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
 //			} //xxx
@@ -390,7 +395,7 @@ public class DBroswer extends DialogFragment implements
 				UIData.fastScroller.setVisibility(View.GONE);
 			}
 			
-			//WahahaTextView.mR=UIData.root;
+			WahahaTextView.mR=a.root.getRootView();
 			loadInAll(a);
 			checkColors();
 			
@@ -406,6 +411,7 @@ public class DBroswer extends DialogFragment implements
 			
 			MenuBuilder menu = (MenuBuilder) UIData.toolbar.getMenu();
 			MenuItem searchItem = menu.getItem(0);
+			menu.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked_whiter);
 			menu.checkDrawable = a.AllMenus.checkDrawable;
 			menu.mOverlapAnchor = false;
 			if(PDICMainAppOptions.dbShowIcon())
@@ -1760,6 +1766,17 @@ public class DBroswer extends DialogFragment implements
 			} break;
 			case R.id.settings: {
 				a.launchSettings(History.id, 0);
+			} break;
+			case R.id.text: {
+				boolean v = !mmi.isChecked();
+				mmi.setChecked(v);
+				PDICMainAppOptions.dbTextSelectable(v);
+				notifyDataSetChanged();
+				if (v) {
+					a.showTopSnack(UIData.snackRoot, "自由选择列表中的文本", 0.5f, -1, -1, 0);
+				} else {
+					a.showTopSnack(UIData.snackRoot, "", 0.5f, -1, -1, 0);
+				}
 			} break;
 			case R.id.icon: {
 				item.setChecked(!item.isChecked());

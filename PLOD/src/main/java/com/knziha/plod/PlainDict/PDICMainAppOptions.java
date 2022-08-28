@@ -2436,6 +2436,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=0) public static boolean darkSystem() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=0) public static void darkSystem(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=1) public static boolean dbTextSelectable() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static void dbTextSelectable(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
 	
 	/////////////////////End Seven Flag///////////////////////////////////
 	

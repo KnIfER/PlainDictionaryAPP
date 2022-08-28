@@ -65,7 +65,7 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
 			AllMenus.tag = handler;
-			AllMenus.checkActDrawable = a.getDrawable(R.drawable.frame_checked);
+			AllMenus.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked);
 			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
 			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach

@@ -3064,15 +3064,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	// menu
 	public boolean onMenuItemClick(MenuItem item) {
 		int id = item.getItemId();
-		if(etTools.isVisible()) {
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:getDummyMenuImpl(id);
+		if(etTools.isVisible() && mmi!=dummyMenuImpl) {
 			etTools.dismiss();
 			if(id!=R.id.toolbar_action2)
 				return true;
 		}
-		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
 		MenuBuilder menu = mmi.mMenu;
 		WebViewListHandler wlh = (WebViewListHandler) menu.tag;
-		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
+		boolean isLongClicked= mmi.isLongClicked;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
