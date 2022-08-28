@@ -60,7 +60,7 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
 
     @Override
     public void onGlobalLayout() {
-		CMN.Log("onGlobalLayout::", CMN.now());
+		// CMN.debug("onGlobalLayout::", CMN.now());
         Rect rect = new Rect();
         rootView.getWindowVisibleDisplayFrame(rect);
         if (rect.bottom > heightMax) {

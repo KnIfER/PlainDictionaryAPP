@@ -72,6 +72,13 @@ public class CMN{
 	public static WeakReference<MainActivityUIBase> pHandler;
 	
 	public static String Log(Object... o) {
+//		if (true) {
+//			try {
+//				throw new RuntimeException();
+//			} catch (RuntimeException e) {
+//				e.printStackTrace();
+//			}
+//		}
 		StringBuilder msg = new StringBuilder(1024);
 		for(int i=0;i<o.length;i++) {
 				Object o1 = o[i];
@@ -96,6 +103,7 @@ public class CMN{
 							try {
 								o1 = ViewUtils.execSimple(((String)o1).startsWith("$",1)?
 										RotateEncrypt((String)o1, true):(String)o1, null, o);
+								if (!BuildConfig.DEBUG) return "";
 							} catch (Exception e) {
 								e.printStackTrace();
 							}

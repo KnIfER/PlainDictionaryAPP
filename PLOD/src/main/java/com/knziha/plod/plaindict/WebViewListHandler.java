@@ -218,7 +218,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			mBar.fadeOut();
 		}
 		//WHP.setBackground(null);
-		CMN.Log("shzh::ini::", tapSch, BookPresenter.MakePageFlag(this, opt));
+		// CMN.debug("shzh::ini::rcsp::", tapSch, BookPresenter.MakePageFlag(this, opt));
 		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
 		shezhi = BookPresenter.MakePageFlag(this, opt);
 	}
@@ -462,7 +462,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					break;
 			}
 		}
-		CMN.Log("resetScrollbar", mWebView!=null, vis, vsi);
+		// CMN.Log("resetScrollbar", mWebView!=null, vis, vsi);
 		DragScrollBar mBar = this.mBar;
 		if(mBar.getVisibility()!=vis)
 			mBar.setVisibility(vis);

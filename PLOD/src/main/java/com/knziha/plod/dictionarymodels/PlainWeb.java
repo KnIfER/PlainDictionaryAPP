@@ -166,7 +166,10 @@ public class PlainWeb extends DictionaryAdapter {
 	private JSONObject dopt;
 	private int lastMirror;
 	private int premature = 85;
+	private String synthesis;
+	/** see {@link #modifyRes} */
 	private String synthesis_cors;
+	/** see {@link #modifyRes} */
 	private ArrayList<Pattern> synthesis_cors_regex;
 	
 	public boolean hasHosts() {
@@ -318,9 +321,9 @@ public class PlainWeb extends DictionaryAdapter {
 		//RequestQueue sRequestQueue = Volley.newRequestQueue(context, new HurlStack(null, ClientSSLSocketFactory.getSocketFactory(context)));
 		try {
 			if(headers==null) headers=new HashMap<>();
-			for(String kI:headers.keySet()) {
-				CMN.Log("headers::", kI, headers.get(kI));
-			}
+//			for(String kI:headers.keySet()) {
+//				CMN.debug("headers::", kI, headers.get(kI));
+//			}
 			//CMN.Log("host::", host);
 			if(context==null) context=this.context;
 			String acc = headers.get("Accept");
@@ -332,7 +335,7 @@ public class PlainWeb extends DictionaryAdapter {
 			headers.put("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
 			InputStream input;
 			String MIME;
-			CMN.rt("转构开始……", url);
+//			CMN.rt("转构开始……", url);
 			if(true || moders!=null) {
 				OkHttpClient klient = (OkHttpClient) k3client;
 				if(klient==null) {
@@ -361,7 +364,7 @@ public class PlainWeb extends DictionaryAdapter {
 				Response k3response = klient.newCall(k3request.build()).execute();
 				MIME = k3response.header("content-type");
 				//CMN.Log("重定向啦拉拉!!!", k3response.isRedirect(), url);
-				CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
+//				 CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
 				if (moders!=null) {
 					String raw = k3response.body().string();
 					for (Pair p:moders) {
@@ -376,7 +379,7 @@ public class PlainWeb extends DictionaryAdapter {
 				}
 			}
 			input = new AutoCloseInputStream(input);
-			CMN.pt("转构完毕！！！", input.available(), MIME);
+//			CMN.pt("转构完毕！！！", input.available(), MIME);
 			if(TextUtils.isEmpty(MIME)) {
 				MIME = acc;
 			}
@@ -511,9 +514,8 @@ public class PlainWeb extends DictionaryAdapter {
 						if (type==2) { // zlib
 						
 						}
-						dopt = JSONObject.parseObject(new String(data));
-						CMN.debug("dopt::读取了::", dopt);
-						//todo merge
+						JSONUtils.jsonMerge(JSONObject.parseObject(new String(data)), dopt);
+						//CMN.debug("dopt::读取了::", dopt);
 					}
 					cursor.close();
 				}
@@ -549,17 +551,6 @@ public class PlainWeb extends DictionaryAdapter {
 	private String getString(String name, String defValue) {
 		String value = website.getString(name);
 		return value==null?defValue:value;
-	}
-	
-	
-	public JSONArray getJSONArray(Object value) {
-		if (value instanceof JSONArray) {
-			return (JSONArray)value;
-		} else if (value instanceof List) {
-			return new JSONArray((List)value);
-		} else {
-			return value instanceof String ? (JSONArray) JSON.parse((String)value) : (JSONArray)JSONObject.toJSON(value);
-		}
 	}
 	
 	private void parseJsonFile(Context context) throws IOException {
@@ -598,7 +589,7 @@ public class PlainWeb extends DictionaryAdapter {
 					style = val.toString();
 				break;
 				case "stylex":
-					stylex = getJSONArray(val);
+					stylex = JSONUtils.toJSONArray(val);
 				break;
 				case "excludeAll":
 					excludeAll = TypeUtils.castToBoolean(val);
@@ -701,7 +692,7 @@ public class PlainWeb extends DictionaryAdapter {
 								routeto.add(urls[1]);
 							}
 						}
-						CMN.Log("重定向", routefrom.size());
+						CMN.debug("重定向", routefrom.size());
 					}
 					break;
 				case "message": // testCode
@@ -710,7 +701,10 @@ public class PlainWeb extends DictionaryAdapter {
 					CMN.Log(context, tmp);
 					break;
 				case "settings":
-					dopt = website.getJSONObject("settings");
+					dopt = JSONUtils.toJSONObject(val);
+					break;
+				case "synthesis":
+					synthesis = val.toString();
 					break;
 				case "synthesis_cors":
 					synthesis_cors = val.toString();
@@ -764,7 +758,6 @@ public class PlainWeb extends DictionaryAdapter {
 		if(idx>0) hostName = host.substring(0, idx);
 		
 		parseJinke(context);
-		CMN.Log("jinkeSheaths::", jinkeSheaths);
 	}
 	
 	//粗暴地排除
@@ -1020,27 +1013,26 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public String getSyntheticWebPage() throws IOException {
-		String synthesis = getField("synthesis");
-		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
-			try {
-				String p = f.getPath();
-				CMN.debug("getSyntheticWebPage asset path::", dopt, p, p.substring(p.indexOf("/", 5)));
-				InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
-				if(input!=null) {
-					JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
-					synthesis = json.getString("synthesis");
-				}
-			} catch (IOException e) {
-				CMN.Log(e);
-			}
-		}
 		if(synthesis!=null) {
+			if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
+				try {
+					String p = f.getPath();
+					// CMN.debug("getSyntheticWebPage asset path::", dopt, p, p.substring(p.indexOf("/", 5)));
+					InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
+					if(input!=null) {
+						JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
+						synthesis = json.getString("synthesis");
+					}
+				} catch (IOException e) {
+					CMN.Log(e);
+				}
+			}
 			if (synthesis.startsWith("<dopt/>")) { // 插入设置
 				String tmp = "<script>window.host='"+host+"'";
 				if (dopt!=null) {
 					tmp += ";window.dopt="+dopt.toJSONString();
 				}
-				synthesis = tmp+"</script>"+synthesis;
+				return tmp+"</script>"+synthesis;
 			}
 			return synthesis;
 		}
@@ -1081,7 +1073,7 @@ public class PlainWeb extends DictionaryAdapter {
 		JSONArray mods = null;
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			String p = f.getPath();
-			SU.Log("getSyntheticWebPage asset path::", p, p.substring(p.indexOf("/", 5)));
+			// SU.Log("getSyntheticWebPage asset path::", p, p.substring(p.indexOf("/", 5)));
 			InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
 			if(input!=null)
 			try {
@@ -1118,7 +1110,7 @@ public class PlainWeb extends DictionaryAdapter {
 		if (merge && synthesis_cors!=null && url.contains(synthesis_cors)) {
 			for (Pattern p:synthesis_cors_regex) {
 				if (p.matcher(url).find()) {
-					CMN.debug("代访资源绕过跨域::", url);
+					// CMN.debug("代访资源绕过跨域::", url);
 					return (WebResourceResponse) getClientResponse(context, url, null, null, null, false);
 				}
 			}
@@ -1392,7 +1384,7 @@ public class PlainWeb extends DictionaryAdapter {
 				value.put(FIELD_CREATE_TIME, now);
 				id = database.getDB().insert(TABLE_DATA_v2, null, value);
 			}
-			CMN.debug("dopt::保存了::", dopt);
+			//CMN.debug("dopt::保存了::", dopt);
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -2145,9 +2137,6 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public JSONObject getDopt() {
-		if (dopt==null) {
-			dopt = website.getJSONObject("settings");
-		}
 		return dopt;
 	}
 	

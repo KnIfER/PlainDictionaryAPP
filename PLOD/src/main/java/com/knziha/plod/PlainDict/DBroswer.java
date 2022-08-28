@@ -298,7 +298,7 @@ public class DBroswer extends DialogFragment implements
 			if (view!=null) {
 				ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) view.getTag();
 				HistoryDatabaseReader reader = (HistoryDatabaseReader) holder.tag;
-				CMN.debug("saveListPosition::", holder.getLayoutPosition());
+				// CMN.debug("saveListPosition::", holder.getLayoutPosition());
 				if (holder.getLayoutPosition() > 0) {
 					savedPositions.put(getFragmentType(), new long[]{reader.sort_number, view.getTop()});
 				} else {
@@ -312,7 +312,7 @@ public class DBroswer extends DialogFragment implements
 	}
 	
 	protected void loadInAll(MainActivityUIBase a) {
-		CMN.Log("FAV load in all!!!", initialized, type, getTableName());
+		// CMN.debug("FAV load in all!!!", initialized, type, getTableName());
 		if(initialized) {
 			if(mAdapter!=null && mAdapter.resetDataCache(type)) {
 				mAdapter.notifyDataSetChanged();

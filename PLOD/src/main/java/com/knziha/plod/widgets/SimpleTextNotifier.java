@@ -49,7 +49,7 @@ public class SimpleTextNotifier extends TextView{
 		@Override
 		public void onAnimationEnd(Animator animation) {
 			removeCallbacks(dwellAbility);
-			CMN.Log("snack stopped.");
+			// CMN.debug("snack stopped.");
 			ViewUtils.removeView(getSnackView());
 			visible = false;
 			if(msg!=0) msg = 0;

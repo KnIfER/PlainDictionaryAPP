@@ -2214,7 +2214,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	protected void onPause() {
-		CMN.debug("onPause");
+		// CMN.debug("onPause");
 		try {
 			super.onPause();
 		} catch (Exception ignored) { }
@@ -2257,8 +2257,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	private void checkDictionaryProject(boolean performSave) {
-		if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-			((PlainWeb)currentDictionary.bookImpl).saveWebSearches(this, prepareHistoryCon());
+		if (currentDictionary.isWebx)
+			currentDictionary.getWebx().saveWebSearches(this, prepareHistoryCon());
 		if(bNeedSaveViewStates) {
 			int pos = lv.getFirstVisiblePosition();
 			if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
@@ -2295,7 +2295,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		CMN.debug("onWindowFocusChanged", hasFocus);
+		// CMN.debug("onWindowFocusChanged", hasFocus);
 		if (0!=(foreground&(1<<thisActType.ordinal()))) {
 			focused=hasFocus;
 			if(systemIntialized && hasFocus) {

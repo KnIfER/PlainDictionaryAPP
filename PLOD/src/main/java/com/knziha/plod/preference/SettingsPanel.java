@@ -371,7 +371,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				ViewUtils.removeView(settingsLayout);
 				lastShowType=forceShowType;
 			}
-			CMN.debug("forceShowType::", forceShowType);
+			// CMN.debug("forceShowType::", forceShowType);
 			if (forceShowType==1) {
 				showPop(root);
 			} else if(forceShowType==2) {

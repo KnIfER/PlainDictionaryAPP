@@ -622,7 +622,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	public final void initScale() {
-		CMN.Log("initScale::缩放是", expectedZoom);
+		// CMN.debug("initScale::缩放是", expectedZoom);
 		if(expectedZoom!=-1)
 		{
 			setInitialScale((int) (100*(expectedZoom/ BookPresenter.def_zoom)*GlobalOptions.density));//opt.dm.density

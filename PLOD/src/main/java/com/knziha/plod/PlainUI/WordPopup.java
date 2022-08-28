@@ -946,7 +946,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		int paragraphWords = 9;
 		String searchText = popupKey;
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
-		CMN.Log("isParagraph::", isParagraph);
+		//CMN.debug("isParagraph::", isParagraph);
 		_treeBuilder.setKeyClashHandler(searchText);
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);

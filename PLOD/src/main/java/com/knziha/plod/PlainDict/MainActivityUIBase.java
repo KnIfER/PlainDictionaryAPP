@@ -1942,7 +1942,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
 		
-		CMN.debug("floatBtn::", PDICMainAppOptions.floatBtn(opt.SixthFlag() >> (30 + thisActType.ordinal())), PDICMainAppOptions.floatBtn(), thisActType);
+		// CMN.debug("floatBtn::", PDICMainAppOptions.floatBtn(opt.SixthFlag() >> (30 + thisActType.ordinal())), PDICMainAppOptions.floatBtn(), thisActType);
 		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
 			getFloatBtn().reInitBtn(0);
 		}
@@ -2006,9 +2006,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			this.fontlibs=fontlibs;
 		}
 
+		// todo 删除?
 		File SpecificationFile =  opt.SpecificationFile = new File(opt.pathToDatabases().append("/.spec.bin").toString());
-		CMN.rt();
-		CMN.debug(CMN.LastConfigReadTime, SpecificationFile.lastModified());
+		// CMN.rt();
+		// CMN.debug(CMN.LastConfigReadTime, SpecificationFile.lastModified());
 		if(SpecificationFile.exists()){ // 读取词典配置。
 			if(CMN.LastConfigReadTime<SpecificationFile.lastModified()) {
 				if(!(CMN.bForbidOneSpecFile = SpecificationFile.isDirectory()))
@@ -2101,7 +2102,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
-		CMN.pt(app.BookProjects.size()+"个配置读取时间");
+		// CMN.pt(app.BookProjects.size()+"个配置读取时间");
 		
 //		CMN.rt();
 //		historyCon = prepareHistroyCon();
@@ -5743,13 +5744,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(DBrowser==null || opt.debuggingDBrowser()>0) {
 			DBrowser = DBrowserHolder.get();
 			if(DBrowser==null || opt.debuggingDBrowser()>0){
-				CMN.debug("重建收藏夹历史记录视图");
+				// CMN.debug("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
 		boolean retry = type<0;
 		if (retry) type = -type;
-		CMN.debug("AttachDBrowser::", type==DB_HISTORY, Integer.toHexString(weblist.src), CMN.idStr(weblist));
+		// CMN.debug("AttachDBrowser::", type==DB_HISTORY, Integer.toHexString(weblist.src), CMN.idStr(weblist));
 		DBrowser.setType(this, type, false);
 		int showType = DBrowser.preShow(weblist);
 		if(showType==1) {
@@ -7520,7 +7521,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageStarted::"+mWebView.wvclient);
+			// CMN.debug("onPageStarted::"+mWebView.wvclient);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
 				final BookPresenter invoker = mWebView.presenter;
@@ -10791,7 +10792,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		mWebView.bRequestedSoundPlayback=false;
 		weblist = mWebView.weblistHandler;
 		
-		CMN.debug("readEntry!!!", AutoBrowsePaused, PDICMainAppOptions.getAutoBrowsingReadSomething(), opt.getThenAutoReadContent());
+		// CMN.debug("readEntry!!!", AutoBrowsePaused, PDICMainAppOptions.getAutoBrowsingReadSomething(), opt.getThenAutoReadContent());
 		
 		if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
 			postReadEntry();

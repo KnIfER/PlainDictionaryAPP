@@ -2422,7 +2422,7 @@ function debug(e){console.log(e)};
 				)
 				//opt.FetIsDark()
 				;
-		CMN.Log("rcsp::", Integer.toBinaryString(ret), ret);
+		// CMN.debug("rcsp::", Integer.toBinaryString(ret), ret);
 		return ret;
 	}
 	
@@ -3839,7 +3839,7 @@ function debug(e){console.log(e)};
 		{
 			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
 			tfgColor = opt.getTitlebarForegroundColor();
-			CMN.Log("初始化词典设置");
+			CMN.debug("初始化词典设置", this);
 			if (getIsWebx()) {
 				setShowToolsBtn(true);
 				setImageBrowsable(false);

@@ -59,7 +59,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 		String searchText = params[0].trim();
 		int paragraphWords = 9;
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
-		CMN.Log("isParagraph::", isParagraph);
+		//CMN.debug("isParagraph::", isParagraph);
 		CurrentSearchText=searchText;
 		CurrentSearchText2=PDICMainAppOptions.getSearchUseMorphology()?
 				a.ReRouteKey(searchText, true):null;
@@ -168,7 +168,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 
-		CMN.debug("联合搜索 时间： " + (System.currentTimeMillis() - CMN.stst) + " ms " + rec.size());
+		// CMN.debug("联合搜索 时间： " + (System.currentTimeMillis() - CMN.stst) + " ms " + rec.size());
 		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), CurrentSearchText);
 		rec.storeRealm = a.schuiMain;
 		rec.storeRealm1 = a.thisActType==MainActivityUIBase.ActType.PlainDict?SearchUI.MainApp.表1:SearchUI.FloatApp.表1;

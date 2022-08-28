@@ -1629,7 +1629,7 @@ public class ViewUtils {
 				// 右值
 				// 赋值
 				if (fieldToSet!=null) {
-					CMN.debug("field赋值::", object, fieldToSet, newObj);
+//					CMN.debug("field赋值::", object, fieldToSet, newObj);
 					fieldToSet.set(object, newObj);
 				}
 				if (varName!=null) {

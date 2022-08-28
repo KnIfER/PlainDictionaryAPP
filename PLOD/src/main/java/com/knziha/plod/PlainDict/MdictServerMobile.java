@@ -177,7 +177,8 @@ public class MdictServerMobile extends MdictServer {
 					StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 					StrictMode.setThreadPolicy(policy);
 				}
-				CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3" + key.replace("\\", "/"));
+				if(check)
+					CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3" + key.replace("\\", "/"));
 				String uri = "http://192.168.0.100:8080/base/3" + URLEncoder.encode(key.replace("\\", "/"));
 				HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
 				if (urlConnection instanceof HttpsURLConnection) {
@@ -196,7 +197,7 @@ public class MdictServerMobile extends MdictServer {
 //				String val = BU.StreamToString(input);
 //				//input = new AutoCloseNetStream(input, urlConnection);
 //				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
-				CMN.Log("请求的是本机调试资源…", key);
+				// CMN.Log("请求的是本机调试资源…", key);
 				return input;
 			} catch (Exception e) {
 				if (check) {
