@@ -3,10 +3,12 @@ package com.knziha.text;
 
 import android.os.Build;
 
+import java.text.CharacterIterator;
+
 public class BreakIteratorHelper {
 	android.icu.text.BreakIterator BreakIteratorI;
 	java.text.BreakIterator BreakIteratorJ;
-	static boolean isAndroidBreakerAvailable= Build.VERSION.SDK_INT>=Build.VERSION_CODES.N;
+	static boolean isAndroidBreakerAvailable = Build.VERSION.SDK_INT>=Build.VERSION_CODES.N;
 
 	public BreakIteratorHelper(){
 		if(isAndroidBreakerAvailable){
@@ -17,6 +19,14 @@ public class BreakIteratorHelper {
 	}
 
 	public void setText(String text) {
+		if(isAndroidBreakerAvailable){
+			BreakIteratorI.setText(text);
+		}else{
+			BreakIteratorJ.setText(text);
+		}
+	}
+	
+	public void setText(CharacterIterator text) {
 		if(isAndroidBreakerAvailable){
 			BreakIteratorI.setText(text);
 		}else{
