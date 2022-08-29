@@ -210,4 +210,6 @@ dependencies {
         exclude module:"core"
     }
 
+
+//    api 'org.apache.lucene:lucene-core:8.0.0'
 }
