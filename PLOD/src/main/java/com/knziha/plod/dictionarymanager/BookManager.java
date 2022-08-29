@@ -376,7 +376,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	private void checkAll() {
 		AgentApplication app = ((AgentApplication)getApplication());
-		CMN.Log("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
+		CMN.debug("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
 		checkF1();
 
 		if(f3.isDirty) {

@@ -79,6 +79,7 @@
 		android:title="联合搜索"
 		app:icon="@drawable/ic_btn_multimode"
 		android:tint="#000"
+		android:clickable="true"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>

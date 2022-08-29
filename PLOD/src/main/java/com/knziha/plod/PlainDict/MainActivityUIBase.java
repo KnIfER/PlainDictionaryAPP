@@ -7184,6 +7184,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			dlv.setTag(scanInList);
 			setchooser = new WeakReference<>(dTmp);
+			dTmp.tag = bag;
 		}
 		else {
 //			if(dTmp.getWindow().getAttributes().type!=mDialogType){
@@ -8090,7 +8091,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
-					boolean merge = invoker.isMergedBook();
+					boolean merge = invoker.isMergedBook() || mWebView.merge;
 					if (mdbr) {
 						int slashIdx = url.indexOf("/", schemaIdx+7);
 						if(slashIdx<0) slashIdx = url.length();
@@ -8131,7 +8132,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						for (PlainWeb book : wlh.moders) { // java.util.ConcurrentModificationException
 							WebResourceResponse resp = book.modifyRes(MainActivityUIBase.this, url, false);
 							if (resp != null) {
-								CMN.debug("修改了::", url);
+								CMN.debug("修改了::http::", url);
 								return resp;
 							}
 						}
@@ -8164,7 +8165,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										WebResourceResponse resp = webx.modifyRes(MainActivityUIBase.this, url, true);
 										if(resp!=null) { //todo opt
 											// requesting web data on merged page. or...
-											CMN.debug("修改了::", url);
+											CMN.debug("修改了::on merged page::", url);
 											WebResourceResponse webResourceResponse;
 											return resp;
 										}
