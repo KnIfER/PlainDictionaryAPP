@@ -24,12 +24,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Fragmenter;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -46,15 +40,15 @@ public class LuceneTest {
 		try {
 			// create analyzer and directory
 			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
-			//analyzer = new SmartChineseAnalyzer(Version.LATEST);
 			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene-demo-index"));
+//			Directory index = FSDirectory.open(Paths.get("/sdcard/PLOD/lucene-demo-index", new String[0]));
 			
 			
 			// indexing
 			// 1 create index-writer
 			mdict md = (mdict) a.currentDictionary.bookImpl;
 			// 2 write index
-			if(false) // OED2 耗时差不多三分钟左右
+			if(true) // 测试 OED2 (24MB) 建立索引耗时。
 			{
 				IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
 				config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
@@ -64,8 +58,10 @@ public class LuceneTest {
 					Document doc = new Document();
 					doc.add(new TextField("entry", md.getEntryAt(i), Field.Store.YES));
 					doc.add(new StringField("bookName", md.getDictionaryName(), Field.Store.YES));
-					String html = md.getRecordAt(i);
-					String text = Html.fromHtml(html).toString();
+					String text = md.getRecordAt(i);
+					text = org.jsoup.Jsoup.parse(text).text(); // 80s
+					// text = org.jsoup.Jsoup.parseBodyFragment(text).text(); //
+					//text = Html.fromHtml(html).toString(); // 150s
 					// CMN.Log(text);
 					doc.add(new TextField("content", text, Field.Store.YES));
 					writer.addDocument(doc);
@@ -92,7 +88,7 @@ public class LuceneTest {
 				
 				BooleanClause.Occur[] occ={BooleanClause.Occur.MUST, BooleanClause.Occur.MUST};
 				
-				Query query = MultiFieldQueryParser.parse(Version.LUCENE_47, stringQuery, fields, occ, analyzer);
+				Query query;// = MultiFieldQueryParser.parse(Version.LUCENE_47, stringQuery, fields, occ, analyzer);
 				
 				query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse("美丽国");
 				query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse("使更加美丽");
@@ -109,10 +105,10 @@ public class LuceneTest {
 				CMN.Log("found " + hits.length + " results", docs.totalHits);
 				
 				
-				QueryScorer scorer=new QueryScorer(query); //显示得分高的片段(摘要)
-				Fragmenter fragmenter=new SimpleSpanFragmenter(scorer);
-				SimpleHTMLFormatter simpleHTMLFormatter=new SimpleHTMLFormatter("<b><font color='red'>","</font></b>");
-				Highlighter highlighter=new Highlighter(simpleHTMLFormatter,scorer);
+				org.apache.lucene.search.highlight.QueryScorer scorer=new org.apache.lucene.search.highlight.QueryScorer(query); //显示得分高的片段(摘要)
+				org.apache.lucene.search.highlight.Fragmenter fragmenter=new org.apache.lucene.search.highlight.SimpleSpanFragmenter(scorer);
+				org.apache.lucene.search.highlight.SimpleHTMLFormatter simpleHTMLFormatter=new org.apache.lucene.search.highlight.SimpleHTMLFormatter("<b><font color='red'>","</font></b>");
+				org.apache.lucene.search.highlight.Highlighter highlighter=new org.apache.lucene.search.highlight.Highlighter(simpleHTMLFormatter,scorer);
 				highlighter.setTextFragmenter(fragmenter);
 				
 				
@@ -133,7 +129,7 @@ public class LuceneTest {
 							String str = highlighter.getBestFragment(tokenStream, text);
 							CMN.Log("<div class='preview'>"+dt+str+(" ("+hit.score+") ")+"</div>");
 							continue;
-						} catch (InvalidTokenOffsetsException e) {
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 						CMN.Log("<br/>---15字::", text.substring(0, Math.min(15, text.length())));
