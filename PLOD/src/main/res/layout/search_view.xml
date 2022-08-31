@@ -1,0 +1,107 @@
+<layout>
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:paddingTop="0dp">
+
+	<androidx.appcompat.widget.Toolbar
+		android:id="@+id/toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/barSize"
+		android:theme="@style/toolbarBaseTheme"
+		app:contentInsetLeft="0dp"
+		app:contentInsetStart="0dp"
+		app:contentInsetStartWithNavigation="0dp"
+		tools:background="?attr/colorPrimary"
+		app:layout_scrollFlags="scroll|enterAlways|snap"
+		android:clipToPadding="false"
+		android:clipChildren="false"
+		android:minWidth="250dp"
+		>
+		<FrameLayout android:id="@+id/rlSearchFrameDelete"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:clipToPadding="false"
+			android:clipChildren="false"
+			android:paddingEnd="3dp"
+			>
+			<com.knziha.plod.widgets.EditTextmy
+				android:id="@+id/etSearch"
+				android:layout_width="fill_parent"
+				android:layout_height="match_parent"
+				android:textColor="#ffffff"
+				android:singleLine="true"
+				android:paddingStart="@dimen/etSchPadSt"
+				android:paddingEnd="23dp"
+				android:imeOptions="actionSearch|flagNoExtractUi"
+				tools:text="HAPPY SEARCHING"
+				android:background="@null"
+				/>
+			<ImageView
+				android:id="@+id/multilineBG"
+				android:layout_width="@dimen/_25_"
+				android:layout_height="match_parent"
+				android:paddingStart="3dp"
+				android:paddingEnd="5dp"
+				android:layout_gravity="end"
+				/>
+			<ImageView
+				android:id="@+id/multiline"
+				android:layout_width="@dimen/_25_"
+				android:layout_height="match_parent"
+				android:src="@drawable/ic_menu_material"
+				android:paddingStart="3dp"
+				android:paddingEnd="5dp"
+				android:layout_gravity="end"
+				/>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:background="@drawable/abc_edit_text_material"
+				android:layout_marginStart="@dimen/etBotPadSt"
+				/>
+		</FrameLayout>
+	</androidx.appcompat.widget.Toolbar>
+
+	<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:app="http://schemas.android.com/apk/res-auto"
+		android:id="@+id/tools"
+		android:layout_width="match_parent"
+		android:layout_height="35dp"
+		android:orientation="horizontal"
+		android:paddingTop="0dp">
+		<com.knziha.plod.preference.RadioSwitchButton
+			android:id="@+id/ck1"
+			android:text="全选"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="match_parent"
+			/>
+		<com.knziha.plod.preference.RadioSwitchButton
+			android:id="@+id/ck2"
+			android:text="当前组"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="match_parent"
+			/>
+		<com.knziha.plod.preference.RadioSwitchButton
+			android:id="@+id/ck3"
+			android:text="搜全部"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="match_parent"
+			/>
+	</LinearLayout>
+
+
+	<include
+		layout="@layout/dict_dsl_main"
+		/>
+
+</LinearLayout>
+</layout>

@@ -3,6 +3,7 @@ package com.knziha.plod.plaindict;
 import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
 import static com.knziha.plod.plaindict.PDICMainActivity.layoutScrollDisabled;
 
+import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -18,7 +19,9 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
 
+import java.io.IOException;
 import java.util.List;
 
 /** 词典词条列表，单本词典。 */
@@ -58,7 +61,12 @@ public class ListViewAdapter extends BasicAdapter {
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		//return lstItemViews.get(position);
-		PDICMainActivity.ViewHolder vh=convertView==null?new ViewHolder(parent.getContext(), R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();
+		PDICMainActivity.ViewHolder vh;
+		if (convertView == null) {
+			vh = new ViewHolder(parent.getContext(), R.layout.listview_item01, parent);
+		} else {
+			vh = (ViewHolder) convertView.getTag();
+		}
 		String currentKeyText = presenter.bookImpl.getEntryAt(position,mflag);
 		if(presenter.bookImpl.hasVirtualIndex()){
 			int tailIdx=currentKeyText.lastIndexOf(":");
@@ -85,6 +93,18 @@ public class ListViewAdapter extends BasicAdapter {
 		//tofo
 		vh.subtitle.setText(presenter.getDictionaryName());
 		vh.position = position;
+		
+		try {
+			String record = presenter.bookImpl.getRecordAt(position, null, false);
+//			if (record.length()>64) {
+//				record = record.substring(0, 64);
+//			}
+			String text = Jsoup.parse(record).text();
+			vh.preview.setText(text);
+			vh.preview.setMaxLines(3);
+		} catch (IOException e) {
+			CMN.debug(e);
+		}
 		
 		return vh.itemView;
 	}

@@ -59,4 +59,8 @@ public class resultRecorderDiscrete {
 	public boolean shouldAddHistory(MainActivityUIBase a) {
 		return false;
 	}
+	
+	public String getPreviewAt(int position) {
+		return null;
+	}
 }

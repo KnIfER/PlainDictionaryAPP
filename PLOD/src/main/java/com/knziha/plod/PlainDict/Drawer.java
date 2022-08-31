@@ -334,7 +334,7 @@ public class Drawer extends Fragment implements
 				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
 				vh.itemView.setOnClickListener(Drawer.this);
 				if (vh.subtitle!=null) {
-					vh.subtitle.trim=false;
+					//vh.subtitle.trim=false; todo 890
 					vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
 				}
 			}

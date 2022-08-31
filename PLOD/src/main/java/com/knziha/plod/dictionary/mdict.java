@@ -1135,7 +1135,191 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //			}
 //		}
 	}
+	
+	
+	public interface DoForAllRecords{
+		void doit(Object parm, long position, byte[] data, int from, int len, Charset _charset);
+	}
+	
+	public void doForAllRecords(Object book, AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException {
+		//SU.Log("Find In All Contents Started");
+		if(isResourceFile||getOnlyContainsImg()||dor==null) return;
+		byte[][][][][] matcher=null;
+		
+		if(_key_block_info_list==null) read_key_block_info(null);
+		
+		if(_record_info_struct_list==null) decode_record_block_header();
+		
+		if(keyBlocksHeaderTextKeyID==null) fetch_keyBlocksHeaderTextKeyID();
+		
+		split_recs_thread_number = _num_record_blocks<6?1:(int) (_num_record_blocks/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
+		split_recs_thread_number = split_keys_thread_number>16?6:split_keys_thread_number;
+		//split_recs_thread_number = Runtime.getRuntime().availableProcessors();
+		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_keys_thread_number);
+		// split_recs_thread_number = 1;
+		
+		final int step = (int) (_num_record_blocks/split_recs_thread_number);
+		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
+		
+		SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
+		SU.Log("fatal_","thread_number"+thread_number);
+		SU.Log("fatal_","step/yuShu", step, yuShu);
+		
+		
+		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
+		
+		//ArrayList<Thread> fixedThreadPool = new ArrayList<>(thread_number);
+		ExecutorService fixedThreadPool = OpenThreadPool(thread_number);
+		for(int ti=0; ti<split_recs_thread_number; ti++){//分  thread_number 股线程运行
+			if(SearchLauncher.IsInterrupted || searchCancled) break;
+			final int it = ti;
+			//if(false)
+			if(split_recs_thread_number>thread_number) while (SearchLauncher.poolEUSize.get()>=thread_number) {
+				try {
+					Thread.sleep(2);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
+			
+			fixedThreadPool.execute(
+					//(
+					new Runnable(){@Override public void run()
+					{
+						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+						final byte[] record_block_compressed = new byte[(int) maxComRecSize];//!!!避免反复申请内存
+						final byte[] record_block_ = new byte[(int) maxDecompressedSize];//!!!避免反复申请内存
+						F1ag flag = new F1ag();
+						InputStream data_in = null;
+						try
+						{
+							long seekTarget=_record_info_struct_list[it*step].compressed_size_accumulator+_record_block_offset+_number_width*4+_num_record_blocks*2*_number_width;
+							//data_in = mOpenInputStream();
+							//long seek = data_in.skip(seekTarget);
+							data_in = getStreamAt(seekTarget, false);
+							//if(seek!=seekTarget)
+							//	throw new RuntimeException("seek!=seekTarget !!!");
+							int jiaX=0;
+							if(it==split_recs_thread_number-1) jiaX=yuShu;
+							for(int i=it*step; i<it*step+step+jiaX; i++)//_num_record_blocks
+							{
+								//if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+								record_info_struct RinfoI = _record_info_struct_list[i];
+								
+								int compressed_size = (int) RinfoI.compressed_size;
+								int decompressed_size = (int) RinfoI.decompressed_size;
+								data_in.read(record_block_compressed, 0, compressed_size);
+								
+								//解压开始
+								switch (record_block_compressed[0]|record_block_compressed[1]<<8|record_block_compressed[2]<<16|record_block_compressed[3]<<32){
+									case 0:
+										System.arraycopy(record_block_compressed, 8, record_block_, 0, compressed_size-8);
+										break;
+									case 1:
+										new LzoDecompressor1x().decompress(record_block_compressed, 8, (compressed_size-8), record_block_, 0, new lzo_uintp());
+										break;
+									case 2:
+										Inflater inf = new Inflater();
+										inf.setInput(record_block_compressed,8,compressed_size-8);
+										int ret = inf.inflate(record_block_,0,decompressed_size);
+										break;
+									case 3:
+										SU.Zstd_decompress(record_block_compressed, 8, compressed_size-8, record_block_, 0, decompressed_size);
+										break;
+									case 4:
+										SU.Lz4_decompress(record_block_compressed, 8, record_block_, 0, decompressed_size);
+										break;
+								}
+								
+								//内容块解压完毕
+								long off = RinfoI.decompressed_size_accumulator;
+								int key_block_id = binary_find_closest(keyBlocksHeaderTextKeyID,off);
+								
+								long[] ko; int recordodKeyLen, try_idx;
+								OUT:
+								while(true) {
+									if(SearchLauncher.IsInterrupted  || searchCancled || key_block_id>=_key_block_info_list.length) break;
+									ko = prepareItemByKeyInfo(null,key_block_id,null).key_offsets;
+									//if(infoI_cacheI.blockID!=key_block_id)
+									//	throw new RuntimeException("bad !!!"+infoI_cacheI.blockID+" != "+key_block_id);
+									for(int relative_pos=binary_find_closest(ko,off);relative_pos<ko.length;relative_pos++) {
+										if(relative_pos<ko.length-1){//不是最后一个entry
+											recordodKeyLen=(int) (ko[relative_pos+1]-ko[relative_pos]);
+										}
+										else if(key_block_id<keyBlocksHeaderTextKeyID.length-1){//不是最后一块key block
+											recordodKeyLen=(int) (keyBlocksHeaderTextKeyID[key_block_id+1]-ko[relative_pos]);
+										}else {
+											recordodKeyLen = (int) (decompressed_size-(ko[ko.length-1]-RinfoI.decompressed_size_accumulator));
+										}
+										
+										if(ko[relative_pos]-RinfoI.decompressed_size_accumulator+recordodKeyLen>RinfoI.decompressed_size) {
+											//show("break OUT");
+											break OUT;
+										}
 
+									/*
+									File dump = new File("D:\\record_dump."+i+".bin");
+									if(!dump.exists()) //块调试器
+										BU.printFile(record_block_, 0, decompressed_size, dump);*/
+										
+										int start=(int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator);
+
+//									GlobalOptions.debug=relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator==1844;
+//									if(GlobalOptions.debug){
+//										SU.Log("full res ::str", new String(record_block_, start, recordodKeyLen, _charset));
+//										SU.Log("full res ::relative_pos", relative_pos, "kos_len", ko.length-1, "key_block_id", key_block_id, "keyBlocksHeaderTextKeyID_len", keyBlocksHeaderTextKeyID.length-1);
+//										SU.Log("full res ::start-len", start, recordodKeyLen, record_block_.length);
+//									} else continue;
+										
+										dor.doit(parm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
+										, record_block_, start, recordodKeyLen, _charset);
+										
+										if(SearchLauncher.IsInterrupted || searchCancled) break;
+										
+										//if(GlobalOptions.debug) SU.Log("full res ::", try_idx, key, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), recordodKeyLen, record_block_.length);
+										SearchLauncher.dirtyProgressCounter++;
+									}
+									key_block_id++;
+								}
+							}
+							data_in.close();
+							
+						} catch (Exception e) {
+							try {
+								if(data_in!=null) data_in.close();
+							} catch (IOException ignored) {  }
+							//BU.printBytes(record_block_compressed,0,4);
+							//CMN.Log(record_block_compressed[0]|record_block_compressed[1]<<8|record_block_compressed[2]<<16|record_block_compressed[3]<<32);
+							SU.Log(e);
+						}
+						SearchLauncher.thread_number_count--;
+						if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
+					}}
+					//)
+					//)
+			);
+			//t.start();
+		}
+		SearchLauncher.currentThreads=fixedThreadPool;
+		fixedThreadPool.shutdown();
+		try {
+			fixedThreadPool.awaitTermination(5, TimeUnit.MINUTES);
+		} catch (Exception e1) {
+			SU.Log("Find In Full Text Interrupted!!!");
+			//e1.printStackTrace();
+		}
+//		for(Thread t:fixedThreadPool){
+//			try {
+//				t.join();
+//			} catch (InterruptedException e) {
+//				SU.Log("Find In Full Text Interrupted!!!");
+//				e.printStackTrace();
+//			}
+//		}
+	}
+	
 	public static Encoding bakeJoniEncoding(Charset charset) {
 		switch (charset.name()){
 			case "US-ASCII":

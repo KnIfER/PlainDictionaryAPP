@@ -9,7 +9,9 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		xmlns:tools="http://schemas.android.com/tools"
-		android:orientation="vertical">
+		android:orientation="vertical"
+		android:paddingBottom="7dp"
+		>
 
 		<TextView
 			android:layout_height="wrap_content"
@@ -22,11 +24,11 @@
 			android:textSize="@dimen/lvtextsize"
 			/>
 
-		<com.knziha.plod.widgets.FlowTextView
+		<TextView
 			android:layout_height="wrap_content"
 			android:layout_width="match_parent"
 			android:text=""
-			tools:text=" "
+			tools:text="提示："
 			android:id="@+id/subtext"
 			android:layout_marginLeft="10dp"
 			android:textSize="@dimen/lvsubtextsize"

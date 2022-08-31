@@ -108,8 +108,8 @@ import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.BuildIndexTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
+import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
-import com.knziha.plod.searchtasks.lucene.LuceneTest;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -214,6 +214,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private float barSzRatio;
 	private VirtualDisplay mDisplay;
 	private long lastResumeTime;
+	private SearchToolsMenu schTools;
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -375,6 +376,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void OnEnterBuildIndexTask(BuildIndexTask task) {
 		taskCounter=IndexingBooks.size();
+		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = fullSearchLayer;
+		taskRecv = _currentSearchLayer;
+		_currentSearchLayer.dirtyProgressCounter=
+		_currentSearchLayer.dirtyResultCounter=0;
+		_currentSearchLayer.IsInterrupted=false;
+		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
+			if(!_currentSearchLayer.IsInterrupted){
+				_currentSearchLayer.IsInterrupted=true;
+				task.stop(false);
+			}else{
+				task.stop(true);
+				task.harvest(true);
+				mAsyncTask=null;
+				if(taskd!=null){
+					taskd.dismiss();
+					taskd=null;
+				}
+				showT("强制关闭");
+			}
+		});
+		CMN.stst = System.currentTimeMillis();
+	}
+	
+	public void OnEnterIndexBuildingTask(IndexBuildingTask task) {
+		taskCounter=schTools.indexBuilderSet.size();
 		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = fullSearchLayer;
 		taskRecv = _currentSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=
@@ -1337,7 +1363,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 3));
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 4));
-
+		adaptermy5 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 5);
+		adaptermy5.itemId = R.layout.listview_item01;
+		
 		fuzzySearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINNAMES);
 		fullSearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINTEXTS);
 
@@ -1692,7 +1720,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			CMN.Log(e);
 		}
 		
-		new SearchToolsMenu(this, UIData.schtools);
+		schTools = new SearchToolsMenu(this, UIData.schtools);
 		
 		if(dictPicker.pinShow()) {
 			showChooseDictDialog(0);
@@ -1704,7 +1732,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		//tg
-		LuceneTest.test(this);
+		com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
 		
 		if(true) {
 //			showRandomShuffles();
@@ -2452,13 +2480,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		int position;
 		final View itemView;
 		TextView title;
-		FlowTextView subtitle;
+		TextView subtitle;
+		TextView preview;
 
 		public ViewHolder(Context context, int resId, ViewGroup parent) {
 			itemView = LayoutInflater.from(context).inflate(resId, parent, false);
 			itemView.setId(R.id.lvitems);
 			title = itemView.findViewById(R.id.text);
 			subtitle = itemView.findViewById(R.id.subtext);
+			preview = itemView.findViewById(R.id.preview);
 			itemView.setTag(this);
 		}
 	}

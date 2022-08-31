@@ -392,6 +392,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BasicAdapter adaptermy2;
 	public BasicAdapter adaptermy3;
 	public ListViewAdapter2 adaptermy4;
+	public ListViewAdapter2 adaptermy5;
 	public BasicAdapter ActivedAdapter;
 	public BaseHandler hdl;
 	public int  CurrentViewPage = 1;
@@ -3432,6 +3433,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static BookPresenter new_book(PlaceHolder phI, MainActivityUIBase THIS) throws IOException {
 		BookPresenter ret = new_book(phI.getPath(THIS.opt), THIS);
 		ret.tmpIsFlag = phI.tmpIsFlag;
+		ret.placeHolder = phI;
 		return ret;
 	}
 	
@@ -6529,7 +6531,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				tk.showDictTweaker(weblist.scrollFocus.presenter, weblist.scrollFocus);
 			}
 		} else {
-			tk.showDictTweaker(weblist.dictView.presenter, weblist.dictView);
+			tk.showDictTweaker(weblist.getWebContext().presenter, weblist.getWebContext());
 		}
 	}
 	

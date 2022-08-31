@@ -14,18 +14,27 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.xml.builders.TermsQueryBuilder;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.knziha.metaline.Metaline;
 
@@ -40,7 +49,7 @@ public class LuceneTest {
 		try {
 			// create analyzer and directory
 			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
-			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene-demo-index"));
+			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene"));
 //			Directory index = FSDirectory.open(Paths.get("/sdcard/PLOD/lucene-demo-index", new String[0]));
 			
 			
@@ -48,7 +57,7 @@ public class LuceneTest {
 			// 1 create index-writer
 			mdict md = (mdict) a.currentDictionary.bookImpl;
 			// 2 write index
-			if(true) // 测试 OED2 (24MB) 建立索引耗时。
+			if(false) // 测试 OED2 (24MB) 建立索引耗时。
 			{
 				IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
 				config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
@@ -72,7 +81,7 @@ public class LuceneTest {
 			
 			
 			// search
-			if(true)
+			if(false)
 			{
 				CMN.rt();
 				IndexReader reader = DirectoryReader.open(index);
@@ -84,18 +93,40 @@ public class LuceneTest {
 				stringQuery = new String[]{"ship's", "dollar"};
 				stringQuery = new String[]{"ship's", "dollar"};
 				
-				String[] fields = {"content", "content"};
+				String[] fields = {"entry", "content"};
 				
-				BooleanClause.Occur[] occ={BooleanClause.Occur.MUST, BooleanClause.Occur.MUST};
+				BooleanClause.Occur[] occ={BooleanClause.Occur.SHOULD, BooleanClause.Occur.SHOULD};
 				
-				Query query;// = MultiFieldQueryParser.parse(Version.LUCENE_47, stringQuery, fields, occ, analyzer);
+				Query query  = MultiFieldQueryParser.parse(Version.LUCENE_47, stringQuery, fields, occ, analyzer);
 				
 				query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse("美丽国");
 				query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse("使更加美丽");
 				
+//				stringQuery = new String[]{"使更加美丽", "使更加美丽"};
+//				query  = MultiFieldQueryParser.parse(Version.LUCENE_47, stringQuery, fields, occ, analyzer);
+				
 				CMN.Log(styles);
 				
+//				OED2.mdx
+//				简明英汉汉英词典.mdx
+				
+				
+				BooleanQuery booleanQuery = new BooleanQuery();
+				BooleanQuery dictQuery = new BooleanQuery();
+				TermQuery dictQuery1 = new TermQuery(new Term("bookName", "OED2.mdx"));
+				TermQuery dictQuery2 = new TermQuery(new Term("bookName", "简明英汉汉英词典.mdx"));
+				
+				dictQuery.add(dictQuery1, BooleanClause.Occur.SHOULD);
+				//dictQuery.add(dictQuery2, BooleanClause.Occur.SHOULD);
+				
+				booleanQuery.add(dictQuery, BooleanClause.Occur.MUST);
+				booleanQuery.add(query, BooleanClause.Occur.MUST);
+				
+				
+				query = booleanQuery;
+				
 				CMN.Log("query: ", query);
+				
 				
 				int hitsPerPage = 100;
 				// 3 do search
@@ -135,10 +166,30 @@ public class LuceneTest {
 						CMN.Log("<br/>---15字::", text.substring(0, Math.min(15, text.length())));
 					}
 				}
-				CMN.pt("搜索时间:");
+				CMN.pt("搜索时间::");
 				
 			}
 			
+			//fields
+			if(false)
+			{
+				CMN.rt();
+				IndexReader reader = DirectoryReader.open(index);
+				CMN.pt("reader时间:");
+				Fields fields = MultiFields.getFields(reader);
+				CMN.pt("fields时间:");
+				Terms terms = fields.terms("bookName");
+				CMN.pt("terms时间:");
+				TermsEnum iterator = terms.iterator(null);
+				CMN.pt("iterator时间:");
+				BytesRef byteRef = null;
+				CMN.pt("准备时间:");
+				while((byteRef = iterator.next()) != null) {
+					String term = new String(byteRef.bytes, byteRef.offset, byteRef.length);
+					CMN.Log("found term:"+term);
+				}
+				CMN.pt("搜索时间::");
+			}
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

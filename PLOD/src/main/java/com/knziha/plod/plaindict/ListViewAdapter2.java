@@ -2,6 +2,7 @@ package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
 
+import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -22,7 +23,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 	final MainActivityUIBase a;
 	final PDICMainAppOptions opt;
 	final int id;
-	int itemId = R.layout.listview_item0;
+	public int itemId = R.layout.listview_item0;
+	
 	public ListViewAdapter2(MainActivityUIBase a, ViewGroup vg, MenuBuilder allMenus, List<MenuItemImpl> contentMenu, int resId, int id)
 	{
 		this(a, vg, allMenus, contentMenu, id);
@@ -82,6 +84,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 			} else {
 				v.setVisibility(View.GONE);
 			}
+		}
+		if(id==5) {
+			vh.preview.setText(Html.fromHtml(results.getPreviewAt(position)));
 		}
 		//vh.itemView.setTag(R.id.position,position);
 		return vh.itemView;
@@ -244,8 +249,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public String currentKeyText() {
-		return results instanceof resultRecorderScattered?
-				((resultRecorderScattered) results).getCurrentKeyText(a, lastClickedPos)
-				:currentKeyText;
+		return //results instanceof resultRecorderScattered?
+//				((resultRecorderScattered) results).getCurrentKeyText(a, lastClickedPos)
+				currentKeyText;
 	}
 }

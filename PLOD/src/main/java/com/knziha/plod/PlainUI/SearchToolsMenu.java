@@ -3,30 +3,37 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.preference.SettingsPanel.BIT_STORE_VIEW;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
-import android.content.DialogInterface;
 import android.text.TextPaint;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ListView;
 
+import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymanager.BookManagerMain;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
+import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.widgets.DescriptiveImageView;
+import com.knziha.plod.widgets.ViewUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 //for menu list
 public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener
@@ -45,6 +52,9 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		menuList.add("繁简转换");
 		menuList.add("繁简选字");
 		//menuList.add("繁简通搜");
+		
+		menuList.add("全文索引");
+		menuList.add("搜索引擎");
 		
 //		menuList.add("翻阅模式");
 //		menuList.add("多行编辑");
@@ -133,7 +143,8 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					a.setSearchTerm(newText);
 				}
 			} break;
-			case 1:{
+			case 1:
+			{
 				//CMN.Log("繁简选字!!!");
 				//String text = "happy happy happy恒心努力毅力决心";
 				String text = a.getSearchTerm().trim();
@@ -296,6 +307,119 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				
 				mainMenuLst.maxHeight = h;
 			} break;
+			case 2:
+			{
+				MainActivityUIBase.LoadManager loadMan = a.loadManager;  // 建立全文索引
+				AlertDialog dTmp = indexBuilderDlg.get();
+				indexBuilderSet.clear();
+				if (!ViewUtils.isVisibleV2(a.lv2))
+				{
+					indexBuilderSet.add(a.currentDictionary.placeHolder);
+				}
+				if (dTmp==null) {
+					View.OnClickListener onClickListener = new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							if (v.getId() == android.R.id.button1) {
+								startBuildIndexes();
+							} else {
+								BookManagerMain.ViewHolder vh
+										= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
+								if (vh != null) {
+									PlaceHolder ph = a.loadManager.getPlaceHolderAt(vh.position);
+									if (ph != null) {
+										boolean val = !vh.ck.isChecked();
+										vh.ck.setChecked(val);
+										if (val) indexBuilderSet.add(ph);
+										else indexBuilderSet.remove(ph);
+									}
+								}
+							}
+						}
+					};
+					dTmp = new AlertDialog.Builder(a)
+							.setTitle("建立全文索引")
+							.setSingleChoiceItems(new CharSequence[]{}, 0, null)
+							.setAdapter(new BaseAdapter() {
+								@Override
+								public int getCount() {
+									return loadMan.lazyMan.chairCount;
+								}
+								@Override
+								public Object getItem(int position) {
+									return loadMan.lazyMan.CosyChair[position];
+								}
+								@Override
+								public long getItemId(int position) {
+									return 0;
+								}
+								@Override
+								public View getView(int position, View convertView, ViewGroup parent) {
+									BookManagerMain.ViewHolder vh;
+									if (convertView == null) {
+										convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_dslitem, parent, false);
+										vh = new BookManagerMain.ViewHolder(convertView);
+										vh.title.setOnClickListener(onClickListener);
+										vh.ck.setOnClickListener(onClickListener);
+									} else {
+										vh = (BookManagerMain.ViewHolder) convertView.getTag();
+									}
+									vh.position = position;
+									PlaceHolder ph = a.loadManager.getPlaceHolderAt(position);
+									vh.title.setText(a.loadManager.md_getName(position, -1));
+									vh.ck.setChecked(indexBuilderSet.contains(ph));
+									vh.handle.setVisibility(View.GONE);
+									return convertView;
+								}
+							}, null)
+							.setPositiveButton("开始！", null)
+							.setNegativeButton("取消", null)
+							.show();
+					dTmp.findViewById(android.R.id.button1).setOnClickListener(onClickListener);
+					indexBuilderDlg = new WeakReference<>(dTmp);
+				}
+				dTmp.show();
+				ViewUtils.ensureWindowType(dTmp, a, null);
+				ListView lv = dTmp.getListView();
+				float pad = 2.8f * a.mResource.getDimension(R.dimen._50_) * (a.dm.widthPixels>GlobalOptions.realWidth?1:1.45f);
+				View root = a.root;
+				((AlertController.RecycleListView) lv).mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
+			} break;
+			case 3:
+			{
+				if (luceneHelper==null) {
+					luceneHelper = new LuceneHelper((PDICMainActivity) a, this);
+				}
+				MainActivityUIBase.LoadManager loadMan = a.loadManager;  // 进行全文搜索
+				AlertDialog dTmp = indexSchDlg.get();
+				if (dTmp==null) {
+					dTmp = new AlertDialog.Builder(a)
+							.setPositiveButton("搜索", null)
+							.setNegativeButton("取消", null)
+							.setView(luceneHelper.getSchView())
+							.show();
+					dTmp.findViewById(android.R.id.button1).setOnClickListener(luceneHelper);
+					indexSchDlg = new WeakReference<>(dTmp);
+				}
+				dTmp.show();
+				ViewUtils.ensureWindowType(dTmp, a, null);
+				ListView lv = dTmp.getListView();
+				float pad = 2.8f * a.mResource.getDimension(R.dimen._50_) * (a.dm.widthPixels>GlobalOptions.realWidth?1:1.45f);
+				View root = a.root;
+				//((AlertController.RecycleListView) lv).mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
+			} break;
 		}
 	}
+	
+	WeakReference<AlertDialog> indexSchDlg = ViewUtils.DummyRef;
+	WeakReference<AlertDialog> indexBuilderDlg = ViewUtils.DummyRef;
+	public HashSet<PlaceHolder> indexBuilderSet = new HashSet<>();
+	
+	private void startBuildIndexes() {
+		if (indexBuilderSet.size()>0) {
+			new IndexBuildingTask((PDICMainActivity) a).execute(indexBuilderSet);
+		}
+	}
+	
+	LuceneHelper luceneHelper;
 }

@@ -3,28 +3,33 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:orientation="vertical">
+	android:orientation="vertical"
+	android:clipChildren="false"
+	android:clipToPadding="false"
+	android:paddingBottom="7dp"
+	>
 
 	<TextView
 		android:layout_height="wrap_content"
-		android:layout_width="wrap_content"
+		android:layout_width="match_parent"
 		tools:text="absolve"
 		android:id="@+id/text"
 		android:layout_marginLeft="10dp"
-		android:layout_marginTop="5dp"
+		android:layout_marginTop="3.5dp"
 		android:textColor="#000"
 		android:textSize="@dimen/lvtextsize"
 		/>
 
-	<com.knziha.plod.widgets.FlowTextView
+	<TextView
 		android:layout_height="wrap_content"
 		android:layout_width="match_parent"
 		android:text=""
+		tools:text="牛津英语词典"
 		android:id="@+id/subtext"
 		android:layout_marginLeft="10dp"
 		android:textSize="@dimen/lvsubtextsize"
 		android:textColor="#99a"
-		android:padding="0dp"
+		android:paddingTop="2dp"
 		/>
 
 </LinearLayout>

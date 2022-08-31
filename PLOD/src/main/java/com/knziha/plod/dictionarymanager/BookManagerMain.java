@@ -662,12 +662,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		}
 
 	}
-
-	protected static class ViewHolder{
+	
+	public static class ViewHolder{
 		public int position;
-		ImageView handle;
-		FlowTextView title;
-		CheckBox ck;
+		public ImageView handle;
+		public FlowTextView title;
+		public CheckBox ck;
 
 		public ViewHolder(View v) {
 			handle = v.findViewById(R.id.drag_handle);

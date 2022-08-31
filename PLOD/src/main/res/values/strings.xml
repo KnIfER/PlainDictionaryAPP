@@ -40,6 +40,7 @@
 
     <string name="fuzzyfill">Entry search done! Time %1$1.2fs, Found  %2$d items!</string>
     <string name="fullfill">Fulltext search done! Time %1$1.2fs, Found  %2$d items!</string>
+    <string name="idxfill">索引已立完成！ 耗时 %1$1.2fs,共索引 %2$d 本词典,存储占用 %3$d MB！</string>
 	<string name="regret">Regex Search</string>
     <string name="fullret">Fulltext search</string>
     <string name="fuzzyret">Entry Wildcard Match</string>
