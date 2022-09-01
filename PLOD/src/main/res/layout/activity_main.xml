@@ -223,7 +223,7 @@
 	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		tools:visibility="gone"
+		tools:visibility="xgone"
 		>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"
@@ -234,7 +234,9 @@
 			android:theme="@style/AppTheme"
 			android:fastScrollEnabled="true"
 			android:descendantFocusability="beforeDescendants"
-			android:paddingLeft="10dp"/>
+			android:paddingLeft="10dp"
+			android:footerDividersEnabled="false"
+			/>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"
 			android:layout_width="match_parent"
@@ -244,6 +246,7 @@
 			android:background="@android:color/white"
 			android:visibility="invisible"
 			android:fastScrollEnabled="true"
+			android:footerDividersEnabled="false"
 			/>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"
@@ -254,6 +257,7 @@
 			android:fastScrollEnabled="true"
 			android:fastScrollStyle="@style/fscroll"
 			android:paddingLeft="10dp"
+			android:footerDividersEnabled="false"
 			/>
 
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
@@ -266,7 +270,40 @@
 			android:listSelector="@drawable/listviewselector0"
 			android:paddingLeft="10dp"
 			/>
-
+		<FrameLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginRight="2dp"
+			android:layout_gravity="bottom|center"
+			>
+			<TextView
+				android:id="@+id/dictName"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:gravity="right"
+				android:textColor="#F9F4F4"
+				android:text="简明英汉汉英词典"
+				android:textFontWeight="750"
+				android:textSize="12sp"
+				android:maxLines="1"
+				android:paddingLeft="5dp"
+				android:paddingRight="5dp"
+				android:background="@drawable/frame_dt"
+				/>
+<!--			<TextView-->
+<!--				android:id="@+id/dictNameFore"-->
+<!--				android:layout_width="wrap_content"-->
+<!--				android:layout_height="wrap_content"-->
+<!--				android:gravity="right"-->
+<!--				android:textColor="#88FFFFFF"-->
+<!--				android:textFontWeight="750"-->
+<!--				android:text="简明英汉汉英词典"-->
+<!--				android:textSize="12sp"-->
+<!--				android:maxLines="1"-->
+<!--				android:paddingLeft="5dp"-->
+<!--				android:paddingRight="5dp"-->
+<!--				/>-->
+		</FrameLayout>
 	</FrameLayout>
 
 </FrameLayout>

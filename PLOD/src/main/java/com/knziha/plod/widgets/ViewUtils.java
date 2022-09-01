@@ -1060,6 +1060,14 @@ public class ViewUtils {
 		return Math.min(r, Math.min(y, b));
 	}
 	
+	public static void setPadding(View v, int l, int t, int r, int b) {
+		v.setPadding(l==-1?v.getPaddingLeft():l
+				,t==-1?v.getPaddingTop():t
+				,r==-1?v.getPaddingRight():r
+				,b==-1?v.getPaddingBottom():b
+		);
+	}
+	
 	public void Destory(){
 		mNestedScrollingChildHelper.Destory();
 		mNestedScrollingChildHelper = null;
@@ -1984,6 +1992,28 @@ public class ViewUtils {
 			CMN.Log(e);
 		}
 		return false;
+	}
+	
+	public static View findViewByClassPath(View donkeySteed, int dynamicFrom, Class<?>...classes) {
+		if(classes[0].isInstance(donkeySteed)) {
+			ViewGroup vg;
+			for (int i = 1;i < classes.length; i++) {
+				vg=(ViewGroup) donkeySteed;
+				donkeySteed = vg.getChildAt(0);
+				if(i>=dynamicFrom) {
+					int j=0;
+					int cc=vg.getChildCount();
+					while(!classes[i].isInstance(donkeySteed)&&++j<cc) {
+						donkeySteed = vg.getChildAt(j);
+					}
+				}
+				if(!classes[i].isInstance(donkeySteed)) {
+					return null;
+				}
+			}
+			return donkeySteed;
+		}
+		return null;
 	}
 	
 }

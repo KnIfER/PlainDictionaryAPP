@@ -48,7 +48,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		}
 	}
 	
-	public SearchToolsMenu(MainActivityUIBase a, TwoWayGridView mainMenuLst) {
+	public SearchToolsMenu(MainActivityUIBase a, ViewGroup rootPanel) {
 		menuList.add("繁简转换");
 		menuList.add("繁简选字");
 		//menuList.add("繁简通搜");
@@ -64,6 +64,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		
 		this.a = a;
 		
+		TwoWayGridView mainMenuLst = rootPanel.findViewById(R.id.schtools);
 		mainMenuLst.setHorizontalSpacing(0);
 		mainMenuLst.setVerticalSpacing(0);
 		mainMenuLst.setHorizontalScroll(true);
@@ -212,7 +213,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				int Sz = sz;
 				SettingsPanel.ActionListener lis = new SettingsPanel.ActionListener() {
 					@Override
-					public boolean onAction(SettingsPanel p, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt) {
+					public boolean onAction(View v, SettingsPanel p, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt) {
 						int pos = IU.parsint(p.settingsLayout.getTag(),0);
 						CMN.Log(pos, flagPos);
 						int sz=p.linearLayout.getChildCount();

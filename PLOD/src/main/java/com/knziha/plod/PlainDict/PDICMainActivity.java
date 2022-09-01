@@ -79,6 +79,7 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
@@ -1360,6 +1361,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu);
 		adaptermy.setPresenter(currentDictionary);
 		lv.setAdapter(adaptermy);
+		View lv_fv = new View(this);
+		lv_fv.setLayoutParams(new ListView.LayoutParams(-1, (int) (GlobalOptions.density*15)));
+		lv.addFooterView(lv_fv);
 		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 3));
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 4));
@@ -2441,6 +2445,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			dictPicker.refresh();
 			dictPicker.adapter().notifyDataSetChanged();
 		}
+		
+		UIData.dictName.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
+		// UIData.dictNameFore.setTextColor(ColorUtils.blendARGB(MainAppBackground&0x88FFFFFF, 0x88FFFFFF, 0.8f));
 	}
 	
 	private boolean getPinPicDictDialog() {
@@ -3452,6 +3459,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(invalidate) {
 			if (!getPinPicDictDialog())
 				wordPopup.dismiss();
+			
+			UIData.dictName.setText(currentDictionary.getDictionaryName());
+			//UIData.dictNameFore.setText(currentDictionary.getDictionaryName());
 		}
 		return ret;
 	}

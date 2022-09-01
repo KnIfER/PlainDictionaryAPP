@@ -26,8 +26,9 @@
 		android:id="@+id/subtext"
 		android:layout_marginLeft="10dp"
 		android:textSize="@dimen/lvsubtextsize"
-		android:textColor="#99a"
+		android:textColor="#888"
 		android:paddingTop="2dp"
+		android:visibility="gone"
 		/>
 
 	<TextView
@@ -38,7 +39,7 @@
 		tools:text="exponential sim 指数和，三角和"
 		android:layout_marginLeft="10dp"
 		android:textSize="@dimen/lvsubtextsize"
-		android:textColor="#99a"
+		android:textColor="#888"
 		android:paddingTop="2dp"
 		android:paddingBottom="2dp"
 		/>

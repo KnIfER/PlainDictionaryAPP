@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
@@ -52,6 +53,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected int[][] UITags;
 	protected int[][] UIDrawable;
 	protected boolean isHorizontal;
+	protected boolean isHorizontalItems;
 	protected boolean shouldWrapInScrollView = true;
 	protected boolean bShouldRemoveAfterDismiss = true;
 	protected boolean bSuppressNxtAnimation = false;
@@ -119,7 +121,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	// Flag-Idx  BITs   Flag-Pos
 	// 索引   选项   偏移
 	
-	public static int makeInt(int flagIdx, int flagPos, boolean reverse) {
+	public final static int makeInt(int flagIdx, int flagPos, boolean reverse) {
 		return makeInt(flagIdx, flagPos, reverse, false);
 	}
 	
@@ -150,8 +152,12 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		}
 	}
 	
+	public void setHorizontalItems(boolean h) {
+		isHorizontalItems = h;
+	}
+	
 	public interface ActionListener{
-		boolean onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt);
+		boolean onAction(View v, SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt);
 		void onPickingDelegate(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, int lastX, int lastY);
 	}
 	protected ActionListener mActionListener;
@@ -201,7 +207,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		return EvalBooleanForFlag(flagIdx, flagPos, reverse);
 	}
 	
-	protected void setBooleanInFlag(int storageInt, boolean val) {
+	protected void setBooleanInFlag(View v, int storageInt, boolean val) {
 		int flagIdx=storageInt>>FLAG_IDX_SHIFT;
 		int flagPos=storageInt&MAX_FLAG_POS_MASK;
 		CMN.Log("setBooleanInFlag", flagIdx, val, flagPos);
@@ -210,7 +216,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		if(flagIdx!=0) {
 			PutBooleanForFlag(dynamic?mFlagAdapter.getDynamicFlagIndex(flagIdx):flagIdx, flagPos, val, reverse);
 		}
-		onAction(flagIdx, flagPos, dynamic, val, storageInt);
+		onAction(v, flagIdx, flagPos, dynamic, val, storageInt);
 	}
 	
 	public boolean EvalBooleanForFlag(int flagIndex, int flagPos, boolean reverse) {
@@ -229,9 +235,9 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		mFlagAdapter.Flag(flagIndex, flag);
 	}
 	
-	public boolean onAction(int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
+	public boolean onAction(View v, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 		if (mActionListener!=null) {
-			return mActionListener.onAction(this, flagIdx, flagPos, dynamic, val, storageInt);
+			return mActionListener.onAction(v, this, flagIdx, flagPos, dynamic, val, storageInt);
 		}
 		return true;
 	}
@@ -280,6 +286,11 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		lv.setPadding((int) (mPaddingLeft*density), (int) (mPaddingTop*density), (int) (mPaddingRight*density), (int) (mPaddingBottom*density));
 		//ArrayList<View> views;
 		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
+		if (isHorizontalItems) {
+			lp.width=0;
+			lp.weight=1;
+			lv.setOrientation(LinearLayout.HORIZONTAL);
+		}
 		int storageInt;
 		for (int i = 0; i < UITexts.length; i++) {
 			String[] group = UITexts[i];
@@ -288,7 +299,12 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				TextView groupTitle = new TextView(context, null, 0);
 				if(GlobalOptions.isDark) groupTitle.setTextColor(Color.WHITE);
 				//groupTitle.setTextAppearance(android.R.attr.textAppearanceLarge);
-				groupTitle.setText(group[0]);
+				String text = group[0];
+				if (text.startsWith("<")) {
+					groupTitle.setText(Html.fromHtml(text));
+				} else {
+					groupTitle.setText(text);
+				}
 				groupTitle.setPadding((int) (2*density), (int) (8*density), 0, (int) (8*density));
 				lv.addView(groupTitle, lp);
 			}
@@ -322,6 +338,9 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		//lv.addView(v);
 		//v.getLayoutParams().width = -1;
 		//v.getLayoutParams().height = (int) (bottomPaddding);
+		if (isHorizontalItems) {
+			lp = new LinearLayout.LayoutParams(-1, -2);
+		}
 		if (shouldWrapInScrollView) {
 			ScrollView sv = new ScrollView(context);
 			sv.addView(lv, lp);
@@ -494,7 +513,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				if((storageInt&BIT_STORE_VIEW)!=0) {
 					actView = button;
 				}
-				setBooleanInFlag(storageInt, button.isChecked());
+				setBooleanInFlag(v, storageInt, button.isChecked());
 				if((storageInt>>FLAG_IDX_SHIFT)==0) {
 					button.setChecked(false); // 容器索引为零，代表非选项
 				}

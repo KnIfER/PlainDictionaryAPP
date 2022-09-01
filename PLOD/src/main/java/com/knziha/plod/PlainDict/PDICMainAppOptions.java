@@ -956,7 +956,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 ////		updateSFAt(0x4000,!val);
 ////		return val;
 ////	}
-	
+
 //	public static boolean getHistoryStrategy6() {
 //		return (SecondFlag & 0x8000) != 0x8000;
 //	}
@@ -2446,6 +2446,62 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=4) public static boolean dbCntFetcingWord() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=4) public static void dbCntFetcingWord(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	// 旧搜索列表的预览设置
+	/** 是否启在列表中预览词条释义 */
+	@Metaline(flagPos=5) public static boolean listPreviewEnabled() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5) public static void listPreviewEnabled(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 三档预览色 */
+	@Metaline(flagPos=6, flagSize=2, shift=1, max=2) public static int listPreviewColor() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6, flagSize=2, shift=1, max=2) public static void listPreviewColor(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 通读模式 */
+	@Metaline(flagPos=8) public static boolean listOverreadMode() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=8) public static void listOverreadMode(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 预览文本可选 */
+	@Metaline(flagPos=9) public static boolean listPreviewSelectable() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=9) public static void listPreviewSelectable(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 三档预览字体大小 */
+	@Metaline(flagPos=10, flagSize=2, shift=1, max=2) public static int listPreviewFont() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=10, flagSize=2, shift=1, max=2) public static void listPreviewFont(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 新旧列表使用同一套配置 */
+	@Metaline(flagPos=12) public static boolean listPreviewSet01Same() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12) public static void listPreviewSet01Same(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	// 新搜索列表的预览设置
+	/** 是否启在列表中预览词条释义 */
+	@Metaline(flagPos=13) public static boolean listPreviewEnabled1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13) public static void listPreviewEnabled1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 是否从原词典获取释义 */
+	@Metaline(flagPos=14) public static boolean listPreviewOriginal1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=14) public static void listPreviewOriginal1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 三档预览色 */
+	@Metaline(flagPos=15, flagSize=2, shift=1, max=2) public static int listPreviewColor1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=15, flagSize=2, shift=1, max=2) public static void listPreviewColor1(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 通读模式 */
+	@Metaline(flagPos=17) public static boolean listOverreadMode1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=17) public static void listOverreadMode1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 三档预览长度（字节数） */
+	@Metaline(flagPos=18, flagSize=2, shift=1, max=2) public static int listPreviewSize1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=18, flagSize=2, shift=1, max=2) public static void listPreviewSize1(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 预览文本可选 */
+	@Metaline(flagPos=20) public static boolean listPreviewSelectable1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=20) public static void listPreviewSelectable1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 三档预览字体大小 */
+	@Metaline(flagPos=21, flagSize=2, shift=1, max=2) public static int listPreviewFont1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=21, flagSize=2, shift=1, max=2) public static void listPreviewFont1(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	// 列表中词典名称显示位置
+	/** 必要时显示词典名称 */
+	@Metaline(flagPos=23) public static boolean listShowBookName() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23) public static void listShowBookName(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	/** 显示位置 0=预览之后 1=预览之前 2=预览之上 3=预览之下 */
+	@Metaline(flagPos=24, flagSize=2) public static int listPreviewBookNamePos() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=24, flagSize=2) public static void listPreviewBookNamePos(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=26) public static boolean getAdjustLstPreviewShown(){ SevenFlag=SevenFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=26) public boolean togAdjustLstPreviewShown() { SevenFlag=SevenFlag; throw new IllegalArgumentException(); }
+	
+	
+	
 	
 	/////////////////////End Seven Flag///////////////////////////////////
 	
@@ -2754,6 +2810,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			break;
 			case 6:
 				SixthFlag=val;
+			break;
+			case 7:
+				SevenFlag=val;
 			break;
 			default:
 				tmpFlag=val;

@@ -9,8 +9,10 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.GlobalOptions;
 
@@ -27,6 +29,7 @@ import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DrawOverlayCompat;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
+import com.knziha.plod.widgets.TextViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 
 /** 一些页面选项的快捷入口 */
@@ -91,6 +94,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			initScreenPanel();
 		}
 		
+		if (opt.getAdjustLstPreviewShown())
+		{
+			UIData.lstArrow.setRotation(90);
+			initListPanel();
+		}
+		
 		if (opt.getAdjSHShwn())
 		{
 			UIData.shArrow.setRotation(90);
@@ -131,12 +140,24 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		}
 		
 		if(GlobalOptions.isDark) {
-			UIData.scn.setTextColor(Color.WHITE);
+			View v, tv, iv;
+			for (int i = 0; (v=UIData.root.getChildAt(i++))!=null; ) {
+				iv = ViewUtils.findViewByClassPath(v, 0, ViewGroup.class, ImageView.class);
+				if (iv!=null) {
+					tv = ViewUtils.findViewByClassPath(v, 0, ViewGroup.class, TextView.class);
+					if (tv!=null) {
+						((TextView)tv).setTextColor(Color.WHITE);
+						if(iv!=UIData.floatArrow) {
+							((ImageView)iv).setColorFilter(Color.WHITE);
+						}
+					}
+				}
+			}
 		}
 		
 		if(mScrollY>0) {
 			root.post(() -> sv.scrollTo(0, mScrollY));
-			//CMN.Log("重新滚动唷！", mScrollY);
+			//CMN.debug("重新滚动唷！", mScrollY);
 		}
 	}
 	
@@ -147,9 +168,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	public void refresh() {
-		CMN.Log("刷新全部数据...");
+		CMN.debug("刷新全部数据...");
 		this.weblist = a.weblist;
 		if (_screen !=null) _screen.refresh();
+		if (_listPrv !=null) _listPrv.refresh();
 		if (_sHandle !=null) initScrollHandle();
 		if (_tTools !=null) initTextTools();
 		if (_btmBars !=null) initBtmBars();
@@ -166,6 +188,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				boolean show = opt.togAdjScnShwn();
 				UIData.scnArrow.animate().rotation(show?90:0);
 				setPanelVis(initScreenPanel(), show);
+			}  break;
+			case R.id.lst: {
+				boolean show = opt.togAdjustLstPreviewShown();
+				UIData.lstArrow.animate().rotation(show?90:0);
+				setPanelVis(initListPanel(), show);
 			}  break;
 			case R.id.sh: {
 				boolean show = opt.togAdjSHShwn();
@@ -230,8 +257,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	@Override
-	public boolean onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt) {
-		CMN.Log("onAction", flagIdxSection, flagPos, dynamic, val, makeInt(5, 35, false));
+	public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt) {
+		CMN.debug("onAction", flagIdxSection, flagPos, dynamic, val, makeInt(5, 35, false));
 		if (settingsPanel==_btmBars) {
 			SearchUI.btmV++;
 			weblist.setViewMode();
@@ -271,9 +298,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				}
 			}
 		}
-		if (flagIdxSection==NONE_SETTINGS_GROUP1) {
+		RadioSwitchButton btn = v == null || v.getClass() != RadioSwitchButton.class ? null : (RadioSwitchButton) v;
+		if (dynamic && (flagIdxSection==NONE_SETTINGS_GROUP1 || flagIdxSection==NONE_SETTINGS_GROUP2)) {
 			ActionGp_1 var = ActionGp_1.values()[flagPos];
-			//CMN.Log("NONE_SETTINGS_GROUP1::", var.name());
+			//CMN.debug("NONE_SETTINGS_GROUP1::", var.name());
 			switch (var) {
 				// 缩放值预设
 //				case zoom: {
@@ -352,6 +380,43 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 						dismiss();
 					}
 				} break;
+				case pFontClr1:
+				case pFontClr2:
+				case pFontClr3:
+				{
+					PDICMainAppOptions.listPreviewColor(var.ordinal()-ActionGp_1.pFontClr1.ordinal());
+				} break;
+				case pFontSz1:
+				case pFontSz2:
+				case pFontSz3:
+				{
+					PDICMainAppOptions.listPreviewFont(var.ordinal()-ActionGp_1.pFontSz1.ordinal());
+				} break;
+				case p1FontClr1:
+				case p1FontClr2:
+				case p1FontClr3:
+				{
+					PDICMainAppOptions.listPreviewColor1(var.ordinal()-ActionGp_1.p1FontClr1.ordinal());
+				} break;
+				case p1FontSz1:
+				case p1FontSz2:
+				case p1FontSz3:
+				{
+					PDICMainAppOptions.listPreviewFont1(var.ordinal()-ActionGp_1.p1FontSz1.ordinal());
+				} break;
+				case p1ViewSz1:
+				case p1ViewSz2:
+				case p1ViewSz3:
+				{
+					PDICMainAppOptions.listPreviewSize1(var.ordinal()-ActionGp_1.p1ViewSz1.ordinal());
+				} break;
+			}
+			if (btn!=null && (var.ordinal()>=ActionGp_1.pFontClr1.ordinal() && var.ordinal()<=ActionGp_1.p1ViewSz3.ordinal())) {
+				ViewGroup vg = (ViewGroup) btn.getParent();
+				for (int i = 1; i < vg.getChildCount(); i++) {
+					v = vg.getChildAt(i);
+					((RadioSwitchButton)v).setChecked(v==btn);
+				}
 			}
 		}
 		return true;
@@ -372,6 +437,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	SettingsPanel _screen;
+	SettingsPanel _listPrv;
 	SettingsPanel _sHandle;
 	SettingsPanel _tTools;
 	SettingsPanel _fltBtn;
@@ -381,6 +447,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	int shType;
 	
 	public final static int NONE_SETTINGS_GROUP1=0;
+	public final static int NONE_SETTINGS_GROUP2=1;
 	
 	enum ActionGp_1 {
 		zoom
@@ -411,6 +478,126 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,ttools
 		,floatBtn
 		,floatApp
+		,pFontClr1
+		,pFontClr2
+		,pFontClr3
+		,pFontSz1
+		,pFontSz2
+		,pFontSz3
+		,p1FontClr1
+		,p1FontClr2
+		,p1FontClr3
+		,p1FontSz1
+		,p1FontSz2
+		,p1FontSz3
+		,p1ViewSz1
+		,p1ViewSz2
+		,p1ViewSz3
+	}
+	
+	private SettingsPanel initListPanel() {
+		if (_listPrv ==null) {
+			final SettingsPanel lstSettings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{"<font color='#3185F7'><u>旧列表设置</u></font>：", "在列表中预览词条释义", "通读模式", "使预览文本可选", "新旧列表使用同一套配置"}
+			, new String[]{"<font color='#3185F7'><u>新列表设置（搜索引擎）</u></font>：", "预览词条释义", "从原词典获取预览", "通读模式", "使预览文本可选"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeInt(7, 5, false) // listPreviewEnabled
+					, makeInt(7, 8, false) // listOverreadMode
+					, makeInt(7, 9, false) // listPreviewSelectable
+					, makeInt(7, 12, false) // listPreviewSet01Same
+			}, new int[]{Integer.MAX_VALUE
+					, makeInt(7, 13, false) // listPreviewEnabled1
+					, makeInt(7, 14, false) // listPreviewOriginal1
+					, makeInt(7, 17, false) // listOverreadMode1
+					, makeInt(7, 20, false) // listPreviewSelectable1
+			}}, null);
+			lstSettings.setEmbedded(this);
+			lstSettings.init(a, root);
+			int level;
+			{
+				level = PDICMainAppOptions.listPreviewColor();
+				final SettingsPanel fontClr = new SettingsPanel(a, opt
+						, new String[][]{new String[]{"预览色：", "浅", "中", "深"}}
+						, new int[][]{new int[]{Integer.MAX_VALUE
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.pFontClr1.ordinal(), level==0)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.pFontClr2.ordinal(), level==1)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.pFontClr3.ordinal(), level==2)
+				}}, null);
+				fontClr.setHorizontalItems(true);
+				fontClr.setEmbedded(this);
+				fontClr.init(a, root);
+				ViewUtils.setPadding(fontClr.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+				
+				level = PDICMainAppOptions.listPreviewFont();
+				final SettingsPanel fontSz = new SettingsPanel(a, opt
+						, new String[][]{new String[]{"预览字体：", "小", "中", "大"}}
+						, new int[][]{new int[]{Integer.MAX_VALUE
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.pFontSz1.ordinal(), level==0)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.pFontSz2.ordinal(), level==1)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.pFontSz3.ordinal(), level==2)
+				}}, null);
+				fontSz.setHorizontalItems(true);
+				fontSz.setEmbedded(this);
+				fontSz.init(a, root);
+				ViewUtils.setPadding(fontSz.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+				
+//				((RadioSwitchButton)fontClr.linearLayout.getChildAt(1+PDICMainAppOptions.listPreviewColor())).setChecked(true);
+//				((RadioSwitchButton)fontSz.linearLayout.getChildAt(1+PDICMainAppOptions.listPreviewFont())).setChecked(true);
+				ViewUtils.addViewToParent(fontClr.settingsLayout, lstSettings.settingsLayout, 3);
+				ViewUtils.addViewToParent(fontSz.settingsLayout, lstSettings.settingsLayout, 4);
+			}
+			{
+				level = PDICMainAppOptions.listPreviewColor1();
+				final SettingsPanel fontClr = new SettingsPanel(a, opt
+						, new String[][]{new String[]{"预览色：", "浅", "中", "深"}}
+						, new int[][]{new int[]{Integer.MAX_VALUE
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1FontClr1.ordinal(), level==0)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1FontClr2.ordinal(), level==1)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1FontClr3.ordinal(), level==2)
+				}}, null);
+				fontClr.setHorizontalItems(true);
+				fontClr.setEmbedded(this);
+				fontClr.init(a, root);
+				ViewUtils.setPadding(fontClr.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+				
+				level = PDICMainAppOptions.listPreviewFont1();
+				final SettingsPanel fontSz = new SettingsPanel(a, opt
+						, new String[][]{new String[]{"预览字体：", "小", "中", "大"}}
+						, new int[][]{new int[]{Integer.MAX_VALUE
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1FontSz1.ordinal(), level==0)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1FontSz2.ordinal(), level==1)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1FontSz3.ordinal(), level==2)
+				}}, null);
+				fontSz.setHorizontalItems(true);
+				fontSz.setEmbedded(this);
+				fontSz.init(a, root);
+				ViewUtils.setPadding(fontSz.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+				
+				level = PDICMainAppOptions.listPreviewSize1();
+				final SettingsPanel viewSz = new SettingsPanel(a, opt
+						, new String[][]{new String[]{"预览长度：", "短", "中", "长"}}
+						, new int[][]{new int[]{Integer.MAX_VALUE
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1ViewSz1.ordinal(), level==0)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1ViewSz2.ordinal(), level==1)
+						, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.p1ViewSz3.ordinal(), level==2)
+				}}, null);
+				viewSz.setHorizontalItems(true);
+				viewSz.setEmbedded(this);
+				viewSz.init(a, root);
+				ViewUtils.setPadding(viewSz.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+				
+//				((RadioSwitchButton)fontClr.linearLayout.getChildAt(1+PDICMainAppOptions.listPreviewColor1())).setChecked(true);
+//				((RadioSwitchButton)fontSz.linearLayout.getChildAt(1+PDICMainAppOptions.listPreviewFont1())).setChecked(true);
+//				((RadioSwitchButton)viewSz.linearLayout.getChildAt(1+PDICMainAppOptions.listPreviewSize1())).setChecked(true);
+				ViewUtils.addViewToParent(fontClr.settingsLayout, lstSettings.settingsLayout, 3+8);
+				ViewUtils.addViewToParent(fontSz.settingsLayout, lstSettings.settingsLayout,  4+8);
+				ViewUtils.addViewToParent(viewSz.settingsLayout, lstSettings.settingsLayout,  5+8);
+			}
+			
+			this._listPrv = lstSettings;
+			addPanelViewBelow(lstSettings.settingsLayout, UIData.lstPanel);
+		}
+		return _listPrv;
 	}
 	
 	private SettingsPanel initScreenPanel() {
@@ -481,10 +668,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				btn = _screen.settingsLayout.findViewById(idLast);
 				btn.setChecked(false);
 			}
-			CMN.Log(idLast, btn.getText());
+			CMN.debug(idLast, btn.getText());
 			btn = _screen.settingsLayout.findViewById(id);
 			btn.setChecked(true);
-			CMN.Log(id, btn.getText());
+			CMN.debug(id, btn.getText());
 			opt.setTmpUserOrientation(lastIdx);
 		}
 		return _screen;
@@ -611,7 +798,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	
 	@Override
 	protected void onDismiss() {
-		//CMN.Log("onDismiss::", mSettingsChanged);
+		//CMN.debug("onDismiss::", mSettingsChanged);
 		super.onDismiss();
 		if (mSettingsChanged!=0) {
 			//a.currentViewImpl.checkSettings(true, true);

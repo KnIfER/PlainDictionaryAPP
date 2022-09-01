@@ -843,7 +843,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		settings.init(a, root);
 		settings.setActionListener(new SettingsPanel.ActionListener() {
 			@Override
-			public boolean onAction(SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
+			public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 				if (dynamic) {
 					if (weblistHandler.tapSch != val) {
 						PDICMainAppOptions.fyeTapSch(weblistHandler.togTapSch());

@@ -1636,7 +1636,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		settings.init(a, a.root);
 		settings.setActionListener(new SettingsPanel.ActionListener() {
 			@Override
-			public boolean onAction(SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
+			public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 				if (flagIdx==101) {
 					if (flagPos==4) {
 						for (int i = 6; i <= 8; i++)
@@ -1650,7 +1650,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		});
 		if ((shezhi&0x4)!=0) {
-			settings.onAction(101, 4, false, true, 0);
+			settings.onAction(null, 101, 4, false, true, 0);
 		}
 		Framer f = new Framer(a);
 		f.mMaxHeight = (int) (1.25f*8*((RadioSwitchButton)settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight()+15*GlobalOptions.density);

@@ -91,19 +91,25 @@ public class ListViewAdapter extends BasicAdapter {
 //				}
 //			}
 		//tofo
-		vh.subtitle.setText(presenter.getDictionaryName());
 		vh.position = position;
 		
-		try {
-			String record = presenter.bookImpl.getRecordAt(position, null, false);
+		if (false) {
+			ViewUtils.setVisible(vh.subtitle, false);
+			try {
+				String record = presenter.bookImpl.getRecordAt(position, null, false);
 //			if (record.length()>64) {
 //				record = record.substring(0, 64);
 //			}
-			String text = Jsoup.parse(record).text();
-			vh.preview.setText(text);
-			vh.preview.setMaxLines(3);
-		} catch (IOException e) {
-			CMN.debug(e);
+				String text = Jsoup.parse(record).text();
+				vh.preview.setText(text);
+				vh.preview.setMaxLines(3);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		} else {
+			ViewUtils.setVisible(vh.subtitle, false);
+			ViewUtils.setVisible(vh.preview, false);
+			vh.subtitle.setText(presenter.getDictionaryName());
 		}
 		
 		return vh.itemView;
