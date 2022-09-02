@@ -2491,14 +2491,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	// 列表中词典名称显示位置
 	/** 必要时显示词典名称 */
-	@Metaline(flagPos=23) public static boolean listShowBookName() { SevenFlag=SevenFlag; throw new RuntimeException();}
-	@Metaline(flagPos=23) public static void listShowBookName(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23, shift=1) public static boolean listShowBookName() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23, shift=1) public static void listShowBookName(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	/** 显示位置 0=预览之后 1=预览之前 2=预览之上 3=预览之下 */
 	@Metaline(flagPos=24, flagSize=2) public static int listPreviewBookNamePos() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=24, flagSize=2) public static void listPreviewBookNamePos(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=26) public static boolean getAdjustLstPreviewShown(){ SevenFlag=SevenFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=26) public boolean togAdjustLstPreviewShown() { SevenFlag=SevenFlag; throw new IllegalArgumentException(); }
+	
+	@Metaline(flagPos=27, shift=1) public static boolean listShowBookNameBlow() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=27, shift=1) public static void listShowBookNameBlow(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	
 	

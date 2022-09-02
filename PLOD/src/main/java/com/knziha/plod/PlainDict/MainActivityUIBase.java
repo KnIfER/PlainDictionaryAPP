@@ -21,7 +21,9 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
@@ -50,6 +52,7 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ClickableSpan;
@@ -122,16 +125,29 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.ImageViewTarget;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
+import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
+import com.knziha.paging.AppIconCover.AppIconCover;
+import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -199,6 +215,7 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.text.ColoredHighLightSpan;
+import com.knziha.text.ColoredTextSpan1;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
 import com.knziha.text.SelectableTextViewBackGround;
@@ -212,6 +229,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
 import org.nanohttpd.protocols.http.HTTPSession;
@@ -246,6 +264,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -601,6 +620,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int ret=opt.multiViewMode();
 		return ret==1?opt.mergeUrlMore()?-2:1
 				:ret;
+	}
+	
+	public void invalidAllListsReal() {
+		if(adaptermy!=null) adaptermy.notifyDataSetChanged();
+		if(adaptermy2!=null) adaptermy2.notifyDataSetChanged();
+		if(adaptermy3!=null) adaptermy3.notifyDataSetChanged();
+		if(adaptermy4!=null) adaptermy4.notifyDataSetChanged();
+		if(adaptermy5!=null) adaptermy5.notifyDataSetChanged();
 	}
 	
 	public enum ActType{
@@ -2354,6 +2381,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				});
 			}
+		}
+		if (root != null) {
+			mViewRootHolder.view = root.getRootView();
 		}
 	}
 	
@@ -10898,4 +10928,163 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		PlainWeb webx = presenter.getWebx();
 		webxford.put(SubStringKey.new_hostKey(webx.getHost()), presenter);
 	}
+	
+	public WahahaTextView.ViewRootHolder mViewRootHolder = new WahahaTextView.ViewRootHolder();
+	
+	public static class ViewHolder {
+		int position;
+		final View itemView;
+		WahahaTextView title;
+		WahahaTextView subtitle;
+		WahahaTextView preview;
+		ImageView loader;
+		
+		public boolean selectable;
+		
+		public ViewHolder(MainActivityUIBase a, int resId, ViewGroup parent) {
+			itemView = LayoutInflater.from(a).inflate(resId, parent, false);
+			itemView.setId(R.id.lvitems);
+			title = itemView.findViewById(R.id.text);
+			subtitle = itemView.findViewById(R.id.subtext);
+			preview = itemView.findViewById(R.id.preview);
+			title.mR = a.mViewRootHolder;
+			if (subtitle!=null) subtitle.mR = a.mViewRootHolder;
+			if (preview!=null){
+				preview.mR = a.mViewRootHolder;
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+					preview.setOnScrollChangeListener(ViewUtils.getNoScrollListener());
+			}
+			itemView.setTag(this);
+		}
+		
+		public ImageView getLoadTarget() {
+			if (loader==null) {
+				loader = new ImageView(itemView.getContext());
+				((ViewGroup)itemView).addView(loader);
+				loader.getLayoutParams().width=10;
+				loader.getLayoutParams().height=10;
+			}
+			return loader;
+		}
+	}
+	
+	static class PreviewData extends Drawable {
+		final CharSequence preview;
+		PreviewData(CharSequence preview) {
+			this.preview = preview;
+		}
+		
+		@Override
+		public void draw(@NonNull Canvas canvas) {
+		
+		}
+		
+		@Override
+		public void setAlpha(int alpha) {
+		
+		}
+		
+		@Override
+		public void setColorFilter(@Nullable ColorFilter colorFilter) {
+		
+		}
+		
+		@Override
+		public int getOpacity() {
+			return 0;
+		}
+	}
+	static class PreviewBean extends AppInfoBean {
+		final BookPresenter book;
+		final long pos;
+		public PreviewBean(BookPresenter book, int pos) {
+			this.book = book;
+			this.pos = pos;
+		}
+		public Drawable load() {
+			Drawable ret = null;
+			try {
+				return new PreviewData(getPreviewForBook(book, pos));
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return ret;
+		}
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			if (!super.equals(o)) return false;
+			PreviewBean that = (PreviewBean) o;
+			return pos == that.pos && Objects.equals(book, that.book);
+		}
+		@Override
+		public int hashCode() {
+			return Objects.hash(super.hashCode(), book, pos);
+		}
+	}
+	RequestBuilder<Drawable> previewLoader;
+	
+	public static CharSequence getPreviewForBook(BookPresenter book, long pos) throws IOException {
+		String record = book.bookImpl.getRecordAt(pos, null, false);
+//		if(record.length()>1024) {
+//			record = record.substring(0, 1024);
+//			CMN.debug("裁剪了！", record);
+//		}
+		String text = Jsoup.parse(record).text().replaceAll("`[0-9azAZ]{1,3}`", "").trim();
+		SpannableStringBuilder ssb = new SpannableStringBuilder();
+		ssb.append(book.getInListName());
+		ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		//ssb.append(" - ");
+		String entry = book.bookImpl.getEntryAt(pos);
+		if (!text.startsWith(" ")) {
+			ssb.append(" ");
+		}
+		ssb.append(text, text.startsWith(entry)?entry.length():0, text.length());
+		return ssb;
+	}
+	
+	public CharSequence getPreviewFor(ViewHolder vh, BookPresenter book, int pos) throws IOException {
+		//BookPresenter book = getBookById(id);
+		if (book != EmptyBook) {
+			boolean async = true;
+			if (async) {
+				if (previewLoader==null) {
+					RequestOptions options = new RequestOptions()
+							.skipMemoryCache(false)
+							//.diskCacheStrategy(DiskCacheStrategy.NONE)
+							.fitCenter()
+							//.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+							;
+					previewLoader = Glide.with(this)
+							.load(new AppIconCover(new PreviewBean(book, pos), false))
+							.listener(new RequestListener<Drawable>() {
+								@Override
+								public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+									ImageView iv = ((ImageViewTarget<?>) target).getView();
+									MainActivityUIBase.ViewHolder vh = (MainActivityUIBase.ViewHolder) ViewUtils.getViewHolderInParents(iv, MainActivityUIBase.ViewHolder.class);
+									vh.preview.setText("加载失败！"+e);
+									return false;
+								}
+								@Override
+								public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+									ImageView iv = ((ImageViewTarget<?>) target).getView();
+									MainActivityUIBase.ViewHolder vh = (MainActivityUIBase.ViewHolder) ViewUtils.getViewHolderInParents(iv, MainActivityUIBase.ViewHolder.class);
+									PreviewData data = (PreviewData) resource;
+									vh.preview.setText(data.preview);
+									return false;
+								}
+							})
+							.apply(options);
+				}
+				previewLoader.load(new AppIconCover(new PreviewBean(book, pos), false))
+						.into(vh.getLoadTarget());
+				return ViewUtils.WAIT;
+			} else {
+				return getPreviewForBook(book, pos);
+			}
+		}
+		return null;
+	}
+	
 }

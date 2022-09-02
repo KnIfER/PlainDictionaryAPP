@@ -10,6 +10,7 @@ import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -19,7 +20,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,7 +141,47 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			return 0;
 		return firstLookUpTable[Rgn+1];
 	}
-
+	
+	@Override
+	public CharSequence getPreviewAt(BookPresenter book, MainActivityUIBase a, int pos, MainActivityUIBase.ViewHolder vh) {
+		if (PDICMainAppOptions.listPreviewEnabled()) {
+			try {
+				int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
+				if(Rgn<0 || Rgn>firstLookUpTable.length-2)
+					return null;
+				
+				BookPresenter presenter = a.getBookById(firstLookUpTable[Rgn+1]);
+				if(presenter==a.EmptyBook) return "!!! Error: lazy load error failed.";
+				bookId=presenter.getId();
+				if(Rgn!=0)
+					pos-=firstLookUpTable[Rgn-2];
+				int idxCount = 0;
+				BookPresenter mdTmp = getBookByTable(a, firstLookUpTable, Rgn);
+				ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(mdTmp);
+				for(int ti=0;ti<treeBuilt.length;ti++){
+					if(treeBuilt[ti]==null)
+						continue;
+					int max = treeBuilt[ti].size();
+					if(max==0)
+						continue;
+					if(pos-idxCount<max) {
+						// ???
+//						String record = presenter.bookImpl.getRecordAt(, null, false);
+//						if (record!=null) {
+//							return record;
+//						}
+						int position = Math.toIntExact(treeBuilt[ti].get((int) (pos - idxCount)).position);
+						return a.getPreviewFor(vh, book, position);
+					}
+					idxCount+=max;
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
 		if ( pos < 0 || pos >= size) {

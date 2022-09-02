@@ -1,6 +1,6 @@
 package com.knziha.plod.plaindict;
 
-import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
+import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import static com.knziha.plod.plaindict.PDICMainActivity.layoutScrollDisabled;
 
 import android.text.Html;
@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -37,6 +38,7 @@ public class ListViewAdapter extends BasicAdapter {
 		this.a = a;
 		this.opt = a.opt;
 		this.webviewHolder=contentUIData.webSingleholder;
+		this.presenter=a.EmptyBook;
 	}
 	
 	@Override
@@ -61,9 +63,9 @@ public class ListViewAdapter extends BasicAdapter {
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		//return lstItemViews.get(position);
-		PDICMainActivity.ViewHolder vh;
+		MainActivityUIBase.ViewHolder vh;
 		if (convertView == null) {
-			vh = new ViewHolder(parent.getContext(), R.layout.listview_item01, parent);
+			vh = new ViewHolder(a, R.layout.listview_item01, parent);
 		} else {
 			vh = (ViewHolder) convertView.getTag();
 		}
@@ -93,23 +95,45 @@ public class ListViewAdapter extends BasicAdapter {
 		//tofo
 		vh.position = position;
 		
-		if (false) {
-			ViewUtils.setVisible(vh.subtitle, false);
+		boolean showPreview = presenter.hasPreview() && PDICMainAppOptions.listPreviewEnabled();
+		boolean selectable = PDICMainAppOptions.listPreviewSelectable();
+		if (showPreview) {
+			int maxLines = PDICMainAppOptions.listOverreadMode()?Integer.MAX_VALUE:3;
+			int tmp = PDICMainAppOptions.listPreviewColor();
+			int color = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp==0?0.08f:tmp==1?0.5f:0.8f);
+			tmp = PDICMainAppOptions.listPreviewFont();
+			int size = tmp==0?12:tmp==1?14:17;
 			try {
 				String record = presenter.bookImpl.getRecordAt(position, null, false);
-//			if (record.length()>64) {
-//				record = record.substring(0, 64);
-//			}
 				String text = Jsoup.parse(record).text();
 				vh.preview.setText(text);
-				vh.preview.setMaxLines(3);
+				vh.preview.setTextColor(color);
+				vh.preview.setTextSize(size);
+				vh.preview.setMaxLines(maxLines);
 			} catch (Exception e) {
+				showPreview = false;
 				CMN.debug(e);
 			}
-		} else {
-			ViewUtils.setVisible(vh.subtitle, false);
+		}
+		if (selectable!=vh.selectable)
+		{
+			vh.title.setTextIsSelectable(selectable);
+			vh.preview.setTextIsSelectable(selectable);
+			vh.title.getLayoutParams().width = selectable?-2:-1;
+			vh.itemView.setOnClickListener(selectable?this:null);
+			vh.selectable = selectable;
+		}
+		
+		if (!showPreview) {
+			boolean showBookName = PDICMainAppOptions.listShowBookName();
 			ViewUtils.setVisible(vh.preview, false);
-			vh.subtitle.setText(presenter.getDictionaryName());
+			ViewUtils.setVisible(vh.subtitle, showBookName);
+			if (showBookName) {
+				vh.subtitle.setText(presenter.getDictionaryName());
+			}
+		} else {
+			ViewUtils.setVisible(vh.preview, true);
+			ViewUtils.setVisible(vh.subtitle, false);
 		}
 		
 		return vh.itemView;

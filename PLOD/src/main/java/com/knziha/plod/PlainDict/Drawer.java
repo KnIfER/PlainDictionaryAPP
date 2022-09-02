@@ -325,12 +325,12 @@ public class Drawer extends Fragment implements
 				/* divider border */
 				return convertView!=null?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, parent, false);
 			}
-			PDICMainActivity.ViewHolder vh;
+			MainActivityUIBase.ViewHolder vh;
 			int viewType = getItemViewType(position);
 			if(convertView!=null){
-				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
+				vh=(MainActivityUIBase.ViewHolder)convertView.getTag();
 			} else {
-				vh=new PDICMainActivity.ViewHolder(getContext(),viewType==2?R.layout.drawer_settings:R.layout.drawer_item0, parent);
+				vh=new MainActivityUIBase.ViewHolder(a,viewType==2?R.layout.drawer_settings:R.layout.drawer_item0, parent);
 				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
 				vh.itemView.setOnClickListener(Drawer.this);
 				if (vh.subtitle!=null) {
@@ -426,7 +426,7 @@ public class Drawer extends Fragment implements
 			FooterView.setBackgroundColor(a.AppWhite);
 		}
 		//test groups
-		//PDICMainActivity.ViewHolder vh = new PDICMainActivity.ViewHolder(a, R.layout.listview_item0, null);
+		//MainActivityUIBase.ViewHolder vh = new MainActivityUIBase.ViewHolder(a, R.layout.listview_item0, null);
 		//View v = new View(a);v.setTag(vh);onClick(v);
 	}
 

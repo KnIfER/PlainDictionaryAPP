@@ -1256,6 +1256,10 @@ function debug(e){console.log(e)};
 		return true;
 	}
 	
+	public boolean hasPreview() {
+		return mType==PLAIN_TYPE_MDICT || mType== PLAIN_TYPE_DSL;
+	}
+	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
 		MainActivityUIBase a;
 		WebViewmy mWebView;
@@ -4423,6 +4427,11 @@ function debug(e){console.log(e)};
 	public String getDictionaryName() {
 		String ret=bookImpl.getDictionaryName();
 		return ret==null?"":ret;
+	}
+	
+	public String getInListName() {
+		String ret=bookImpl.getDictionaryName();
+		return ret.endsWith(".mdx") ? ret.substring(0, ret.length() - 4) : ret;
 	}
 	
 	public void purgeSearch(int searchType) {

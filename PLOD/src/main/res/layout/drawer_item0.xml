@@ -13,7 +13,7 @@
 		android:paddingBottom="7dp"
 		>
 
-		<TextView
+		<com.knziha.ankislicer.customviews.WahahaTextView
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			tools:text="absolve"
@@ -24,7 +24,7 @@
 			android:textSize="@dimen/lvtextsize"
 			/>
 
-		<TextView
+		<com.knziha.ankislicer.customviews.WahahaTextView
 			android:layout_height="wrap_content"
 			android:layout_width="match_parent"
 			android:text=""

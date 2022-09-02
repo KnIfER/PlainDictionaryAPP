@@ -60,7 +60,7 @@ public class resultRecorderDiscrete {
 		return false;
 	}
 	
-	public String getPreviewAt(int position) {
+	public CharSequence getPreviewAt(BookPresenter book, MainActivityUIBase a, int position, MainActivityUIBase.ViewHolder vh) {
 		return null;
 	}
 }

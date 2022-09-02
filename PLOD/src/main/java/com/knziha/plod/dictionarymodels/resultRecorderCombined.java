@@ -1,8 +1,5 @@
 package com.knziha.plod.dictionarymodels;
 
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
@@ -13,7 +10,6 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
@@ -21,7 +17,6 @@ import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +93,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		return allWebs;
 	}
-
+	
 	@Override
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
 		if (data == null || pos < 0 || pos > data.size() - 1) {
@@ -118,7 +113,22 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		int sz=l.size()/2;
 		count = sz>1?String.format("%02d", sz):null;
 		return data.get((int) pos).key;
-	};
+	}
+	
+	@Override
+	public CharSequence getPreviewAt(BookPresenter book, MainActivityUIBase a, int pos, MainActivityUIBase.ViewHolder vh) {
+		if (PDICMainAppOptions.listPreviewEnabled()) {
+			try {
+				ArrayList<Long> rec = getRecordAt(pos);
+				// long id =  rec.get(0);
+				pos = Math.toIntExact(rec.get(1));
+				return a.getPreviewFor(vh, book, pos);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return null;
+	}
 
 	public boolean scrolled=false, toHighLight;
 	public int LHGEIGHT;

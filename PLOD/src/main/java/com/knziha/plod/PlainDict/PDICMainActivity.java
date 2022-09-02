@@ -85,6 +85,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.google.android.material.appbar.AppBarLayout;
+import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -2479,24 +2480,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(delayedAttaching) {
 				AttachContentViewDelayed(800);
 			}
-		}
-	}
-	
-
-	static class ViewHolder {
-		int position;
-		final View itemView;
-		TextView title;
-		TextView subtitle;
-		TextView preview;
-
-		public ViewHolder(Context context, int resId, ViewGroup parent) {
-			itemView = LayoutInflater.from(context).inflate(resId, parent, false);
-			itemView.setId(R.id.lvitems);
-			title = itemView.findViewById(R.id.text);
-			subtitle = itemView.findViewById(R.id.subtext);
-			preview = itemView.findViewById(R.id.preview);
-			itemView.setTag(this);
 		}
 	}
 

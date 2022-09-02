@@ -29,7 +29,6 @@ import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DrawOverlayCompat;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
-import com.knziha.plod.widgets.TextViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 
 /** 一些页面选项的快捷入口 */
@@ -46,6 +45,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	protected int mSettingsChanged;
 	protected HorizontalNumberPicker mTextZoomNumberPicker;
 	protected static int mScrollY;
+	private boolean lstPreviewChanged;
 	
 	public QuickBookSettingsPanel(MainActivityUIBase a) {
 		super(a, true);
@@ -171,7 +171,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		CMN.debug("刷新全部数据...");
 		this.weblist = a.weblist;
 		if (_screen !=null) _screen.refresh();
-		if (_listPrv !=null) _listPrv.refresh();
+		if (_lstPrv !=null) _lstPrv.refresh();
 		if (_sHandle !=null) initScrollHandle();
 		if (_tTools !=null) initTextTools();
 		if (_btmBars !=null) initBtmBars();
@@ -297,6 +297,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);
 				}
 			}
+			if (v!=null && _lstPrv !=null && v.getParent()==_lstPrv.linearLayout) {
+				if (storageInt==makeInt(7, 12, false)) {
+					initListPanel();
+				}
+				lstPreviewChanged = true;
+			}
 		}
 		RadioSwitchButton btn = v == null || v.getClass() != RadioSwitchButton.class ? null : (RadioSwitchButton) v;
 		if (dynamic && (flagIdxSection==NONE_SETTINGS_GROUP1 || flagIdxSection==NONE_SETTINGS_GROUP2)) {
@@ -417,6 +423,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					v = vg.getChildAt(i);
 					((RadioSwitchButton)v).setChecked(v==btn);
 				}
+				lstPreviewChanged = true;
 			}
 		}
 		return true;
@@ -437,7 +444,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	SettingsPanel _screen;
-	SettingsPanel _listPrv;
+	SettingsPanel _lstPrv;
 	SettingsPanel _sHandle;
 	SettingsPanel _tTools;
 	SettingsPanel _fltBtn;
@@ -496,10 +503,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	private SettingsPanel initListPanel() {
-		if (_listPrv ==null) {
+		if (_lstPrv ==null) {
 			final SettingsPanel lstSettings = new SettingsPanel(a, opt
-					, new String[][]{new String[]{"<font color='#3185F7'><u>旧列表设置</u></font>：", "在列表中预览词条释义", "通读模式", "使预览文本可选", "新旧列表使用同一套配置"}
-			, new String[]{"<font color='#3185F7'><u>新列表设置（搜索引擎）</u></font>：", "预览词条释义", "从原词典获取预览", "通读模式", "使预览文本可选"}}
+					, new String[][]{new String[]{"<font color='#3185F7'><u>旧列表设置</u></font>：", "在列表中预览词条释义", "通读模式", "使列表文本可选", "新旧列表使用同一套配置"}
+			, new String[]{"<font color='#3185F7'><u>新列表设置（搜索引擎）</u></font>：", "预览词条释义", "从原词典获取预览", "通读模式", "使列表文本可选"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeInt(7, 5, false) // listPreviewEnabled
 					, makeInt(7, 8, false) // listOverreadMode
@@ -594,10 +601,17 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				ViewUtils.addViewToParent(viewSz.settingsLayout, lstSettings.settingsLayout,  5+8);
 			}
 			
-			this._listPrv = lstSettings;
+			this._lstPrv = lstSettings;
 			addPanelViewBelow(lstSettings.settingsLayout, UIData.lstPanel);
 		}
-		return _listPrv;
+		LinearLayout lv = _lstPrv.linearLayout;
+		if (PDICMainAppOptions.listPreviewSet01Same() ^ !ViewUtils.isVisibleV2(lv.getChildAt(10))) {
+			int vis = PDICMainAppOptions.listPreviewSet01Same() ? View.GONE : View.VISIBLE;
+			for (int i = 10; i < lv.getChildCount(); i++) {
+				lv.getChildAt(i).setVisibility(vis);
+			}
+		}
+		return _lstPrv;
 	}
 	
 	private SettingsPanel initScreenPanel() {
@@ -803,6 +817,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (mSettingsChanged!=0) {
 			//a.currentViewImpl.checkSettings(true, true);
 			mSettingsChanged=0;
+		}
+		if (lstPreviewChanged) {
+			a.invalidAllListsReal();
 		}
 		mScrollY = settingsLayout.getScrollY();
 	}

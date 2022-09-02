@@ -148,6 +148,7 @@ import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.MdictServerMobile.*;
 
 public class ViewUtils {
+	public static final CharSequence WAIT = "WAIT";
 	public static float density;
 	
 	public static Paint mRectPaint;
@@ -1066,6 +1067,21 @@ public class ViewUtils {
 				,r==-1?v.getPaddingRight():r
 				,b==-1?v.getPaddingBottom():b
 		);
+	}
+	
+	static View.OnScrollChangeListener sNoScrollListener;
+	public static View.OnScrollChangeListener getNoScrollListener() {
+		if (sNoScrollListener==null) {
+			sNoScrollListener = new View.OnScrollChangeListener() {
+				@Override
+				public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+					v.setOnScrollChangeListener(null);
+					v.scrollTo(0,0);
+					v.setOnScrollChangeListener(this);
+				}
+			};
+		}
+		return sNoScrollListener;
 	}
 	
 	public void Destory(){

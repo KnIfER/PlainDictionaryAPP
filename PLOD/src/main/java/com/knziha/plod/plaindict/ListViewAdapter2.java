@@ -1,7 +1,8 @@
 package com.knziha.plod.plaindict;
 
-import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
+import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 
+import android.graphics.Color;
 import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +11,16 @@ import android.widget.TextView;
 
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.core.graphics.ColorUtils;
 
+import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
+
+import org.jsoup.Jsoup;
 
 import java.util.List;
 
@@ -23,7 +29,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 	final MainActivityUIBase a;
 	final PDICMainAppOptions opt;
 	final int id;
-	public int itemId = R.layout.listview_item0;
+	public int itemId = R.layout.listview_item01;
 	
 	public ListViewAdapter2(MainActivityUIBase a, ViewGroup vg, MenuBuilder allMenus, List<MenuItemImpl> contentMenu, int resId, int id)
 	{
@@ -38,7 +44,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 		this.a = a;
 		this.opt = a.opt;
 		this.id = id;
-		results =  a.EmptySchResults;
+		this.results =  a.EmptySchResults;
+		this.presenter=a.EmptyBook;
 	}
 	@Override
 	public int getCount() {
@@ -59,7 +66,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		if(convertView!=null) {
 			vh=(ViewHolder) convertView.getTag();
 		} else {
-			vh=new ViewHolder(a.getApplicationContext(), itemId, parent);
+			vh=new ViewHolder(a, itemId, parent);
 			//vh.itemView.setOnClickListener(this);
 			//vh.itemView.setOnLongClickListener(MainActivity.this);
 			if(itemId==R.layout.listview_item1)
@@ -69,13 +76,51 @@ public class ListViewAdapter2 extends BasicAdapter {
 			//decorateBackground(vh.itemView);
 			vh.title.setTextColor(a.AppBlack);
 		}
+		vh.position = position;
 		vh.title.setText(currentKeyText);
 //			if(combining_search_result.mflag.data!=null){
 //				vh.subtitle.setText(Html.fromHtml(currentDictionary.appendCleanDictionaryName(null).append("<font color='#2B4391'> < ").append(combining_search_result.mflag.data).append(" ></font >").toString()));
 //			} else {
 //
 //			}
-		vh.subtitle.setText(a.getBookById(results.bookId).getDictionaryName());
+		
+		BookPresenter book = a.getBookById(results.bookId);
+		CharSequence preview = book.hasPreview() ? results.getPreviewAt(book, a, position, vh) : null;
+		boolean set0 = id != 5 || PDICMainAppOptions.listPreviewSet01Same();
+		boolean selectable = set0 ? PDICMainAppOptions.listPreviewSelectable() : PDICMainAppOptions.listPreviewSelectable1();
+		if (preview != null) {
+			int maxLines = (set0 ? PDICMainAppOptions.listOverreadMode() : PDICMainAppOptions.listOverreadMode1()) ? Integer.MAX_VALUE : 3;
+			int tmp = set0 ? PDICMainAppOptions.listPreviewColor() : PDICMainAppOptions.listPreviewColor1();
+			int color = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp == 0 ? 0.08f : tmp == 1 ? 0.5f : 0.8f);
+			tmp = set0 ? PDICMainAppOptions.listPreviewFont() : PDICMainAppOptions.listPreviewFont1();
+			int size = tmp == 0 ? 12 : tmp == 1 ? 14 : 17;
+			{
+				if (preview!=ViewUtils.WAIT) {
+					vh.preview.setText(preview);
+				}
+				vh.preview.setTextColor(color);
+				vh.preview.setTextSize(size);
+				vh.preview.setMaxLines(maxLines);
+			}
+			ViewUtils.setVisible(vh.preview, true);
+			ViewUtils.setVisible(vh.subtitle, false);
+		} else {
+			boolean showBookName = PDICMainAppOptions.listShowBookName();
+			ViewUtils.setVisible(vh.preview, false);
+			ViewUtils.setVisible(vh.subtitle, showBookName);
+			if (showBookName) {
+				vh.subtitle.setText(book.getDictionaryName());
+			}
+		}
+		if (selectable!=vh.selectable)
+		{
+			vh.title.setTextIsSelectable(selectable);
+			vh.preview.setTextIsSelectable(selectable);
+			vh.title.getLayoutParams().width = selectable?-2:-1;
+			vh.itemView.setOnClickListener(selectable?this:null);
+			vh.selectable = selectable;
+		}
+		
 		if(id==2) {
 			TextView v = ((TextView) vh.subtitle.getTag());
 			if(results.count!=null) {
@@ -84,9 +129,6 @@ public class ListViewAdapter2 extends BasicAdapter {
 			} else {
 				v.setVisibility(View.GONE);
 			}
-		}
-		if(id==5) {
-			vh.preview.setText(Html.fromHtml(results.getPreviewAt(position)));
 		}
 		//vh.itemView.setTag(R.id.position,position);
 		return vh.itemView;

@@ -1,35 +1,29 @@
 package com.knziha.plod.dictionarymodels;
 
-import android.graphics.Color;
+import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 
 import com.knziha.plod.PlainUI.LuceneHelper;
 import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.dictionary.SearchResultBean;
-import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.text.ColoredTextSpan1;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /** 保存全文搜索的结果。todo 暂存结果至内存 */
 public class resultRecorderLucene extends resultRecorderDiscrete {
@@ -166,9 +160,23 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		return record.getEntry();
 	};
 	
-	public String getPreviewAt(int pos) {
-		DocRecord record = results.get((int) pos);
-		return record.preview;
+	public CharSequence getPreviewAt(BookPresenter book, MainActivityUIBase a, int pos, MainActivityUIBase.ViewHolder vh) {
+		if (PDICMainAppOptions.listPreviewSet01Same()?PDICMainAppOptions.listPreviewEnabled():PDICMainAppOptions.listPreviewEnabled1()) {
+			try {
+				DocRecord record = results.get((int) pos);
+				SpannableStringBuilder ssb = new SpannableStringBuilder();
+				ssb.append(book.getInListName());
+				ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				Spanned preview = Html.fromHtml(record.preview);
+				if (preview.length()>0 && preview.charAt(0)!=' ')
+					ssb.append(" ");
+				ssb.append(preview);
+				return ssb;
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return null;
 	}
 	
 	@Override

@@ -16,7 +16,7 @@
 		android:tint="@color/colorHeaderBlue"
 		/>
 
-	<TextView
+	<com.knziha.ankislicer.customviews.WahahaTextView
 		android:layout_height="wrap_content"
 		android:layout_width="wrap_content"
 		tools:text="设置"
