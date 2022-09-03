@@ -20,18 +20,6 @@
 		android:layout_height="wrap_content"
 		android:layout_width="match_parent"
 		android:text=""
-		tools:text="牛津英语词典"
-		android:id="@+id/subtext"
-		android:layout_marginLeft="10dp"
-		android:textSize="@dimen/lvsubtextsize"
-		android:textColor="#888"
-		android:paddingTop="2dp"
-		android:visibility="gone"
-		/>
-	<com.knziha.ankislicer.customviews.WahahaTextView
-		android:layout_height="wrap_content"
-		android:layout_width="match_parent"
-		android:text=""
 		android:id="@+id/preview"
 		tools:text="exponential sim 指数和，三角和"
 		android:layout_marginLeft="10dp"
@@ -39,6 +27,18 @@
 		android:textColor="#888"
 		android:paddingTop="2dp"
 		android:paddingBottom="2dp"
+		/>
+	<com.knziha.ankislicer.customviews.WahahaTextView
+		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:text=""
+		tools:text="牛津英语词典"
+		android:id="@+id/subtext"
+		android:layout_marginLeft="10dp"
+		android:textSize="@dimen/lvsubtextsize"
+		android:textColor="#888"
+		android:paddingTop="2dp"
+		android:paddingEnd="8dp"
 		/>
 </LinearLayout>
 

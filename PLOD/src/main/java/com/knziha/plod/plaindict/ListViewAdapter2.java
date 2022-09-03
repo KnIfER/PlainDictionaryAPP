@@ -4,6 +4,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 
 import android.graphics.Color;
 import android.text.Html;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -104,14 +105,15 @@ public class ListViewAdapter2 extends BasicAdapter {
 			}
 			ViewUtils.setVisible(vh.preview, true);
 			ViewUtils.setVisible(vh.subtitle, false);
+			ViewUtils.setVisible(vh.subtitle, true);
+			//vh.subtitle.setGravity(Gravity.END);
 		} else {
 			boolean showBookName = PDICMainAppOptions.listShowBookName();
 			ViewUtils.setVisible(vh.preview, false);
 			ViewUtils.setVisible(vh.subtitle, showBookName);
-			if (showBookName) {
-				vh.subtitle.setText(book.getDictionaryName());
-			}
 		}
+		vh.subtitle.setText("— "+book.getInListName());
+		vh.subtitle.setAlpha(0.75f);
 		if (selectable!=vh.selectable)
 		{
 			vh.title.setTextIsSelectable(selectable);

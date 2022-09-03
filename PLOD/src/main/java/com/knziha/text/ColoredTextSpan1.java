@@ -11,6 +11,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.logger.CMN;
 import com.knziha.plod.plaindict.R;
 
 import java.lang.reflect.InvocationTargetException;

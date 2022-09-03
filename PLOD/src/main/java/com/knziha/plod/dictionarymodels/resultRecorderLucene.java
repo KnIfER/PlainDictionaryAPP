@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.graphics.Color;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -14,7 +15,10 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.text.BookNameSpan;
 import com.knziha.text.ColoredTextSpan1;
+import com.knziha.text.RoundedBackgroundSpan;
+import com.knziha.text.TagSpan;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
@@ -158,15 +162,18 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		DocRecord record = results.get((int) pos);
 		bookId = record.getBookId();
 		return record.getEntry();
-	};
+	}
 	
 	public CharSequence getPreviewAt(BookPresenter book, MainActivityUIBase a, int pos, MainActivityUIBase.ViewHolder vh) {
 		if (PDICMainAppOptions.listPreviewSet01Same()?PDICMainAppOptions.listPreviewEnabled():PDICMainAppOptions.listPreviewEnabled1()) {
 			try {
 				DocRecord record = results.get((int) pos);
+				if(true) return Html.fromHtml(record.preview);
 				SpannableStringBuilder ssb = new SpannableStringBuilder();
 				ssb.append(book.getInListName());
-				ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				//ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);0xFFb9b9b9
+				ssb.setSpan(new RoundedBackgroundSpan(0, 0x88FFFFFF & a.MainAppBackground, 0, 0, 0, 0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//				ssb.setSpan(new BookNameSpan(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 				Spanned preview = Html.fromHtml(record.preview);
 				if (preview.length()>0 && preview.charAt(0)!=' ')
 					ssb.append(" ");

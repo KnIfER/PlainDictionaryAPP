@@ -11032,6 +11032,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //			CMN.debug("裁剪了！", record);
 //		}
 		String text = Jsoup.parse(record).text().replaceAll("`[0-9azAZ]{1,3}`", "").trim();
+		 if (true)
+			 return text;
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 		ssb.append(book.getInListName());
 		ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
