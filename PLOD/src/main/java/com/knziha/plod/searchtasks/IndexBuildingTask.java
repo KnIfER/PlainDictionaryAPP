@@ -13,7 +13,6 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -23,16 +22,14 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
-import org.apache.lucene.util.fst.FST;
-import org.jsoup.Jsoup;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 /** Full-scan Search Among Explanations */
@@ -95,6 +92,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 			config.setMaxBufferedDocs(-1);
 			config.setRAMBufferSizeMB(128);
 			IndexWriter writer = new IndexWriter(index, config);
+			final ConcurrentHashMap<Long, Object> keyBlockOnThreads = new ConcurrentHashMap<>();
 			for(int i=0;i<size;i++){
 				try {
 					if (toBuild.contains(loadManager.getPlaceHolderAt(i))) {
@@ -103,28 +101,14 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 						if(mdTmp!=a.EmptyBook) {
 							PlainMdict md = (PlainMdict) mdTmp.bookImpl;
 							md.searchCancled = false;
-							//for (int position = 0; position < md.getNumberEntries(); position++) {
-							//	String text = Jsoup.parse(md.getRecordAt(position)).text();
-							//	Document doc = new Document();
-							//	doc.add(new StringField("bookName", md.getDictionaryName(), Field.Store.YES));
-							//	doc.add(new TextField("entry", md.getEntryAt(position), Field.Store.YES));
-							//	doc.add(new TextField("content", text, Field.Store.YES));
-							//	writer.addDocument(doc);
-							//} if(false)
+							md.setPerThreadKeysCaching(keyBlockOnThreads);
 							md.doForAllRecords(mdTmp, a.fullSearchLayer, new mdict.DoForAllRecords() {
 								@Override
-								public Object doit(Object parm, long position, byte[] data, int from, int len, Charset _charset) {
+								public void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset) {
 									try {
 										String text = new String(data, from, len, _charset);
 										text = org.jsoup.Jsoup.parse(text).text();
-										PlainDocument pDoc;
-										if (parm == null) {
-											pDoc = new PlainDocument();
-											pDoc.bookName.setStringValue(md.getDictionaryName());
-											parm = pDoc;
-										} else {
-											pDoc = (PlainDocument) parm;
-										}
+										PlainDocument pDoc = (PlainDocument) tParm;
 										pDoc.entry.setStringValue(md.getEntryAt(position));
 										pDoc.content.setStringValue(text);
 										// CMN.Log(text);
@@ -132,9 +116,19 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 									} catch (Exception e) {
 										throw new RuntimeException(e);
 									}
-									return parm;
+								}
+								@Override
+								public Object onThreadSt(Object parm) {
+									PlainDocument pDoc = new PlainDocument();
+									pDoc.bookName.setStringValue(md.getDictionaryName());
+									return pDoc;
+								}
+								@Override
+								public void onThreadEd(Object parm) {
+									keyBlockOnThreads.remove(Thread.currentThread().getId());
 								}
 							}, null);
+							md.setPerThreadKeysCaching(null);
 						}
 						//publisResults();
 						if(isCancelled()) break;
@@ -143,6 +137,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 					CMN.Log(e);
 				}
 			}
+			keyBlockOnThreads.clear();
 			CMN.rt("commit::");
 			// writer.commit();
 			writer.close();

@@ -104,7 +104,6 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	protected File fZero;
 	private long fZero_LPT;
 	
-	long _bid;
 	byte[] options;
 	
 	public static String error_input;
@@ -1138,7 +1137,9 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	
 	
 	public interface DoForAllRecords{
-		Object doit(Object parm, long position, byte[] data, int from, int len, Charset _charset);
+		void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset);
+		Object onThreadSt(Object parm);
+		void onThreadEd(Object parm);
 	}
 	
 	public void doForAllRecords(Object book, AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException {
@@ -1193,7 +1194,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						final byte[] record_block_ = new byte[(int) maxDecompressedSize];//!!!避免反复申请内存
 						F1ag flag = new F1ag();
 						InputStream data_in = null;
-						Object tParm = parm;
+						Object tParm = dor.onThreadSt(parm);
 						try
 						{
 							long seekTarget=_record_info_struct_list[it*step].compressed_size_accumulator+_record_block_offset+_number_width*4+_num_record_blocks*2*_number_width;
@@ -1274,7 +1275,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //										SU.Log("full res ::start-len", start, recordodKeyLen, record_block_.length);
 //									} else continue;
 										
-										tParm = dor.doit(tParm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
+										dor.doit(parm, tParm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
 										, record_block_, start, recordodKeyLen, _charset);
 										
 										if(SearchLauncher.IsInterrupted || searchCancled) break;
@@ -1295,6 +1296,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							//CMN.Log(record_block_compressed[0]|record_block_compressed[1]<<8|record_block_compressed[2]<<16|record_block_compressed[3]<<32);
 							SU.Log(e);
 						}
+						dor.onThreadEd(parm);
 						SearchLauncher.thread_number_count--;
 						if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
 					}}

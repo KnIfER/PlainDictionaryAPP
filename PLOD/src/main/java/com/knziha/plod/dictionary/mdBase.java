@@ -113,6 +113,8 @@ public abstract class mdBase {
 	String _encoding="UTF-16LE";public String getEncoding(){return _encoding;}
 	protected int delimiter_width = 1;
 	String _passcode = "";
+	
+	protected long _bid;
 
 	float _version;
 	int _number_width;
@@ -968,7 +970,7 @@ public abstract class mdBase {
 		return new BSI(va1.data, va1.ral, va1.val-va1.ral);
 	}
 
-	static class cached_key_block{
+	public static class cached_key_block{
 		//byte[][] keys;
 		byte[] raw_keys;
 		int[] raw_keys_splits;
@@ -978,6 +980,7 @@ public abstract class mdBase {
 		String hearderTextStr=null;
 		String tailerKeyTextStr=null;
 		int blockID=-100;
+		long bookId;
 		final Charset _charset;
 		final int _number_width;
 		cached_key_block(Charset charset, int number_width) {
@@ -1011,28 +1014,53 @@ public abstract class mdBase {
 		}
 	}
 	private cached_key_block infoI_cache_ = new cached_key_block(_charset, _number_width+entryNumExt+delimiter_width);
+	private cached_key_block infoI_cache_t_;
 	
-	ConcurrentHashMap<Long, cached_key_block> keyBlockCaches = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Long, Object> keyBlockOnThreads;
 	
 	cached_key_block getKeyInfoCacheById(int blockId) {
 		cached_key_block infoI_cache;
-		if (true) {
-			infoI_cache = keyBlockCaches.get(Thread.currentThread().getId());
-			if (infoI_cache==null) {
-				infoI_cache = infoI_cache_;
+		if (perThreadCaching) {
+			infoI_cache = infoI_cache_t_;
+			if(infoI_cache!=null && infoI_cache.blockID==blockId)
+				return infoI_cache;
+			ConcurrentHashMap<Long, Object> pool = keyBlockOnThreads;
+			if (pool != null) {
+				Object cache = pool.get(Thread.currentThread().getId());
+				if (cache!=null && cache.getClass()==cached_key_block.class) {
+					infoI_cache = (cached_key_block) cache;
+					if (infoI_cache.blockID==blockId && infoI_cache.bookId == _bid) {
+						infoI_cache_t_ = infoI_cache;
+						return infoI_cache;
+					}
+				}
 			}
 		}
-		else infoI_cache = infoI_cache_;
+		infoI_cache = infoI_cache_;
 		if(infoI_cache.blockID==blockId)
 			return infoI_cache;
 		return null;
 	}
 	
 	void putKeyInfoCacheById(int blockId, cached_key_block infoI_cache) {
-		if (true) {
-			keyBlockCaches.put(Thread.currentThread().getId(), infoI_cache);
+		if (perThreadCaching) {
+			ConcurrentHashMap<Long, Object> pool = keyBlockOnThreads;
+			if (pool!=null) {
+				infoI_cache.bookId = _bid;
+				keyBlockOnThreads.put(Thread.currentThread().getId(), infoI_cache);
+			}
 		}
 		infoI_cache_ = infoI_cache;
+	}
+	
+	protected boolean perThreadCaching = false;
+	
+	public void setPerThreadKeysCaching(ConcurrentHashMap<Long, Object> pool) {
+		keyBlockOnThreads = pool;
+		perThreadCaching = pool!=null;
+		if (pool==null) {
+			infoI_cache_t_ = null;
+		}
 	}
 	
 	public cached_key_block prepareItemByKeyInfo(key_info_struct infoI,int blockId,cached_key_block infoI_cache){
