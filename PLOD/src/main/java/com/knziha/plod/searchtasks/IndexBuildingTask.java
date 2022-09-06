@@ -3,10 +3,8 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
-import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
-import com.knziha.plod.dictionarymodels.PlainMdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -17,6 +15,7 @@ import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
@@ -60,22 +59,22 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 		a.updateFFSearch((BookPresenter) values[0], (int)values[1]);
 	}
 	
-	static class PlainDocument{
+	static class DocIndex {
 		final Document doc = new Document();
 		final StringField bookName = new StringField("bookName", "", Field.Store.YES);
 		final TextField entry = new TextField("entry", "", Field.Store.YES);
 		final TextField content = new TextField("content", "", Field.Store.YES);
-		//public IndexWriter writer;
-		PlainDocument() {
+		final NumericDocValuesField position = new NumericDocValuesField("position", 0);
+		DocIndex() {
 			doc.add(bookName);
 			doc.add(entry);
 			doc.add(content);
+			doc.add(position);
 		}
 	}
 
 	@Override
 	protected String doInBackground(HashSet<PlaceHolder>... params) {
-		//CMN.Log("Find In Background??");
 		PDICMainActivity a;
 		if((a=activity.get())==null) return null;
 		if(params.length!=1) return null;
@@ -86,12 +85,12 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 		int size = loadManager.md_size;
 		
 		try {
-			//Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
 			final Analyzer analyzer = WordBreakFilter.newAnalyzer();
 			Directory index = FSDirectory.open(new File(a.opt.pathToMainFolder().append("lucene").toString()));
 			IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-			config.setMaxBufferedDocs(-1);
+			//config.setMaxBufferedDocs(-1);
+			config.setUseCompoundFile(false);
 			config.setRAMBufferSizeMB(128);
 			IndexWriter writer = new IndexWriter(index, config);
 			final ConcurrentHashMap<Long, Object> keyBlockOnThreads = new ConcurrentHashMap<>();
@@ -109,9 +108,10 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 									try {
 										String text = new String(data, from, len, _charset);
 										text = org.jsoup.Jsoup.parse(text).text();
-										PlainDocument pDoc = (PlainDocument) tParm;
+										DocIndex pDoc = (DocIndex) tParm;
 										pDoc.entry.setStringValue(md.getEntryAt(position));
 										pDoc.content.setStringValue(text);
+										pDoc.position.setLongValue(position);
 										// CMN.Log(text);
 										writer.updateDocument(null, pDoc.doc, analyzer);
 									} catch (Exception e) {
@@ -120,7 +120,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 								}
 								@Override
 								public Object onThreadSt(Object parm) {
-									PlainDocument pDoc = new PlainDocument();
+									DocIndex pDoc = new DocIndex();
 									pDoc.bookName.setStringValue(md.getDictionaryName());
 									return pDoc;
 								}
@@ -139,10 +139,10 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 				}
 			}
 			keyBlockOnThreads.clear();
-			CMN.rt("commit::");
+			//CMN.rt("commit::");
 			// writer.commit();
 			writer.close();
-			CMN.pt("commit::");
+			//CMN.pt("commit::");
 		} catch (IOException e) {
 			CMN.debug(e);
 		}
