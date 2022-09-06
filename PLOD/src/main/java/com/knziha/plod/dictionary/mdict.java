@@ -1135,13 +1135,6 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //		}
 	}
 	
-	
-	public interface DoForAllRecords{
-		void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset);
-		Object onThreadSt(Object parm);
-		void onThreadEd(Object parm);
-	}
-	
 	public void doForAllRecords(Object book, AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException {
 		//SU.Log("Find In All Contents Started");
 		if(isResourceFile||getOnlyContainsImg()||dor==null) return;
@@ -1166,6 +1159,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		SU.Log("fatal_","thread_number"+thread_number);
 		SU.Log("fatal_","step/yuShu", step, yuShu);
 		
+		SearchLauncher.unitAborted = false;
 		
 		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
 		
@@ -1189,7 +1183,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					//(
 					new Runnable(){@Override public void run()
 					{
-						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+						if(SearchLauncher.IsInterrupted || SearchLauncher.unitAborted) { SearchLauncher.poolEUSize.set(0); return; }
 						final byte[] record_block_compressed = new byte[(int) maxComRecSize];//!!!避免反复申请内存
 						final byte[] record_block_ = new byte[(int) maxDecompressedSize];//!!!避免反复申请内存
 						F1ag flag = new F1ag();
@@ -1207,7 +1201,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							if(it==split_recs_thread_number-1) jiaX=yuShu;
 							for(int i=it*step; i<it*step+step+jiaX; i++)//_num_record_blocks
 							{
-								//if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+								//if(SearchLauncher.IsInterrupted || SearchLauncher.unitAborted) { SearchLauncher.poolEUSize.set(0); return; }
 								record_info_struct RinfoI = _record_info_struct_list[i];
 								
 								int compressed_size = (int) RinfoI.compressed_size;
@@ -1242,7 +1236,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 								long[] ko; int recordodKeyLen, try_idx;
 								OUT:
 								while(true) {
-									if(SearchLauncher.IsInterrupted  || searchCancled || key_block_id>=_key_block_info_list.length) break;
+									if(SearchLauncher.IsInterrupted  || SearchLauncher.unitAborted || key_block_id>=_key_block_info_list.length) break;
 									ko = prepareItemByKeyInfo(null,key_block_id,null).key_offsets;
 									//if(infoI_cacheI.blockID!=key_block_id)
 									//	throw new RuntimeException("bad !!!"+infoI_cacheI.blockID+" != "+key_block_id);
@@ -1278,7 +1272,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										dor.doit(parm, tParm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
 										, record_block_, start, recordodKeyLen, _charset);
 										
-										if(SearchLauncher.IsInterrupted || searchCancled) break;
+										if(SearchLauncher.IsInterrupted || SearchLauncher.unitAborted) break;
 										
 										//if(GlobalOptions.debug) SU.Log("full res ::", try_idx, key, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), recordodKeyLen, record_block_.length);
 										SearchLauncher.dirtyProgressCounter++;
@@ -1718,6 +1712,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		public volatile int dirtyTotalProgress;
 		public long st;
 		public String key;
+		public volatile boolean unitAborted;
 
 		public ArrayList<ArrayList<ArrayList<Object>>> mParallelKeys = new ArrayList<>();
 

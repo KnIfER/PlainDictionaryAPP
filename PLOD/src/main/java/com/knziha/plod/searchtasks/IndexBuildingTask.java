@@ -2,8 +2,10 @@ package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
 
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainMdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -32,7 +34,7 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-/** Full-scan Search Among Explanations */
+/** Build Lucene Indexes */
 @SuppressLint("SetTextI18n")
 public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Object, String > {
 	private final WeakReference<PDICMainActivity> activity;
@@ -86,7 +88,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 		try {
 			//Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
 			final Analyzer analyzer = WordBreakFilter.newAnalyzer();
-			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene"));
+			Directory index = FSDirectory.open(new File(a.opt.pathToMainFolder().append("lucene").toString()));
 			IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 			config.setMaxBufferedDocs(-1);
@@ -99,10 +101,9 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 						BookPresenter mdTmp = loadManager.md_get(i);
 						publishProgress(mdTmp, i);//_mega
 						if(mdTmp!=a.EmptyBook) {
-							PlainMdict md = (PlainMdict) mdTmp.bookImpl;
-							md.searchCancled = false;
+							UniversalDictionaryInterface md = mdTmp.bookImpl;
 							md.setPerThreadKeysCaching(keyBlockOnThreads);
-							md.doForAllRecords(mdTmp, a.fullSearchLayer, new mdict.DoForAllRecords() {
+							md.doForAllRecords(mdTmp, a.fullSearchLayer, new DictionaryAdapter.DoForAllRecords() {
 								@Override
 								public void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset) {
 									try {

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -272,6 +273,16 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	@Override
 	public String getField(String fieldName) {
 		return null;
+	}
+	
+	@Override
+	public void setPerThreadKeysCaching(ConcurrentHashMap<Long, Object> keyBlockOnThreads) {
+	
+	}
+	
+	@Override
+	public void doForAllRecords(Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException {
+	
 	}
 	
 	public int[] getPageUtils(boolean extra) {

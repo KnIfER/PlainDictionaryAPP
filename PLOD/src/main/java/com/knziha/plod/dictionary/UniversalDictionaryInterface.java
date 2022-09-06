@@ -8,7 +8,9 @@ import com.knziha.rbtree.RBTree_additive;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface UniversalDictionaryInterface {
@@ -73,4 +75,15 @@ public interface UniversalDictionaryInterface {
 	long getEntryExtNumber(long position, int index);
 	
 	String getField(String fieldName);
+	
+	void setPerThreadKeysCaching(ConcurrentHashMap<Long, Object> keyBlockOnThreads);
+	
+	interface DoForAllRecords{
+		void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset);
+		Object onThreadSt(Object parm);
+		void onThreadEd(Object parm);
+	}
+	
+	void doForAllRecords(Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException;
+
 }
