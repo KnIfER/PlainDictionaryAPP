@@ -71,7 +71,18 @@ public final class WordBreakFilter extends TokenFilter {
 			end = breakIterator.next();
 		}
 //		return false;
-		return input.incrementToken();
+		boolean ret = input.incrementToken();
+		if (ret) {
+			int len = termAtt.length();
+			if (len >2) {
+				char[] buf = termAtt.buffer();
+				if (buf[len -1]=='s' && buf[len -2]=='\'') {
+					termAtt.setLength(len - 2);
+					offsetAtt.setOffset(offsetAtt.startOffset(), offsetAtt.endOffset()-2);
+				}
+			}
+		}
+		return ret;
 	}
 
 	/** 判断是否是合写语言，即中文那样不用空格断词的语言 */
