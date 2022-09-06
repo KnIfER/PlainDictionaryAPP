@@ -112,6 +112,7 @@ import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
+import com.knziha.plod.searchtasks.lucene.ICUTestActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -1737,7 +1738,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		//tg
-		com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
+		//com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
 		
 		if(true) {
 //			showRandomShuffles();

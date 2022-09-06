@@ -1230,7 +1230,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        		  cc+=ri.get(i).numActivities;
        	  showT(""+cc);
        	  */
-		CMN.mid = Thread.currentThread().getId();
+		CMN.mid = SU.mid = Thread.currentThread().getId();
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		thisActMask = 1 << thisActType.ordinal();
 		super.onCreate(savedInstanceState);

@@ -1138,7 +1138,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	
 	
 	public interface DoForAllRecords{
-		void doit(Object parm, long position, byte[] data, int from, int len, Charset _charset);
+		Object doit(Object parm, long position, byte[] data, int from, int len, Charset _charset);
 	}
 	
 	public void doForAllRecords(Object book, AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException {
@@ -1193,6 +1193,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						final byte[] record_block_ = new byte[(int) maxDecompressedSize];//!!!避免反复申请内存
 						F1ag flag = new F1ag();
 						InputStream data_in = null;
+						Object tParm = parm;
 						try
 						{
 							long seekTarget=_record_info_struct_list[it*step].compressed_size_accumulator+_record_block_offset+_number_width*4+_num_record_blocks*2*_number_width;
@@ -1273,7 +1274,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //										SU.Log("full res ::start-len", start, recordodKeyLen, record_block_.length);
 //									} else continue;
 										
-										dor.doit(parm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
+										tParm = dor.doit(tParm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
 										, record_block_, start, recordodKeyLen, _charset);
 										
 										if(SearchLauncher.IsInterrupted || searchCancled) break;

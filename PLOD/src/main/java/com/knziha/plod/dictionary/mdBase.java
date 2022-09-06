@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -1010,11 +1011,34 @@ public abstract class mdBase {
 		}
 	}
 	private cached_key_block infoI_cache_ = new cached_key_block(_charset, _number_width+entryNumExt+delimiter_width);
-
+	
+	ConcurrentHashMap<Long, cached_key_block> keyBlockCaches = new ConcurrentHashMap<>();
+	
+	cached_key_block getKeyInfoCacheById(int blockId) {
+		cached_key_block infoI_cache;
+		if (true) {
+			infoI_cache = keyBlockCaches.get(Thread.currentThread().getId());
+			if (infoI_cache==null) {
+				infoI_cache = infoI_cache_;
+			}
+		}
+		else infoI_cache = infoI_cache_;
+		if(infoI_cache.blockID==blockId)
+			return infoI_cache;
+		return null;
+	}
+	
+	void putKeyInfoCacheById(int blockId, cached_key_block infoI_cache) {
+		if (true) {
+			keyBlockCaches.put(Thread.currentThread().getId(), infoI_cache);
+		}
+		infoI_cache_ = infoI_cache;
+	}
+	
 	public cached_key_block prepareItemByKeyInfo(key_info_struct infoI,int blockId,cached_key_block infoI_cache){
-		cached_key_block infoI_cache_ = this.infoI_cache_;
+		cached_key_block infoI_cache_ = getKeyInfoCacheById(blockId);
 		if(_key_block_info_list==null) read_key_block_info(null);
-		if(infoI_cache_.blockID==blockId)
+		if(infoI_cache_!=null)
 			return infoI_cache_;
 		if(infoI_cache==null)
 			infoI_cache = new cached_key_block(_charset, _number_width+entryNumExt+delimiter_width);
@@ -1114,7 +1138,7 @@ public abstract class mdBase {
 				keyCounter++;
 			}
 //			infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width+entryNumExt;
-			
+
 //			if(BlockOff+key_start_index+_number_width+entryNumExt>BlockLen+_number_width)
 //				throw new RuntimeException("大笨蛋！"+(BlockOff+key_start_index+_number_width+entryNumExt)+", "+BlockLen);
 			
@@ -1124,7 +1148,7 @@ public abstract class mdBase {
 			//System.out.println("解压耗时："+(end2-start2));
 			//assert(adler32 == (calcChecksum(key_block)));
 			infoI_cache.blockID = blockId;
-			this.infoI_cache_=infoI_cache;
+			putKeyInfoCacheById(blockId, infoI_cache);
 		} catch (IOException e) {
 			SU.Log(e);
 		}

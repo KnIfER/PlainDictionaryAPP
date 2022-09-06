@@ -10,6 +10,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -22,9 +23,12 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.apache.lucene.util.fst.FST;
+import org.jsoup.Jsoup;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -56,6 +60,19 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 		if((a=activity.get())==null) return;
 		a.updateFFSearch((BookPresenter) values[0], (int)values[1]);
 	}
+	
+	static class PlainDocument{
+		final Document doc = new Document();
+		final StringField bookName = new StringField("bookName", "", Field.Store.YES);
+		final TextField entry = new TextField("entry", "", Field.Store.YES);
+		final TextField content = new TextField("content", "", Field.Store.YES);
+		//public IndexWriter writer;
+		PlainDocument() {
+			doc.add(bookName);
+			doc.add(entry);
+			doc.add(content);
+		}
+	}
 
 	@Override
 	protected String doInBackground(HashSet<PlaceHolder>... params) {
@@ -70,11 +87,13 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 		int size = loadManager.md_size;
 		
 		try {
-			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
+			//Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
+			final Analyzer analyzer = WordBreakFilter.newAnalyzer();
 			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene"));
 			IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
-			config.setMaxBufferedDocs(1024);
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+			config.setMaxBufferedDocs(-1);
+			config.setRAMBufferSizeMB(128);
 			IndexWriter writer = new IndexWriter(index, config);
 			for(int i=0;i<size;i++){
 				try {
@@ -84,21 +103,36 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 						if(mdTmp!=a.EmptyBook) {
 							PlainMdict md = (PlainMdict) mdTmp.bookImpl;
 							md.searchCancled = false;
+							//for (int position = 0; position < md.getNumberEntries(); position++) {
+							//	String text = Jsoup.parse(md.getRecordAt(position)).text();
+							//	Document doc = new Document();
+							//	doc.add(new StringField("bookName", md.getDictionaryName(), Field.Store.YES));
+							//	doc.add(new TextField("entry", md.getEntryAt(position), Field.Store.YES));
+							//	doc.add(new TextField("content", text, Field.Store.YES));
+							//	writer.addDocument(doc);
+							//} if(false)
 							md.doForAllRecords(mdTmp, a.fullSearchLayer, new mdict.DoForAllRecords() {
 								@Override
-								public void doit(Object parm, long position, byte[] data, int from, int len, Charset _charset) {
+								public Object doit(Object parm, long position, byte[] data, int from, int len, Charset _charset) {
 									try {
 										String text = new String(data, from, len, _charset);
 										text = org.jsoup.Jsoup.parse(text).text();
-										Document doc = new Document();
-										doc.add(new StringField("bookName", md.getDictionaryName(), Field.Store.YES));
-										doc.add(new TextField("entry", md.getEntryAt(position), Field.Store.YES));
+										PlainDocument pDoc;
+										if (parm == null) {
+											pDoc = new PlainDocument();
+											pDoc.bookName.setStringValue(md.getDictionaryName());
+											parm = pDoc;
+										} else {
+											pDoc = (PlainDocument) parm;
+										}
+										pDoc.entry.setStringValue(md.getEntryAt(position));
+										pDoc.content.setStringValue(text);
 										// CMN.Log(text);
-										doc.add(new TextField("content", text, Field.Store.YES));
-										writer.addDocument(doc);
+										writer.updateDocument(null, pDoc.doc, analyzer);
 									} catch (Exception e) {
 										throw new RuntimeException(e);
 									}
+									return parm;
 								}
 							}, null);
 						}
@@ -109,8 +143,10 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 					CMN.Log(e);
 				}
 			}
-			writer.commit();
+			CMN.rt("commit::");
+			// writer.commit();
 			writer.close();
+			CMN.pt("commit::");
 		} catch (IOException e) {
 			CMN.debug(e);
 		}

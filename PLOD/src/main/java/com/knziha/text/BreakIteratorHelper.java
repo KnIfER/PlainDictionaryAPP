@@ -6,6 +6,7 @@ import android.os.Build;
 import java.text.CharacterIterator;
 
 public class BreakIteratorHelper {
+	android.icu.text.BreakIterator BreakIteratorICU4J;
 	android.icu.text.BreakIterator BreakIteratorI;
 	java.text.BreakIterator BreakIteratorJ;
 	static boolean isAndroidBreakerAvailable = Build.VERSION.SDK_INT>=Build.VERSION_CODES.N;
@@ -13,7 +14,7 @@ public class BreakIteratorHelper {
 	public BreakIteratorHelper(){
 		if(isAndroidBreakerAvailable){
 			BreakIteratorI=android.icu.text.BreakIterator.getWordInstance();
-		}else{
+		} else {
 			BreakIteratorJ=java.text.BreakIterator.getWordInstance();
 		}
 	}
@@ -47,6 +48,14 @@ public class BreakIteratorHelper {
 			return BreakIteratorI.previous();
 		}else{
 			return BreakIteratorJ.previous();
+		}
+	}
+	
+	public int next() {
+		if(isAndroidBreakerAvailable){
+			return BreakIteratorI.next();
+		} else {
+			return BreakIteratorJ.next();
 		}
 	}
 }

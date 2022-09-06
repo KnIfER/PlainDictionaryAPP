@@ -34,6 +34,7 @@ public class  SU{
 	public static Object UniversalObject;
     public static boolean debug;//StringUtils
 	public static byte[] EmptyBytes = new byte[0];
+	public static long mid;
 	
 	public static String trimStart(String input) {
 		int len = input.length();

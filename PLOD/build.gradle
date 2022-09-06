@@ -213,11 +213,27 @@ dependencies {
 
 //    api 'org.apache.lucene:lucene-core:8.0.0'
 
-    api 'org.apache.lucene:lucene-core:4.7.0'
-    api 'org.apache.lucene:lucene-queryparser:4.7.0'
-    api 'org.apache.lucene:lucene-highlighter:4.7.0'
-    api 'org.apache.lucene:lucene-analyzers-common:4.7.0'
+    //api 'org.apache.lucene:lucene-core:4.7.0'
+    api 'org.appxmod.lucene:Core:1.0.0'
+    api ('org.apache.lucene:lucene-queryparser:4.7.0'){
+        exclude module:"lucene-core"
+    }
+    api ('org.apache.lucene:lucene-highlighter:4.7.0'){
+        exclude module:"lucene-core"
+    }
+    api ('org.apache.lucene:lucene-analyzers-common:4.7.0'){
+        exclude module:"lucene-core"
+    }
+
+    api ('com.janeluo:ikanalyzer:2012_u6'){
+        exclude module:"lucene-core"
+    }
+
+    //api 'com.ibm.icu:icu4j:70.1'
+
+
 
     implementation 'org.jsoup:jsoup:1.15.3'
 
+   // implementation fileTree(dir: 'lib', include: ['*.jar'])
 }

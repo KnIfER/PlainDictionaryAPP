@@ -26,6 +26,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
+import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
@@ -239,7 +240,8 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 	
 	IndexReader prepareIndexReader() throws IOException {
 		if (analyzer==null) {
-			analyzer = new StandardAnalyzer(Version.LUCENE_47);
+			//analyzer = new StandardAnalyzer(Version.LUCENE_47);
+			analyzer = WordBreakFilter.newAnalyzer();
 		}
 		if (reader==null) {
 			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene"));
