@@ -1152,7 +1152,6 @@ public class ViewUtils {
 		return Objects.requireNonNull((View)obj);
 	}
 	
-	
 	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, int depth, int idxStart, Object[] viewFetcher) {
 		int cc = vg.getChildCount();
 		View ca;

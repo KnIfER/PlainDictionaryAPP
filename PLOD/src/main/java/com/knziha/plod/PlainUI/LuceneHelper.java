@@ -9,18 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.AnyThread;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.menu.ActionMenuItem;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.dictionarymanager.BookManagerMain;
-import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -28,28 +25,20 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import com.knziha.plod.widgets.EditTextmy;
-import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortListView;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -59,6 +48,7 @@ import org.apache.lucene.util.Version;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
@@ -66,7 +56,10 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 	final SearchToolsMenu schTools;
 	public IndexReader reader;
 	public IndexSearcher searcher;
-	ArrayList<IndexedBook> indexedbooks = new ArrayList<>();
+	public ArrayList<IndexedBook> indexedbooks = new ArrayList<>();
+	public HashSet<String> indexedbooksMap = new HashSet<>();
+	public boolean rebuildIndexes;
+	public long[] freeSpaces = new long[8];
 	private int mForegroundColor;
 	private PorterDuffColorFilter ForegroundFilter;
 	private String CurrentSearchText;
@@ -78,12 +71,7 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 	public LuceneHelper(PDICMainActivity a, SearchToolsMenu schTools) {
 		this.a = a;
 		this.schTools = schTools;
-		try {
-			prepareIndexReader();
-		} catch (Exception e) {
-			CMN.debug(e);
-		}
-		
+		prepareSearch(false);
 	}
 	
 	Toolbar toolbar;
@@ -141,7 +129,6 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 	private void do_search() throws Exception {
 		CMN.rt();
 		String key = CurrentSearchText;
-		searcher = new IndexSearcher(reader);
 		Query query = null;
 		if (true) {
 			//要查找的字符串数组
@@ -158,7 +145,7 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 		CMN.Log("query: ", query);
 		int hitsPerPage = 100;
 		// 3 do search
-		docs = searcher.search(query, hitsPerPage);
+		docs = prepareSearch(true).search(query, hitsPerPage);
 		ScoreDoc[] hits = docs.scoreDocs;
 		CMN.Log("found " + hits.length + " results", docs.totalHits);
 		
@@ -238,24 +225,45 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 		}
 	}
 	
-	IndexReader prepareIndexReader() throws IOException {
-		if (analyzer==null) {
-			//analyzer = new StandardAnalyzer(Version.LUCENE_47);
-			analyzer = WordBreakFilter.newAnalyzer();
+	public IndexSearcher prepareSearch(boolean sch) {
+		try {
+			if (analyzer==null) {
+				//analyzer = new StandardAnalyzer(Version.LUCENE_47);
+				analyzer = WordBreakFilter.newAnalyzer();
+			}
+			if (reader==null) {
+				File folder = new File(a.opt.pathToMainFolder().append("lucene").toString());
+				Directory index = FSDirectory.open(folder);
+				reader = DirectoryReader.open(index);
+				readIndexedBookList();
+			}
+			if (sch && searcher==null) {
+				searcher = new IndexSearcher(reader);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
-		if (reader==null) {
-			Directory index = FSDirectory.open(new File("/sdcard/PLOD/lucene"));
-			reader = DirectoryReader.open(index);
-			Fields fields = MultiFields.getFields(reader);
-			Terms terms = fields.terms("bookName");
-			TermsEnum iterator = terms.iterator(null);
-			BytesRef byteRef;
-			while((byteRef = iterator.next()) != null) {
-				String term = new String(byteRef.bytes, byteRef.offset, byteRef.length);
-				indexedbooks.add(new IndexedBook(term));
+		return searcher;
+	}
+	
+	public void readIndexedBookList() {
+		indexedbooks.clear();
+		indexedbooksMap.clear();
+		if (reader!=null) {
+			try {
+				Fields fields = MultiFields.getFields(reader);
+				Terms terms = fields.terms("bookName");
+				TermsEnum iterator = terms.iterator(null);
+				BytesRef byteRef;
+				while((byteRef = iterator.next()) != null) {
+					String term = new String(byteRef.bytes, byteRef.offset, byteRef.length);
+					indexedbooks.add(new IndexedBook(term));
+					indexedbooksMap.add(term);
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 		}
-		return reader;
 	}
 	
 	

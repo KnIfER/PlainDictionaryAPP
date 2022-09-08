@@ -201,7 +201,7 @@ public class MdictServerMobile extends MdictServer {
 				return input;
 			} catch (Exception e) {
 				if (check) {
-					CMN.debug(e);
+					CMN.debug("getRemoteServerRes failed::"+e);
 					hasRemoteDebugServer = false;
 				}
 			}

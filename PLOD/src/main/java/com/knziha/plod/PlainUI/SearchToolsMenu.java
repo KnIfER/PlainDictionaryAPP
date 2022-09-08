@@ -3,13 +3,16 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.preference.SettingsPanel.BIT_STORE_VIEW;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
+import android.content.DialogInterface;
 import android.text.TextPaint;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
@@ -29,8 +32,12 @@ import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.widgets.DescriptiveImageView;
+import com.knziha.plod.widgets.TextViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,6 +48,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	MainActivityUIBase a;
 	private TextPaint menu_grid_painter;
 	ArrayList<String> menuList = new ArrayList<>();
+	
 	public static class MenuItemViewHolder {
 		public final DescriptiveImageView tv;
 		public MenuItemViewHolder(View convertView) {
@@ -388,9 +396,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			} break;
 			case 3:
 			{
-				if (luceneHelper==null) {
-					luceneHelper = new LuceneHelper((PDICMainActivity) a, this);
-				}
+				getLuceneHelper();
 				MainActivityUIBase.LoadManager loadMan = a.loadManager;  // 进行全文搜索
 				AlertDialog dTmp = indexSchDlg.get();
 				if (dTmp==null) {
@@ -412,15 +418,152 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		}
 	}
 	
+	public LuceneHelper getLuceneHelper() {
+		if (luceneHelper==null) {
+			luceneHelper = new LuceneHelper((PDICMainActivity) a, this);
+		}
+		return luceneHelper;
+	}
+	
 	WeakReference<AlertDialog> indexSchDlg = ViewUtils.DummyRef;
 	WeakReference<AlertDialog> indexBuilderDlg = ViewUtils.DummyRef;
 	public HashSet<PlaceHolder> indexBuilderSet = new HashSet<>();
 	
+	private void startBuildIndexesTask() {
+		final LuceneHelper helper = getLuceneHelper();
+		AlertDialog dTmp = indexBuilderDlg.get();
+		if(dTmp!=null) dTmp.dismiss();
+		new IndexBuildingTask((PDICMainActivity) a).execute(indexBuilderSet, helper.indexedbooksMap, helper.rebuildIndexes);
+	}
+	
 	private void startBuildIndexes() {
 		if (indexBuilderSet.size()>0) {
-			new IndexBuildingTask((PDICMainActivity) a).execute(indexBuilderSet);
+			final File folder = new File(a.opt.pathToMainFolder().toString());
+			final LuceneHelper helper = getLuceneHelper();
+			helper.rebuildIndexes = false;
+			
+			AlertDialog dTmp = new AlertDialog.Builder(a)
+					.setTitle("准备索引程序")
+					.setMessage("正在扫描索引…")
+					.setPositiveButton("开始！", null)
+					.setNeutralButton("只索引新词典", null)
+					.setNegativeButton("取消", null)
+					.show()
+			;
+			ArrayList<String> indexedBookNames = new ArrayList<>();
+			View.OnClickListener onClickListener = v -> {
+				if (v.getId() == android.R.id.button1) {
+					if (indexedBookNames.size() > 0) {
+						new AlertDialog.Builder(a)
+								.setTitle("是否要重建索引？")
+								.setMessage(indexedBookNames.get(0))
+								.setPositiveButton("立即开始！", (dialog, which) -> {
+									if (luceneHelper.freeSpaces[0] > luceneHelper.freeSpaces[1]) {
+										helper.rebuildIndexes = true;
+										startBuildIndexesTask();
+									} else {
+										a.showT("存储空间不足！读数："+mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[0]));
+									}
+									dTmp.dismiss();
+								})
+								.setNegativeButton("取消", null)
+								.show()
+						;
+					} else {
+						startBuildIndexesTask();
+					}
+				} else if (v.getId() == android.R.id.button2) {
+					dTmp.dismiss();
+				} else if (v.getId() == android.R.id.button3) {
+					helper.rebuildIndexes = false;
+					startBuildIndexesTask();
+					dTmp.dismiss();
+				}
+			};
+			ViewGroup btnPanel = (ViewGroup) dTmp.findViewById(R.id.buttonPanel);
+			Button btn3 = btnPanel.findViewById(android.R.id.button3);
+			Button btn = btnPanel.findViewById(android.R.id.button1);
+			
+			ViewUtils.setOnClickListenersOneDepth(btnPanel, onClickListener, 999, 0, null);
+			btn.setEnabled(false);
+			btn3.setEnabled(false);
+			dTmp.setCancelable(false);
+			
+			helper.readIndexedBookList();
+			MainActivityUIBase.LoadManager loadManager = a.loadManager;
+			int size = loadManager.md_size;
+			long totalSz = 0, newSz=0, total=0, new_=0;
+			for(int i=0;i<size;i++){
+				PlaceHolder ph = loadManager.getPlaceHolderAt(i);
+				if (indexBuilderSet.contains(ph)) {
+					File f = ph.getPath(a.opt);
+					String name = f.getName();
+					long len = f.length();
+					totalSz += len;
+					total++;
+					if (this.luceneHelper.indexedbooksMap.contains(name)) {
+						indexedBookNames.add(name);
+					} else {
+						newSz += len;
+						new_++;
+					}
+				}
+			}
+			long freeSpace = luceneHelper.freeSpaces[0] = folder.getFreeSpace();
+			luceneHelper.freeSpaces[1] = totalSz*5;
+			luceneHelper.freeSpaces[2] = newSz*5;
+			StringBuilder sb = new StringBuilder();
+			int est = (int) Math.ceil(totalSz*1.5/1024/1024/24);
+			sb.append("将索引 ").append(total).append(" 本词典(")
+					.append(mp4meta.utils.CMN.formatSize(totalSz)).append(")，预计耗时 ")
+					.append(est).append(" 分钟，需 ").append(mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[1])).append(" 存储空间。\n");
+			boolean hasIndexed = indexedBookNames.size() > 0;
+			if (hasIndexed) {
+				sb.append("\n以下词典已存在索引：");
+				for (String name:indexedBookNames) {
+					sb.append(name);
+					sb.append(", ");
+				}
+				sb.setLength(sb.length() - 2);
+				est = (int) Math.ceil(newSz*1.5/1024/1024/24);
+				sb.append("\n\n若只索引新词典，将索引 ").append(new_).append(" 本词典(")
+						.append(mp4meta.utils.CMN.formatSize(newSz)).append(")，预计耗时 ")
+						.append(est).append(" 分钟，需 ").append(mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[2])).append(" 存储空间。\n");
+			}
+			
+			if (freeSpace >= luceneHelper.freeSpaces[2]) {
+				dTmp.setMessage(sb);
+				btn.setEnabled(true);
+				btn3.setEnabled(true);
+			} else {
+				sb.append("\n\n错误：存储空间不足 (读数 ")
+						.append(mp4meta.utils.CMN.formatSize(freeSpace))
+						.append("）！请清理磁盘空间后重试。")
+				;
+				dTmp.setMessage(sb);
+			}
+			if (!hasIndexed) {
+				btn.setText("立即开始！");
+			} else {
+				sb.setLength(0);
+				sb.append("将重建以下 ").append(indexedBookNames.size()).append(" 本词典(")
+						.append(mp4meta.utils.CMN.formatSize(totalSz - newSz)).append("MB)的索引！\n");
+				for (String name:indexedBookNames) {
+					sb.append(name);
+					sb.append("\n");
+				}
+				indexedBookNames.clear();
+				indexedBookNames.add(sb.toString());
+			}
+			ViewUtils.setVisibleV3(btn3, hasIndexed);
+			dTmp.setCancelable(true);
 		}
 	}
 	
 	LuceneHelper luceneHelper;
+	
+	public void refresh() {
+		indexBuilderDlg.clear();
+		indexSchDlg.clear();
+	}
 }

@@ -129,7 +129,7 @@ public class ListViewAdapter extends BasicAdapter {
 			ViewUtils.setVisible(vh.preview, false);
 			ViewUtils.setVisible(vh.subtitle, showBookName);
 			if (showBookName) {
-				vh.subtitle.setText(presenter.getDictionaryName());
+				vh.subtitle.setText(presenter.getInListName());
 			}
 		} else {
 			ViewUtils.setVisible(vh.preview, true);

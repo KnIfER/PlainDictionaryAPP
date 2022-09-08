@@ -2420,6 +2420,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//UIData.etPad1.setBackgroundColor(filteredColor);
 		
 		UIData.schtools.setBackgroundColor(filteredColor);
+		schTools.refresh();
 		toolbar.setBackgroundColor(filteredColor);
 
 //		if(getPinPicDictDialog()) {
@@ -3443,10 +3444,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(invalidate) {
 			if (!getPinPicDictDialog())
 				wordPopup.dismiss();
-			
-			UIData.dictName.setText(currentDictionary.getDictionaryName());
-			//UIData.dictNameFore.setText(currentDictionary.getDictionaryName());
 		}
+		UIData.dictName.setText(currentDictionary.getInListName());
 		return ret;
 	}
 

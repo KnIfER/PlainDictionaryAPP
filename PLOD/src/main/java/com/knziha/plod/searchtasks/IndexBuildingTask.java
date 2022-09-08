@@ -2,6 +2,7 @@ package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
 
+import com.knziha.plod.PlainUI.LuceneHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -15,15 +16,26 @@ import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -35,7 +47,7 @@ import java.util.concurrent.ExecutorService;
 
 /** Build Lucene Indexes */
 @SuppressLint("SetTextI18n")
-public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Object, String > {
+public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String > {
 	private final WeakReference<PDICMainActivity> activity;
 
 	public IndexBuildingTask(PDICMainActivity a) {
@@ -64,7 +76,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 		final StringField bookName = new StringField("bookName", "", Field.Store.YES);
 		final TextField entry = new TextField("entry", "", Field.Store.YES);
 		final TextField content = new TextField("content", "", Field.Store.YES);
-		final NumericDocValuesField position = new NumericDocValuesField("position", 0);
+		final StoredField position = new StoredField("position", 0);
 		DocIndex() {
 			doc.add(bookName);
 			doc.add(entry);
@@ -72,25 +84,42 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 			doc.add(position);
 		}
 	}
+	
+	static class DocIndexChecker {
+		final Term termPos = new Term("position", "");
+		final Term termBook = new Term("bookName", "");
+		BooleanQuery query = new BooleanQuery();
+		LuceneHelper luceneHelper;
+		DocIndexChecker() {
+			query.add(new TermQuery(termBook), BooleanClause.Occur.MUST);
+			query.add(new TermQuery(termPos), BooleanClause.Occur.MUST);
+		}
+	}
 
 	@Override
-	protected String doInBackground(HashSet<PlaceHolder>... params) {
-		PDICMainActivity a;
-		if((a=activity.get())==null) return null;
-		if(params.length!=1) return null;
-		HashSet<PlaceHolder> toBuild = new HashSet<>(params[0]);
+	protected String doInBackground(Object... params) {
+		PDICMainActivity a=activity.get();
+		if(a==null) return null;
+		if(params.length!=3) return null;
+		HashSet<PlaceHolder> toBuild = new HashSet((HashSet)params[0]);
+		HashSet<String> built = new HashSet((HashSet)params[1]);
+		boolean rebuildIndexes = (Boolean) params[2];
+		
 		if(toBuild.size()==0)
 			return null;
 		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 		int size = loadManager.md_size;
 		
 		try {
+			//DocIndexChecker checker;
+			//checker = new DocIndexChecker();
 			final Analyzer analyzer = WordBreakFilter.newAnalyzer();
-			Directory index = FSDirectory.open(new File(a.opt.pathToMainFolder().append("lucene").toString()));
+			File folder = new File(a.opt.pathToMainFolder().append("lucene").toString());
+			Directory index = FSDirectory.open(folder);
 			IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 			//config.setMaxBufferedDocs(-1);
-			config.setUseCompoundFile(false);
+			//config.setUseCompoundFile(false);
 			config.setRAMBufferSizeMB(128);
 			IndexWriter writer = new IndexWriter(index, config);
 			final ConcurrentHashMap<Long, Object> keyBlockOnThreads = new ConcurrentHashMap<>();
@@ -100,18 +129,37 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 						BookPresenter mdTmp = loadManager.md_get(i);
 						publishProgress(mdTmp, i);//_mega
 						if(mdTmp!=a.EmptyBook) {
+							final String bookName = mdTmp.getDictionaryName();
+							if (built.contains(bookName)) {
+								if (rebuildIndexes) {
+									writer.deleteDocuments(new TermQuery(new Term("bookName", "" + bookName)));
+								} else {
+									continue;
+								}
+							}
 							UniversalDictionaryInterface md = mdTmp.bookImpl;
 							md.setPerThreadKeysCaching(keyBlockOnThreads);
 							md.doForAllRecords(mdTmp, a.fullSearchLayer, new DictionaryAdapter.DoForAllRecords() {
 								@Override
 								public void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset) {
 									try {
+//										if (luceneHelper.searcher != null) {
+//											final Query queryPos = NumericRangeQuery.newIntRange("position", 1, (int) position, (int) position, true, true);
+//											final Term termBook = new Term("bookName", "" + md.getDictionaryName());
+//											BooleanQuery query = new BooleanQuery();
+//											query.add(new TermQuery(termBook), BooleanClause.Occur.MUST);
+//											query.add(queryPos, BooleanClause.Occur.MUST);
+//											TopDocs hits = luceneHelper.searcher.search(query, 1);
+//											if (hits.scoreDocs != null && hits.scoreDocs.length > 0) {
+//												return;
+//											}
+//										}
 										String text = new String(data, from, len, _charset);
 										text = org.jsoup.Jsoup.parse(text).text();
 										DocIndex pDoc = (DocIndex) tParm;
 										pDoc.entry.setStringValue(md.getEntryAt(position));
 										pDoc.content.setStringValue(text);
-										pDoc.position.setLongValue(position);
+										pDoc.position.setIntValue((int) position);
 										// CMN.Log(text);
 										writer.updateDocument(null, pDoc.doc, analyzer);
 									} catch (Exception e) {
@@ -121,7 +169,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<HashSet<PlaceHolder>, Ob
 								@Override
 								public Object onThreadSt(Object parm) {
 									DocIndex pDoc = new DocIndex();
-									pDoc.bookName.setStringValue(md.getDictionaryName());
+									pDoc.bookName.setStringValue(bookName);
 									return pDoc;
 								}
 								@Override
