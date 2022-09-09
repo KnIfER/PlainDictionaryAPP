@@ -2503,6 +2503,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=27, shift=1) public static boolean listShowBookNameBlow() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=27, shift=1) public static void listShowBookNameBlow(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=28, flagSize = 2) public static int schGroup() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28, flagSize = 2) public static void schGroup(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	
 	

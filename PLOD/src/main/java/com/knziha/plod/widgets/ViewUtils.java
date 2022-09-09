@@ -399,7 +399,7 @@ public class ViewUtils {
 				}
 			} else {
 				int id = ca.getId();
-				if(ca.getId()!=View.NO_ID){
+				if(ca.getId()!=View.NO_ID || ca.isClickable()){
 					if(!(ca instanceof EditText) && ca.isEnabled()) {
 						click(ca, clicker, longClickable, touhable);
 					}
@@ -1129,14 +1129,6 @@ public class ViewUtils {
 		}
 	}
 	
-	private static class DummyOnClick implements View.OnClickListener {
-		@Override
-		public void onClick(View v) { }
-	}
-	public static View.OnClickListener DummyOnClick = new DummyOnClick();
-	
-	public static WeakReference DummyRef = new WeakReference<>(null);
-	
 	public static View getViewItemByPath(Object obj, int...path) {
 		int cc=0;
 		while(cc<path.length) {
@@ -1861,6 +1853,37 @@ public class ViewUtils {
 		}
 		return extract?fMd:object;
 	}
+	
+	public static View getNthParentNonNull(View v, int i) {
+		ViewParent vp;
+		while(i-->0) {
+			vp = v.getParent();
+			if (!(vp instanceof View)) break;
+			v = (View) vp;
+		}
+		return v;
+	}
+	
+	public static View getNthParentNullable(View v, int i) {
+		ViewParent vp;
+		while(i-->0) {
+			vp = v.getParent();
+			if (!(vp instanceof View)) return null;
+			v = (View) vp;
+		}
+		return v;
+	}
+	
+	static boolean bool=true;
+	public static boolean testOnce() {
+		boolean b = bool;
+		bool = false;
+		return b;
+	}
+	
+	public final static View.OnClickListener DummyOnClick  = v -> { };
+	
+	public static WeakReference DummyRef = new WeakReference<>(null);
 	
 	public static boolean isKeyboardShown(View rootView) {
 		final int softKeyboardHeight = 100;

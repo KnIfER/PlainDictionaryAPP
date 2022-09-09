@@ -403,7 +403,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	public void OnEnterIndexBuildingTask(IndexBuildingTask task, AdvancedSearchInterface luceneIndexLayer) {
-		taskCounter=schTools.getLuceneHelper().indexingBooks.size();
+		taskCounter=schTools.getLuceneHelper().indexingTasks;
 		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = luceneIndexLayer;
 		taskRecv = _currentSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=

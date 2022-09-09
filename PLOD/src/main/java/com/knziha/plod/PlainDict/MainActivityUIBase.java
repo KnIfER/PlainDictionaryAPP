@@ -2442,6 +2442,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public static class LazyLoadManager {
 		public ArrayList<PlaceHolder> placeHolders = new ArrayList<>();
+		private HashMap<String, Integer> map = new HashMap<>();
 		public int[] CosyChair = ArrayUtils.EMPTY_INT_ARRAY;
 		public int[] CosySofa = ArrayUtils.EMPTY_INT_ARRAY;
 		public int chairCount;
@@ -2468,6 +2469,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			placeHolders.clear();
 			chairCount=0;
 			filterCount=0;
+			map.clear();
 			HashSet<String> map = new HashSet<>();
 			ReadLines:
 			while((line = in.readLine())!=null){
@@ -3028,6 +3030,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			md.add(book);
 			lazyMan.newChair();
 			md_size=lazyMan.chairCount;
+		}
+		
+		public HashMap<String, Integer> map() {
+			if (lazyMan.map.size() == 0) {
+				for (int i = 0; i < md_size; i++) {
+					String bookName = md_getName(i, -1);
+					lazyMan.map.put(bookName, i);
+				}
+			}
+			return lazyMan.map;
 		}
 	}
 	
