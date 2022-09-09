@@ -12,8 +12,112 @@ fix server port
 单本搜索直接切换合并或分散的联合搜索
 fix ListView Strict Scroll
 
-recheck 词典id生成
+recheck 词典id生成，模拟中英文缩写，todo兼容西语/变音等
 recheck 词典管理
+recheck 状态恢复
+recheck wv.word
 
 fix wiki 边缘滑动
-fix pageSch hidden elements opt
+fix 页内搜索隐藏元素  选项
+
+
+
+fix 词典选择器宽度过小时异常
+
+fix 历史追踪异常 after 
+
+文件选择器：
+强制默认目录书签避免丢失
+增加返回按钮
+系统文件选择器
+第三方打开
+
+
+浮动搜索翻译按钮
+禁用拖动调整高度
+
+删除收藏不更新
+
+掉色
+
+
+make field : AgentApplication app
+高级搜索词记录
+
+历史记录过滤搜索界面
+
+
+
+升级黑暗模式为夜间模式，定制颜色
+
+合并/entry/ jumpTo… 弹出 与onCreateWindow弹出
+
+通过主界面宫格菜单添加收藏
+
+webx  onCreateWindow弹出 setStar dynamic
+
+添加悬浮发音按钮 文字识别拼写检测
+
+fix 全文朗读
+
+fix 滑动翻页异常 for merged page + 长行比如在《简明》搜索“垄断”时
+fix 自动发音、历史记录for词条跳转
+历史记录/单词本时间分割
+
+优化阻止熄屏设置，改变时间而不是一直亮着
+
+
+历史记录发音
+
+改善历史记录添加的时机
+
+改善合并页面子页面的定位跳转
+
+fix 多页面设置对话框关闭后 按钮显示异常
+
+fix 合并页面上谷歌翻译对照文无法选择
+
+缓存词典管理的数据，减少io。
+
+点击翻译使用自己的弹出界面而不是随机界面。
+
+黑暗模式异常
+
+按钮染色异常
+
+fix 新增分组未扫描
+fix 加载分组时词典异常禁用
+fix 搜索词典管理器
+
+长按链接点击翻译
+合并页面放大字体
+点击翻译界面放大字体
+
+点击翻译 invalidate 列表
+点击翻译添加历史记录
+点击翻译固定的单本搜索 省电
+维基词典避免重新加载
+
+
+
+多维分享 使用新的分享 
+默认固定
+新的分享扫描colordict协议
+
+合并ArrayList<PlainWeb>  serverHostsHolder/moder 等逻辑
+
+读取在线词典的favicon图标
+strick host usage 
+二次wiki
+
+单行显示切换分组对话框，只有一行时显示空白
+
+
+列表右边可选加padding
+
+异步加载预览
+从原词典截取命中关键词的词条预览
+
+其他列表设置 
+快速滚动条
+
