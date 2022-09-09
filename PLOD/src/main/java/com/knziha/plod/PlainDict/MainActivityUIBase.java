@@ -49,6 +49,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.Editable;
 import android.text.Html;
+import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -10942,6 +10943,50 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public WahahaTextView.ViewRootHolder mViewRootHolder = new WahahaTextView.ViewRootHolder();
+	
+	public OnTouchListener lineRightClicker = new OnTouchListener() {
+		int x0,y0;
+		int scrollY;
+		int ln;
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			int action = event.getAction();
+			if(action ==MotionEvent.ACTION_DOWN){
+				TextView preview = (TextView) v;
+				x0= (int) event.getX();
+				y0= (int) event.getY();
+				Layout layout = preview.getLayout();
+				ln = layout.getLineForVertical(y0);
+				float ed = layout.getLineRight(ln);
+				CMN.debug("ln::", ln, ed, x0);
+				if (x0 - GlobalOptions.density*2 > ed) {
+					ListView lv = (ListView) ViewUtils.getParentByClass(v, ListView.class);
+					scrollY = lv.getScrollY();
+				} else {
+					scrollY = -1;
+				}
+			}
+			else if(action==MotionEvent.ACTION_UP|| action ==MotionEvent.ACTION_CANCEL){
+				if (scrollY >= 0) {
+					TextView preview = (TextView) v;
+					int x= (int) event.getX();
+					int y= (int) event.getY();
+					Layout layout = preview.getLayout();
+					ln = layout.getLineForVertical(y);
+					float ed = layout.getLineRight(ln);
+					if (x > ed && Math.sqrt((x0-x)*(x0-x)+(y0-y)*(y0-y)) < 35*GlobalOptions.density) {
+						CMN.debug("ln::", ln, ed, x);;
+						ListView lv = (ListView) ViewUtils.getParentByClass(v, ListView.class);
+						if (scrollY == v.getScrollY()) {
+							ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+							vh.itemView.performClick();
+						}
+					}
+				}
+			}
+			return false;
+		}
+	};
 	
 	public static class ViewHolder {
 		int position;

@@ -168,7 +168,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		if (PDICMainAppOptions.listPreviewSet01Same()?PDICMainAppOptions.listPreviewEnabled():PDICMainAppOptions.listPreviewEnabled1()) {
 			try {
 				DocRecord record = results.get((int) pos);
-				if(true) return Html.fromHtml(record.preview+" ( "+record.scoreDoc);
+				if(true) return Html.fromHtml(record.preview);//+" ( "+record.scoreDoc);
 				SpannableStringBuilder ssb = new SpannableStringBuilder();
 				ssb.append(book.getInListName());
 				//ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);0xFFb9b9b9

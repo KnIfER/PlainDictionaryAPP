@@ -1275,6 +1275,18 @@ public class ViewUtils {
 		return null;
 	}
 	
+	public static View getParentByClass(View v, Class clazz) {
+		ViewParent vp;
+		while(v!=null) {
+			if (clazz.isInstance(v)) {
+				return v;
+			}
+			vp = v.getParent();
+			v = vp instanceof View?(View) vp:null;
+		}
+		return null;
+	}
+	
 	public static Object getViewHolderInParents(View v, Class clazz) {
 		ViewParent vp;
 		Object tag;

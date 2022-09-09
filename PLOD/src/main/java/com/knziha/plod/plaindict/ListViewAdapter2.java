@@ -118,7 +118,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 		{
 			vh.title.setTextIsSelectable(selectable);
 			vh.preview.setTextIsSelectable(selectable);
-			vh.title.getLayoutParams().width = selectable?-2:-1;
+			View.OnTouchListener touch = selectable ? a.lineRightClicker : null;
+			vh.title.setOnTouchListener(touch);
+			vh.preview.setOnTouchListener(touch);
 			vh.itemView.setOnClickListener(selectable?this:null);
 			vh.selectable = selectable;
 		}
