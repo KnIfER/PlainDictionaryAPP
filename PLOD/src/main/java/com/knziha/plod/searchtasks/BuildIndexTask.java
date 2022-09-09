@@ -36,7 +36,7 @@ public class BuildIndexTask extends AsyncTaskWrapper<String, Object, String > {
 	protected void onProgressUpdate(Object... values) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		a.updateIndexBuilding((int)values[0], (int)values[1]);
+		a.updateBuildIndex((int)values[0], (int)values[1]);
 	}
 
 	@Override

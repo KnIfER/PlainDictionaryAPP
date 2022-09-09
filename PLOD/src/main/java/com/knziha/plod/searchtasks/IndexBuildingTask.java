@@ -16,26 +16,17 @@ import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -47,18 +38,26 @@ import java.util.concurrent.ExecutorService;
 
 /** Build Lucene Indexes */
 @SuppressLint("SetTextI18n")
-public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String > {
+public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, String > {
 	private final WeakReference<PDICMainActivity> activity;
-
+	private final WeakReference<PDICMainActivity.AdvancedSearchInterface> layerRef;
+	private int cnt;
+	private long indexSize;
+	private long newSize;
+	
 	public IndexBuildingTask(PDICMainActivity a) {
 		activity = new WeakReference<>(a);
+		PDICMainActivity.AdvancedSearchInterface layer = new PDICMainActivity.AdvancedSearchInterface(a.opt, a.loadManager.md, -1);
+		this.layerRef = new WeakReference<>(layer);
 	}
+	
 	@Override
 	protected void onPreExecute() {
 		try {
-			PDICMainActivity a;
-			if((a=activity.get())==null) return;
-			a.OnEnterIndexBuildingTask(this);
+			PDICMainActivity a = activity.get();
+			PDICMainActivity.AdvancedSearchInterface layer = layerRef.get();
+			if(a==null || layer==null) return;
+			a.OnEnterIndexBuildingTask(this, layerRef.get());
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -66,9 +65,9 @@ public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String >
 
 	@Override
 	protected void onProgressUpdate(Object... values) {
-		PDICMainActivity a;
-		if((a=activity.get())==null) return;
-		a.updateFFSearch((BookPresenter) values[0], (int)values[1]);
+		PDICMainActivity a=activity.get();
+		if(a==null) return;
+		a.updateIndexBuilding((BookPresenter) values[0], (int)values[1]);
 	}
 	
 	static class DocIndex {
@@ -84,26 +83,19 @@ public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String >
 			doc.add(position);
 		}
 	}
-	
-	static class DocIndexChecker {
-		final Term termPos = new Term("position", "");
-		final Term termBook = new Term("bookName", "");
-		BooleanQuery query = new BooleanQuery();
-		LuceneHelper luceneHelper;
-		DocIndexChecker() {
-			query.add(new TermQuery(termBook), BooleanClause.Occur.MUST);
-			query.add(new TermQuery(termPos), BooleanClause.Occur.MUST);
-		}
-	}
 
 	@Override
-	protected String doInBackground(Object... params) {
-		PDICMainActivity a=activity.get();
-		if(a==null) return null;
-		if(params.length!=3) return null;
-		HashSet<PlaceHolder> toBuild = new HashSet((HashSet)params[0]);
-		HashSet<String> built = new HashSet((HashSet)params[1]);
-		boolean rebuildIndexes = (Boolean) params[2];
+	protected String doInBackground(LuceneHelper... params) {
+		PDICMainActivity a = activity.get();
+		PDICMainActivity.AdvancedSearchInterface layer = layerRef.get();
+		if(a==null || layer==null) return null;
+		if(params.length!=1) return null;
+		LuceneHelper helper = params[0];
+		HashSet<PlaceHolder> toBuild = new HashSet<>(helper.indexingBooks);
+		HashSet<String> built = new HashSet<>(helper.indexedbooksMap);
+		int rebuild = helper.rebuildIndexes;
+		indexSize = helper.indexSize;
+		if(indexSize==0) indexSize = helper.statFileSize();
 		
 		if(toBuild.size()==0)
 			return null;
@@ -127,33 +119,23 @@ public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String >
 				try {
 					if (toBuild.contains(loadManager.getPlaceHolderAt(i))) {
 						BookPresenter mdTmp = loadManager.md_get(i);
-						publishProgress(mdTmp, i);//_mega
 						if(mdTmp!=a.EmptyBook) {
+							publishProgress(mdTmp, cnt+1);//_mega
 							final String bookName = mdTmp.getDictionaryName();
 							if (built.contains(bookName)) {
-								if (rebuildIndexes) {
+								if (rebuild==1) {
 									writer.deleteDocuments(new TermQuery(new Term("bookName", "" + bookName)));
-								} else {
+								} else if(rebuild==0){
 									continue;
 								}
 							}
+							cnt++;
 							UniversalDictionaryInterface md = mdTmp.bookImpl;
 							md.setPerThreadKeysCaching(keyBlockOnThreads);
-							md.doForAllRecords(mdTmp, a.fullSearchLayer, new DictionaryAdapter.DoForAllRecords() {
+							md.doForAllRecords(mdTmp, layer, new DictionaryAdapter.DoForAllRecords() {
 								@Override
 								public void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset) {
 									try {
-//										if (luceneHelper.searcher != null) {
-//											final Query queryPos = NumericRangeQuery.newIntRange("position", 1, (int) position, (int) position, true, true);
-//											final Term termBook = new Term("bookName", "" + md.getDictionaryName());
-//											BooleanQuery query = new BooleanQuery();
-//											query.add(new TermQuery(termBook), BooleanClause.Occur.MUST);
-//											query.add(queryPos, BooleanClause.Occur.MUST);
-//											TopDocs hits = luceneHelper.searcher.search(query, 1);
-//											if (hits.scoreDocs != null && hits.scoreDocs.length > 0) {
-//												return;
-//											}
-//										}
 										String text = new String(data, from, len, _charset);
 										text = org.jsoup.Jsoup.parse(text).text();
 										DocIndex pDoc = (DocIndex) tParm;
@@ -187,33 +169,30 @@ public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String >
 				}
 			}
 			keyBlockOnThreads.clear();
-			//CMN.rt("commit::");
-			// writer.commit();
 			writer.close();
-			//CMN.pt("commit::");
 		} catch (IOException e) {
 			CMN.debug(e);
 		}
+		newSize = helper.statFileSize();
 		System.gc();
 		return null;
 	}
 	
 	@Override
 	protected void onCancelled(String String) {
-		super.onCancelled();
 		harvest(false);
 	}
 
 	@Override
 	protected void onPostExecute(String String) {
-		super.onPostExecute(String);
 		harvest(false);
 	}
 
 	public void harvest(boolean kill) {
-		PDICMainActivity a;
-		if((a=activity.get())==null) return;
-		Object currentThreads = a.fullSearchLayer.currentThreads;
+		PDICMainActivity a = activity.get();
+		PDICMainActivity.AdvancedSearchInterface layer = layerRef.get();
+		if(a==null || layer==null) return;
+		Object currentThreads = layer.currentThreads;
 		if(kill&&currentThreads!=null){
 			//CMN.Log("shutdownNow !!!");
 			if(currentThreads instanceof ArrayList)
@@ -229,12 +208,19 @@ public class IndexBuildingTask extends AsyncTaskWrapper<Object, Object, String >
 		if(a.taskd!=null) a.taskd.dismiss();
 		a.mAsyncTask=null;
 		
-		a.show(R.string.idxfill, (System.currentTimeMillis()-CMN.stst)*1.f/1000, 0, 0);
+		long delta = newSize - indexSize;
 		
-		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即索引时间。");
+		String msg = a.mResource.getString(R.string.idxfill, (CMN.now() - CMN.stst) * 1.f / 1000, cnt
+				, (delta<0?"-":"+")+mp4meta.utils.CMN.formatSize(Math.abs(delta))
+				, mp4meta.utils.CMN.formatSize(newSize)
+		);
+		a.showT(msg);
 		
-		System.gc();
-		a.fullSearchLayer.currentThreads=null;
+		CMN.debug((CMN.now()-CMN.stst)*1.f/1000, "此即索引时间。");
+		
+		layer.currentThreads=null;
+		
+		LuceneHelper helper = a.schTools.getLuceneHelper();
+		helper.closeIndexReader();
 	}
-
 }

@@ -39,7 +39,6 @@ import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -79,13 +78,11 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.google.android.material.appbar.AppBarLayout;
-import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -112,13 +109,11 @@ import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
-import com.knziha.plod.searchtasks.lucene.ICUTestActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
-import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.HeightProvider;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
@@ -217,7 +212,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private float barSzRatio;
 	private VirtualDisplay mDisplay;
 	private long lastResumeTime;
-	private SearchToolsMenu schTools;
+	public SearchToolsMenu schTools;
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -353,7 +348,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		_currentSearchLayer.dirtyProgressCounter=
 		_currentSearchLayer.dirtyResultCounter=0;
 		_currentSearchLayer.IsInterrupted=false;
-		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
+		ShowProgressDialog(_currentSearchLayer).findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
 				task.stop(false);
@@ -379,16 +374,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void OnEnterBuildIndexTask(BuildIndexTask task) {
 		taskCounter=IndexingBooks.size();
-		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = fullSearchLayer;
+		if(dictIndexLayer==null) {
+			dictIndexLayer = new AdvancedSearchInterface(opt, md, -1);
+		}
+		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = dictIndexLayer;
+		currentSearchingDictIdx = -2;
 		taskRecv = _currentSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=
 		_currentSearchLayer.dirtyResultCounter=0;
 		_currentSearchLayer.IsInterrupted=false;
-		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
+		ShowProgressDialog(_currentSearchLayer).findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
 				task.stop(false);
-			}else{
+			} else {
 				task.stop(true);
 				task.harvest(true);
 				mAsyncTask=null;
@@ -399,17 +398,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				showT("强制关闭");
 			}
 		});
+		dvResultN.setText("正在解析词典");
 		CMN.stst = System.currentTimeMillis();
 	}
 	
-	public void OnEnterIndexBuildingTask(IndexBuildingTask task) {
-		taskCounter=schTools.indexBuilderSet.size();
-		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = fullSearchLayer;
+	public void OnEnterIndexBuildingTask(IndexBuildingTask task, AdvancedSearchInterface luceneIndexLayer) {
+		taskCounter=schTools.getLuceneHelper().indexingBooks.size();
+		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = luceneIndexLayer;
 		taskRecv = _currentSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=
 		_currentSearchLayer.dirtyResultCounter=0;
 		_currentSearchLayer.IsInterrupted=false;
-		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
+		ShowProgressDialog(_currentSearchLayer).findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
 				task.stop(false);
@@ -424,6 +424,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				showT("强制关闭");
 			}
 		});
+		dvResultN.setText("正在建立索引");
 		CMN.stst = System.currentTimeMillis();
 	}
 
@@ -433,7 +434,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fuzzySearchLayer.dirtyProgressCounter=
 		fuzzySearchLayer.dirtyResultCounter=0;
 		fuzzySearchLayer.IsInterrupted=false;
-		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
+		ShowProgressDialog(currentSearchLayer).findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!fuzzySearchLayer.IsInterrupted){
 				task.stop(false);
 				fuzzySearchLayer.IsInterrupted=true;
@@ -452,7 +453,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		CMN.stst = System.currentTimeMillis();
 	}
 
-	private View ShowProgressDialog() {
+	private View ShowProgressDialog(AdvancedSearchInterface layer) {
 		View a_dv = getLayoutInflater().inflate(R.layout.dialog_progress, findViewById(R.id.dialog), false);
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
 		builder2.setView(a_dv);
@@ -487,7 +488,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if(0!=(foreground&(1<<thisActType.ordinal()))) hdl.sendEmptyMessage(1008601);
+				if(0!=(foreground&(1<<thisActType.ordinal()))) hdl.obtainMessage(1008601, layer).sendToTarget();
 			}
 		},0,180);
 		return a_dv;
@@ -499,17 +500,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			dvSeekbar.setMax((int) book.bookImpl.getNumberEntries());
 			dvTitle.setText(book.bookImpl.getDictionaryName());
 			dvDictFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
-		} catch (Exception ignored) { }
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
-	public void updateIndexBuilding(Integer dPos, Integer tIdx) {
+	public void updateBuildIndex(Integer dPos, Integer tIdx) {
 		try {
 			PlaceHolder placeHolder = getPlaceHolderAt(dPos);
 			currentSearchingDictIdx=-1;
 			dvSeekbar.setMax((int) placeHolder.getPath(opt).length());
 			dvTitle.setText(placeHolder.getName());
 			dvDictFrac.setText(tIdx+"/"+PDICMainActivity.taskCounter);
-		} catch (Exception ignored) { }
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
+	public void updateIndexBuilding(BookPresenter book, Integer tIdx) {
+		try {
+			dvSeekbar.setMax((int) book.bookImpl.getNumberEntries());
+			dvTitle.setText(book.getDictionaryName());
+			dvDictFrac.setText(tIdx+"/"+PDICMainActivity.taskCounter);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 
 	/** Jump to old or new UI with new text.
@@ -585,27 +600,26 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					a.handleFloatMessage(msg);
 				break;
 				case 1008601:
-					//((TextView)dv.findViewById(R.id.tv)).setText("0/"+System.currentTimeMillis());
-					removeMessages(1008601);
-					int handlerIdx = a.currentSearchingDictIdx;
-					AdvancedSearchInterface handlerRecv = a.currentSearchLayer;
-					//SU.Log("handlerIdx", handlerIdx, handlerRecv.dirtyProgressCounter);
-					if(a.dvSeekbar!=null) {
-						try {
-							if(handlerIdx==-1) {;
-								if(handlerRecv.dirtyTotalProgress>0 && a.dvSeekbar.getMax()!=handlerRecv.dirtyTotalProgress)
-									a.dvSeekbar.setMax(handlerRecv.dirtyTotalProgress);
-								a.dvResultN.setText("");
-							} else {
-								if(handlerIdx<0 || handlerIdx>=a.loadManager.md_size)
+					try {
+						//((TextView)dv.findViewById(R.id.tv)).setText("0/"+System.currentTimeMillis());
+						AdvancedSearchInterface handlerRecv = (AdvancedSearchInterface) msg.obj;
+						removeMessages(1008601);
+						//SU.Log("handlerIdx", handlerRecv, handlerRecv.dirtyProgressCounter);
+						if(a.dvSeekbar!=null) {
+							if (handlerRecv.type >= 0) {
+								int handlerIdx = a.currentSearchingDictIdx;
+								if (handlerIdx < 0 || handlerIdx >= a.loadManager.md_size)
 									return;
-								a.dvResultN.setText("已搜索到: "+handlerRecv.dirtyResultCounter+" 项条目!");
+								a.dvResultN.setText("已搜索到: " + handlerRecv.dirtyResultCounter + " 项条目!");
+							} else {
+								if (handlerRecv.dirtyTotalProgress > 0 && a.dvSeekbar.getMax() != handlerRecv.dirtyTotalProgress)
+									a.dvSeekbar.setMax(handlerRecv.dirtyTotalProgress);
 							}
 							a.dvSeekbar.setProgress(handlerRecv.dirtyProgressCounter);
 							a.dvProgressFrac.setText(handlerRecv.dirtyProgressCounter+"/"+a.dvSeekbar.getMax());
-						} catch (Exception e) {
-							CMN.debug(e);
 						}
+					} catch (Exception e) {
+						CMN.debug(e);
 					}
 					break;
 				case 10086:
@@ -1915,6 +1929,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public AdvancedSearchInterface fuzzySearchLayer;
 	public AdvancedSearchInterface fullSearchLayer;
 	public AdvancedSearchInterface currentSearchLayer;
+	public AdvancedSearchInterface dictIndexLayer;
 	public static class AdvancedSearchInterface extends com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer {
 		public final ArrayList<BookPresenter> md;
 		final PDICMainAppOptions opt;
@@ -1929,7 +1944,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			this.opt = opt;
 			this.md = md;
 			this.type = type;
-
 		}
 
 		@Override

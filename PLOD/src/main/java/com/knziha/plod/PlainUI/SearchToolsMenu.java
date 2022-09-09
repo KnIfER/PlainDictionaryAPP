@@ -3,7 +3,6 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.preference.SettingsPanel.BIT_STORE_VIEW;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
-import android.content.DialogInterface;
 import android.text.TextPaint;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
@@ -32,15 +30,11 @@ import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.widgets.DescriptiveImageView;
-import com.knziha.plod.widgets.TextViewmy;
 import com.knziha.plod.widgets.ViewUtils;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 //for menu list
 public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener
@@ -320,10 +314,11 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			{
 				MainActivityUIBase.LoadManager loadMan = a.loadManager;  // 建立全文索引
 				AlertDialog dTmp = indexBuilderDlg.get();
-				indexBuilderSet.clear();
+				final LuceneHelper helper = getLuceneHelper();
+				helper.indexingBooks.clear();
 				if (!ViewUtils.isVisibleV2(a.lv2))
 				{
-					indexBuilderSet.add(a.currentDictionary.placeHolder);
+					helper.indexingBooks.add(a.currentDictionary.placeHolder);
 				}
 				if (dTmp==null) {
 					View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -339,8 +334,8 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 									if (ph != null) {
 										boolean val = !vh.ck.isChecked();
 										vh.ck.setChecked(val);
-										if (val) indexBuilderSet.add(ph);
-										else indexBuilderSet.remove(ph);
+										if (val) helper.indexingBooks.add(ph);
+										else helper.indexingBooks.remove(ph);
 									}
 								}
 							}
@@ -376,7 +371,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 									vh.position = position;
 									PlaceHolder ph = a.loadManager.getPlaceHolderAt(position);
 									vh.title.setText(a.loadManager.md_getName(position, -1));
-									vh.ck.setChecked(indexBuilderSet.contains(ph));
+									vh.ck.setChecked(helper.indexingBooks.contains(ph));
 									vh.handle.setVisibility(View.GONE);
 									return convertView;
 								}
@@ -427,20 +422,20 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	
 	WeakReference<AlertDialog> indexSchDlg = ViewUtils.DummyRef;
 	WeakReference<AlertDialog> indexBuilderDlg = ViewUtils.DummyRef;
-	public HashSet<PlaceHolder> indexBuilderSet = new HashSet<>();
 	
-	private void startBuildIndexesTask() {
+	private void startBuildIndexesTask(int rebuild) {
 		final LuceneHelper helper = getLuceneHelper();
 		AlertDialog dTmp = indexBuilderDlg.get();
 		if(dTmp!=null) dTmp.dismiss();
-		new IndexBuildingTask((PDICMainActivity) a).execute(indexBuilderSet, helper.indexedbooksMap, helper.rebuildIndexes);
+		helper.rebuildIndexes = rebuild;
+		new IndexBuildingTask((PDICMainActivity) a).execute(helper);
 	}
 	
 	private void startBuildIndexes() {
-		if (indexBuilderSet.size()>0) {
+		final LuceneHelper helper = getLuceneHelper();
+		if (helper.indexingBooks.size()>0) {
 			final File folder = new File(a.opt.pathToMainFolder().toString());
-			final LuceneHelper helper = getLuceneHelper();
-			helper.rebuildIndexes = false;
+			helper.rebuildIndexes = 0;
 			
 			AlertDialog dTmp = new AlertDialog.Builder(a)
 					.setTitle("准备索引程序")
@@ -459,24 +454,30 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 								.setMessage(indexedBookNames.get(0))
 								.setPositiveButton("立即开始！", (dialog, which) -> {
 									if (luceneHelper.freeSpaces[0] > luceneHelper.freeSpaces[1]) {
-										helper.rebuildIndexes = true;
-										startBuildIndexesTask();
+										startBuildIndexesTask(1);
 									} else {
 										a.showT("存储空间不足！读数："+mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[0]));
 									}
 									dTmp.dismiss();
 								})
 								.setNegativeButton("取消", null)
+								.setNeutralButton("忽略(不推荐)", (dialog, which) -> {
+									if (luceneHelper.freeSpaces[0] > luceneHelper.freeSpaces[1]) {
+										startBuildIndexesTask(2);
+									} else {
+										a.showT("存储空间不足！读数："+mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[0]));
+									}
+									dTmp.dismiss();
+								})
 								.show()
 						;
 					} else {
-						startBuildIndexesTask();
+						startBuildIndexesTask(0);
 					}
 				} else if (v.getId() == android.R.id.button2) {
 					dTmp.dismiss();
 				} else if (v.getId() == android.R.id.button3) {
-					helper.rebuildIndexes = false;
-					startBuildIndexesTask();
+					startBuildIndexesTask(0);
 					dTmp.dismiss();
 				}
 			};
@@ -489,19 +490,20 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			btn3.setEnabled(false);
 			dTmp.setCancelable(false);
 			
-			helper.readIndexedBookList();
+			helper.prepareSearch(false);
+			helper.reloadIndexedBookList();
 			MainActivityUIBase.LoadManager loadManager = a.loadManager;
 			int size = loadManager.md_size;
 			long totalSz = 0, newSz=0, total=0, new_=0;
 			for(int i=0;i<size;i++){
 				PlaceHolder ph = loadManager.getPlaceHolderAt(i);
-				if (indexBuilderSet.contains(ph)) {
+				if (helper.indexingBooks.contains(ph)) {
 					File f = ph.getPath(a.opt);
 					String name = f.getName();
 					long len = f.length();
 					totalSz += len;
 					total++;
-					if (this.luceneHelper.indexedbooksMap.contains(name)) {
+					if (helper.indexedbooksMap.contains(name)) {
 						indexedBookNames.add(name);
 					} else {
 						newSz += len;
@@ -509,14 +511,14 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					}
 				}
 			}
-			long freeSpace = luceneHelper.freeSpaces[0] = folder.getFreeSpace();
-			luceneHelper.freeSpaces[1] = totalSz*5;
-			luceneHelper.freeSpaces[2] = newSz*5;
+			long freeSpace = helper.freeSpaces[0] = folder.getFreeSpace();
+			helper.freeSpaces[1] = totalSz*5;
+			helper.freeSpaces[2] = newSz*5;
 			StringBuilder sb = new StringBuilder();
-			int est = (int) Math.ceil(totalSz*1.5/1024/1024/24);
+			int est = (int) Math.ceil(totalSz*1.5/1024/1024/24 + 0.35);
 			sb.append("将索引 ").append(total).append(" 本词典(")
 					.append(mp4meta.utils.CMN.formatSize(totalSz)).append(")，预计耗时 ")
-					.append(est).append(" 分钟，需 ").append(mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[1])).append(" 存储空间。\n");
+					.append(est).append(" 分钟，需 ").append(mp4meta.utils.CMN.formatSize(helper.freeSpaces[1])).append(" 存储空间。\n");
 			boolean hasIndexed = indexedBookNames.size() > 0;
 			if (hasIndexed) {
 				sb.append("\n以下词典已存在索引：");
@@ -525,13 +527,13 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					sb.append(", ");
 				}
 				sb.setLength(sb.length() - 2);
-				est = (int) Math.ceil(newSz*1.5/1024/1024/24);
+				est = (int) Math.ceil(newSz*1.5/1024/1024/24 + 0.35);
 				sb.append("\n\n若只索引新词典，将索引 ").append(new_).append(" 本词典(")
 						.append(mp4meta.utils.CMN.formatSize(newSz)).append(")，预计耗时 ")
-						.append(est).append(" 分钟，需 ").append(mp4meta.utils.CMN.formatSize(luceneHelper.freeSpaces[2])).append(" 存储空间。\n");
+						.append(est).append(" 分钟，需 ").append(mp4meta.utils.CMN.formatSize(helper.freeSpaces[2])).append(" 存储空间。\n");
 			}
 			
-			if (freeSpace >= luceneHelper.freeSpaces[2]) {
+			if (freeSpace >= helper.freeSpaces[2]) {
 				dTmp.setMessage(sb);
 				btn.setEnabled(true);
 				btn3.setEnabled(true);
@@ -547,7 +549,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			} else {
 				sb.setLength(0);
 				sb.append("将重建以下 ").append(indexedBookNames.size()).append(" 本词典(")
-						.append(mp4meta.utils.CMN.formatSize(totalSz - newSz)).append("MB)的索引！\n");
+						.append(mp4meta.utils.CMN.formatSize(totalSz - newSz)).append(")的索引！\n");
 				for (String name:indexedBookNames) {
 					sb.append(name);
 					sb.append("\n");
@@ -556,7 +558,6 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				indexedBookNames.add(sb.toString());
 			}
 			ViewUtils.setVisibleV3(btn3, hasIndexed);
-			dTmp.setCancelable(true);
 		}
 	}
 	

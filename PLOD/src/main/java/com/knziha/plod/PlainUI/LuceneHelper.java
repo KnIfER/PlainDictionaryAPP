@@ -21,6 +21,7 @@ import com.knziha.plod.dictionarymanager.BookManagerMain;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
@@ -56,10 +57,15 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 	final SearchToolsMenu schTools;
 	public IndexReader reader;
 	public IndexSearcher searcher;
+	
+	public HashSet<PlaceHolder> indexingBooks = new HashSet<>();
 	public ArrayList<IndexedBook> indexedbooks = new ArrayList<>();
 	public HashSet<String> indexedbooksMap = new HashSet<>();
-	public boolean rebuildIndexes;
+	/** 0=skip; 1=rebuild; 2=ignore & build */
+	public int rebuildIndexes;
+	
 	public long[] freeSpaces = new long[8];
+	
 	private int mForegroundColor;
 	private PorterDuffColorFilter ForegroundFilter;
 	private String CurrentSearchText;
@@ -67,6 +73,7 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 	TopDocs docs;
 	
 	public org.apache.lucene.search.highlight.Highlighter highlighter;
+	public long indexSize;
 	
 	public LuceneHelper(PDICMainActivity a, SearchToolsMenu schTools) {
 		this.a = a;
@@ -217,6 +224,20 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 		}
 	}
 	
+	public void closeIndexReader() {
+		if (reader != null) {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				CMN.debug(e);
+			}
+			reader = null;
+		}
+		if (searcher!=null) {
+			searcher = null;
+		}
+	}
+	
 	static class IndexedBook{
 		String name;
 		long bid;
@@ -235,7 +256,7 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 				File folder = new File(a.opt.pathToMainFolder().append("lucene").toString());
 				Directory index = FSDirectory.open(folder);
 				reader = DirectoryReader.open(index);
-				readIndexedBookList();
+				reloadIndexedBookList();
 			}
 			if (sch && searcher==null) {
 				searcher = new IndexSearcher(reader);
@@ -246,11 +267,12 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 		return searcher;
 	}
 	
-	public void readIndexedBookList() {
+	public void reloadIndexedBookList() {
 		indexedbooks.clear();
 		indexedbooksMap.clear();
 		if (reader!=null) {
 			try {
+				CMN.rt();
 				Fields fields = MultiFields.getFields(reader);
 				Terms terms = fields.terms("bookName");
 				TermsEnum iterator = terms.iterator(null);
@@ -260,6 +282,7 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 					indexedbooks.add(new IndexedBook(term));
 					indexedbooksMap.add(term);
 				}
+				CMN.pt("reloadIndexedBookList::");
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
@@ -296,4 +319,23 @@ public class LuceneHelper extends BaseAdapter implements View.OnClickListener {
 		return convertView;
 	}
 	
+	
+	public long statFileSize() {
+		File folder = new File(a.opt.pathToMainFolder().append("lucene").toString());
+		long ret = 0;
+		try {
+			if (folder.exists()) {
+				File[] files = folder.listFiles();
+				for (File f : files) {
+					if (f.isFile()) {
+						ret += f.length();
+					}
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		indexSize = ret;
+		return ret;
+	}
 }
