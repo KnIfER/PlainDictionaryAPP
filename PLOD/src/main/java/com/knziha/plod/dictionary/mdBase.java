@@ -28,6 +28,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.key_info_struct;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.Utils.record_info_struct;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.RBTree;
 
 import org.anarres.lzo.LzoAlgorithm;
@@ -1004,7 +1005,7 @@ public abstract class mdBase {
 		
 		public String getString(int index) {
 			if(index+1>=raw_keys_splits.length) return "!!!";
-			int st=raw_keys_splits[index];
+			final int st=raw_keys_splits[index];
 			return new String(raw_keys, st, raw_keys_splits[index+1]-_number_width-st, _charset);
 		}
 		
@@ -1170,7 +1171,7 @@ public abstract class mdBase {
 //			if(BlockOff+key_start_index+_number_width+entryNumExt>BlockLen+_number_width)
 //				throw new RuntimeException("大笨蛋！"+(BlockOff+key_start_index+_number_width+entryNumExt)+", "+BlockLen);
 			
-			infoI_cache.raw_keys_splits[keyCounter]=BlockLen+_number_width;
+			infoI_cache.raw_keys_splits[keyCounter]=BlockLen+infoI_cache._number_width;
 			
 			//long end2=System.currentTimeMillis(); //获取开始时间
 			//System.out.println("解压耗时："+(end2-start2));
