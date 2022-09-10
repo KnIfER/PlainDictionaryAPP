@@ -223,7 +223,6 @@
 	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		tools:visibility="xgone"
 		>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"

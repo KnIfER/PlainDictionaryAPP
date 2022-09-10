@@ -13,6 +13,7 @@ import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -29,7 +30,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,13 +132,13 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		}
 	}
 	
-	public boolean loadNextPage(int pos, View view) {
+	public boolean loadNextPage(MainActivityUIBase a, int pos, View view) {
 		if (bHasNext && pos == result_size) {
 			try {
 				newPage = null;
 				helper.do_search(this, null);
 				
-				addPage(newPage);
+				addPage(a, newPage);
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
@@ -155,7 +155,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		TargetBook = targetBook;
 		
 		booksSet = new HashSet<>(a.loadManager.md_size);
-		addPage(newPage);
+		addPage(a, newPage);
 		
 		// loadManager = a.loadManager.clone(); // todo copy onChange
 		if (targetBook == null) { // 联合
@@ -167,7 +167,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 //		loadManager.dictPicker.dataChanged();
 	}
 	
-	private void addPage(DocRecord[] newPage) {
+	private void addPage(MainActivityUIBase a, DocRecord[] newPage) {
 		if (newPage != null && newPage.length > 0) {
 			results.add(newPage);
 			int ts = results.size() + 1;
@@ -182,6 +182,8 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		} else {
 			bHasNext = false;
 		}
+		a.listName(2).setText("搜索引擎"+" ("+result_size+")");
+		a.adaptermy5.notifyDataSetChanged();
 	}
 	
 	public resultRecorderLucene(MainActivityUIBase a, MainActivityUIBase.LoadManager loadManager_, int pageSize){

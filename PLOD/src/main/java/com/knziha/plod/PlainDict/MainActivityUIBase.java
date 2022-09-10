@@ -11147,4 +11147,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 	
+	public TextView listName(int i) {
+		return new TextView(this);
+	}
 }

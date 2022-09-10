@@ -54,6 +54,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 	
 	private void performSearch() {
 		String phrase = String.valueOf(etSearch.getText()).trim();
+		//phrase = "开心";
 		if(phrase.length()>0) helper.CurrentSearchText=phrase;
 		a.showT("search::"+phrase);
 		

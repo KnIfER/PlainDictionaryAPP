@@ -164,6 +164,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public TextView dvDictFrac;
 	public TextView dvResultN;
 	
+	public TextView[] listNames;
 	public ViewGroup[] viewList;
 
 	public String lastFuzzyKeyword;
@@ -1276,6 +1277,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		ViewUtils.removeView(mlv);
 		viewList = new ViewGroup[]{mlv1, mlv, mlv2};
+		listNames = new TextView[3];
 		for (int i = 0; i < 3; i++) {
 			LinearLayout view = new LinearLayout(this);
 			view.setOrientation(LinearLayout.VERTICAL);
@@ -1479,30 +1481,24 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			@Override public void onPageScrollStateChanged(int arg0) { }
 			@Override public void onPageScrolled(int arg0, float arg1, int arg2) { }
 			@Override
-			public void onPageSelected(int pos) {
+			public void onPageSelected(int i) {
 				fadeSnack();
-				CurrentViewPage=pos;
-				boolean b1=pos==0;
-				if((b1||pos==2) && PDICMainAppOptions.getHintSearchMode()) {
+				CurrentViewPage=i;
+				boolean b1=i==0;
+				if((b1||i==2) && PDICMainAppOptions.getHintSearchMode()) {
 					boolean bUseRegex = b1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
 					int msg=bUseRegex?R.string.regret:(b1?R.string.fuzzyret:R.string.fullret);
 					if(bUseRegex)
 					viewPager.post(() -> showTopSnack(null, msg, 0.5f, -1, Gravity.CENTER, 0));
 				}
-				decorateBottombarFFSearchIcons(pos);
+				decorateBottombarFFSearchIcons(i);
 				applyMainMenu();
 				HashSet<Long> booksSet = null;
-				if (pos != 1) {
-					if (viewList[pos].getChildCount() == 1) {
-						ViewGroup lv = viewList[pos];
-						View btm = getLayoutInflater().inflate(R.layout.adv_sch_bottom, lv, false);
-						lv.addView(btm);
-						TextView tv = btm.findViewById(R.id.schName);
-						lv.setTag(tv);
-						tv.setText(pos == 0 ? R.string.fuzzyret : R.string.fullret);
-						((LinearLayout.LayoutParams) viewList[pos].getChildAt(0).getLayoutParams()).weight = 1;
+				if (i != 1) {
+					if (listNames[i]==null) {
+						listName(i);
 					} else {
-						booksSet = (pos == 0 ? adaptermy3 : adaptermy4).results.booksSet;
+						booksSet = (i == 0 ? adaptermy3 : adaptermy4).results.booksSet;
 					}
 				} else/* if(ViewUtils.isVisible(lv2))*/{
 					booksSet = adaptermy2.results.booksSet;
@@ -3574,5 +3570,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			btnMaxWidth = newMax;
 		}
+	}
+	
+	public TextView listName(int i) {
+		if (i != 1 && listNames[i]==null) {
+			ViewGroup lv = viewList[i];
+			View btm = getLayoutInflater().inflate(R.layout.adv_sch_bottom, lv, false);
+			lv.addView(btm);
+			TextView tv = btm.findViewById(R.id.schName);
+			listNames[i] = tv;
+			tv.setText(i == 0 ? R.string.fuzzyret : R.string.fullret);
+			((LinearLayout.LayoutParams) viewList[i].getChildAt(0).getLayoutParams()).weight = 1;
+		}
+		return listNames[i];
 	}
 }

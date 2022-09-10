@@ -61,6 +61,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 	}
 	
 	public int expectedPos;
+	StringBuilder textBuilder = new StringBuilder();
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		//return lstItemViews.get(position);
@@ -80,7 +81,16 @@ public class ListViewAdapter2 extends BasicAdapter {
 			vh.title.setTextColor(a.AppBlack);
 		}
 		vh.position = position;
-		vh.title.setText(currentKeyText);
+		CharSequence text = currentKeyText;
+		if (true) {
+			int ch = currentKeyText.charAt(0);
+			if (Character.toUpperCase(ch) != ch) {
+				textBuilder.setLength(0);
+				text = textBuilder.append((char)Character.toUpperCase(ch))
+						.append(text, 1, text.length());
+			}
+		}
+		vh.title.setText(text);
 		
 		BookPresenter book = a.getBookById(results.bookId);
 		boolean lastSch;
@@ -182,9 +192,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-		if (this.id == 5 && ((resultRecorderLucene)results).loadNextPage(pos, view)) {
+		if (this.id == 5 && ((resultRecorderLucene)results).loadNextPage(a, pos, view)) {
 			CMN.debug("加载下一页！");
-			a.adaptermy5.notifyDataSetChanged();
 			return;
 		}
 		if(checkAllWebs(results, view, pos)) return;

@@ -135,13 +135,15 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
 		
-		((TextView)a.viewList[2].getTag()).setText(a.mResource.getString(R.string.fullret)+" ("+a.adaptermy4.getCount()+")");
+		
+		a.listName(2).setText(a.mResource.getString(R.string.fullret)+" ("+a.adaptermy4.getCount()+")");
 
 		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy4.getCount());
 		
 		System.gc();
 		a.adaptermy4.ClearVOA();
 		a.adaptermy4.notifyDataSetChanged();
+		a.mlv2.setAdapter(a.adaptermy4);
 		a.mlv2.setSelection(0);
 		//准备页内搜索
 		if(PDICMainAppOptions.schPageAfterFullSch()){
