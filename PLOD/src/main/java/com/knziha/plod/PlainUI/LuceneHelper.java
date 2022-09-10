@@ -217,4 +217,13 @@ public class LuceneHelper {
 		}
 		d.show();
 	}
+	
+	public static boolean isIndexable(String pathname) {
+		return pathname !=null && (
+				pathname.regionMatches(true, pathname.length()-4, ".mdx", 0, 4)
+				|| pathname.regionMatches(true, pathname.length()-4, ".txt", 0, 4)
+				|| pathname.regionMatches(true, pathname.length()-4, ".dsl", 0, 4)
+				|| pathname.regionMatches(true, pathname.length()-7, ".dsl.dz", 0, 7)
+				);
+	}
 }

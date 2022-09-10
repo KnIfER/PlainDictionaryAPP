@@ -117,6 +117,7 @@ import static com.knziha.plod.dictionary.mdBase.fullpageString;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 
 import io.noties.markwon.Markwon;
@@ -1263,7 +1264,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public boolean hasPreview() {
-		return mType==PLAIN_TYPE_MDICT || mType== PLAIN_TYPE_DSL;
+		return mType==PLAIN_TYPE_MDICT || mType== PLAIN_TYPE_DSL || mType== PLAIN_TYPE_TEXT;
 	}
 	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {

@@ -1278,7 +1278,7 @@ public class Drawer extends Fragment implements
 		int id = v.getId();
 		if(id==R.string.addd) {
 			toPDF=true;
-			((FlowTextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
+			((TextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
 			return false;
 		} else if(id==R.string.pick_main) {
 			try { // MLSN

@@ -3,6 +3,7 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.preference.SettingsPanel.BIT_STORE_VIEW;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
+import android.graphics.Color;
 import android.text.TextPaint;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -373,8 +374,12 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 									}
 									vh.position = position;
 									PlaceHolder ph = a.loadManager.getPlaceHolderAt(position);
+									boolean enabled = LuceneHelper.isIndexable(ph.pathname);
 									vh.title.setText(a.loadManager.md_getName(position, -1));
-									vh.ck.setChecked(helper.indexingBooks.contains(ph));
+									ViewUtils.setVisibleV3(vh.ck, enabled);
+									vh.ck.setChecked(enabled && helper.indexingBooks.contains(ph));
+									vh.title.setEnabled(enabled);
+									vh.title.setTextColor(enabled ? a.AppBlack : Color.GRAY);
 									vh.handle.setVisibility(View.GONE);
 									return convertView;
 								}
