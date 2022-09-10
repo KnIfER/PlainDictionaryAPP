@@ -107,6 +107,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:orientation="vertical"
+				tools:visibility="gone"
 				>
 				<com.jess.ui.TwoWayGridView
 					android:id="@+id/schtools"
@@ -114,7 +115,6 @@
 					android:layout_height="@dimen/_65_"
 					android:orientation="horizontal"
 					android:layout_gravity="bottom"
-					android:background="#ff8f8f8f"
 					android:elevation="5dp"
 					android:visibility="gone"
 					/>
@@ -184,6 +184,7 @@
 			android:id="@+id/etSchBar"
 			layout="@layout/etsch_tools"
 			app:layout_behavior="@string/appbar_scrolling_view_behavior"
+			tools:visibility="gone"
 			/>
 
 
@@ -223,6 +224,7 @@
 	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		tools:visibility="gone"
 		>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"
@@ -281,7 +283,8 @@
 				android:layout_height="wrap_content"
 				android:gravity="right"
 				android:textColor="#F9F4F4"
-				android:text="简明英汉汉英词典"
+				android:text="平典搜索"
+				tools:text="简明英汉汉英词典"
 				android:textFontWeight="750"
 				android:textSize="12sp"
 				android:maxLines="1"

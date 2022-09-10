@@ -168,7 +168,7 @@ public class DictInputStream extends InputStream {
 		if(tid==CMN.mid) { // false
 			buffer = dictReader.buffer_cache;
 			if(blockIndex==dictReader.buffer_cache_index) {
-				SU.Log("真的好懒哦！");
+				if(false) SU.Log("lazy::真的好懒哦！");
 				delayedStream=true;
 				blockSize=dictReader.blockDecLength;
 				delayedStreamOpenOffset=fileOffset+dictReader.blockDecLength;
@@ -254,7 +254,7 @@ public class DictInputStream extends InputStream {
 			//CMN.Log("compressedLength::@"+blockIndex, compressedLength);
 			if(delayedStream) {
 				if(linearInputStream==null) {
-					SU.Log("给我勤快一点！");
+					if(false) SU.Log("lazy::给我勤快一点！");
 					linearInputStream = dictReader.OpenStreamAt(delayedStreamOpenOffset);
 				}
 				delayedStream=false;

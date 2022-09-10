@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.dictionary.mdBase.markerReg;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import static com.knziha.plod.plaindict.PDICMainActivity.layoutScrollDisabled;
 
@@ -106,6 +107,9 @@ public class ListViewAdapter extends BasicAdapter {
 			try {
 				String record = presenter.bookImpl.getRecordAt(position, null, false);
 				String text = Jsoup.parse(record).text();
+				if (presenter.isMdict() && presenter.getMdict().hasStyleSheets() && text.contains("`")) {
+					text = markerReg.matcher(text).replaceAll("").trim();
+				}
 				vh.preview.setText(text);
 				vh.preview.setTextColor(color);
 				vh.preview.setTextSize(size);

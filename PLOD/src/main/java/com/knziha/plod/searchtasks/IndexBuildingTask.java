@@ -1,5 +1,7 @@
 package com.knziha.plod.searchtasks;
 
+import static com.knziha.plod.dictionary.mdBase.markerReg;
+
 import android.annotation.SuppressLint;
 
 import com.knziha.plod.PlainUI.LuceneHelper;
@@ -135,13 +137,22 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 //							testAddDoc(md, "unrip", bookName, analyzer, writer);
 //							if(true) continue;
 							md.setPerThreadKeysCaching(keyBlockOnThreads);
+							final boolean hasStyles = mdTmp.isMdict() && mdTmp.getMdict().hasStyleSheets();
 							md.doForAllRecords(mdTmp, layer, new DictionaryAdapter.DoForAllRecords() {
 								@Override
-								public void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset) {
+								public void doit(Object parm, Object tParm, String entry, long position, String text, byte[] data, int from, int len, Charset _charset) {
 									try {
-										String text = new String(data, from, len, _charset);
+										if (text == null) {
+											text = new String(data, from, len, _charset);
+										}
 										text = org.jsoup.Jsoup.parse(text).text();
+										if (hasStyles && text.contains("`")) {
+											text = markerReg.matcher(text).replaceAll("").trim();
+										}
 										DocIndex pDoc = (DocIndex) tParm;
+										if (entry == null) {
+											entry = md.getEntryAt(position);
+										}
 										pDoc.entry.setStringValue(md.getEntryAt(position));
 										pDoc.content.setStringValue(text);
 										pDoc.position.setIntValue((int) position);

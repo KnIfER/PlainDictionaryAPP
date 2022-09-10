@@ -86,8 +86,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 				if (preview==null) {
 					String content = document.get("content");
 					TokenStream tokenStream=res.analyzer.tokenStream("desc", new StringReader(content));
-					String str = res.highlighter.getBestFragment(tokenStream, content);
-					str = str.replaceAll("`[0-9azAZ]{1,3}`", "").trim();
+					String str = res.highlighter.getBestFragment(tokenStream, content).trim();
 					if (str.startsWith(entry)) {
 						str = str.substring(entry.length()).trim();
 					}
@@ -268,7 +267,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 				if (record==null) {
 					return "!!! Error: code 1";
 				}
-				if(true) return Html.fromHtml(record.score+" "+record.getPreview(this) );
+				if(true) return Html.fromHtml(/*record.score+" "+*/record.getPreview(this) );
 				SpannableStringBuilder ssb = new SpannableStringBuilder();
 				ssb.append(book.getInListName());
 				//ssb.setSpan(new ColoredTextSpan1(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);0xFFb9b9b9

@@ -2179,8 +2179,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=45, shift=1) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=45, shift=1) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=46) public static boolean getShowSearchTools() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=46) public static void setShowSearchTools(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static boolean getShowSearchTools() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static void setShowSearchTools(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=47, shift=1) public static boolean getMergePeruseBottombars() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static void setMergePeruseBottombars(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2506,6 +2506,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=28, flagSize = 2) public static int schGroup() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=28, flagSize = 2) public static void schGroup(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=30) public static boolean lastUsingInternalStorage() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=30) public static void lastUsingInternalStorage(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	
 	/////////////////////End Seven Flag///////////////////////////////////

@@ -273,6 +273,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
+import static com.knziha.plod.dictionary.mdBase.markerReg;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
@@ -837,13 +838,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				buildIndexPane = new WeakReference<>(buildIndex);
 			}
 			ViewUtils.addViewToParent(buildIndex.buildIndexLayout, lvHeaderView);
-			double rootHeight = root.getHeight();
-			if(rootHeight==0) rootHeight=dm.heightPixels*5.8/6;
-			buildIndex.buildIndexLayout.getLayoutParams().height = (int) (rootHeight*4.5/6);
+			//double rootHeight = root.getHeight();
+			//if(rootHeight==0) rootHeight=dm.heightPixels*5.8/6;
+			buildIndex.buildIndexLayout.getLayoutParams().height = -1;
+			lvHeaderView.getLayoutParams().height = -1;
 			buildIndex.notifyDataSetChanged();
 			//buildIndex.buildIndexLayout.getLayoutParams().height = (int) Math.max(root.getHeight()*4.5/6, GlobalOptions.density*50);
-		} else if(buildIndex!=null) {
-			ViewUtils.removeIfParentBeOrNotBe(buildIndex.buildIndexLayout, lvHeaderView, true);
+		} else if(buildIndex!=null && ViewUtils.removeIfParentBeOrNotBe(buildIndex.buildIndexLayout, lvHeaderView, true)) {
+			lvHeaderView.getLayoutParams().height = -2;
 		}
 	}
 	
@@ -2438,6 +2440,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(def==null){
 			def = opt.fileToSet(ConfigFile, opt.getLastPlanName(LastPlanName));
 		}
+		//CMN.debug("getStartupFile::", def);
 		return def;
 	}
 	
@@ -11089,7 +11092,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //			record = record.substring(0, 1024);
 //			CMN.debug("裁剪了！", record);
 //		}
-		String text = Jsoup.parse(record).text().replaceAll("`[0-9azAZ]{1,3}`", "").trim();
+		String text = Jsoup.parse(record).text();
+		if (book.isMdict() && book.getMdict().hasStyleSheets() && text.contains("`")) {
+			text = markerReg.matcher(text).replaceAll("").trim();
+		}
 		 if (true)
 			 return text;
 		SpannableStringBuilder ssb = new SpannableStringBuilder();

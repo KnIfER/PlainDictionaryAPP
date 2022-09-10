@@ -411,6 +411,7 @@ public class BookPresenter
 	
 	final DictionaryAdapter.PLAIN_BOOK_TYPE mType;
 	public final PlainWeb mWebx;
+	public final PlainMdict mMdict;
 	public final boolean isWebx;
 	private ContentviewItemBinding mPageView;
 	public boolean bSupressingEditing;
@@ -743,6 +744,7 @@ function debug(e){console.log(e)};
 		} else {
 			mWebx =null;
 		}
+		mMdict = isMdict() ? (PlainMdict) bookImpl : null;
 		
 		if(THIS!=null){
 			a = THIS;
@@ -1195,6 +1197,10 @@ function debug(e){console.log(e)};
 	
 	public boolean isMdict() {
 		return mType == PLAIN_TYPE_MDICT;
+	}
+	
+	public PlainMdict getMdict() {
+		return mMdict;
 	}
 	
 	public final boolean getHasVidx() {

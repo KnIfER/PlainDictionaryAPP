@@ -1,37 +1,13 @@
 package com.knziha.plod.PlainUI;
 
-import android.annotation.SuppressLint;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.BitmapDrawable;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 import androidx.annotation.AnyThread;
-import androidx.appcompat.app.AlertController;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.menu.ActionMenuItemView;
-import androidx.appcompat.widget.Toolbar;
 
-import com.knziha.plod.dictionarymanager.BookManagerMain;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
-import com.knziha.plod.plaindict.R;
-import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
-import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.ViewUtils;
-import com.mobeta.android.dslv.DragSortListView;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
@@ -46,7 +22,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -60,7 +35,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 public class LuceneHelper {
 	final PDICMainActivity a;

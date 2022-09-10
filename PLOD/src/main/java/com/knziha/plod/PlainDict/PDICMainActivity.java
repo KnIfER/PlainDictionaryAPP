@@ -1028,6 +1028,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(opt.tapSch())ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapSch).setChecked(true);
 		if(TintWildResult.first = opt.getTintWildRes())ViewUtils.findInMenu(LEFTMenu, R.id.tintList).setChecked(true);
 		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
+		applyMainMenu();
+		schTools = new SearchToolsMenu(this, UIData.schtools);
 		
 		checkLog(savedInstanceState);
 		
@@ -1735,8 +1737,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
-		
-		schTools = new SearchToolsMenu(this, UIData.schtools);
 		
 		if(dictPicker.pinShow()) {
 			showChooseDictDialog(0);

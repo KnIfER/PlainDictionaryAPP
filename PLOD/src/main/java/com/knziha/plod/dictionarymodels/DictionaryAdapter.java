@@ -282,7 +282,15 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public void doForAllRecords(Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException {
-	
+		Object tParm = dor.onThreadSt(parm);
+		searchCancled = false;
+		for (int i = 0; i < _num_entries; i++) {
+			if(SearchLauncher.IsInterrupted || searchCancled) break;
+			String text = getRecordAt(i, null, false);
+			dor.doit(parm, tParm, null, i, text, null, 0, 0, _charset);
+			SearchLauncher.dirtyProgressCounter++;
+		}
+		dor.onThreadEd(parm);
 	}
 	
 	public int[] getPageUtils(boolean extra) {

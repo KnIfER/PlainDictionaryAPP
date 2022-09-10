@@ -1269,8 +1269,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //										SU.Log("full res ::start-len", start, recordodKeyLen, record_block_.length);
 //									} else continue;
 										
-										dor.doit(parm, tParm, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
-										, record_block_, start, recordodKeyLen, _charset);
+										dor.doit(parm, tParm, null, relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator
+										, null, record_block_, start, recordodKeyLen, _charset);
 										
 										if(SearchLauncher.IsInterrupted || SearchLauncher.unitAborted) break;
 										

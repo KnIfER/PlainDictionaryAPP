@@ -65,8 +65,7 @@ public class BuildIndexInterface extends BaseAdapter
 			TextView tv = convertView.findViewById(R.id.text);
 			tv.setText(name);
 			tv.setTextColor(selected?a.AppBlack:0xFF888888);
-			FlowTextView tv1 = convertView.findViewById(R.id.subtext);
-			tv1.trim=false;
+			TextView tv1 = convertView.findViewById(R.id.subtext);
 			tv1.setTextColor(GlobalOptions.isDark?0xFF9999aa:0xFF333333);
 			tv1.setText((String)path);
 			return convertView;

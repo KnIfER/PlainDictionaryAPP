@@ -45,8 +45,9 @@ public class BuildIndexTask extends AsyncTaskWrapper<String, Object, String > {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return null;
 		if(params.length==0) return null;
+		
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 
-		ArrayList<BookPresenter> md = a.md;
 		synchronized (IndexingBooks) {
 			ArrayList<Integer> done = new ArrayList<>();
 			for (int i = 0,len=IndexingBooks.size(); i < len; i++) {
@@ -54,15 +55,15 @@ public class BuildIndexTask extends AsyncTaskWrapper<String, Object, String > {
 				int position = (int) value;
 				boolean selected = value>>32==1;
 				if(selected) {
-					BookPresenter mdTmp = md.get(position);
-					if(mdTmp==null){
+					BookPresenter mdTmp = loadManager.md_getNoCreate(position, -1);
+					if(mdTmp==a.EmptyBook){
 						PlaceHolder phI = a.getPlaceHolderAt(position);
 						if(phI!=null) {
 							publishProgress(position, i);
-							try {
-								md.set(position, MainActivityUIBase.new_book(phI, a));
+							mdTmp = loadManager.md_get(position);
+							if (mdTmp != a.EmptyBook) {
 								done.add(i);
-							} catch (Exception ignored) { }
+							}
 						}
 					}
 					if(isCancelled()) break;

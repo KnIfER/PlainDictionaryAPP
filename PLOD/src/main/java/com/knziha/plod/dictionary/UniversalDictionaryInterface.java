@@ -79,7 +79,7 @@ public interface UniversalDictionaryInterface {
 	void setPerThreadKeysCaching(ConcurrentHashMap<Long, Object> keyBlockOnThreads);
 	
 	interface DoForAllRecords{
-		void doit(Object parm, Object tParm, long position, byte[] data, int from, int len, Charset _charset);
+		void doit(Object parm, Object tParm, String entry, long position, String text, byte[] data, int from, int len, Charset _charset);
 		Object onThreadSt(Object parm);
 		void onThreadEd(Object parm);
 	}

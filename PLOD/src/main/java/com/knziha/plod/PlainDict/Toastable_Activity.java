@@ -90,8 +90,8 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long VIStamp;
 	protected long V7Stamp;
 	protected long layoutFlagStamp;
-	public int MainAppBackground;
-	public int MainBackground;
+	public int MainAppBackground = 0xFF03A9F4;
+	public int MainBackground = 0xFF03A9F4;
 	public int MainPageBackground;
 	public int AppBlack;
 	public int AppWhite;
@@ -453,7 +453,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		if(!IdlDwlng.isDirectory()) {
 			File InternalAppStorage = getExternalFilesDir("");
 			final File subfolder = new File(InternalAppStorage, CMN.BrandName);
-			if(subfolder.exists() && subfolder.isDirectory()) {
+			if(PDICMainAppOptions.lastUsingInternalStorage() && subfolder.exists() && subfolder.isDirectory()) {
 				/* look if the an Internal files system created. */
 				opt.rootPath=InternalAppStorage;
 				further_loading(savedInstanceState);
@@ -465,16 +465,16 @@ public class Toastable_Activity extends AppCompatActivity {
 					if(IdlDwlng.mkdirs() || IdlDwlng.isDirectory()) {//建立文件夹
 						opt.rootPath=SdcardStorage;
 						further_loading(savedInstanceState);
-	
-					}else {showT("未知错误：配置存储目录建立失败！");finish();}
+						PDICMainAppOptions.lastUsingInternalStorage(false);
+					} else { showT("未知错误：配置存储目录建立失败！");finish(); }
 				})
 			.setNegativeButton(R.string.no, (dialog, which) -> {
 				if((subfolder.exists()&&subfolder.isDirectory()) || subfolder.mkdirs()) {//建立文件夹
 					showT("配置存储在标准目录");
 					opt.rootPath=InternalAppStorage;
 					further_loading(savedInstanceState);
-
-				}else {showT("未知错误：配置存储目录建立失败！");finish();}
+					PDICMainAppOptions.lastUsingInternalStorage(true);
+				} else { showT("未知错误：配置存储目录建立失败！");finish(); }
 			}).setCancelable(false).show();
 		} else {
 			/* Ideal Dwelling (/sdcard/PLOD) already exists. nothing to ask for. */
