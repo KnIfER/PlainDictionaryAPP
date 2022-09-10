@@ -193,18 +193,18 @@ public class CMN{
 	}
 	public static long pt(Object...args) {
 		long ret=System.currentTimeMillis()-ststrt;
-		CMN.Log(listToStr(args)+" "+ret);
+		CMN.Log((args.length==0?"":args[0]) + Long.toString(ret) +" "+listToStr(1, args));
 		return ret;
 	}
 	public static void tp(long stst, Object...args) {
 		long time = (System.currentTimeMillis() - stst);
-		CMN.Log(time+" "+listToStr(args));
+		CMN.Log(time+" "+listToStr(0, args));
 		stst_add+=time;
 	}
 	
-	public static String listToStr(Object...args) {
+	public static String listToStr(int st, Object...args) {
 		String ret="";
-		for (int i = 0; i < args.length; i++) {
+		for (int i = st; i < args.length; i++) {
 			ret+=args[i];
 		}
 		return ret;

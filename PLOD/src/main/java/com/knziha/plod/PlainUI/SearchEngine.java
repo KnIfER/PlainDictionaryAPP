@@ -52,23 +52,25 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 		this.helper = helper;
 	}
 	
-	private void search() {
-		String key = String.valueOf(etSearch.getText()).trim();
-		if(key.length()>0) helper.CurrentSearchText=key;
-		a.showT("search::"+key);
+	private void performSearch() {
+		String phrase = String.valueOf(etSearch.getText()).trim();
+		if(phrase.length()>0) helper.CurrentSearchText=phrase;
+		a.showT("search::"+phrase);
 		
+		resultRecorderLucene results = null;
 		try {
-			helper.do_search(schGroup == 0 ? a.loadManager.map()
+			results = helper.do_search(null, schGroup == 0 ? a.loadManager.map()
 					: schGroup == 2 ? schMap : null);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
 		
-		resultRecorderLucene results = new resultRecorderLucene(a, a.loadManager);
-		a.adaptermy5.results = results;
-		results.invalidate(a, null, helper.docs, helper);
-		a.mlv2.setAdapter(a.adaptermy5);
-		a.adaptermy5.notifyDataSetChanged();
+		if (results != null) {
+			a.adaptermy5.results = results;
+			results.invalidate(a, null);
+			a.mlv2.setAdapter(a.adaptermy5);
+			a.adaptermy5.notifyDataSetChanged();
+		}
 	}
 	
 	public void setTitleForegroundColor(ViewGroup v, boolean init, int foregroundColor) {
@@ -163,7 +165,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == android.R.id.button1|| id == R.id.search) {
-			search();
+			performSearch();
 		} else if (id == R.id.text|| id == R.id.check1) {
 			BookManagerMain.ViewHolder vh
 					= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
@@ -249,7 +251,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 			etSearch = toolbar.findViewById(R.id.etSearch);
 			etSearch.setOnEditorActionListener((v, actionId, event) -> {
 				if (actionId== EditorInfo.IME_ACTION_SEARCH||actionId==EditorInfo.IME_ACTION_UNSPECIFIED){
-					search();
+					performSearch();
 				}
 				return true;
 			});

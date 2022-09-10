@@ -10966,7 +10966,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					scrollY = -1;
 				}
 			}
-			else if(action==MotionEvent.ACTION_UP|| action ==MotionEvent.ACTION_CANCEL){
+			else if(action==MotionEvent.ACTION_UP/*|| action ==MotionEvent.ACTION_CANCEL*/){
 				if (scrollY >= 0) {
 					TextView preview = (TextView) v;
 					int x= (int) event.getX();
@@ -10989,6 +10989,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	};
 	
 	public static class ViewHolder {
+		public boolean lastSch;
 		int position;
 		final View itemView;
 		WahahaTextView title;

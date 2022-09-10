@@ -4,6 +4,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 
 import android.graphics.Color;
 import android.text.Html;
+import android.text.TextPaint;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
+import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -79,20 +81,29 @@ public class ListViewAdapter2 extends BasicAdapter {
 		}
 		vh.position = position;
 		vh.title.setText(currentKeyText);
-//			if(combining_search_result.mflag.data!=null){
-//				vh.subtitle.setText(Html.fromHtml(currentDictionary.appendCleanDictionaryName(null).append("<font color='#2B4391'> < ").append(combining_search_result.mflag.data).append(" ></font >").toString()));
-//			} else {
-//
-//			}
 		
 		BookPresenter book = a.getBookById(results.bookId);
-		CharSequence preview = book.hasPreview() ? results.getPreviewAt(book, a, position, vh) : null;
+		boolean lastSch;
+		if (id == 5) {
+			lastSch = ((resultRecorderLucene)results).hasNextPage(position);
+			if (lastSch != vh.lastSch) {
+				if (vh.lastSch = lastSch) {
+					vh.title.setGravity(Gravity.CENTER);
+				} else {
+					vh.title.setGravity(Gravity.LEFT);
+				}
+			}
+		} else {
+			lastSch = false;
+		}
 		boolean set0 = id != 5 || PDICMainAppOptions.listPreviewSet01Same();
-		boolean selectable = set0 ? PDICMainAppOptions.listPreviewSelectable() : PDICMainAppOptions.listPreviewSelectable1();
+		boolean selectable = (set0 && !lastSch) ? PDICMainAppOptions.listPreviewSelectable() : PDICMainAppOptions.listPreviewSelectable1();
+		CharSequence preview = (lastSch || book.hasPreview()) ? results.getPreviewAt(book, a, position, vh) : null;
+		
+		int tmp = set0 ? PDICMainAppOptions.listPreviewColor() : PDICMainAppOptions.listPreviewColor1();
+		int color = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp == 0 ? 0.08f : tmp == 1 ? 0.5f : 0.8f);
 		if (preview != null) {
 			int maxLines = (set0 ? PDICMainAppOptions.listOverreadMode() : PDICMainAppOptions.listOverreadMode1()) ? Integer.MAX_VALUE : 3;
-			int tmp = set0 ? PDICMainAppOptions.listPreviewColor() : PDICMainAppOptions.listPreviewColor1();
-			int color = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp == 0 ? 0.08f : tmp == 1 ? 0.5f : 0.8f);
 			tmp = set0 ? PDICMainAppOptions.listPreviewFont() : PDICMainAppOptions.listPreviewFont1();
 			int size = tmp == 0 ? 12 : tmp == 1 ? 14 : 17;
 			{
@@ -106,13 +117,23 @@ public class ListViewAdapter2 extends BasicAdapter {
 			ViewUtils.setVisible(vh.preview, true);
 			ViewUtils.setVisible(vh.subtitle, false);
 			ViewUtils.setVisible(vh.subtitle, true);
+			vh.subtitle.setText(book.getInListName());// + "—");
+			vh.subtitle.setGravity(Gravity.LEFT);
 			//vh.subtitle.setGravity(Gravity.END);
 		} else {
 			boolean showBookName = PDICMainAppOptions.listShowBookName();
 			ViewUtils.setVisible(vh.preview, false);
 			ViewUtils.setVisible(vh.subtitle, showBookName);
+			vh.subtitle.setText(book.getInListName());
+			vh.subtitle.setGravity(Gravity.LEFT);
 		}
-		vh.subtitle.setText("— "+book.getInListName());
+		vh.subtitle.setTextColor(color);
+		TextPaint paint = vh.subtitle.getPaint();
+		paint.setFakeBoldText(false);
+		
+		if (lastSch) {
+			vh.subtitle.setText(null);
+		}
 		vh.subtitle.setAlpha(0.75f);
 		if (selectable!=vh.selectable)
 		{
@@ -122,6 +143,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 			vh.title.setOnTouchListener(touch);
 			vh.preview.setOnTouchListener(touch);
 			vh.itemView.setOnClickListener(selectable?this:null);
+			if (!selectable) vh.itemView.setClickable(false);
 			vh.selectable = selectable;
 		}
 		
@@ -160,6 +182,11 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+		if (this.id == 5 && ((resultRecorderLucene)results).loadNextPage(pos, view)) {
+			CMN.debug("加载下一页！");
+			a.adaptermy5.notifyDataSetChanged();
+			return;
+		}
 		if(checkAllWebs(results, view, pos)) return;
 		contentUIData.mainProgressBar.setVisibility(View.GONE);
 		userCLick=true;
@@ -180,6 +207,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public void onItemClick(int pos){//lv2 mlv1 mlv2
+		if (this.id == 5 && ((resultRecorderLucene)results).hasNextPage(pos)) {
+			return;
+		}
 		a.shuntAAdjustment();
 		weblistHandler.WHP.touchFlag.first=true;
 		

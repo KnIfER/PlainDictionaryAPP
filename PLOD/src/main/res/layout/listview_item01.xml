@@ -8,7 +8,7 @@
 	>
 	<com.knziha.ankislicer.customviews.WahahaTextView
 		android:layout_height="wrap_content"
-		android:layout_width="wrap_content"
+		android:layout_width="match_parent"
 		tools:text="搜索引擎"
 		android:id="@+id/text"
 		android:layout_marginLeft="10dp"
@@ -39,6 +39,7 @@
 		android:textColor="#888"
 		android:paddingTop="2dp"
 		android:paddingEnd="8dp"
+		android:textStyle="bold"
 		/>
 </LinearLayout>
 

@@ -131,6 +131,9 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 							}
 							cnt++;
 							UniversalDictionaryInterface md = mdTmp.bookImpl;
+//							testAddDoc(md, "clap", bookName, analyzer, writer);
+//							testAddDoc(md, "unrip", bookName, analyzer, writer);
+//							if(true) continue;
 							md.setPerThreadKeysCaching(keyBlockOnThreads);
 							md.doForAllRecords(mdTmp, layer, new DictionaryAdapter.DoForAllRecords() {
 								@Override
@@ -176,6 +179,23 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 		newSize = helper.statFileSize();
 		System.gc();
 		return null;
+	}
+	
+	/** 调试索引添加 */
+	private void testAddDoc(UniversalDictionaryInterface md, String key, String bookName, Analyzer analyzer, IndexWriter writer) throws IOException {
+		int position = md.lookUp(key);
+		if (position >= 0) {
+			String text = md.getRecordAt(position, null, false);
+			text = org.jsoup.Jsoup.parse(text).text();
+			//text = text.replace("扯开", "扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开扯开开开开开开开开开开开开开开开开开扯开扯开扯开扯开扯开扯开开开开开开开开开开开");
+			DocIndex pDoc = new DocIndex();
+			pDoc.bookName.setStringValue(bookName);
+			pDoc.entry.setStringValue(md.getEntryAt(position));
+			pDoc.content.setStringValue(text);
+			pDoc.position.setIntValue((int) position);
+			CMN.debug("添加文章::", md.getEntryAt(position), text);
+			writer.updateDocument(null, pDoc.doc, analyzer);
+		}
 	}
 	
 	@Override

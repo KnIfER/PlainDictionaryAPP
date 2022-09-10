@@ -94,7 +94,7 @@ public class  SU{
 		ststrt = System.currentTimeMillis();
 	}
 	public static void pt(Object...args) {
-		SU.Log(CMN.listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
+		SU.Log(CMN.listToStr(0, args)+" "+(System.currentTimeMillis()-ststrt));
 	}
 	
 	public static boolean isNotGroupSuffix(String fname) {

@@ -123,6 +123,7 @@ public class ListViewAdapter extends BasicAdapter {
 			vh.title.setOnTouchListener(touch);
 			vh.preview.setOnTouchListener(touch);
 			vh.itemView.setOnClickListener(selectable?this:null);
+			if (!selectable) vh.itemView.setClickable(false);
 			vh.selectable = selectable;
 		}
 		

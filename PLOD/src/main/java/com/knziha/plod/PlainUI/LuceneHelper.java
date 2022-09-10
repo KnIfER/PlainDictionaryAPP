@@ -79,9 +79,9 @@ public class LuceneHelper {
 	
 	String CurrentSearchText;
 	public Analyzer analyzer;
-	TopDocs docs;
 	
-	public org.apache.lucene.search.highlight.Highlighter highlighter;
+	int PageSize = 100;
+	
 	public long indexSize;
 	
 	public LuceneHelper(PDICMainActivity a, SearchToolsMenu schTools) {
@@ -91,40 +91,60 @@ public class LuceneHelper {
 	}
 	
 	@AnyThread
-	 void do_search(HashMap<String, Integer> map) throws Exception {
+	public resultRecorderLucene do_search(resultRecorderLucene results, HashMap<String, Integer> map) throws Exception {
+		int hitsPerPage = PageSize;
+		Analyzer analyzer = this.analyzer;
+		String phrase = CurrentSearchText;
+		IndexSearcher searcher = prepareSearch(true);
 		CMN.rt();
-		String key = CurrentSearchText;
-		Query query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(key);
-		if (map != null) {
-			BooleanQuery booleanQuery = new BooleanQuery();
-			BooleanQuery dictQueries = new BooleanQuery();
-			for (int i = 0; i < indexedbooks.size(); i++) {
-				String bookName = indexedbooks.get(i).name;
-				if (map.containsKey(bookName)) {
-					dictQueries.add(new TermQuery(new Term("bookName", bookName)), BooleanClause.Occur.SHOULD);
+		Query query;
+		TopDocs docs;
+		if (results == null) {
+			results = new resultRecorderLucene(a, a.loadManager, hitsPerPage);
+			query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
+			if (map != null) {
+				BooleanQuery booleanQuery = new BooleanQuery();
+				BooleanQuery dictQueries = new BooleanQuery();
+				for (int i = 0; i < indexedbooks.size(); i++) {
+					String bookName = indexedbooks.get(i).name;
+					if (map.containsKey(bookName)) {
+						dictQueries.add(new TermQuery(new Term("bookName", bookName)), BooleanClause.Occur.SHOULD);
+					}
 				}
+				if (dictQueries.clauses().size() == 0) {
+					return results;
+				}
+				booleanQuery.add(dictQueries, BooleanClause.Occur.MUST);
+				booleanQuery.add(query, BooleanClause.Occur.MUST);
+				query = booleanQuery;
 			}
-			if (dictQueries.clauses().size() == 0) {
-				return;
-			}
-			booleanQuery.add(dictQueries, BooleanClause.Occur.MUST);
-			booleanQuery.add(query, BooleanClause.Occur.MUST);
-			query = booleanQuery;
+			CMN.debug("query::", query);
+			results.query = query;
+			results.helper = this;
+			results.analyzer = analyzer;
+			results.searcher = searcher;
+			docs = searcher.search(query, hitsPerPage);
+			
+			org.apache.lucene.search.highlight.QueryScorer scorer=new org.apache.lucene.search.highlight.QueryScorer(query); //显示得分高的片段(摘要)
+			org.apache.lucene.search.highlight.Fragmenter fragmenter=new org.apache.lucene.search.highlight.SimpleSpanFragmenter(scorer);
+			org.apache.lucene.search.highlight.SimpleHTMLFormatter simpleHTMLFormatter=new org.apache.lucene.search.highlight.SimpleHTMLFormatter("<b><font color='red'>","</font></b>");
+			results.highlighter=new org.apache.lucene.search.highlight.Highlighter(simpleHTMLFormatter,scorer);
+			results.highlighter.setTextFragmenter(fragmenter);
+		} else {
+			hitsPerPage = results.pageSize;
+			searcher = results.searcher;
+			query = results.query;
+			
+			docs = searcher.searchAfter(results.lastDoc(), query, hitsPerPage);
 		}
-		CMN.Log("query::", query);
-		int hitsPerPage = 100;
-		// 3 do search
-		docs = prepareSearch(true).search(query, hitsPerPage);
-		ScoreDoc[] hits = docs.scoreDocs;
-		CMN.Log("found " + hits.length + " results", docs.totalHits);
+		CMN.pt("搜索时间::", "found " + docs.scoreDocs.length + " results", docs.totalHits, "max="+docs.getMaxScore());
 		
-		CMN.pt("搜索时间::");
-		
-		org.apache.lucene.search.highlight.QueryScorer scorer=new org.apache.lucene.search.highlight.QueryScorer(query); //显示得分高的片段(摘要)
-		org.apache.lucene.search.highlight.Fragmenter fragmenter=new org.apache.lucene.search.highlight.SimpleSpanFragmenter(scorer);
-		org.apache.lucene.search.highlight.SimpleHTMLFormatter simpleHTMLFormatter=new org.apache.lucene.search.highlight.SimpleHTMLFormatter("<b><font color='red'>","</font></b>");
-		highlighter=new org.apache.lucene.search.highlight.Highlighter(simpleHTMLFormatter,scorer);
-		highlighter.setTextFragmenter(fragmenter);
+		resultRecorderLucene.DocRecord[] newPage = new resultRecorderLucene.DocRecord[docs.scoreDocs.length];
+		for (int i = 0; i < newPage.length; i++) {
+			newPage[i] = new resultRecorderLucene.DocRecord(docs.scoreDocs[i]);
+		}
+		results.newPage = newPage;
+		return results;
 	}
 	
 	public void closeIndexReader() {

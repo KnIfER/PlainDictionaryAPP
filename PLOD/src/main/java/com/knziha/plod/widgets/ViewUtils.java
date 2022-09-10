@@ -2066,4 +2066,11 @@ public class ViewUtils {
 		return null;
 	}
 	
+	public static void trimFloat(StringBuilder str, int n) {
+		n++;
+		int idx = str.lastIndexOf(".");
+		if (idx>0 && str.length()>idx + n) {
+			str.setLength(idx + n);
+		}
+	}
 }
