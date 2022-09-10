@@ -2319,7 +2319,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		String debugMsg = "";
 		if (PDICMainAppOptions.debug()) {
-			MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
+			MdictServerMobile.getRemoteServerRes("/李白全集.0.txt", true);
 			if (MdictServerMobile.hasRemoteDebugServer) {
 				debugMsg += "已连接调试服务器！";
 			}
@@ -2398,7 +2398,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	final String[] defDicts = new String[]{
-			CMN.AssetTag + "liba.mdx"
+			CMN.AssetTag + "李白全集.mdx"
 			,"/ASSET2/谷歌翻译.web"
 			,"/ASSET2/维基词典.web"
 			,"/ASSET2/彩云小译.web"
@@ -2474,9 +2474,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			chairCount=0;
 			filterCount=0;
 			map.clear();
-			HashSet<String> map = new HashSet<>();
+			HashSet<String> map = new HashSet<>(); //todo map
 			ReadLines:
-			while((line = in.readLine())!=null){
+			while((line = in.readLine())!=null) {
 				int flag = 0;
 				boolean chair = true;
 				if(line.startsWith("[:")){
@@ -2512,6 +2512,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 					}
+				}
+				if (line.endsWith("liba.mdx") && line.startsWith(CMN.AssetTag)) {
+					line = CMN.AssetTag + "李白全集.mdx";
 				}
 				if (map.add(line)) { // 避免重复
 					PlaceHolder phI = new PlaceHolder(line);
@@ -3678,9 +3681,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (bookName!=null) {
 						if (bookName.endsWith(".mdx")) {
 							bookName = bookName.substring(0, bookName.length()-4);
-						}
-						if (bookName.equals("liba")) {
-							bookName = "李白全集";
 						}
 						bookName = bookName.replaceAll("\\(.*\\)", "");
 					}

@@ -133,7 +133,7 @@ public class AgentApplication extends Application {
 		//           .penaltyLog()//违规对log日志
 		//            .penaltyDeath()//违规Crash
 		//            .build());
-		CMN.AssetMap.put("liba", "李白全集");
+		//CMN.AssetMap.put("liba", "李白全集");
 		CMN.AssetMap.put("etymonline", "Etymology Online");
 		CMN.AssetMap.put("vocabulary", "Vocabulary");
 		CMN.AssetMap.put("wantwords", "WantWords 反向词典");

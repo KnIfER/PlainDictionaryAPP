@@ -81,7 +81,7 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 			}
 			in.close();
 
-			data.insert(new mAssetFile("/ASSET/liba.mdx").init(a.opt));
+			data.insert(new mAssetFile("/ASSET/李白全集.mdx").init(a.opt));
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

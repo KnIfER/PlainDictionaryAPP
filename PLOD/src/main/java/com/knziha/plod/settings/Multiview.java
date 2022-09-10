@@ -174,7 +174,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				PDICMainAppOptions.debug((Boolean) newValue);
 				if (MdictServer.hasRemoteDebugServer = (Boolean) newValue) {
 					WebView.setWebContentsDebuggingEnabled(true);
-					MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
+					MdictServerMobile.getRemoteServerRes("/李白全集.0.txt", true);
 				}
 			break;
 			case "tz":
