@@ -8,6 +8,7 @@ import com.knziha.plod.PlainUI.LuceneHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
+import com.knziha.plod.dictionarymodels.PlainDSL;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -138,6 +139,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 //							if(true) continue;
 							md.setPerThreadKeysCaching(keyBlockOnThreads);
 							final boolean hasStyles = mdTmp.isMdict() && mdTmp.getMdict().hasStyleSheets();
+							int type = getFormat(mdTmp.getType());
 							md.doForAllRecords(mdTmp, layer, new DictionaryAdapter.DoForAllRecords() {
 								@Override
 								public void doit(Object parm, Object tParm, String entry, long position, String text, byte[] data, int from, int len, Charset _charset) {
@@ -145,15 +147,20 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 										if (text == null) {
 											text = new String(data, from, len, _charset);
 										}
-										text = org.jsoup.Jsoup.parse(text).text();
-										if (hasStyles && text.contains("`")) {
-											text = markerReg.matcher(text).replaceAll("").trim();
+										if (type==0) {
+											text = org.jsoup.Jsoup.parse(text).text();
+											if (hasStyles && text.contains("`")) {
+												text = markerReg.matcher(text).replaceAll("").trim();
+											}
+										}
+										else if (type==1) {
+											text = PlainDSL.dslTagPattern.matcher(text).replaceAll("");
 										}
 										DocIndex pDoc = (DocIndex) tParm;
-										if (entry == null) {
+										if (entry == null && position >= 0) {
 											entry = md.getEntryAt(position);
 										}
-										pDoc.entry.setStringValue(md.getEntryAt(position));
+										pDoc.entry.setStringValue(entry);
 										pDoc.content.setStringValue(text);
 										pDoc.position.setIntValue((int) position);
 										// CMN.Log(text);
@@ -253,5 +260,16 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 		
 		LuceneHelper helper = a.schTools.getLuceneHelper();
 		helper.closeIndexReader();
+	}
+	
+	/** -1=text; 0=html; 1=[]; 2=md */
+	int getFormat(DictionaryAdapter.PLAIN_BOOK_TYPE dictType) {
+		if (dictType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT) {
+			return 0;
+		}
+		else if (dictType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL) {
+			return 1;
+		}
+		else return -1;
 	}
 }

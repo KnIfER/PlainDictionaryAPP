@@ -54,7 +54,7 @@ import static com.knziha.plod.dictionary.mdBase.processText;
 import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
 
 /**
- Model handling local lingvo-dsl files.<br/>
+ Model for lingvo's *.dsl(.dz) files.<br/>
  date:2020.2.18<br/>
  author:KnIfER<br/>
  licence:GPL2.0<br/>
@@ -62,7 +62,7 @@ import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
 public class PlainDSL extends DictionaryAdapter {
 	final static byte[] UTF16BOMBYTES = new byte[]{(byte) 0xff, (byte) 0xfe};
 	final static String UTF16BOM = new String(UTF16BOMBYTES, StandardCharsets.UTF_16LE);
-	final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)|<<(.*?)>>");
+	public final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)|<<(.*?)>>");
 	final static byte[] UTF8LineBreakText = "\n".getBytes(StandardCharsets.UTF_8);
 	private final File mResZipFile;
 	private ZipFile mResZip;
