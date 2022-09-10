@@ -26,7 +26,7 @@ import static com.knziha.plod.plaindict.TestHelper.RotateEncrypt;
 //common
 public class CMN{
 	public static /*volatile*/ int instanceCount;
-	public static final HashMap<String, String> AssetMap = new HashMap<>();
+	public static final HashMap<String, Long> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
 	public static final String Assets = "/ASSET";
 	public static final Boolean OccupyTag = true;
@@ -262,11 +262,7 @@ public class CMN{
 	}
 	
 	public static String getAssetName(String name) {
-		String ret = name;
-		try {
-			ret = AssetMap.get(name.substring(AssetTag.length(), name.lastIndexOf(".")));
-		} catch (Exception ignored) { }
-		return ret==null?name:ret;
+		return name;
 	}
 	
 	public static String debug(Object...o) {

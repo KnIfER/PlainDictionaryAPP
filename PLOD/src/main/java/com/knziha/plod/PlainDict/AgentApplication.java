@@ -28,6 +28,7 @@ import com.knziha.plod.slideshow.PdfPic;
 import com.knziha.plod.slideshow.PdfPicLoaderFactory;
 import com.knziha.plod.widgets.ViewUtils;
 
+import org.knziha.metaline.Metaline;
 import org.nanohttpd.protocols.http.ServerRunnable;
 
 import java.io.InputStream;
@@ -120,6 +121,9 @@ public class AgentApplication extends Application {
 	}
 	public final static BufferAllocator BufferAllocatorInst = new BufferAllocator();
 	
+	@Metaline(file = "src\\main\\assets\\李白全集.mdx")
+	final static int liba_filesize = 0;
+	
 	static {
 		GlideCacheModule.mOnGlideRegistry =
 				registry -> {
@@ -134,10 +138,8 @@ public class AgentApplication extends Application {
 		//            .penaltyDeath()//违规Crash
 		//            .build());
 		//CMN.AssetMap.put("liba", "李白全集");
-		CMN.AssetMap.put("etymonline", "Etymology Online");
-		CMN.AssetMap.put("vocabulary", "Vocabulary");
-		CMN.AssetMap.put("wantwords", "WantWords 反向词典");
-		CMN.AssetMap.put("", "【内置】");
+		CMN.AssetMap.put("李白全集.mdx", (long) liba_filesize);
+		//CMN.AssetMap.put("", "【内置】");
 	}
 	public SoftReference<char[]> _4kCharBuff;
 

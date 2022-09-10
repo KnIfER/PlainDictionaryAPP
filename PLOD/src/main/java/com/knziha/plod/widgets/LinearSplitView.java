@@ -51,11 +51,11 @@ public class LinearSplitView extends LinearLayout {
 					
 					float newW = orgW + (lastX-orgX);
 					
-					CMN.Log("onTouch::", mWin.getWidth(), newW);
+					CMN.debug("onTouch::", mWin.getWidth(), newW);
 					
 					if(width>0 && newW!=mWin.getWidth()) {
 						float newPercent = newW / width;
-						CMN.Log("newPercent::", newPercent);
+						CMN.debug("newPercent::", newPercent);
 						float minPercent = 0.2f;
 						if(newPercent>1-minPercent) {
 							newPercent = 1-minPercent;
