@@ -278,5 +278,11 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 		dialog.show();
 		dialog.mAlert.wikiBtn.setAlpha(0.3f);
 		ViewUtils.ensureWindowType(dialog, a, null);
+		if (helper.indexChanged) {
+			helper.prepareSearch(false);
+			helper.reloadIndexedBookList();
+			notifyDataSetChanged();
+			helper.indexChanged = false;
+		}
 	}
 }

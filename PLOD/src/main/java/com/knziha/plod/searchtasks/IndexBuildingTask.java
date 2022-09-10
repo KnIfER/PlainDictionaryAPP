@@ -260,6 +260,7 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 		
 		LuceneHelper helper = a.schTools.getLuceneHelper();
 		helper.closeIndexReader();
+		helper.indexChanged = true;
 	}
 	
 	/** -1=text; 0=html; 1=[]; 2=md */

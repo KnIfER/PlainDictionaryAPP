@@ -57,6 +57,7 @@ public class LuceneHelper {
 	int PageSize = 100;
 	
 	public long indexSize;
+	public boolean indexChanged;
 	
 	public LuceneHelper(PDICMainActivity a, SearchToolsMenu schTools) {
 		this.a = a;
@@ -124,7 +125,7 @@ public class LuceneHelper {
 	public void closeIndexReader() {
 		if (reader != null) {
 			try {
-				reader.close();
+				reader.close(); // todo delay
 			} catch (IOException e) {
 				CMN.debug(e);
 			}
@@ -133,6 +134,7 @@ public class LuceneHelper {
 		if (searcher!=null) {
 			searcher = null;
 		}
+		
 	}
 	
 	static class IndexedBook{

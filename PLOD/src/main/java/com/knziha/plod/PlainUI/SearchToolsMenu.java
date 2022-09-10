@@ -432,7 +432,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			helper.rebuildIndexes = 0;
 			helper.indexingTasks = 0;
 			
-			AlertDialog dTmp = new AlertDialog.Builder(a)
+			final AlertDialog dTmp = new AlertDialog.Builder(a)
 					.setTitle("准备索引程序")
 					.setMessage("正在扫描索引…")
 					.setPositiveButton("开始！", null)
@@ -466,8 +466,10 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 								})
 								.show()
 						;
-					} else {
+					}
+					else {
 						startBuildIndexesTask(0);
+						dTmp.dismiss();
 					}
 				} else if (v.getId() == android.R.id.button2) {
 					dTmp.dismiss();
