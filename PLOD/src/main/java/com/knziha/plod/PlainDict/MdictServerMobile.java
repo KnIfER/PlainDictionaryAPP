@@ -62,7 +62,7 @@ public class MdictServerMobile extends MdictServer {
 				a.serverHosts.putAll(pw.jinkeSheaths);
 			}
 		}
-		webResHandler = new PlainWeb(new File(CMN.AssetTag+"plate.web"), _a);
+		webResHandler = new PlainWeb(new File("/ASSET2/plate.web"), _a);
 		webResHandler.jinkeSheaths = a.serverHosts;
 		try {
 			MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, a);

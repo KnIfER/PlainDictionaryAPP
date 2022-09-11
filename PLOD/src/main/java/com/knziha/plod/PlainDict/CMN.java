@@ -15,6 +15,7 @@ import com.knziha.plod.widgets.ViewUtils;
 import org.knziha.metaline.Metaline;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -262,7 +263,7 @@ public class CMN{
 	}
 	
 	public static String getAssetName(String name) {
-		return name;
+		return new File(name).getName();
 	}
 	
 	public static String debug(Object...o) {

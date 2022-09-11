@@ -492,6 +492,9 @@
 		craft(0,'STYLE',document.head).innerText='body{padding:0;margin:0}#WOTD-rss-title{font-size:150%;padding-left:10px;overflow-wrap:anywhere}table{padding:0!important;min-height:95%;border:none!important}div::-webkit-scrollbar{width:7px;}div::-webkit-scrollbar-track-piece{background-color:transparent;}div::-webkit-scrollbar-thumb:vertical{height:12px;background-color:#BDBDBD;-webkit-border-radius:2px;}div::-webkit-scrollbar-thumb:vertical:hover{background-color:#808080;}';
 		df.style='display:flex;flex-wrap:wrap;margin:0;padding:0;width:100%;height:100%;justify-content:space-evenly;padding-bottom:100px;'
 		var list=gc('mw-parser-output',e);
+		if(!list) {
+			app.showT('无法获取文本，请在维基词典-词典设置中启用“访问原页面”！');
+		}
 		for(var d=list.firstChild;d;d=d.nextSibling) {
 			var w;
 			if(d.tagName==='SECTION') {

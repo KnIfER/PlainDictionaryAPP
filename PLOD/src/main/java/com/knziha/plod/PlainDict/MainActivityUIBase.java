@@ -3040,7 +3040,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public HashMap<String, Integer> map() {
-			if (lazyMan.map.size() == 0) {
+			if (lazyMan.map.size() == 0)
+			{
 				for (int i = 0; i < md_size; i++) {
 					String bookName = md_getName(i, -1);
 					lazyMan.map.put(bookName, i);
@@ -8586,7 +8587,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
 			try {
-				SU.Log("getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+				CMN.debug("getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 				if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
 					int sid = uri.lastIndexOf(".");
 					if(sid>0 && sid<uri.length()-2) {
@@ -10948,6 +10949,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void registerWebx(BookPresenter presenter) {
 		PlainWeb webx = presenter.getWebx();
 		webxford.put(SubStringKey.new_hostKey(webx.getHost()), presenter);
+	}
+	public void unregisterWebx(BookPresenter presenter) {
+		PlainWeb webx = presenter.getWebx();
+		webxford.remove(SubStringKey.new_hostKey(webx.getHost()));
 	}
 	
 	public WahahaTextView.ViewRootHolder mViewRootHolder = new WahahaTextView.ViewRootHolder();

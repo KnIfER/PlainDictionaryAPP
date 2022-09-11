@@ -23,6 +23,8 @@
 }
 -assumenosideeffects class com.knziha.plod.plaindict.CMN {
     public static *** debug(...);
+    public static *** rt(...);
+    public static *** pt(...);
 }
 
 -keepclassmembers class androidx.drawerlayout.widget.DrawerLayout {

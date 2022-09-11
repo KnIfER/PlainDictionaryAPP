@@ -809,18 +809,21 @@ function debug(e){console.log(e)};
 		String pathFull = fullPath.getPath();
 		long bid = -1;
 		String name = fullPath.getName();
-		LexicalDBHelper dataBase = THIS!=null?THIS.prepareHistoryCon():LexicalDBHelper.getInstance();
-		if (dataBase!=null) {
-			Long bid_ = bookImplsNameMap.get(name);
-			if (bid_==null) {
-				bid = dataBase.getBookID(fullPath.getPath(), name);
-				//CMN.Log("新标识::", bid, name);
-				if(bid!=-1) bookImplsNameMap.put(name, bid);
-			} else {
-				bid = bid_;
+		//if (THIS!=null && THIS.systemIntialized) // 会变空白…
+		try {
+			LexicalDBHelper dataBase = THIS != null ? THIS.prepareHistoryCon() : LexicalDBHelper.getInstance();
+			if (dataBase != null) {
+				Long bid_ = bookImplsNameMap.get(name);
+				if (bid_ == null) {
+					bid = dataBase.getBookID(fullPath.getPath(), name);
+					//CMN.Log("新标识::", bid, name);
+					if (bid != -1) bookImplsNameMap.put(name, bid);
+				} else {
+					bid = bid_;
+				}
+				bookImpl = bookImplsMap.get(bid);
 			}
-			bookImpl = bookImplsMap.get(bid);
-		}
+		} catch (Exception e) { } // 读取quanxian时可能未获取权限，无法打开数据库。
 		//CMN.Log("getBookImpl", fullPath, bookImpl);
 		if ((pseudoInit&2)==0 && bookImpl==null) {
 			int sufixp = pathFull.lastIndexOf(".");
@@ -2162,7 +2165,7 @@ function debug(e){console.log(e)};
 							|| mWebView.getUrl()==null) {
 						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
-						CMN.Log("htmlCode::", htmlCode, GetSearchKey());
+						CMN.debug("htmlCode::", htmlCode, GetSearchKey());
 						if (htmlCode!=null && (
 								htmlCode.startsWith("http")
 								|| htmlCode.startsWith("file")
@@ -3030,7 +3033,7 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void loadJs(int sid, String name) {
 			WebViewmy wv = findWebview(sid);
-			CMN.Log("loadJs::", name, wv!=null);
+			CMN.debug("loadJs::", name, wv!=null);
 			if (wv!=null) {
 				wv.post(new Runnable() {
 					@Override
@@ -4500,6 +4503,7 @@ function debug(e){console.log(e)};
 	public void setUseMirrors(boolean val) {
 		setUseMirrorsInternal(val);
 		if (getIsWebx()) {
+			a.unregisterWebx(this);
 			getWebx().setMirroredHost(val?-2:-1);
 			a.registerWebx(this);
 		}

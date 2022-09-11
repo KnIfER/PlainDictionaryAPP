@@ -170,6 +170,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private String pageTranslator;
 	private String pageTranslatorOff;
 	private String synthesis;
+	private String randx;
 	/** see {@link #modifyRes} */
 	private String synthesis_cors;
 	/** see {@link #modifyRes} */
@@ -706,6 +707,9 @@ public class PlainWeb extends DictionaryAdapter {
 				case "settings":
 					dopt = JSONUtils.toJSONObject(val);
 					break;
+				case "randx":
+					randx = val.toString();
+					break;
 				case "synthesis":
 					synthesis = val.toString();
 					break;
@@ -1004,10 +1008,14 @@ public class PlainWeb extends DictionaryAdapter {
 		return search!=null?host+search:host;
 	}
 	
-	public String getRandx() {
-		String randx = "";
+	public String getRandx() { //todo opt
+		String randx = this.randx;
 		try {
 			randx = getSyntheticField("randx");
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		try {
 			if (randx.startsWith("<dopt/>")) { // 插入设置
 				String tmp = "<script>window.host='"+host+"'";
 				if (dopt!=null) {
@@ -1022,20 +1030,20 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public String getSyntheticWebPage() throws IOException {
-		if(synthesis!=null) {
-			if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
-				try {
-					String p = f.getPath();
-					// CMN.debug("getSyntheticWebPage asset path::", dopt, p, p.substring(p.indexOf("/", 5)));
-					InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
-					if(input!=null) {
-						JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
-						synthesis = json.getString("synthesis");
-					}
-				} catch (IOException e) {
-					CMN.Log(e);
+		if(synthesis!=null && hasRemoteDebugServer && f.getPath().contains("ASSET")) {
+			try {
+				String p = f.getPath();
+				// CMN.debug("getSyntheticWebPage asset path::", dopt, p, p.substring(p.indexOf("/", 5)));
+				InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
+				if(input!=null) {
+					JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
+					synthesis = json.getString("synthesis");
 				}
+			} catch (IOException e) {
+				CMN.Log(e);
 			}
+		}
+		if(synthesis!=null) {
 			if (synthesis.startsWith("<dopt/>")) { // 插入设置
 				String tmp = "<script>window.host='"+host+"'";
 				if (dopt!=null) {

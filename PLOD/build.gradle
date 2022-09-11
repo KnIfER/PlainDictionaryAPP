@@ -10,7 +10,8 @@ android.applicationVariants.all { variant ->
                 break
             }
         }
-        if (isReleaseMode) {
+        //if (isReleaseMode)
+        {
             android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
             android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
             android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
