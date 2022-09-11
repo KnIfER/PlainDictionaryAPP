@@ -181,7 +181,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 		} else {
 			bHasNext = false;
 		}
-		a.listName(2).setText("搜索引擎"+" ("+result_size+")");
+		a.listName(2).setText(a.adaptermy5.listName = "搜索引擎"+" ("+result_size+")");
 		a.adaptermy5.notifyDataSetChanged();
 	}
 	

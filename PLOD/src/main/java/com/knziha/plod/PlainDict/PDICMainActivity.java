@@ -54,6 +54,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
@@ -3579,6 +3580,25 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			lv.addView(btm);
 			TextView tv = btm.findViewById(R.id.schName);
 			listNames[i] = tv;
+			tv.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					if (i == 2) {
+						ListViewAdapter2 nxtAdapter = mlv2.mAdapter == adaptermy4 ? adaptermy5 : adaptermy4;
+						if (nxtAdapter.results.size() > 0) {
+							ListViewAdapter2 last = (ListViewAdapter2) mlv2.mAdapter;
+							if (last!=null) {
+								last.lastPos = ViewUtils.encodeListPos(mlv2);
+							}
+							mlv2.setAdapter(nxtAdapter);
+							tv.setText(nxtAdapter.listName);
+							if (nxtAdapter.lastPos != 0) {
+								mlv2.setSelectionFromTop((int)(nxtAdapter.lastPos), (int)(nxtAdapter.lastPos>>32));
+							}
+						}
+					}
+				}
+			});
 			tv.setText(i == 0 ? R.string.fuzzyret : R.string.fullret);
 			((LinearLayout.LayoutParams) viewList[i].getChildAt(0).getLayoutParams()).weight = 1;
 		}

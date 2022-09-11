@@ -69,6 +69,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
 
@@ -2072,5 +2073,14 @@ public class ViewUtils {
 		if (idx>0 && str.length()>idx + n) {
 			str.setLength(idx + n);
 		}
+	}
+	
+	public static long encodeListPos(ListView lv) {
+		View child = lv.getChildAt(0);
+		long ret = lv.getFirstVisiblePosition();
+		if (child !=null) {
+			ret |= ((long) child.getTop()) << 32;
+		}
+		return ret;
 	}
 }

@@ -33,6 +33,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 	final PDICMainAppOptions opt;
 	final int id;
 	public int itemId = R.layout.listview_item01;
+	public String listName;
+	public long lastPos;
 	
 	public ListViewAdapter2(MainActivityUIBase a, ViewGroup vg, MenuBuilder allMenus, List<MenuItemImpl> contentMenu, int resId, int id)
 	{

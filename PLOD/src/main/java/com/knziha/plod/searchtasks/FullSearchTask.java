@@ -8,10 +8,12 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.ListViewAdapter2;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -135,14 +137,17 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
 		
-		
-		a.listName(2).setText(a.mResource.getString(R.string.fullret)+" ("+a.adaptermy4.getCount()+")");
+		a.listName(2).setText(a.adaptermy4.listName = a.mResource.getString(R.string.fullret)+" ("+a.adaptermy4.getCount()+")");
 
 		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy4.getCount());
 		
 		System.gc();
+		if (a.mlv2.mAdapter != a.adaptermy4) {
+			((ListViewAdapter2)a.mlv2.mAdapter).lastPos = ViewUtils.encodeListPos(a.mlv2);
+		}
 		a.adaptermy4.ClearVOA();
 		a.adaptermy4.notifyDataSetChanged();
+		a.adaptermy4.lastPos = 0;
 		a.mlv2.setAdapter(a.adaptermy4);
 		a.mlv2.setSelection(0);
 		//准备页内搜索
