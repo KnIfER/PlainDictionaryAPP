@@ -230,7 +230,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 	}
 	
 	@SuppressLint("ResourceType")
-	public void show() {
+	public void show(String text) {
 		if (dialog == null) {
 			// getSchView
 			View view = a.getLayoutInflater().inflate(R.layout.search_view, null);
@@ -252,6 +252,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 			}
 			schLv = lv;
 			etSearch = toolbar.findViewById(R.id.etSearch);
+			etSearch.setText(text);
 			etSearch.setOnEditorActionListener((v, actionId, event) -> {
 				if (actionId== EditorInfo.IME_ACTION_SEARCH||actionId==EditorInfo.IME_ACTION_UNSPECIFIED){
 					performSearch();

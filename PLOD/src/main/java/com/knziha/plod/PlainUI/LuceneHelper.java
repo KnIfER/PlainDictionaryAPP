@@ -232,7 +232,7 @@ public class LuceneHelper {
 			d = new SearchEngine(a, this);
 			indexSchDlg = new WeakReference<>(d);
 		}
-		d.show();
+		d.show(CurrentSearchText);
 	}
 	
 	public static boolean isIndexable(String pathname) {
