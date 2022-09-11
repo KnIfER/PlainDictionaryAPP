@@ -3584,4 +3584,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		return listNames[i];
 	}
+	
+	public void switchSearchEngineLst(boolean schEgn) {
+		if (schEgn) {
+			UIData.viewpager.setCurrentItem(2);
+			mlv2.setAdapter(adaptermy5);
+		} else {
+			mlv2.setAdapter(adaptermy4);
+		}
+	}
 }

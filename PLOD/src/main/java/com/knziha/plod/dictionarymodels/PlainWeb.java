@@ -1115,6 +1115,16 @@ public class PlainWeb extends DictionaryAdapter {
 				}
 			}
 		}
+//		CMN.debug("cacheExtensions::", cacheExtensions, canSaveResource, url);
+//		if(canSaveResource) {
+//			for (int i = 0; i < cacheExtensions.length; i++) {
+//				//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
+//				if (url.contains(cacheExtensions[i])) {
+//					CMN.debug("cacheExtensions!!!", url);
+//					return (WebResourceResponse) getClientResponse(context, url, null, null, null, false);
+//				}
+//			}
+//		}
 		return null;
 	}
 	

@@ -7412,6 +7412,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			view.requestFocusNodeHref(href);
 			String url = href.getData().getString("url");
 			CMN.debug("onCreateWindow::", url);
+			if (url == null) {
+				return false;
+			}
 			BookPresenter presenter = webxford.get(SubStringKey.new_hostKey(url));
 			String urlKey = null;
 			if (presenter == null) {
@@ -7551,7 +7554,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				try {
 					BookPresenter gTrans = new_book(defDicts[which==0?1:3], this);
 					PlainWeb webx = gTrans.getWebx();
-					if(webx.getHasModifiers()) {
+					if(webx.getHasModifiers())
+					{
 						weblistHandler.moders.remove(webx);
 						weblistHandler.moders.add(webx);
 					}
@@ -8109,7 +8113,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			// CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -8177,6 +8181,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						key = url.substring(slashIdx);
 					}
 					else {
+						//CMN.debug("wlh.moders::", wlh.moders);
 						for (PlainWeb book : wlh.moders) { // java.util.ConcurrentModificationException
 							WebResourceResponse resp = book.modifyRes(MainActivityUIBase.this, url, false);
 							if (resp != null) {
@@ -11155,5 +11160,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public TextView listName(int i) {
 		return new TextView(this);
+	}
+	
+	public void switchSearchEngineLst(boolean schEgn) {
 	}
 }

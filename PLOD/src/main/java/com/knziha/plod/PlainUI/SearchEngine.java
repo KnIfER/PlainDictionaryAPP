@@ -53,10 +53,13 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 	}
 	
 	private void performSearch() {
+		//etSearch.setText("trip over");
 		String phrase = String.valueOf(etSearch.getText()).trim();
 		//phrase = "开心";
 		if(phrase.length()>0) helper.CurrentSearchText=phrase;
-		a.showT("search::"+phrase);
+		// a.showT("search::"+phrase);
+		a.switchSearchEngineLst(true);
+		dialog.dismiss();
 		
 		resultRecorderLucene results = null;
 		try {
@@ -69,7 +72,6 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 		if (results != null) {
 			a.adaptermy5.results = results;
 			results.invalidate(a, null);
-			a.mlv2.setAdapter(a.adaptermy5);
 			a.adaptermy5.notifyDataSetChanged();
 		}
 	}

@@ -39,14 +39,20 @@ public class ListViewmy extends ListView {
 			mOnScrollChangeListener.onScrollChange(this, l, t, oldl, oldt);
 	}
 	
+	
+	public ListAdapter mAdapter;
+	
 	@Override
 	public void setAdapter(ListAdapter adapter) {
-		super.setAdapter(adapter);
-		if(adapter instanceof BasicAdapter) {
-			((BasicAdapter)adapter).lava = this;
-		}
-		if(adapter instanceof OnItemClickListener) {
-			setOnItemClickListener((OnItemClickListener) adapter);
+		if (mAdapter != adapter) {
+			super.setAdapter(adapter);
+			mAdapter = adapter;
+			if (adapter instanceof BasicAdapter) {
+				((BasicAdapter) adapter).lava = this;
+			}
+			if (adapter instanceof OnItemClickListener) {
+				setOnItemClickListener((OnItemClickListener) adapter);
+			}
 		}
 	}
 	
