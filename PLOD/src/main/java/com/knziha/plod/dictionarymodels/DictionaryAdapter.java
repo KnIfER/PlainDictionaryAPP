@@ -14,6 +14,7 @@ import com.knziha.rbtree.RBTree_additive;
 import org.jcodings.Encoding;
 import org.joni.Option;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -659,5 +660,10 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	protected int getRegexOption(){
 		return Option.IGNORECASE;
+	}
+	
+	@Override
+	public InputStream getRecordStream(int idx) throws IOException {
+		return new ByteArrayInputStream(getRecordData(idx));
 	}
 }

@@ -40,9 +40,9 @@
 
 <group android:id="@+id/sorting" >
 
-<!--17--><item android:title="随机单词" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
+<!--17--><item android:title="随机单词" android:id="@+id/test" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
 
-<!--18--><item android:title="随机单词（从词典）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
+<!--18--><item android:title="随机单词（从词典）" android:id="@+id/test1" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
 
 <!--19--><item android:title="随机单词（算法）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="always"/>
 </group>

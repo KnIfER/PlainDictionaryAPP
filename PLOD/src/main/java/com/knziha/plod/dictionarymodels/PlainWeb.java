@@ -105,6 +105,7 @@ import okhttp3.Response;
  date:2019.11.28
  author:KnIfER
 */
+@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes", "getSyntheticField"})
 public class PlainWeb extends DictionaryAdapter {
 	/** The main url */
 	String host;
@@ -166,6 +167,8 @@ public class PlainWeb extends DictionaryAdapter {
 	private JSONObject dopt;
 	private int lastMirror;
 	private int premature = 85;
+	private String pageTranslator;
+	private String pageTranslatorOff;
 	private String synthesis;
 	/** see {@link #modifyRes} */
 	private String synthesis_cors;
@@ -720,6 +723,12 @@ public class PlainWeb extends DictionaryAdapter {
 						}
 					}
 					break;
+				case "pageTranslatorOff":
+					pageTranslatorOff = val.toString();
+					break;
+				case "pageTranslator":
+					pageTranslator = val.toString();
+					break;
 			}
 		}
 		if(_host==null) _host=getRandomHost();
@@ -1039,11 +1048,14 @@ public class PlainWeb extends DictionaryAdapter {
 		return "当前模式（合并的多页面视图）暂不支持查看在线内容";
 	}
 	
-	public String getSyntheticField(String field) throws IOException {
+	
+	@StripMethods(stripMethod = true)
+	private String getSyntheticField(String field) throws IOException {
 		return getSyntheticField(field, null);
 	}
 	
-	public String getSyntheticField(String field, String def) throws IOException {
+	@StripMethods(stripMethod = true)
+	private String getSyntheticField(String field, String def) throws IOException {
 		String ret;
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			try {
@@ -1068,7 +1080,6 @@ public class PlainWeb extends DictionaryAdapter {
 		return def;
 	}
 	
-	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 	public WebResourceResponse modifyRes(Context context, String url, boolean merge) {
 		JSONArray mods = null;
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
@@ -1301,7 +1312,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	/** WEB模型直接在此处实现快速搜索（避免重新加载），返回的JS（基于searchJs）亦检验亦效应。 */
-	@StripMethods(strip=!BuildConfig.isDebug, keys={"getSyntheticField"})
+	@StripMethods()
 	@Override
 	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
 		//mWebView.fromNet=true;
@@ -1955,7 +1966,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	/** 接管进入黑暗模式、编辑模式 */
-	@StripMethods(strip=!BuildConfig.isDebug, keys={"getSyntheticField"})
+	@StripMethods()
 	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
 		CMN.debug("chromium", "web  - onPageFini_NWPshed", currentUrl, getDictionaryName());
 		mWebView.removePostFinished();
@@ -2167,5 +2178,16 @@ public class PlainWeb extends DictionaryAdapter {
 				host = sites.getJSONArray(idx).getString(0);
 			}
 		}
+	}
+	
+	public String getPageTranslator(boolean off) {
+		if (hasRemoteDebugServer) {
+			try {
+				return getSyntheticField(off?"pageTranslatorOff":"pageTranslator");
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return off?pageTranslatorOff:pageTranslator;
 	}
 }

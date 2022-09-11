@@ -289,7 +289,7 @@ import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
  * Created by KnIfER on 2018
  */
 @SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
-@StripMethods(strip=!BuildConfig.isDebug, keys={"setMagicNumber", "setWebDebug"})
+@StripMethods(strip=true, keys={"setMagicNumber", "setWebDebug", "getRemoteServerRes", "hasRemoteDebugServer"})
 public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener,
 		OnLongClickListener,
 		OnClickListener,
@@ -1963,7 +1963,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	String testVerifyCode = "{android.app.ActivityThread}.sPackageManager=null;n=$.getPackageName();n=$.getPackageManager().getPackageInfo[,int](n,0x40).signatures[0].hashCode()";
 	
-	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
+	@StripMethods()
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
@@ -1991,7 +1991,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		try {
 			loadManager.EmptyBook = currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 1);
 		} catch (Exception e) {
-			CMN.debug(e);
+			CMN.Log(e);
 		}
 		EmptySchResults = new resultRecorderDiscrete(this);
 		
@@ -7540,14 +7540,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		final int szTranslators = 2;
 		CMN.debug("doTranslation::", mWebView, weblistHandler.bMergingFrames);
 		if(mWebView!=null) {
-			String field;
+			boolean off;
 			if(which==szTranslators) {
-				field = "pageTranslatorOff";
+				off = true;
 				which = mWebView.translating;
 				if(which==-1) which = new Random().nextInt(szTranslators);
 				mWebView.translating = -1;
 			} else {
-				field = "pageTranslator";
+				off = false;
 				mWebView.translating = which;
 			}
 			if(which<=szTranslators) {
@@ -7559,7 +7559,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						weblistHandler.moders.remove(webx);
 						weblistHandler.moders.add(webx);
 					}
-					mWebView.evaluateJavascript(webx.getSyntheticField(field), null);
+					mWebView.evaluateJavascript(webx.getPageTranslator(off), null);
 					if(dialog!=null) dialog.dismiss();
 				} catch (Exception e) { CMN.debug(e); }
 			}

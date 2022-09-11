@@ -146,6 +146,7 @@ import javax.net.ssl.TrustManager;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.debug;
 import static com.knziha.plod.plaindict.MdictServerMobile.*;
 
 public class ViewUtils {
@@ -631,9 +632,10 @@ public class ViewUtils {
 			try {
 				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
 				Objects.requireNonNull(asset);
-				int idx = asset.lookUp(""+BookPresenter.hashCode(path.substring(8), 0));
-				CMN.Log("val::", asset.getRecordAt(idx, null, true), path, asset.getEntryAt(0), asset.getNumberEntries());
-				return asset.getRecordAt(idx, null, true);
+				int idx = asset.lookUp(f.getPath().substring(8, 10), true);
+				if (idx >= 0) {
+					return asset.getRecordAt(idx, null, true);
+				}
 			} catch (IOException e) {
 				errRinfo = CMN.Log(e);
 			}
@@ -661,9 +663,10 @@ public class ViewUtils {
 			try {
 				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
 				Objects.requireNonNull(asset);
-				int idx = asset.lookUp(""+BookPresenter.hashCode(f.getPath().substring(8), 0));
-				CMN.Log("val::", asset.getRecordAt(idx, null, true), f.getPath(), asset.getEntryAt(0), asset.getNumberEntries());
-				return new ByteArrayInputStream(asset.getRecordData(idx));
+				int idx = asset.lookUp(f.getPath().substring(8, 10), true);
+				if (idx >= 0) {
+					return asset.getRecordStream(idx);
+				}
 			} catch (IOException e) {
 				//error = CMN.debug(e);
 			}
@@ -1374,7 +1377,7 @@ public class ViewUtils {
 		}
 	}
 	
-	@StripMethods(strip = !BuildConfig.isDebug)
+	@StripMethods(stripMethod = !BuildConfig.isDebug)
 	public static void setWebDebug(Toastable_Activity a) {
 		WebView.setWebContentsDebuggingEnabled(true);
 		a.showT("调试网页！");

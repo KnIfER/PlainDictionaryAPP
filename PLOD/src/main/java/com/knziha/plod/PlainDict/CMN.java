@@ -144,7 +144,7 @@ public class CMN{
 		if(SU.UniversalObject instanceof Exception){
 			System.out.println(message);
 		} else {
-			android.util.Log.d("fatal poison",message);
+			android.util.Log.i("fatal poison",message);
 		}
 		sep = " ";
 		return message;

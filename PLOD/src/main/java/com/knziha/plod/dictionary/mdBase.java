@@ -61,6 +61,7 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterOutputStream;
 
 import static com.knziha.plod.dictionary.Utils.BU.calcChecksum;
+import static com.knziha.plod.dictionary.mdict.textTailed;
 
 public abstract class mdBase {
 	//TODO Standardize
@@ -82,6 +83,7 @@ public abstract class mdBase {
 	public final static Pattern videoReg = Pattern.compile("\\.mp4|\\.avi$", Pattern.CASE_INSENSITIVE);
 
 	public static String lineBreakText="\r\n\0";
+	byte[] textLineBreak;
 	public byte[] linkRenderByt;
 	protected StringBuilder univeral_buffer;
 	protected File f;
@@ -1171,7 +1173,7 @@ public abstract class mdBase {
 //			if(BlockOff+key_start_index+_number_width+entryNumExt>BlockLen+_number_width)
 //				throw new RuntimeException("大笨蛋！"+(BlockOff+key_start_index+_number_width+entryNumExt)+", "+BlockLen);
 			
-			infoI_cache.raw_keys_splits[keyCounter]=BlockLen+infoI_cache._number_width;
+			infoI_cache.raw_keys_splits[keyCounter]=BlockLen+_number_width+entryNumExt;
 			
 			//long end2=System.currentTimeMillis(); //获取开始时间
 			//System.out.println("解压耗时："+(end2-start2));
@@ -1351,5 +1353,23 @@ public abstract class mdBase {
 
 	public static String processText(@NonNull CharSequence input) {
 		return replaceReg.matcher(input).replaceAll(emptyStr).toLowerCase();
+	}
+	
+	public InputStream getRecordStream(int position) throws IOException {
+		RecordLogicLayer va1=new RecordLogicLayer();
+		getRecordData(position, va1);
+		byte[] data = va1.data;
+		int record_start=va1.ral;
+		int record_end=va1.val;
+		
+		int recordLen = record_end-record_start;
+		if(recordLen+record_start>data.length)
+			recordLen = data.length-record_start;
+		
+		if(textLineBreak!=null && record_end>=record_start+textLineBreak.length
+				&& textTailed(data, record_end-textLineBreak.length, textLineBreak))
+			recordLen-=textLineBreak.length;
+		
+		return new ByteArrayInputStream(data, record_start, recordLen);
 	}
 }

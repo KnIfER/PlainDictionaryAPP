@@ -47,12 +47,12 @@ public class BookManagerWebsites extends BookManagerFolderAbs {
 		data.insert(new mFile("翻译/彩云小译", new WebAssetDesc("/ASSET2/彩云小译.web", "通用翻译", "https://fanyi.caiyunapp.com/#/")));
 		
 		data.insert(new mFile("英语词汇", true));
-		data.insert(new mFile("英语词汇/Vocabulary", new WebAssetDesc("/ASSET/Vocabulary.web", "词汇", "一个词汇查询网站。（vocabulary.com）")));
-		data.insert(new mFile("英语词汇/Etymology online", new WebAssetDesc("/ASSET/Etymology online.web", "词根", "提供英语词源查询服务（etymonline.com）")));
-		data.insert(new mFile("英语词汇/WantWords 反向词典", new WebAssetDesc("/ASSET/WantWords 反向词典.web", "近义词", "开源的反向词典系统。（wantwords.thunlp.org）")));
+		data.insert(new mFile("英语词汇/Vocabulary", new WebAssetDesc("/ASSET2/Vocabulary.web", "词汇", "一个词汇查询网站。（vocabulary.com）")));
+		data.insert(new mFile("英语词汇/Etymology online", new WebAssetDesc("/ASSET2/Etymology online.web", "词根", "提供英语词源查询服务（etymonline.com）")));
+		data.insert(new mFile("英语词汇/WantWords 反向词典", new WebAssetDesc("/ASSET2/WantWords 反向词典.web", "近义词", "开源的反向词典系统。（wantwords.thunlp.org）")));
 		
 		data.insert(new mFile("wiki", true));
-		data.insert(new mFile("wiki/维基词典", new WebAssetDesc("/ASSET/维基词典.web", "", "")));
+		data.insert(new mFile("wiki/维基词典", new WebAssetDesc("/ASSET2/维基词典.web", "", "")));
 		
 		
 		data.insert(new mFile("其他", true));

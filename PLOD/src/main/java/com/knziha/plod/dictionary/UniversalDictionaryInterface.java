@@ -85,5 +85,7 @@ public interface UniversalDictionaryInterface {
 	}
 	
 	void doForAllRecords(Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher, DoForAllRecords dor, Object parm) throws IOException;
-
+	
+	InputStream getRecordStream(int idx) throws IOException;
+	
 }
