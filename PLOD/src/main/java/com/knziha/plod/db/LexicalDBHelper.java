@@ -810,7 +810,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				keyName.setLength(len);
 				IU.NumberToText_SIXTWO_LE(cc, keyName);
 			}
-			CMN.debug("keyName::", keyName);
+			// CMN.debug("keyName::", keyName);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

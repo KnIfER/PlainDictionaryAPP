@@ -2463,13 +2463,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=10, flagSize=2, shift=1, max=2) public static int listPreviewFont() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=10, flagSize=2, shift=1, max=2) public static void listPreviewFont(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	/** 新旧列表使用同一套配置 */
-	@Metaline(flagPos=12) public static boolean listPreviewSet01Same() { SevenFlag=SevenFlag; throw new RuntimeException();}
-	@Metaline(flagPos=12) public static void listPreviewSet01Same(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, shift=1) public static boolean listPreviewSet01Same() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, shift=1) public static void listPreviewSet01Same(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	// 新搜索列表的预览设置
 	/** 是否启在列表中预览词条释义 */
-	@Metaline(flagPos=13) public static boolean listPreviewEnabled1() { SevenFlag=SevenFlag; throw new RuntimeException();}
-	@Metaline(flagPos=13) public static void listPreviewEnabled1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13, shift=1) public static boolean listPreviewEnabled1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13, shift=1) public static void listPreviewEnabled1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	/** 是否从原词典获取释义 */
 	@Metaline(flagPos=14) public static boolean listPreviewOriginal1() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=14) public static void listPreviewOriginal1(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}

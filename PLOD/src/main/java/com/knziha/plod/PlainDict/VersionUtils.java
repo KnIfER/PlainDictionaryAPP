@@ -25,7 +25,7 @@ public class VersionUtils {
 		}
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
-			CMN.Log("初始化版本!!!");
+			CMN.debug("初始化版本!!!");
 			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
 			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
 			PDICMainAppOptions.uncheckVersionBefore_5_0(true);
