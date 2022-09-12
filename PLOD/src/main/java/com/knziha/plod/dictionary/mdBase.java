@@ -946,7 +946,11 @@ public abstract class mdBase {
 		byte[] data = va1.data;
 		int record_start=va1.ral;
 		int record_end=va1.val;
-
+		
+		if(textLineBreak!=null && record_end>=record_start+textLineBreak.length
+				&& textTailed(data, record_end-textLineBreak.length, textLineBreak))
+			record_end-=textLineBreak.length;
+		
 		byte[] record = new byte[(record_end-record_start)];
 		int recordLen = record.length;
 		if(recordLen+record_start>data.length)

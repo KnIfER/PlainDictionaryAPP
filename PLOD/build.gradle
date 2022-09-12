@@ -1,23 +1,27 @@
 apply plugin: 'com.android.application'
 
 
-android.applicationVariants.all { variant ->
-    variant.mergeResources.doFirst {
-        def isReleaseMode = false
-        for(String s : gradle.startParameter.taskNames) {
-            if(s.contains("Release")) {
-                isReleaseMode=true
-                break
-            }
-        }
-        //if (isReleaseMode)
-        {
-            android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
-            android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
-            android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
-        }
-    }
-}
+//android.applicationVariants.all { variant ->
+//    variant.mergeResources.doFirst {
+//        def isReleaseMode = false
+//        for(String s : gradle.startParameter.taskNames) {
+//            if(s.contains("Release")) {
+//                isReleaseMode=true
+//                break
+//            }
+//        }
+//        if (isReleaseMode)
+//        {
+//            android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
+//            android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
+//            android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
+//        }
+//    }
+//}
+
+android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
+android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
+android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
 
 android {
 //    tasks.whenTaskAdded { task ->

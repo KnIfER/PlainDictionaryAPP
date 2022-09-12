@@ -644,37 +644,6 @@ public class ViewUtils {
 		return BU.fileToString(f);
 	}
 	
-	public static InputStream fileToStream(Context context, File f) {
-		if (f.getPath().startsWith("/ASSET")) {
-			//String error;
-			boolean b1=f.getPath().startsWith("/", 6);
-			if(!b1&&hasRemoteDebugServer) {
-				InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
-				if(input!=null) {
-					return input;
-				}
-			}
-			if(GlobalOptions.debug || b1)
-				try {
-					return context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
-				} catch (IOException e) {
-					//error = CMN.debug(e);
-				}
-			try {
-				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
-				Objects.requireNonNull(asset);
-				int idx = asset.lookUp(f.getPath().substring(8, 10), true);
-				if (idx >= 0) {
-					return asset.getRecordStream(idx);
-				}
-			} catch (IOException e) {
-				//error = CMN.debug(e);
-			}
-			return null;//new ByteArrayInputStream(errRinfo.getBytes());
-		}
-		return BU.fileToStream(f);
-	}
-	
 	// todo 缓存
 	public static WebResourceResponse KikLetToVar(String url, String accept, String refer, String origin,
 												  WebResourceRequest request, PlainWeb webx) throws Exception {
@@ -835,21 +804,6 @@ public class ViewUtils {
 				//NavigationIcon.requestLayout();
 			}
 		}
-	}
-	
-	public final static void KitPatch(MainActivityUIBase a, WebViewmy mWebView) {
-		try {
-			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET/MdbR/KitPatch.js")), null);
-		} catch (Exception e) {
-			CMN.Log(e);
-		}
-	}
-	
-	public final static void TapSch(MainActivityUIBase a, WebViewmy mWebView) {
-		//CMN.debug("onPageFinished::popuping...加载");
-		try {
-			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET2/" + "tapSch.js")), null);
-		} catch (Exception e) { CMN.Log(e);}
 	}
 	
 	/**

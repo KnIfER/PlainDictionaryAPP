@@ -173,6 +173,7 @@ import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
+import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.mdict;
@@ -281,6 +282,8 @@ import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
+import static com.knziha.plod.plaindict.MdictServer.hasRemoteDebugServer;
+import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
@@ -1243,7 +1246,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		//ViewUtils.setWebDebug(this);
+		ViewUtils.setWebDebug(this);
+		WebView.setWebContentsDebuggingEnabled(true);
 		if (BuildConfig.isDebug) {
 			CMN.debug("android.os.Build.MODEL", android.os.Build.MODEL);
 			CMN.debug("mid", CMN.mid, getClass());
@@ -7485,7 +7489,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if (newProgress>=90) {
 				if(ViewUtils.littleCat) {
-					ViewUtils.KitPatch(MainActivityUIBase.this, mWebView);
+					mWebView.evaluateJavascript(fileToString("/ASSET/MdbR/KitPatch.js"), null);
 				}
 			}
 		}
@@ -7779,7 +7783,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				invoker.ApplySearchKey(mWebView);
 			
 			if (wlh.tapSch && !invoker.getImageOnly())
-				ViewUtils.TapSch(MainActivityUIBase.this, mWebView);
+				mWebView.evaluateJavascript(getCommonAsset("tapSch.js"), null);
 			
 			if(PDICMainAppOptions.toolsBoost())
 				ViewUtils.toolsBoost(mWebView);
@@ -8159,7 +8163,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							try { // 内置资源
 								if (slashIdx == schemaIdx + 7) {
 									/** see{@link PlainWeb#loadJs} */
-									key = "MdbR" + url.substring(schemaIdx + 7);
+									key = url.substring(schemaIdx + 8);
 								} else {
 									key=url.substring(slashIdx+1);
 								}
@@ -9973,6 +9977,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);
 	private static final ConcurrentHashMap<String, String> CommonAssetsStr = new ConcurrentHashMap<>(10);
+	private mdict  pkgWebx, pkgMdbR;
 	static {
 		//CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
 		//CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
@@ -9981,46 +9986,159 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CommonAssetsStr.put("tapSch.js", BookPresenter.tapTranslateLoader);
 	}
 	
-	public InputStream loadCommonAsset(String key) throws IOException {
-		if(MdictServerMobile.hasRemoteDebugServer) {
+	public String fileToString(String path) {
+		if (/*!b1&&*/hasRemoteDebugServer && path.startsWith("/ASSET")) {
+			boolean b1 = path.startsWith("/", 6);
 			try {
-				InputStream input = ViewUtils.fileToStream(this, new File("/ASSET2/" + key));
-				if(input!=null) return input;
+				InputStream input = getRemoteServerRes(path.substring(AssetTag.length() + (b1 ? -1 : 0)), false);
+				if (input != null) {
+					ReusableByteOutputStream bout = new ReusableByteOutputStream(input.available());
+					byte[] buffer = new byte[4096];
+					int read;
+					while ((read = input.read(buffer)) > 0) {
+						bout.write(buffer, 0, read);
+					}
+					return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
+				}
 			} catch (Exception e) {
-				//CMN.debug(e);
+				CMN.debug(e);
 			}
 		}
+		if (path.startsWith("/ASSET")) {
+			String errRinfo = null;
+			boolean b1 = path.startsWith("/", 6);
+			if (GlobalOptions.debug || b1)
+				try {
+					InputStream fin = mResource.getAssets().open(path.substring(AssetTag.length() + (!b1 ? 1 : 0)));
+					ReusableByteOutputStream bout = new ReusableByteOutputStream(fin.available());
+					byte[] buffer = new byte[4096];
+					int read;
+					while ((read = fin.read(buffer)) > 0) {
+						bout.write(buffer, 0, read);
+					}
+					return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
+				} catch (IOException e) {
+					errRinfo = CMN.Log(e);
+				}
+			try {
+				if (pkgWebx == null) {
+					pkgWebx = (mdict) BookPresenter.getBookImpl(this, new File(AssetTag + "webx"), 0);
+					Objects.requireNonNull(pkgWebx);
+				}
+				mdict asset = pkgWebx;
+				int idx = asset.lookUp(path.substring(8, 10), true);
+				if (idx >= 0) {
+					return asset.getRecordAt(idx, null, true);
+				}
+			} catch (Exception e) {
+				errRinfo = CMN.Log(e);
+			}
+			return errRinfo;
+		} else {
+			return com.knziha.plod.dictionary.Utils.BU.fileToString(new File(path));
+		}
+	}
+	
+	public InputStream fileToStream(File f) {
+		String path = f.getPath();
+		boolean b1 = path.startsWith("/", 6);
+		if (!b1 && hasRemoteDebugServer) {
+			InputStream input = getRemoteServerRes(path.substring(AssetTag.length()), false);
+			if (input != null) {
+				return input;
+			}
+		}
+		if (path.startsWith("/ASSET")) {
+			//String error;
+			if (GlobalOptions.debug || b1)
+				try {
+					return mResource.getAssets().open(path.substring(AssetTag.length() + (!b1 ? 1 : 0)));
+				} catch (Exception e) {
+					//CMN.Log(0, f, e);
+					//error = CMN.debug(e);
+				}
+			try {
+				if (pkgWebx == null) {
+					pkgWebx = (mdict) BookPresenter.getBookImpl(this, new File(AssetTag + "webx"), 0);
+					Objects.requireNonNull(pkgWebx);
+				}
+				mdict asset = pkgWebx;
+				final String key = path.substring(8, 10);
+				int idx = asset.lookUp(key, true);
+				if (idx >= 0) {
+					return asset.getRecordStream(idx);
+				}
+			} catch (Exception e) {
+				//CMN.Log(f, e);
+				//error = CMN.debug(e);
+			}
+			return null;//new ByteArrayInputStream(errRinfo.getBytes());
+		} else {
+			return com.knziha.plod.dictionary.Utils.BU.fileToStream(f);
+		}
+	}
+	
+	public InputStream loadCommonAsset(String key) throws IOException {
+//		try {
+//			InputStream input = ViewUtils.fileToStream(this, new File(key));
+//			CMN.Log("loadCommonAsset::", key, input!=null);
+//			if(input!=null) return input;
+//		} catch (Exception e) {
+//			//CMN.debug(e);
+//		}
+		//CMN.Log("loadCommonAsset::", key);
 		byte[] data = CommonAssets.get(key);
 		if(data==null){
-			InputStream input = getResources().getAssets().open(key);
-			data = new byte[input.available()];
-			input.read(data);
+			try {
+				if (pkgMdbR == null) {
+					pkgMdbR = (mdict) BookPresenter.getBookImpl(this, new File(AssetTag + "MdbR.mdd"), 0);
+					Objects.requireNonNull(pkgMdbR);
+				}
+				mdict asset = pkgMdbR;
+				int idx = asset.lookUp("\\MdbR\\" + key, true);
+				//CMN.Log("lookUp::", asset, key, idx);
+				if (idx >= 0) {
+					data = asset.getRecordData(idx);
+				}
+			} catch (Exception e) {
+				//CMN.Log(key, e);
+				//error = CMN.debug(e);
+			}
+//			InputStream input = getResources().getAssets().open(key);
+//			data = new byte[input.available()];
+//			input.read(data);
 			CommonAssets.put(key, data);
 		}
-		//CMN.Log(new String(data), data.length);
 		return new ByteArrayInputStream(data);
 	}
 	
 	public String getCommonAsset(String key) {
-		String ret=CommonAssetsStr.get(key);
+		//CMN.Log("getCommonAsset::", key);
+		String ret = CommonAssetsStr.get(key);
 		if (ret==null) {
 			byte[] data = CommonAssets.get(key);
 			if(data==null){
 				try {
-					InputStream input = getResources().getAssets().open(key);
-					data = new byte[input.available()];
-					input.read(data);
-				} catch (IOException e) { }
-				if (data!=null) {
-					CommonAssets.put(key, data);
-				}
+					if (pkgMdbR == null) {
+						pkgMdbR = (mdict) BookPresenter.getBookImpl(this, new File(AssetTag + "MdbR.mdd"), 0);
+						Objects.requireNonNull(pkgMdbR);
+					}
+					mdict asset = pkgMdbR;
+					int idx = asset.lookUp("\\MdbR\\"+key, true);
+					//CMN.Log("lookUp::", asset, key, idx);
+					if (idx >= 0) {
+						data = asset.getRecordData(idx);
+					}
+				} catch (Exception e) { CMN.debug(e); }
 			}
-			if (data!=null) {
+			if (data != null) {
 				CommonAssetsStr.put(key, ret = new String(data));
+			} else {
+				//ret = ViewUtils.fileToString(this, new File(key));
 			}
 		}
 		if (ret==null) {
-			CMN.debug("空的::", key);
+			CMN.Log("空的::", key);
 		}
 		return ret==null?"":ret;
 	}

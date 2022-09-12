@@ -219,7 +219,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		CMN.debug("onConfigurationChanged",mConfiguration==newConfig, dm==getResources().getDisplayMetrics(), !isLocalesEqual(mConfiguration, newConfig));
-		if(!systemIntialized) return;
+		if(!systemIntialized) {
+			super.onConfigurationChanged(newConfig);
+			return;
+		}
 		if(!isLocalesEqual(mConfiguration, newConfig) && "".equals(opt.getLocale())){
 			recreate();
 			super.onConfigurationChanged(newConfig);
@@ -2213,7 +2216,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(false){
 				new File(opt.pathToMainFolder().toString()).setLastModified(System.currentTimeMillis());
 			}
-			FilePickerDialog.clearMemory(getBaseContext());
+			try {
+				FilePickerDialog.clearMemory(getBaseContext());
+			} catch (Exception e) {
+				CMN.debug(e); // todo fix IllegalStateException: Cannot recycle a resource that has already been recycled
+			}
 			drawerFragment.onDestroy();
 			if(server!=null) {
 				server.stop(this);

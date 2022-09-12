@@ -557,8 +557,8 @@ public class PlainWeb extends DictionaryAdapter {
 		return value==null?defValue:value;
 	}
 	
-	private void parseJsonFile(Context context) throws IOException {
-		website = JSONObject.parseObject(ViewUtils.fileToString(context, f));
+	private void parseJsonFile(MainActivityUIBase a) throws IOException {
+		website = JSONObject.parseObject(a != null?a.fileToString(f.getPath()):BU.fileToString(f));
 		String _host = null, tmp;
 		Map.Entry<String, Object> node; Object val;
 		for(Iterator<Map.Entry<String, Object>> iter = website.entrySet().iterator(); iter.hasNext();) {
@@ -1088,7 +1088,7 @@ public class PlainWeb extends DictionaryAdapter {
 		return def;
 	}
 	
-	public WebResourceResponse modifyRes(Context context, String url, boolean merge) {
+	public WebResourceResponse modifyRes(MainActivityUIBase a, String url, boolean merge) {
 		JSONArray mods = null;
 		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			String p = f.getPath();
@@ -1115,10 +1115,13 @@ public class PlainWeb extends DictionaryAdapter {
 						if(url.contains("?"))  url = url.substring(0, url.indexOf("?"));
 						File file = new File(f.getParent(), new File(url).getName());
 						//CMN.Log("modifyRes::???:::", file.getName());
-						InputStream ret = ViewUtils.fileToStream(context, file);
+						InputStream ret = a.fileToStream(file);
 						//CMN.Log("modifyRes::", file.getPath());
-						WebResourceResponse resp=new WebResourceResponse("*/*", "utf8", ret);
-						return resp;
+						String meimei = "*/*";
+						if (url.contains("js")) {
+							meimei = "text/js";
+						}
+						return new WebResourceResponse(meimei, "utf8", ret);
 					} catch (Exception e) {
 						CMN.debug(url,"\n",e);
 						return null;
@@ -1895,7 +1898,7 @@ public class PlainWeb extends DictionaryAdapter {
 	@Override
 	public void Reload(Object context) {
 		try {
-			parseJsonFile(context instanceof Context?(Context)context:this.context);
+			parseJsonFile(context instanceof MainActivityUIBase?(MainActivityUIBase)context:null);
 			CMN.debug("Reload::entrance::", entrance);
 		} catch (Exception e) {
 			CMN.debug(e);

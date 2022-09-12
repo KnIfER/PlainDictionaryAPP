@@ -577,7 +577,7 @@ public class Drawer extends Fragment implements
 							TextView tv = d.findViewById(android.R.id.message);
 							a.opt.setAsLinkedTextView(tv, false);
 							tv.setTextSize(GlobalOptions.isLarge?20:19);
-							markwon.setMarkdown(tv, ViewUtils.fileToString(a, new File(CMN.AssetTag, "rizhi")));
+							markwon.setMarkdown(tv, a.fileToString(CMN.AssetTag+"rizhi.md"));
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
 					startss = ssb.toString().indexOf("[",endss);

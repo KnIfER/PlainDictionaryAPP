@@ -393,7 +393,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		TextView tv = d.findViewById(android.R.id.message);
 		opt.setAsLinkedTextView(tv, false);
 		tv.setTextSize(GlobalOptions.isLarge?20:15);
-		markwon.setMarkdown(tv, ViewUtils.fileToString(context, new File(CMN.AssetTag, "quanxian")));
+		markwon.setMarkdown(tv, ViewUtils.fileToString(context, new File(CMN.AssetTag, "quanxian.md")));
 	}
 	
 	protected void EnterTrialMode() {
