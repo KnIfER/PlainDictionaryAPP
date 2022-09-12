@@ -2116,7 +2116,7 @@ function debug(e){console.log(e)};
 	
 	public boolean getNeedsAutoFolding(int frameAt) {
 		return PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || getAutoFold()
-						|| PDICMainAppOptions.getOnlyExpandTopPage() && frameAt+1>=opt.getExpandTopPageNum()    ;
+						|| PDICMainAppOptions.getOnlyExpandTopPage() && frameAt>=opt.getExpandTopPageNum()    ;
 	}
 	
 	public StringBuilder AcquirePageBuilder() {

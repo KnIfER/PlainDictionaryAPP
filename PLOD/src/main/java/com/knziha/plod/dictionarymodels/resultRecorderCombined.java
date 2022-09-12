@@ -11,6 +11,7 @@ import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -386,13 +387,12 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 		}
 		else {
-//			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
-//				//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
-//				expTbView = weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
-//			}
-//			if (expTbView != null) {
-//				expTbView.performClick();
-//			}
+			if(bNeedExpand && expTbView==null && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
+				expTbView = weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
+			}
+			if (expTbView != null) {
+				expTbView.performClick();
+			}
 			if(bUseDictView) {
 				weblistHandler.jointResult=jointResult;
 			}
