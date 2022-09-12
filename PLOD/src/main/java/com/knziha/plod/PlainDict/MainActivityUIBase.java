@@ -7616,7 +7616,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if(wlh.isViewSingle())
 				invoker.ApplyPadding(mWebView);
-			if (mWebView.translating>=0) {
+			if (false && mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
 			}
 			if(delayedAttaching && mWebView.presenter==currentDictionary) { // todo same replace (mWebView.SelfIdx==adapter_idx, ->)
