@@ -511,7 +511,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					, makeInt(7, 5, false) // listPreviewEnabled
 					, makeInt(7, 8, false) // listOverreadMode
 					, makeInt(7, 9, false) // listPreviewSelectable
-					, makeInt(7, 12, false) // listPreviewSet01Same
+					, makeInt(7, 12, true) // listPreviewSet01Same
 			}, new int[]{Integer.MAX_VALUE
 					, makeInt(7, 13, false) // listPreviewEnabled1
 					, makeInt(7, 14, false) // listPreviewOriginal1
