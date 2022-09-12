@@ -1481,7 +1481,7 @@ function debug(e){console.log(e)};
 			WebViewmy.HitTestResult result = _mWebView.getHitTestResult();
 			if (null == result) return false;
 			int type = result.getType();
-			CMN.Log("getHitTestResult", type, result.getExtra());
+			//CMN.Log("getHitTestResult", type, result.getExtra());
 			switch (type) {
 				/* 长按下载图片 */
 				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:

@@ -7468,7 +7468,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public void onProgressChanged(final WebView view, int newProgress) {
-			CMN.debug("ProgressChanged", newProgress);
+			//CMN.debug("ProgressChanged", newProgress);
 			WebViewmy mWebView = (WebViewmy) view;
 			if (mWebView.bPageStarted) {
 				//todo undo changes made to webview by web dictionaries.
@@ -8014,8 +8014,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						else {
 							/* 查询跳转目标 */
-							int idx = invoker.bookImpl.lookUp(url, true);
-							CMN.debug("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), (URLDecoder.decode(url,"UTF-8")));
+							int idx = invoker.bookImpl.lookUp("SMOKING", true);
+							CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
 								if(pop) { // 新窗口打开词条跳转
 									wlh = getRandomPageHandler(true, true, null);

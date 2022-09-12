@@ -358,12 +358,26 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
-			//show("reducearound:"+(start + len - 1)+"@"+len+": "+new String(_key_block_info_list[start + len - 1].tailerKeyText));
-			//show(start+"::"+end+"   "+new String(_key_block_info_list[start].tailerKeyText,_charset)+"::"+new String(_key_block_info_list[end==_key_block_info_list.length?end-1:end].tailerKeyText,_charset));
+			//SU.Log("reducearound:"+(start + len - 1)+"@"+len+": "+new String(_key_block_info_list[start + len - 1].tailerKeyText));
+			//SU.Log(start+"::"+end+"   "+new String(_key_block_info_list[start].tailerKeyText,_charset)+"::"+new String(_key_block_info_list[end==_key_block_info_list.length?end-1:end].tailerKeyText,_charset));
 			String zhujio = new String(_key_block_info_list[start + len - 1].tailerKeyText,_charset);
 			return phrase.compareToIgnoreCase(/*isCompact*/false?zhujio:processMyText(zhujio))>0
 					? reduce_index(phrase,start+len,end)
 					: reduce_index(phrase,start,start+len);
+		} else {
+			return start;
+		}
+	}
+	public int reduce_index_with_keycase(String phrase,int start,int end) {//via mdict-js
+		int len = end-start;
+		if (len > 1) {
+			len = len >> 1;
+			SU.Log("reducearound:"+(start + len - 1)+"@"+len+": "+new String(_key_block_info_list[start + len - 1].tailerKeyText));
+			SU.Log(start+"::"+end+"   "+new String(_key_block_info_list[start].tailerKeyText,_charset)+"::"+new String(_key_block_info_list[end==_key_block_info_list.length?end-1:end].tailerKeyText,_charset));
+			String zhujio = new String(_key_block_info_list[start + len - 1].tailerKeyText,_charset);
+			return phrase.compareTo(/*isCompact*/false?zhujio:processMyText(zhujio))>0
+					? reduce_index_with_keycase(phrase,start+len,end)
+					: reduce_index_with_keycase(phrase,start,start+len);
 		} else {
 			return start;
 		}
@@ -418,14 +432,16 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 			if(boudaryCheck==0) return 0;
 		}
-		if(blockId==-1)
-			blockId = isGBoldCodec?reduce_index2(keyword.getBytes(_charset),0,_key_block_info_list.length):reduce_index(keyword,0,_key_block_info_list.length);
+		if(blockId==-1) {
+			if(isGBoldCodec) blockId = reduce_index2(keyword.getBytes(_charset),0,_key_block_info_list.length);
+			else if(isKeyCaseSensitive) blockId = reduce_index_with_keycase(keyword,0,_key_block_info_list.length);
+			else blockId = reduce_index(keyword,0,_key_block_info_list.length);
+		}
 		if(blockId==-1) return blockId;
 
 		//SU.Log("blockId:",blockId, new String(_key_block_info_list[blockId].headerKeyText,_charset), new String(_key_block_info_list[blockId].tailerKeyText,_charset));
 		//while(blockId!=0 &&  compareByteArray(_key_block_info_list[blockId-1].tailerKeyText,kAB)>=0) blockId--;
 		//SU.Log("finally blockId is:"+blockId+":"+_key_block_info_list.length);
-
 
 		key_info_struct infoI = _key_block_info_list[blockId];
 
@@ -448,7 +464,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			res = reduce_keys(infoI_cache,keyword,0,infoI_cache.key_offsets.length);
 
 		if (res==-1){
-			System.out.println("search failed!"+keyword);
+			SU.Log("search failed!"+keyword);
 			return -1;
 		}
 		//SU.Log(keyword, res, getEntryAt((int) (res+infoI.num_entries_accumulator)));
@@ -485,7 +501,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 			
 			if(isSrict) {
-				//SU.Log(keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
+				SU.Log(keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
 		}
@@ -538,8 +554,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			  }
 		  }*/
 
-			//show("->"+new String(keys[start + len - 1],_charset)+" ="+val.compareTo(processMyText(new String(keys[start + len - 1],_charset))));
-			//show(start+"::"+end+"   "+new String(keys[start],_charset)+"::"+new String(keys[end==keys.length?end-1:end],_charset));
+			//SU.Log(val+"->"+keys.getString(start + len - 1)+" ="+val.compareTo(processMyText(keys.getString(start + len - 1))));
+			//SU.Log(start+"::"+end+"   "+keys.getString(start)+"::"+keys.getString(end==keys.key_offsets.length?end-1:end));
 
 
 			return val.compareTo(processMyText(keys.getString(start + len - 1)))>0
@@ -2625,8 +2641,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 		}
 		if(_key_block_info_list==null) read_key_block_info(null);
-		int blockId = _encoding.startsWith("GB")?reduce_index2(kAB,0,_key_block_info_list.length):reduce_index(keyword,0,_key_block_info_list.length);
-
+		int blockId;
+		if(_encoding.startsWith("GB")) blockId = reduce_index2(kAB,0,_key_block_info_list.length);
+		else if(isKeyCaseSensitive) blockId = reduce_index_with_keycase(keyword,0,_key_block_info_list.length);
+		else blockId = reduce_index(keyword,0,_key_block_info_list.length);
+		
 		if(blockId==-1) return 0;
 		//show(_Dictionary_fName+_key_block_info_list[blockId].tailerKeyText+"1~"+_key_block_info_list[blockId].headerKeyText);
 		//while(blockId!=0 &&  compareByteArray(_key_block_info_list[blockId-1].tailerKeyText,kAB)>=0)
