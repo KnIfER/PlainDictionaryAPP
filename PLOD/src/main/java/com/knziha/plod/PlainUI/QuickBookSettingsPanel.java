@@ -298,7 +298,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				}
 			}
 			if (v!=null && _lstPrv !=null && v.getParent()==_lstPrv.linearLayout) {
-				if (storageInt==makeInt(7, 12, false)) {
+				if (storageInt==makeInt(7, 12, true)) {
 					initListPanel();
 				}
 				lstPreviewChanged = true;
@@ -505,8 +505,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	private SettingsPanel initListPanel() {
 		if (_lstPrv ==null) {
 			final SettingsPanel lstSettings = new SettingsPanel(a, opt
-					, new String[][]{new String[]{"<font color='#3185F7'><u>旧列表设置</u></font>：", "在列表中预览词条释义", "通读模式", "使列表文本可选", "新旧列表使用同一套配置"}
-			, new String[]{"<font color='#3185F7'><u>新列表设置（搜索引擎）</u></font>：", "预览词条释义", "从原词典获取预览", "通读模式", "使列表文本可选"}}
+					, new String[][]{new String[]{"<font color='#3185F7'>旧列表设置</font>：", "在列表中预览词条释义", "通读模式", "使列表文本可选", "新旧列表使用同一套配置"}
+			, new String[]{"<font color='#3185F7'>新列表设置（搜索引擎）</font>：", "预览词条释义", "从原词典获取预览", "通读模式", "使列表文本可选"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeInt(7, 5, false) // listPreviewEnabled
 					, makeInt(7, 8, false) // listOverreadMode
