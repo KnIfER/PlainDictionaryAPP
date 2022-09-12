@@ -527,7 +527,7 @@ public abstract class MdictServer extends NanoHTTPD {
 						}
 						SU.Log("文件", uri);
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-						if(mid>=0) {
+						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							InputStream input = presenter.getDebuggingResource(uri);
 							if(input!=null) {
 								String MIME = mid==0?"application/x-javascript"
@@ -603,10 +603,14 @@ public abstract class MdictServer extends NanoHTTPD {
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {
 		InputStream ret = null;
 		if (MdbResource!=null) {
+			if (!key.startsWith("\\")) {
+				key = "\\"+key;
+			}
 			if(MdbResource instanceof com.knziha.plod.dictionary.mdict) {
 				ret = ((com.knziha.plod.dictionary.mdict)MdbResource).getResourceByKey(key);
 			} else {
 				int id = MdbResource.lookUp(key);
+				//SU.Log("lookUp::", key, id);
 				if(id>=0) {
 					ret = MdbResource.getResourseAt(id);
 				}

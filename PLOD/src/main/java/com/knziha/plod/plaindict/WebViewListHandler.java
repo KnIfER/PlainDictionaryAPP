@@ -1032,7 +1032,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			String contentkey = "ctnp#"+ cbar_key;
 			String appproject = opt.getAppContentBarProject(contentkey);
-			if(appproject==null) appproject="0|1|2|3|4|5";
+			if(appproject==null) appproject="0|1|2|3|4|5|6";
 			if(a.contentbar_project==null) {
 				a.contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, contentUIData.bottombar2, ContentbarBtns);
 				a.contentbar_project.type = cbar_key;

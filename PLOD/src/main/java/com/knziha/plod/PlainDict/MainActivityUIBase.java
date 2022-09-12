@@ -1246,8 +1246,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		ViewUtils.setWebDebug(this);
-		WebView.setWebContentsDebuggingEnabled(true);
+		//ViewUtils.setWebDebug(this);
+		//WebView.setWebContentsDebuggingEnabled(true);
 		if (BuildConfig.isDebug) {
 			CMN.debug("android.os.Build.MODEL", android.os.Build.MODEL);
 			CMN.debug("mid", CMN.mid, getClass());
@@ -8618,7 +8618,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									return emptyResponse;
 								}
 							}
-							SU.Log("文件", uri);
+							CMN.debug("文件", uri);
 							int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
 							if(mid>=0) {
 								InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));

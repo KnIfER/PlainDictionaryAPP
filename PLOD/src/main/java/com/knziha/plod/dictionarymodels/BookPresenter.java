@@ -1247,12 +1247,14 @@ function debug(e){console.log(e)};
 		if(val!=null || debuggingSlots.size()<24)
 		{
 			String p=getPath();
-			File candi = new File(p.substring(0, p.lastIndexOf(File.separator))+uri);
-			if(val==null) {
-				debuggingSlots.put(uri, val=candi.exists()?1:0);
-			}
-			if(val==1) {
-				return new AutoCloseInputStream(new FileInputStream(candi));
+			File file = new File(p.substring(0, p.lastIndexOf(File.separator))+uri).getCanonicalFile();
+			if (file.getPath().startsWith(p)) {
+				if(val==null) {
+					debuggingSlots.put(uri, val=file.exists()?1:0);
+				}
+				if(val==1) {
+					return new AutoCloseInputStream(new FileInputStream(file));
+				}
 			}
 		}
 		return null;

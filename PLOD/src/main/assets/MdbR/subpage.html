@@ -132,7 +132,8 @@ function popupEntry(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
-	app.popupEntry(sid.get(), t.href);
+	if(window.app)
+		app.popupEntry(sid.get(), t.href);
 	return false;
 }
 
@@ -140,7 +141,7 @@ function getId(){
 	return frameElement?frameElement.dictInfo.id:''
 }
 function entryPop(t){
-	if(app && app.entryPopup(sid.get(), getId())) {
+	if(window.app && app.entryPopup(sid.get(), getId())) {
 		if(t.onclick!==popupEntry) {
 			t.rawClick=t.onclick;
 			t.onclick=popupEntry;
@@ -230,15 +231,16 @@ function JumpUrl(nxt){
 
 
 function wrappedClickFunc(e){
-	// if(nxtEntry) {
-	// 	if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
-	// 	nxtEntry=0;
-	// }
-	if(stopLnk) {
+	if(parent.app && stopLnk) {
 		if(typeof stopLnk==='string')
 			parent.app.handleWebLink(getId(), stopLnk);
 		e.preventDefault();
 		stopLnk = 0;
+		return;
+	}
+	if(nxtEntry) {
+		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
+		nxtEntry=0;
 	}
 }
 

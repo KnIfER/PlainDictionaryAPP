@@ -39,6 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
+import androidx.appcompat.app.GlobalOptions;
+
 import javax.net.ssl.HttpsURLConnection;
 
 /**
@@ -218,11 +220,11 @@ public class MdictServerMobile extends MdictServer {
 			InputStream ret = getRemoteServerRes(key, false);
 			if(ret!=null) return ret;
 		}
-		//if ("\\MdbR\\subpage.html".equals(key))
+		if (BuildConfig.DEBUG || hasRemoteDebugServer)
 		{
 			try {
 				return a.getAssets().open(key.substring(1).replace("\\", "/"));
-			} catch (IOException e) {
+			} catch (Exception e) {
 				CMN.debug(e);
 			}
 		}

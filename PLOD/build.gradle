@@ -19,8 +19,8 @@ apply plugin: 'com.android.application'
 //    }
 //}
 
-android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
-android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
+//android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
+//android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
 android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
 
 android {
@@ -53,8 +53,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 82
-        versionName "6.0"
+        versionCode 83
+        versionName "6.1.1"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
 
