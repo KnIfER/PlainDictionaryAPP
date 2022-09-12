@@ -38,3 +38,5 @@
 -keepclassmembernames class knziha.plod.plaindict.PDICMainAppOptions {
   <methods>;
 }
+
+-keep class org.apache.lucene.** { *; }
