@@ -525,8 +525,8 @@ public abstract class MdictServer extends NanoHTTPD {
 								return null;
 							}
 						}
-						SU.Log("文件", uri);
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
+						SU.Log("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							InputStream input = presenter.getDebuggingResource(uri);
 							if(input!=null) {

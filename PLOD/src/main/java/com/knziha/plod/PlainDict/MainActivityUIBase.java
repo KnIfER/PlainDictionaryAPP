@@ -292,7 +292,7 @@ import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
  * Created by KnIfER on 2018
  */
 @SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
-@StripMethods(strip=true, keys={"setMagicNumber", "setWebDebug", "getRemoteServerRes", "hasRemoteDebugServer"})
+@StripMethods(strip=!BuildConfig.isDebug, keys={"setMagicNumber", "setWebDebug", "getRemoteServerRes", "hasRemoteDebugServer"})
 public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener,
 		OnLongClickListener,
 		OnClickListener,
@@ -8618,9 +8618,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									return emptyResponse;
 								}
 							}
-							CMN.debug("文件", uri);
 							int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-							if(mid>=0) {
+							CMN.debug("文件", uri, mid);
+							if(mid>=0 && !(mid>=5&&mid<=18)) {
 								InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
 								if(input!=null) {
 									String MIME = mid==0?"application/x-javascript"
@@ -10017,8 +10017,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						bout.write(buffer, 0, read);
 					}
 					return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
-				} catch (IOException e) {
-					errRinfo = CMN.Log(e);
+				} catch (Exception e) {
+					errRinfo = CMN.debug(e);
 				}
 			try {
 				if (pkgWebx == null) {
@@ -10054,7 +10054,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				try {
 					return mResource.getAssets().open(path.substring(AssetTag.length() + (!b1 ? 1 : 0)));
 				} catch (Exception e) {
-					//CMN.Log(0, f, e);
+					CMN.debug(0, f, e);
 					//error = CMN.debug(e);
 				}
 			try {
@@ -10079,14 +10079,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public InputStream loadCommonAsset(String key) throws IOException {
-//		try {
-//			InputStream input = ViewUtils.fileToStream(this, new File(key));
-//			CMN.Log("loadCommonAsset::", key, input!=null);
-//			if(input!=null) return input;
-//		} catch (Exception e) {
-//			//CMN.debug(e);
-//		}
-		//CMN.Log("loadCommonAsset::", key);
+		//CMN.debug("loadCommonAsset::", key);
+		if (BuildConfig.DEBUG || hasRemoteDebugServer) {
+			try {
+				InputStream input = fileToStream(new File("/ASSET/MdbR/" + key));
+				if(input!=null) return input;
+			} catch (Exception e) {
+				CMN.debug(key, e);
+			}
+		}
 		byte[] data = CommonAssets.get(key);
 		if(data==null){
 			try {
@@ -10107,13 +10108,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //			InputStream input = getResources().getAssets().open(key);
 //			data = new byte[input.available()];
 //			input.read(data);
-			CommonAssets.put(key, data);
+			if(data!=null)
+				CommonAssets.put(key, data);
 		}
 		return new ByteArrayInputStream(data);
 	}
 	
 	public String getCommonAsset(String key) {
-		//CMN.Log("getCommonAsset::", key);
+		//CMN.debug("getCommonAsset::", key);
+		if (BuildConfig.DEBUG || hasRemoteDebugServer) {
+			try {
+				String ret = fileToString("/ASSET/MdbR/"+key);
+				if(ret!=null) return ret;
+			} catch (Exception e) {
+				CMN.debug(key, e);
+			}
+		}
 		String ret = CommonAssetsStr.get(key);
 		if (ret==null) {
 			byte[] data = CommonAssets.get(key);

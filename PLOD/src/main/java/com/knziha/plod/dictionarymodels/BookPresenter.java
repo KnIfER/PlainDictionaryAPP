@@ -1247,7 +1247,9 @@ function debug(e){console.log(e)};
 		if(val!=null || debuggingSlots.size()<24)
 		{
 			String p=getPath();
-			File file = new File(p.substring(0, p.lastIndexOf(File.separator))+uri).getCanonicalFile();
+			p = p.substring(0, p.lastIndexOf(File.separator));
+			File file = new File(p+uri).getCanonicalFile();
+			//CMN.debug("getDebuggingResource::", file, file.exists(), p, val);
 			if (file.getPath().startsWith(p)) {
 				if(val==null) {
 					debuggingSlots.put(uri, val=file.exists()?1:0);
