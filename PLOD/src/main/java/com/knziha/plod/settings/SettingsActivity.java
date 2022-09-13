@@ -73,7 +73,7 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
-		win.getDecorView().setBackgroundColor(GlobalOptions.isDark? Color.BLACK:Color.WHITE);
+		win.getDecorView().setBackgroundColor(GlobalOptions.isDark? Color.BLACK:0xFFf5f5f5);
 		root=win.getDecorView().findViewById(android.R.id.content);
 		checkMargin(this);
 		MainBackground = opt.getMainBackground();

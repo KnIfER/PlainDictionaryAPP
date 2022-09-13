@@ -54,31 +54,11 @@
 		app:icon="@drawable/item_pressed_circle"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="noext"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="按返回退入后台，而不是退出程序"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="clear_sel"
 			android:persistent="false"
 			android:defaultValue="true"
-			android:title="使用返回键清除网页中的文本选择"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="back_web"
-			android:persistent="false"
-			android:defaultValue="true"
-			android:title="使用返回键倒退网页"
-			android:summary="建议长按解释页面的&lt;&gt;按钮进行设置"
-			/>
-		<androidx.preference.ListPreference
-			android:defaultValue="0"
-			android:key="conext"
-			android:persistent="false"
-			android:title="退出确认"
-			android:entryValues="@array/conext"
-			android:entries="@array/conext_info"
+			android:visible="false"
+			android:title="返回键优先清除网页中的文本选择"
 			/>
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference

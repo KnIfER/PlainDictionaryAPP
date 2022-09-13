@@ -14,7 +14,8 @@
 		android:background="?attr/listChoiceBackgroundIndicator"
 		android:text="夜间"
 		android:src="@drawable/ic_view_comfy_2_black_24dp"
-		style="@style/schTools" />
+		style="@style/schTools"
+		/>
 
 
 </FrameLayout>

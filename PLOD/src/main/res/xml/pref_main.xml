@@ -2,37 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	>
-	<PreferenceCategory
-		android:key="cat_prog"
-		>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:persistent="false"
-			android:defaultValue="false"
-			android:key="enable_pastebin"
-			android:title="@string/clipboard"
-			android:summary="已失效"
-			app:allowDividerAbove="false"
-			app:allowDividerBelow="true"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:persistent="false"
-			android:defaultValue="false"
-			android:key="keep_screen"
-			android:title="@string/keep_screen_on"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:persistent="false"
-			android:defaultValue="false"
-			android:key="search_all"
-			android:title="搜索所有词典"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			app:isPreferenceVisible="false"
-			/>
-
+	<PreferenceCategory android:key="cat_prog" android:title="内容页"  >
 		<com.knziha.filepicker.settings.IntPreference
 			android:defaultValue="@integer/MIN"
 			android:key="f_size"
@@ -40,44 +10,67 @@
 			android:title="@string/wv_font"
 			suffix=" %"
 			app:inlineSummary="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
-
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="GPBC"
 			android:title="@string/wv_background"
 			android:summary="Page background"
 			android:defaultValue="@integer/COLOR_GREEN"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
+	</PreferenceCategory>
+
+
+	<PreferenceCategory android:key="cat_prog" android:title="光彩" >
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="BCM"
 			android:title="@string/m_background"
 			android:defaultValue="@integer/COLOR_PRI"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="BCF"
 			android:title="@string/f_background"
 			android:defaultValue="@integer/COLOR_PRI"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="keep_screen"
+			android:title="@string/keep_screen_on" />
+	</PreferenceCategory>
 
 
-
+	<PreferenceCategory android:key="exit" android:title="启动与退出" >
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="stsch"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="启动时恢复上次的搜索词"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="noext"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="返回键退入后台，而不是退出程序"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="back_web"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="返回键优先倒退网页"
+			android:summary="建议长按解释页面的&lt;&gt;按钮进行设置"
+			/>
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="conext"
+			android:persistent="false"
+			android:title="退出确认方式："
+			android:entryValues="@array/conext"
+			android:entries="@array/conext_info"
+			app:inlineSummary="true"
+			/>
+	</PreferenceCategory>
 
+	<PreferenceCategory android:key="cat_prog" android:title="词典接口" >
 		<androidx.preference.ListPreference
 			android:defaultValue="0"
 			android:key="tgt_paste"
@@ -85,8 +78,6 @@
 			android:title="@string/paste_target"
 			android:entryValues="@array/zero_three"
 			android:entries="@array/paste_target_info"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
 
 		<androidx.preference.ListPreference
@@ -96,8 +87,6 @@
 			android:title="@string/share_target"
 			android:entryValues="@array/zero_three"
 			android:entries="@array/paste_target_info"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
 
 		<androidx.preference.ListPreference
@@ -108,8 +97,6 @@
 			android:summary="（流行的词典接口）"
 			android:entryValues="@array/zero_three"
 			android:entries="@array/paste_target_info"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			app:wiki="ColorDict 本是一款APP，其接口被争相模仿而流行。静读天下支持的第一个查词方式即为此。"
 			/>
 
@@ -121,10 +108,11 @@
 			android:summary="（安卓通用接口）"
 			android:entryValues="@array/zero_three"
 			android:entries="@array/paste_target_info"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			app:wiki="安卓通用的文本处理接口，一般位于文本的上下文菜单中，比如长按浏览器文本出现的菜单。谷歌翻译也实现了此接口。"
 			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory android:key="cat_prog" android:title="文件夹设置" >
 		<com.knziha.filepicker.settings.FilePickerPreference
 			android:defaultValue="@null"
 			android:key="fntlb"
@@ -132,86 +120,60 @@
 			android:title="音标字体路径"
 			app:selection_type="dir_select"
 			app:selection_mode="single_mode"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
+	</PreferenceCategory>
 
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:persistent="false"
-			android:defaultValue="true"
-			android:key="f_paste_peruse"
-			android:title="@string/p_paste_target"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-
+	<PreferenceCategory android:key="cat_prog" android:title="浮动搜索" >
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"
 			android:defaultValue="true"
 			android:key="f_move_bg"
-			android:title="浮动搜索退入后台而不是直接退出"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
+			android:title="退入后台而不直接退出"
 			/>
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"
 			android:defaultValue="true"
 			android:key="f_hide_recent"
-			android:title="从最近任务中隐藏浮动搜索"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
+			android:title="从最近任务中隐藏"
 			/>
+	</PreferenceCategory>
 
-		<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
-		<!--			android:persistent="false"-->
-		<!--			android:defaultValue="true"-->
-		<!--			android:key="f_share_peruse"-->
-		<!--			android:title="程序在前台时，分享到翻阅模式"-->
-		<!--			app:allowDividerAbove="true"-->
-		<!--			app:allowDividerBelow="true"-->
-		<!--			/>-->
+	<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		android:persistent="false"
+		android:defaultValue="false"
+		android:key="search_all"
+		android:title="搜索所有词典"
+		app:isPreferenceVisible="false"
+		/>
 
-		<androidx.preference.ListPreference
-			android:key="backup"
-			android:entries="@array/backup"
-			android:persistent="false"
-			android:title="设置备份及恢复"
-			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			app:wiki="需要存储卡的读写权限。备份至/sdcard/平典搜索_备份.json，不包括词典配置；恢复后需完全重启APP方可生效。"
-			/>
 
+	<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+	<!--			android:persistent="false"-->
+	<!--			android:defaultValue="true"-->
+	<!--			android:key="f_share_peruse"-->
+	<!--			android:title="程序在前台时，分享到翻阅模式"-->
+
+
+	<PreferenceCategory android:key="cat_prog" android:title="其他设置" >
 		<Preference
 			android:key="sspec"
 			android:persistent="false"
 			android:title="搜索设置"
 			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			android:icon="@drawable/ic_search"
 			/>
-
-
 		<Preference
 			android:key="multi"
 			android:persistent="false"
 			android:title="多页面设置"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			android:icon="@drawable/ic_viewpager_carousel_vertical"
 			android:tint="#000"
 			android:clickable="true"
 			/>
-
 		<Preference
 			android:key="vspec"
 			android:persistent="false"
 			android:title="视图杂项"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			android:icon="@drawable/ic_view_carousel_black_24dp"
 			/>
 
@@ -220,13 +182,20 @@
 			android:persistent="false"
 			android:title="兼容性选项"
 			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			android:icon="@drawable/tools_toolbar"
 			/>
 	</PreferenceCategory>
 
 
+	<androidx.preference.ListPreference
+		android:key="backup"
+		android:entries="@array/backup"
+		android:persistent="false"
+		android:title="备份设置"
+		app:wiki="需要存储卡的读写权限。备份至/sdcard/平典搜索_备份.json，不包括词典配置；恢复后需完全重启APP方可生效。"
+		/>
 
+	<PreferenceCategory android:key="cat_prog" android:title="" >
+	</PreferenceCategory>
 
 </PreferenceScreen>

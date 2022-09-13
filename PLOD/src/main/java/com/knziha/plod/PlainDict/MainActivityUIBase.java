@@ -11281,8 +11281,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 	
+	TextView tvTmp;
 	public TextView listName(int i) {
-		return new TextView(this);
+		if(tvTmp==null) new TextView(this);
+		return tvTmp;
 	}
 	
 	public void switchSearchEngineLst(boolean schEgn) {

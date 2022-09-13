@@ -165,7 +165,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public TextView dvDictFrac;
 	public TextView dvResultN;
 	
-	public TextView[] listNames;
+	public TextView[] listNames = new TextView[3];
 	public ViewGroup[] viewList;
 
 	public String lastFuzzyKeyword;
@@ -1283,7 +1283,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		ViewUtils.removeView(mlv);
 		viewList = new ViewGroup[]{mlv1, mlv, mlv2};
-		listNames = new TextView[3];
 		for (int i = 0; i < 3; i++) {
 			LinearLayout view = new LinearLayout(this);
 			view.setOrientation(LinearLayout.VERTICAL);
@@ -3581,6 +3580,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	public TextView listName(int i) {
+		if (i == 1) {
+			return UIData.dictName;
+		}
 		if (i != 1 && listNames[i]==null) {
 			ViewGroup lv = viewList[i];
 			View btm = getLayoutInflater().inflate(R.layout.adv_sch_bottom, lv, false);

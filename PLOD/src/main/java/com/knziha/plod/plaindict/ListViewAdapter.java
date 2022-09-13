@@ -44,6 +44,9 @@ public class ListViewAdapter extends BasicAdapter {
 	
 	@Override
 	public int getCount() {
+//		if (ViewUtils.isVisible(a.listName(1)) ^ PDICMainAppOptions.listPreviewEnabled()) {
+//			ViewUtils.setVisible(a.listName(1), PDICMainAppOptions.listPreviewEnabled());
+//		}
 		if(presenter!=null) {
 			if(PDICMainAppOptions.getSimpleMode() 
 					&& presenter.getIsNonSortedEntries() 

@@ -30,27 +30,7 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 //		init_switch_preference(this, "ps_border", PDICMainAppOptions.getInPageSearchHighlightBorder(), null, null);
 		init_switch_preference(this, "ap_full", PDICMainAppOptions.schPageAfterFullSch(), null, null);
 		init_switch_preference(this, "ap_click", PDICMainAppOptions.schPageAfterClick(), null, null);
-		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null);
 		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
-		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null).setVisible(false);
-		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
-		
-		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-										   @Override
-										   public boolean onPreferenceClick(Preference preference) {
-											   ListPreference lp = ((ListPreference) preference);
-											   if(PDICMainAppOptions.exitToBackground()){
-												   lp.setEntries(R.array.conhom_info);
-												   lp.setEntryValues(R.array.conhom);
-												   lp.setValue((PDICMainAppOptions.getBackToHomePagePreventBack()?5:4)+"");
-											   }else{
-												   lp.setEntries(R.array.conext_info);
-												   lp.setEntryValues(R.array.conext);
-												   lp.setValue(PDICMainAppOptions.getBackPrevention()+"");
-											   }
-										   	return false;
-										   }
-									   });
 		init_switch_preference(this, "hint_mod", PDICMainAppOptions.getHintSearchMode(), null, null);
 		init_switch_preference(this, "hint_res", PDICMainAppOptions.getNotifyComboRes(), null, null);
 		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null);
@@ -105,14 +85,8 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 			case "ap_click":
 				PDICMainAppOptions.schPageAfterClick((Boolean) newValue);
 			break;
-			case "noext":
-				PDICMainAppOptions.exitToBackground((Boolean) newValue);
-			break;
 			case "clear_sel":
 				PDICMainAppOptions.setUseBackKeyClearWebViewFocus((Boolean) newValue);
-			break;
-			case "back_web":
-				PDICMainAppOptions.setUseBackKeyGoWebViewBack((Boolean) newValue);
 			break;
 			case "conext":
 				int val = IU.parsint(newValue);

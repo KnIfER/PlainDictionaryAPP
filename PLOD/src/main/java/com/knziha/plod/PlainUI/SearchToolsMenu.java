@@ -3,38 +3,34 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.preference.SettingsPanel.BIT_STORE_VIEW;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.text.TextPaint;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ListView;
 
-import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.jess.ui.TwoWayAbsListView;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymanager.BookManagerMain;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
-import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.widgets.DescriptiveImageView;
 import com.knziha.plod.widgets.ViewUtils;
 
-import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 //for menu list
@@ -43,6 +39,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	MainActivityUIBase a;
 	private TextPaint menu_grid_painter;
 	ArrayList<String> menuList = new ArrayList<>();
+	private int menu_width;
 	
 	public static class MenuItemViewHolder {
 		public final DescriptiveImageView tv;
@@ -51,19 +48,37 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		}
 	}
 	
+	int[] menu_ids = new int[]{
+			R.string.ts_convert
+			, R.string.ts_pick
+//			, R.string.ts_table
+			, 0
+			, R.string.lucene_idx
+			, R.string.lucene_search
+			, 0
+//			, R.string.qr_scan
+//			, R.string.text_recog
+			, -1
+	};
+	
 	public SearchToolsMenu(MainActivityUIBase a, ViewGroup rootPanel) {
-		menuList.add("繁简转换");
-		menuList.add("繁简选字");
-		//menuList.add("繁简通搜");
-		
-		menuList.add("全文索引");
-		menuList.add("搜索引擎");
-		
-//		menuList.add("翻阅模式");
-//		menuList.add("多行编辑");
-		
-		//menuList.add("二维扫描");
-		//menuList.add("文字识别");
+		for (int i = 0, id; (id = menu_ids[i++]) != -1; ) {
+			menuList.add(id == 0 ? "" : a.mResource.getString(id));
+		}
+		menu_width =  (int) a.mResource.getDimension(R.dimen._65_);
+//		menuList.add("繁简转换");
+//		menuList.add("繁简选字");
+//		menuList.add("繁简对照表");
+//		//menuList.add("繁简通搜");
+//
+//		menuList.add("全文索引");
+//		menuList.add("搜索引擎");
+//
+////		menuList.add("翻阅模式");
+////		menuList.add("多行编辑");
+//
+//		//menuList.add("二维扫描");
+//		//menuList.add("文字识别");
 		
 		this.a = a;
 		
@@ -77,7 +92,36 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		mainMenuLst.setScrollbarFadingEnabled(false);
 		mainMenuLst.setSelector(a.mResource.getDrawable(R.drawable.listviewselector0));
 		mainMenuLst.setBackgroundColor(a.MainAppBackground);
+		
 		menu_grid_painter = DescriptiveImageView.createTextPainter(false);
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			mainMenuLst.setHorizontalScrollbarThumbDrawable(new ColorDrawable(0x45555555));
+		}
+	}
+	
+	static class TopThumb extends ColorDrawable {
+		int pad;
+		public TopThumb(int c, int pad) {
+			super(c);
+			this.pad = pad;
+		}
+		@Override
+		public void setBounds(int left, int top, int right, int bottom) {
+			//super.setBounds(left, 0, right, (bottom-top)/2);
+			super.setBounds(left, top + pad, right, bottom - pad);
+		}
+	}
+	
+	@Override
+	public int getViewTypeCount() {
+		return 2;
+	}
+	
+	@Override
+	public int getItemViewType(int position) {
+		final int id = menu_ids[position];
+		return id==0?1:0;
 	}
 	
 	@Override
@@ -97,22 +141,36 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		MenuItemViewHolder holder;
-		if(convertView==null) {
-			convertView = a.getLayoutInflater().inflate(R.layout.menu_item, parent, false);
-			convertView.setTag(holder=new MenuItemViewHolder(convertView));
-			holder.tv.textPainter = menu_grid_painter;
+		int id = menu_ids[position];
+		if (id == 0) {
+			if(convertView==null) {
+				convertView = new View(a);
+				TwoWayAbsListView.LayoutParams lp = new TwoWayAbsListView.LayoutParams((int) (1.5 * GlobalOptions.density), menu_width);
+				convertView.setLayoutParams(lp);
+				convertView.setBackground(new TopThumb(0x9fffffff, (int) (8*GlobalOptions.density)));
+			}
 		} else {
-			holder = (MenuItemViewHolder) convertView.getTag();
+			MenuItemViewHolder holder;
+			if(convertView==null) {
+				convertView = a.getLayoutInflater().inflate(R.layout.menu_item, parent, false);
+				convertView.setTag(holder=new MenuItemViewHolder(convertView));
+				holder.tv.textPainter = menu_grid_painter;
+			} else {
+				holder = (MenuItemViewHolder) convertView.getTag();
+			}
+			//convertView.getLayoutParams().width = id==0?1:menu_width;
+			holder.tv.setText(menuList.get(position));
+			holder.tv.setImageResource(position==0?R.drawable.ic_translate_ts:R.drawable.ic_view_comfy_2_black_24dp);
 		}
-		holder.tv.setText(menuList.get(position));
 		return convertView;
 	}
 	
+	@SuppressLint("NonConstantResourceId")
 	@Override
 	public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
-		switch (position) {
-			case 0:{
+		final int mid = menu_ids[position];
+		switch (mid) {
+			case R.string.ts_convert:{
 				//CMN.Log("繁简转换!!!");
 				a.ensureTSHanziSheet(null);
 				SparseArrayMap map=null;
@@ -147,7 +205,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					a.setSearchTerm(newText);
 				}
 			} break;
-			case 1:
+			case R.string.ts_pick:
 			{
 				//CMN.Log("繁简选字!!!");
 				//String text = "happy happy happy恒心努力毅力决心";
@@ -287,7 +345,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					}
 				});
 				mainMenuLst.setSelector(a.mResource.getDrawable(R.drawable.listviewselector0));
-				new AlertDialog.Builder(a)
+				AlertDialog d = new AlertDialog.Builder(a)
 						.setView(mainMenuLst)
 						.setTitle("繁简选字")
 						.setPositiveButton("确认组合", (dialog, which) -> {
@@ -308,14 +366,15 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 						})
 						.setNegativeButton("取消", null)
 						.show();
-				
+				ViewUtils.ensureWindowType(d, a, null);
+				ViewUtils.ensureTopmost(d, a, null);
 				mainMenuLst.maxHeight = h;
 			} break;
-			case 2:
+			case R.string.lucene_idx:
 			{
 				getLuceneHelper().showBuildIndexDlg();
 			} break;
-			case 3:
+			case R.string.lucene_search:
 			{
 				getLuceneHelper().showSearchEngineDlg();
 			} break;

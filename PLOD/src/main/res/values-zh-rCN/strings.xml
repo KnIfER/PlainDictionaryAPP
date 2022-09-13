@@ -219,5 +219,9 @@
 	<string name="clip_board">剪贴板</string>
 	<string name="noti_set">通知栏设置</string>
 	<string name="wikiMultiViewMode">自v5.7起联合搜索开始支持“合并的多页面模式”，可用一个网页控件显示全部结果，而不是一个词典对应一个网页控件，理论上更省资源。缺点是只能简单显示在线词典。</string>
+	<string name="ts_convert">繁简转换</string>
+	<string name="ts_pick">繁简选字</string>
+	<string name="qr_scan">二维扫描</string>
+	<string name="text_recog">文字识别</string>
 	>
 </resources>

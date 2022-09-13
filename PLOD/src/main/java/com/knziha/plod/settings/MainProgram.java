@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
@@ -23,6 +24,31 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		PDICMainAppOptions opt = ((Toastable_Activity) getActivity()).opt;
 		mPreferenceId = R.xml.pref_main;
 		super.onCreate(savedInstanceState);
+		
+		
+		
+		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null);
+		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null).setVisible(false);
+		
+		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
+		
+		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				ListPreference lp = ((ListPreference) preference);
+				if(PDICMainAppOptions.exitToBackground()){
+					lp.setEntries(R.array.conhom_info);
+					lp.setEntryValues(R.array.conhom);
+					lp.setValue((PDICMainAppOptions.getBackToHomePagePreventBack()?5:4)+"");
+				}else{
+					lp.setEntries(R.array.conext_info);
+					lp.setEntryValues(R.array.conext);
+					lp.setValue(PDICMainAppOptions.getBackPrevention()+"");
+				}
+				return false;
+			}
+		});
+		
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
 		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
 		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null);
@@ -73,6 +99,12 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
+			case "back_web":
+				PDICMainAppOptions.setUseBackKeyGoWebViewBack((Boolean) newValue);
+				break;
+			case "noext":
+				PDICMainAppOptions.exitToBackground((Boolean) newValue);
+				break;
 			case "backup":
 				Toastable_Activity a = (Toastable_Activity) getActivity();
 				if (a==null) break;
