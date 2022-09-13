@@ -16,8 +16,8 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.ServiceEnhancer;
 
-public class NotificationSettings extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=12;
+public class NotificationSettings extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=R.xml.pref_notification;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = R.xml.pref_notification;

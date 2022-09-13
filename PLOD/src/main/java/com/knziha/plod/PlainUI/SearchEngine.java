@@ -239,7 +239,6 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 			int pad = (int) (GlobalOptions.density*5);
 			lv.setPadding(pad,0,pad,0);
 			toolbar = view.findViewById(R.id.toolbar);
-			toolbar = view.findViewById(R.id.toolbar);
 			toolbar.inflateMenu(R.xml.menu_search);
 			toolbar.setNavigationIcon(R.drawable.ic_baseline_history_24);
 			toolbar.getNavigationBtn().setAlpha(0.3f);

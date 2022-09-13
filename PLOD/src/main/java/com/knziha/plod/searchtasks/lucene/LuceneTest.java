@@ -221,5 +221,5 @@ body{
 }
 </style> */
 	@Metaline(trim = false)
-	static String styles = "";
+	public static String styles = "";
 }

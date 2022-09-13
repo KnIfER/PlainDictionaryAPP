@@ -4076,7 +4076,7 @@ function debug(e){console.log(e)};
 		ssb.setSpan(new ClickableSpan() {
 			@Override
 			public void onClick(@NonNull View widget) {
-				if(context instanceof MainActivityUIBase) ((MainActivityUIBase) context).showBookPreferences(md);
+				if(context instanceof MainActivityUIBase) ((MainActivityUIBase) context).showBookPreferences(context, md);
 				else if(context instanceof BookManager) ((BookManager) context).showBookPreferences(md);
 			}},start,ssb.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		

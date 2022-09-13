@@ -86,7 +86,7 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 				if(Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction()))
 				{
 					int status=intent.getIntExtra("status", BatteryManager.BATTERY_STATUS_UNKNOWN);
-					CMN.Log("状态变化::", status, status==BatteryManager.BATTERY_STATUS_CHARGING);
+					CMN.debug("状态变化::", status, status==BatteryManager.BATTERY_STATUS_CHARGING);
 					ServiceEnhancer s = ref.get();
 					if(s!=null) {
 						s.setupDaemon(status==BatteryManager.BATTERY_STATUS_CHARGING?1:0);
@@ -130,10 +130,10 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			if (batteryManager.isCharging()) {
-				CMN.Log("isCharging::");
+				CMN.debug("isCharging::");
 			}
 		}
-		CMN.Log("isPowerSaveMode::", isPowerSaveModeCompat());
+		CMN.debug("isPowerSaveMode::", isPowerSaveModeCompat());
 		setupDaemon(-1);
 		isRunning = true;
 	}
@@ -141,7 +141,7 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 	public static int isMusicPlaying = 0;
 	
 	private void setupDaemon(int charging) {
-		CMN.Log("setupDaemon::", getShouldPlayMusic(charging), getShouldLockWifi(charging));
+		CMN.debug("setupDaemon::", getShouldPlayMusic(charging), getShouldLockWifi(charging));
 		if (getShouldPlayMusic(charging)) {
 			playMusic();
 		} else {
@@ -179,7 +179,7 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
 				&& isPowerSaveModeCompat() // 自动判断，省电模式下需要播放音频、保活wifi
 				;
-		//CMN.Log("getAutoDaemonJudgeResult", ret, charging, batteryManager.isCharging());
+		//CMN.debug("getAutoDaemonJudgeResult", ret, charging, batteryManager.isCharging());
 		// 充电时跳过
 		if(ret && bSkipCharing) {
 			if(charging==1 || charging==-1
@@ -239,7 +239,7 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 			// WifiManager.WIFI_MODE_FULL_HIGH_PERF
 		}
 		if(wifiLock!=null && !wifiLock.isHeld()){
-			CMN.Log("wifi lock acquireed..");
+			CMN.debug("wifi lock acquireed..");
 			wifiLock.acquire();
 			isMusicPlaying |= 0x2;
 		}
@@ -259,14 +259,14 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 	public void onCompletion(MediaPlayer mp) {
 		mp.start();
 		
-		CMN.Log("onCompletion", cc++, mServer!=null && mServer.isAlive());
+		CMN.debug("onCompletion", cc++, mServer!=null && mServer.isAlive());
 		
 		
 		wifiLock.release();
 		wifiLock.acquire();
 		
 		if(cc/100>theta) {
-			CMN.Log("wakeUpAndUnlock", wifiLock.isHeld());
+			CMN.debug("wakeUpAndUnlock", wifiLock.isHeld());
 			if(!wifiLock.isHeld()){
 				wifiLock.acquire();
 			}
@@ -338,7 +338,7 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 	
 	@Override
 	public void onDestroy() {
-		CMN.Log("onDestroy!!!");
+		CMN.debug("onDestroy!!!");
 		super.onDestroy();
 		isRunning = false;
 		if(mbatteryReceiver!=null) {

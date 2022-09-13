@@ -54,7 +54,6 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
@@ -110,6 +109,8 @@ import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
+import com.knziha.plod.PlainUI.SettingsSearcher;
+import com.knziha.plod.settings.SchOpt;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -1753,6 +1754,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 		//com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
 		
+//		try {
+//			new SettingsSearcherTest().buildIndex(this);
+//		} catch (Exception e) {
+//			CMN.debug(e);
+//		}
+		
 		if(true) {
 //			showRandomShuffles();
 		}
@@ -3184,7 +3191,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			case R.id.toolbar_action2: {
 				if(isLongClicked) {
-					launchSettings(7, 0);
+					launchSettings(SchOpt.id, 0);
 					ret=true;
 				} else {
 					String text = etSearch.getText().toString().trim();

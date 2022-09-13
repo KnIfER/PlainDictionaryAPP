@@ -32,8 +32,8 @@ import java.io.DataOutputStream;
 import java.util.HashMap;
 
 /** Devoloper Options */
-public class DevOpt extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=4;
+public class DevOpt extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=R.xml.pref_dev;
 	private WebView mWebview;
 	
 	private String localeStamp;

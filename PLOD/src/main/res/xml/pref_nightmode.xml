@@ -3,6 +3,8 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	tools:context="com.knziha.plod.settings.TapTranslator"
+	android:key="dark"
+	android:title="夜间模式设置"
 	>
 	<PreferenceCategory
 		android:key="cat_1"

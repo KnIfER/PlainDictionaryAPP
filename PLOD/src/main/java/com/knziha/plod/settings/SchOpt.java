@@ -9,8 +9,8 @@ import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
-public class SchOpt extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=7;
+public class SchOpt extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=R.xml.searchpreferences;
 	
 	//初始化
 	@Override

@@ -12,8 +12,8 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
-public class History extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=10;
+public class History extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=R.xml.pref_history;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

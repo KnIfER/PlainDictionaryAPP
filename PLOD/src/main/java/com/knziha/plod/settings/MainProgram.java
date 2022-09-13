@@ -18,14 +18,12 @@ import com.knziha.plod.plaindict.Toastable_Activity;
 
 import java.io.File;
 
-public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class MainProgram extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		PDICMainAppOptions opt = ((Toastable_Activity) getActivity()).opt;
 		mPreferenceId = R.xml.pref_main;
 		super.onCreate(savedInstanceState);
-		
-		
 		
 		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null);
 		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null).setVisible(false);

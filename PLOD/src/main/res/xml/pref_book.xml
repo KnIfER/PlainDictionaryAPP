@@ -3,6 +3,8 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	tools:context="com.knziha.plod.settings.BookOptions"
+	android:key="dict"
+	android:title="词典设置"
 	>
 
 	<PreferenceCategory

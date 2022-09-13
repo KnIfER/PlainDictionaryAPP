@@ -21,7 +21,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
-public class Multiview extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class Multiview extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_multiview;
 	public final static int requestCode=id&0xFFFF;
 	private int multiMode;

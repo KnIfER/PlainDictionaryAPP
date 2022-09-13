@@ -318,7 +318,7 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 			return;
 		DocRecord record = getDocAt((int) pos);
 		if(record==null) return;
-		try { CMN.Log(searcher.explain(query, record.did)); } catch (Exception ignored) { }
+		// try { CMN.debug(searcher.explain(query, record.did)); } catch (Exception ignored) { }
 //		testTokenStream(record.getContent(this));
 		BookPresenter presenter = a.getBookById(record.getBookId(this));
 		if(presenter==a.EmptyBook){

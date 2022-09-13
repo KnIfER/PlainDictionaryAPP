@@ -3,6 +3,8 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:NumberPickerPreference="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
+	android:key="dev"
+	android:title="兼容性选项"
 	>
 	<PreferenceCategory
 		android:key="category_program"

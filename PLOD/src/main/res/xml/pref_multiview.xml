@@ -3,6 +3,8 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	tools:context="com.knziha.plod.settings.Multiview"
+	android:key="views"
+	android:title="多页面设置"
 	>
 	<PreferenceCategory
 		android:key="cat0"

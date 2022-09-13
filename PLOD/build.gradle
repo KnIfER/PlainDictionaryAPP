@@ -54,7 +54,7 @@ android {
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
         versionCode 83
-        versionName "6.1.1"
+        versionName "6.2"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
 

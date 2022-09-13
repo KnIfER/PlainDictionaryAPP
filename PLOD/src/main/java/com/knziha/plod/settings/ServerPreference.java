@@ -17,8 +17,8 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 
-public class ServerPreference extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=11;
+public class ServerPreference extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=R.xml.serverpreferences;
 
 	//初始化
 	@Override

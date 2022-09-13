@@ -5,7 +5,7 @@ import android.os.Bundle;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.R;
 
-public class Licences extends SettingsFragmentBase {
+public class Licences extends PlainSettingsFragment {
 	public final static int id=6;
 	
 	//初始化

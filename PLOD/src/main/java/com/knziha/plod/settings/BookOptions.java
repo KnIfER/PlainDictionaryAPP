@@ -36,6 +36,7 @@ import org.knziha.metaline.Metaline;
 
 /** 这个是后后来的词典设置界面，比较高大上。 */
 public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener, Preference.OnGetViewListener {
+	public final static int id = R.xml.pref_book;
 	BookPresenter[] data;
 	private boolean bNeedParseData;
 	private static int mScrollPos;
@@ -47,7 +48,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		bNavBarClickAsIcon = true;
 		mNavBarHeight = (int) (35 * GlobalOptions.density);
 		mNavBarPaddingTop = (int) (2 * GlobalOptions.density);
-		mPreferenceId = R.xml.pref_book;
+		mPreferenceId = id;
 		Bundle args = new Bundle();
 		args.putInt("title", R.string.dictOpt1);
 		setArguments(args);
@@ -292,132 +293,144 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		String key=preference.getKey();
-		if ("reload".equals(key)) {
-			Toastable_Activity a = (Toastable_Activity) getActivity();
-			if (a!=null) {
-				OptionProcessor optprc = (clickableSpan, widget, processId, val) -> {
-					if (processId==1) {
-						int cc=0;
-						for (BookPresenter datum:data) {
-							if (datum.getIsManagerAgent()==0) {
-								datum.Reload(a);
-								cc++;
+		try {
+			String key=preference.getKey();
+			if ("reload".equals(key)) {
+				Toastable_Activity a = (Toastable_Activity) getActivity();
+				if (a!=null) {
+					OptionProcessor optprc = (clickableSpan, widget, processId, val) -> {
+						if (processId==1) {
+							int cc=0;
+							for (BookPresenter datum:data) {
+								if (datum.getIsManagerAgent()==0) {
+									datum.Reload(a);
+									cc++;
+								}
 							}
+							
+							a.showT("已重新加载"+cc+"本词典");
 						}
-						
-						a.showT("已重新加载"+cc+"本词典");
+					};
+					if (a.opt.getIgnoreReloadWarning() || BuildConfig.isDebug) {
+						optprc.processOptionChanged(null, null, 1, 0);
+					} else {
+						final String[] DictOpt = new String[]{"重启前不再提示", "重新加载视图"};
+						final String[] Coef = " ×_ √".split("_");
+						final SpannableStringBuilder ssb = new SpannableStringBuilder();
+						TextView tv = a.buildStandardConfigDialog(optprc, false, 1, 0, "确认重新加载"+(data.length>1?"选中的"+data.length+"本":"当前")+"词典？");
+						MainActivityUIBase.init_clickspan_with_bits_at(tv, ssb, DictOpt, 0, Coef, 0, 0, 0x1, 0, 1, -1, -1, true);
+						MainActivityUIBase.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 1, 1, -1, -1, true);
+						MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 					}
-				};
-				if (a.opt.getIgnoreReloadWarning() || BuildConfig.isDebug) {
-					optprc.processOptionChanged(null, null, 1, 0);
-				} else {
-					final String[] DictOpt = new String[]{"重启前不再提示", "重新加载视图"};
-					final String[] Coef = " ×_ √".split("_");
-					final SpannableStringBuilder ssb = new SpannableStringBuilder();
-					TextView tv = a.buildStandardConfigDialog(optprc, false, 1, 0, "确认重新加载"+(data.length>1?"选中的"+data.length+"本":"当前")+"词典？");
-					MainActivityUIBase.init_clickspan_with_bits_at(tv, ssb, DictOpt, 0, Coef, 0, 0, 0x1, 0, 1, -1, -1, true);
-					MainActivityUIBase.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 1, 1, -1, -1, true);
-					MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 				}
 			}
+			return false;
+		} catch (Exception e) {
+			CMN.debug(e);
+			//getSettingActivity().showT("Error!"+e);
 		}
-		return false;
+		return true;
 	}
 	
 	//配置变化
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		String key=preference.getKey();
-		//CMN.Log("onPreferenceChange", preference, key, newValue);
-		if (preference instanceof SwitchPreference) {
-			int flagPos = preference.getExtras().getInt("flagPos", -1);
-			if (flagPos>=0) {
-				long mask = 1L<<flagPos;
-				for (BookPresenter datum:data) {
-					datum.setFirstFlag(setBooleanFlagAt(datum, mask, preference.getExtras().getBoolean("def", false), (Boolean) newValue));
+		try {
+			String key=preference.getKey();
+			//CMN.Log("onPreferenceChange", preference, key, newValue);
+			if (preference instanceof SwitchPreference) {
+				int flagPos = preference.getExtras().getInt("flagPos", -1);
+				if (flagPos>=0) {
+					long mask = 1L<<flagPos;
+					for (BookPresenter datum:data) {
+						datum.setFirstFlag(setBooleanFlagAt(datum, mask, preference.getExtras().getBoolean("def", false), (Boolean) newValue));
+					}
 				}
 			}
-		}
-		if (newValue instanceof String) {
-			String str = (String) newValue;
-			boolean b1=str.equals("using");
-			boolean b2=!b1&&(str.startsWith("use")&&(str.length()==3||str.endsWith("_not")));
-			if (b1||b2) {
-				Object value;
-				String rtrStr= "use_"+key;
-				for (BookPresenter datum:data) {
-					value = GetSetIntField(datum, rtrStr, b1, str.length()==3);
-					if(b1) return IU.parseBool(value);
+			if (newValue instanceof String) {
+				String str = (String) newValue;
+				boolean b1=str.equals("using");
+				boolean b2=!b1&&(str.startsWith("use")&&(str.length()==3||str.endsWith("_not")));
+				if (b1||b2) {
+					Object value;
+					String rtrStr= "use_"+key;
+					for (BookPresenter datum:data) {
+						value = GetSetIntField(datum, rtrStr, b1, str.length()==3);
+						if(b1) return IU.parseBool(value);
+					}
+					return true;
 				}
-				return true;
 			}
-		}
-		if (preference instanceof IntPreference
-				|| preference instanceof ColorPickerPreference) {
-			int val = IU.parsint(newValue, 0);
-			for (BookPresenter datum:data) {
-				GetSetIntField(datum, key, false, val);
-			}
-			if(preference instanceof ColorPickerPreference)
-				MainProgram.setColorPreferenceTitle(preference, val);
-		}
-		else if (preference instanceof FloatPreference) {
-			try {
-				float val = Float.parseFloat(String.valueOf(newValue));
+			if (preference instanceof IntPreference
+					|| preference instanceof ColorPickerPreference) {
+				int val = IU.parsint(newValue, 0);
 				for (BookPresenter datum:data) {
 					GetSetIntField(datum, key, false, val);
 				}
-			} catch (NumberFormatException ignored) {  }
-		}
-		else if (preference instanceof ListPreference) {
-			int flagPos = preference.getExtras().getInt("flagPos", -1);
-			if (flagPos>=0) {
-				int mask = preference.getExtras().getInt("mask", 3);
-				CharSequence[] entries = ((ListPreference) preference).getEntries();
-				int val = IU.parsint(newValue, 0) % entries.length;
-				for (BookPresenter datum:data) {
-					datum.setFirstFlag(setShortFlagAt(datum, flagPos, val, mask));
-				}
-				preference.setSummary(entries[val]);
+				if(preference instanceof ColorPickerPreference)
+					MainProgram.setColorPreferenceTitle(preference, val);
 			}
-		}
-		switch (key){
-			case "mirrors":{
-				PlainWeb webx = data[0].getWebx();
-				if (webx!=null) {
-					webx.setMirroredHost(IU.parsint(newValue, 0));
+			else if (preference instanceof FloatPreference) {
+				try {
+					float val = Float.parseFloat(String.valueOf(newValue));
+					for (BookPresenter datum:data) {
+						GetSetIntField(datum, key, false, val);
+					}
+				} catch (NumberFormatException ignored) {  }
+			}
+			else if (preference instanceof ListPreference) {
+				int flagPos = preference.getExtras().getInt("flagPos", -1);
+				if (flagPos>=0) {
+					int mask = preference.getExtras().getInt("mask", 3);
+					CharSequence[] entries = ((ListPreference) preference).getEntries();
+					int val = IU.parsint(newValue, 0) % entries.length;
+					for (BookPresenter datum:data) {
+						datum.setFirstFlag(setShortFlagAt(datum, flagPos, val, mask));
+					}
+					preference.setSummary(entries[val]);
 				}
-			} break;
-			case "tzby":{
-			} break;
-			case "p_words":
-			case "min_chars":
-			case "max_chars":
-			case "fgTitle":
-			case "bgTitle":{
-			
-			} break;
-			case "imdz1":
-			case "imdz2":
-			case "pzoomx":
-			case "tzlv":
-			case "tz_x":{
-			
-			} break;
-			case "pzoom":{
-			
-			} break;
-			case "pzoom_plc":{
-			} break;
-			case "dtm":
-				SearchUI.tapZoomWait = (int) newValue;
-			break;
+			}
+			switch (key){
+				case "mirrors":{
+					PlainWeb webx = data[0].getWebx();
+					if (webx!=null) {
+						webx.setMirroredHost(IU.parsint(newValue, 0));
+					}
+				} break;
+				case "tzby":{
+				} break;
+				case "p_words":
+				case "min_chars":
+				case "max_chars":
+				case "fgTitle":
+				case "bgTitle":{
+				
+				} break;
+				case "imdz1":
+				case "imdz2":
+				case "pzoomx":
+				case "tzlv":
+				case "tz_x":{
+				
+				} break;
+				case "pzoom":{
+				
+				} break;
+				case "pzoom_plc":{
+				} break;
+				case "dtm":
+					SearchUI.tapZoomWait = (int) newValue;
+				break;
+			}
+			if (key.startsWith("tz")) {
+				SearchUI.tapZoomV++;
+			}
+			return true;
+		} catch (Exception e) {
+			CMN.debug(e);
+			//getSettingActivity().showT("Error!"+e);
 		}
-		if (key.startsWith("tz")) {
-			SearchUI.tapZoomV++;
-		}
-		return true;
+		return false;
 	}
 	
 	
@@ -453,27 +466,31 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	WebViewmy mWebView;
 	@Override
 	public View getView(Preference preference) {
-		if (preference.getKey().equals("dopt")) {
-			PlainWeb webx = data[0].getWebx();
-			if (mWebView==null || !TextUtils.equals(mWebView.toTag, CMN.idStr(data[0]))) {
-				mWebView = new WebViewmy(data[0].a);
-				mWebView.toTag = CMN.idStr(data[0]);
-				JSONObject dopt = webx.getDopt();
-				if (dopt!=null) {
-					mWebView.setWebChromeClient(data[0].a.myWebCClient);
-					mWebView.setWebViewClient(data[0].a.myWebClient);
-					mWebView.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
-					mWebView.addJavascriptInterface(data[0].getWebBridge(), "app");
-					mWebView.presenter = data[0];
-					mWebView.weblistHandler = data[0].a.weblistHandler;
-					String settings = webxSettings;
-					settings = settings.replace("%0", dopt.toString());
-					settings = settings.replace("%1", webx.getField("settingsArray"));
-					mWebView.loadDataWithBaseURL(data[0].mBaseUrl,settings, null, "UTF-8", null);
-					data[0].getWebBridge().mergeView = mWebView;
+		try {
+			if (preference.getKey().equals("dopt")) {
+				PlainWeb webx = data[0].getWebx();
+				if (mWebView==null || !TextUtils.equals(mWebView.toTag, CMN.idStr(data[0]))) {
+					mWebView = new WebViewmy(data[0].a);
+					mWebView.toTag = CMN.idStr(data[0]);
+					JSONObject dopt = webx.getDopt();
+					if (dopt!=null) {
+						mWebView.setWebChromeClient(data[0].a.myWebCClient);
+						mWebView.setWebViewClient(data[0].a.myWebClient);
+						mWebView.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
+						mWebView.addJavascriptInterface(data[0].getWebBridge(), "app");
+						mWebView.presenter = data[0];
+						mWebView.weblistHandler = data[0].a.weblistHandler;
+						String settings = webxSettings;
+						settings = settings.replace("%0", dopt.toString());
+						settings = settings.replace("%1", webx.getField("settingsArray"));
+						mWebView.loadDataWithBaseURL(data[0].mBaseUrl,settings, null, "UTF-8", null);
+						data[0].getWebBridge().mergeView = mWebView;
+					}
 				}
+				return mWebView;
 			}
-			return mWebView;
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 		return null;
 	}

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:key="main"
+	android:title="设置"
 	>
 	<PreferenceCategory android:key="cat_prog" android:title="内容页"  >
 		<com.knziha.filepicker.settings.IntPreference

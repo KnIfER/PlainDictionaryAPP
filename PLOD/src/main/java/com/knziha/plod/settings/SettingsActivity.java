@@ -130,6 +130,10 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 				fragment = new Multiview();
 				//args.putString("title", "多页面设置");
 			break;
+//			case BookOptions.id:
+//				fragment = new BookOptions();
+//				//args.putString("title", "多页面设置");
+//			break;
 			case NightMode.id:
 				fragment = new NightMode();
 			break;
@@ -152,6 +156,14 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 	public void notifyChanged(Preference preference) {
 		if (pHandler!=null) {
 			pHandler.onSettingsChanged(this, preference);
+		} else {
+			showT("请从主程序打开设置界面！");
+		}
+	}
+	
+	public void showSearchSettingsDlg() {
+		if (pHandler!=null) {
+			pHandler.showSearchSettingsDlg(this, realm_id);
 		} else {
 			showT("请从主程序打开设置界面！");
 		}

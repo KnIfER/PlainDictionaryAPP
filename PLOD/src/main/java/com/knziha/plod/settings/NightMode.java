@@ -11,7 +11,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
-public class NightMode extends SettingsFragmentBase {
+public class NightMode extends PlainSettingsFragment {
 	public final static int id=R.xml.pref_nightmode;
 	public final static int requestCode=id&0xFFFF;
 	

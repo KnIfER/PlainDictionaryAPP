@@ -1,0 +1,64 @@
+<layout>
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:paddingTop="0dp">
+
+	<androidx.appcompat.widget.Toolbar
+		android:id="@+id/toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/barSize"
+		android:theme="@style/toolbarBaseTheme"
+		app:contentInsetLeft="0dp"
+		app:contentInsetStart="0dp"
+		app:contentInsetStartWithNavigation="0dp"
+		app:layout_scrollFlags="scroll|enterAlways|snap"
+		android:clipToPadding="false"
+		android:clipChildren="false"
+		android:minWidth="250dp"
+		>
+		<FrameLayout android:id="@+id/rlSearchFrameDelete"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:clipToPadding="false"
+			android:clipChildren="false"
+			android:paddingEnd="3dp"
+			>
+			<com.knziha.plod.widgets.EditTextmy
+				android:id="@+id/etSearch"
+				android:layout_width="fill_parent"
+				android:layout_height="match_parent"
+				android:textColor="#000"
+				android:singleLine="true"
+				android:paddingStart="@dimen/etSchPadSt"
+				android:paddingEnd="23dp"
+				android:imeOptions="actionSearch|flagNoExtractUi"
+				tools:text="HAPPY SEARCHING"
+				android:background="@null"
+				/>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:background="@drawable/abc_edit_text_material"
+				android:layout_marginStart="@dimen/etBotPadSt"
+				android:backgroundTint="#333"
+				/>
+		</FrameLayout>
+	</androidx.appcompat.widget.Toolbar>
+
+	<ListView
+		android:id="@android:id/list"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:background="#00ffffff"
+		android:divider="#00ffffff"
+		android:dividerHeight="2dp"
+	 />
+
+
+</LinearLayout>
+</layout>

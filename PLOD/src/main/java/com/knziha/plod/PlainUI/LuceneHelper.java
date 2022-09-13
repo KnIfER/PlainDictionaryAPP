@@ -149,7 +149,6 @@ public class LuceneHelper {
 		if (searcher!=null) {
 			searcher = null;
 		}
-		
 	}
 	
 	static class IndexedBook{

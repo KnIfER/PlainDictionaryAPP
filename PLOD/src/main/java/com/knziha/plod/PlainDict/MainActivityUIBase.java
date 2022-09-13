@@ -118,6 +118,7 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -163,6 +164,7 @@ import com.knziha.plod.PlainUI.NightModeSwitchPanel;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.SearchbarTools;
+import com.knziha.plod.PlainUI.SettingsSearcher;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.LexicalDBHelper;
@@ -193,6 +195,7 @@ import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
+import com.knziha.plod.settings.History;
 import com.knziha.plod.settings.Multiview;
 import com.knziha.plod.settings.NightMode;
 import com.knziha.plod.settings.SettingsActivity;
@@ -308,6 +311,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public List<View> wViews;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
 	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
+	SettingsSearcher settingsSearcher;
 	
 	//private static final String RegExp_VerbatimDelimiter = "[ ]{1,}|\\pP{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private static final Pattern RegImg = Pattern.compile("(png$)|(jpg$)|(jpeg$)|(tiff$)|(tif$)|(bmp$)|(webp$)", Pattern.CASE_INSENSITIVE);
@@ -4396,7 +4400,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						} break;
 						/* 词典设置 */
 						case R.string.dict_opt:{
-							showBookPreferences(invoker);
+							showBookPreferences(MainActivityUIBase.this, invoker);
 						} break;
 						/* 文字缩放级别 */
 						case R.string.f_scale_up:
@@ -5412,7 +5416,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				setGlobleCE(val==1);
 			break;
 			case 9:
-				launchSettings(10, 0);
+				launchSettings(History.id, 0);
 			break;
 			case 10:
 				toggleTTS();
@@ -6555,34 +6559,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void showDictTweaker(WebViewListHandler weblist) {
-		VerseKit tk = getVtk();
-		if (weblist.isMultiRecord()) {
-			if (weblist.isMergingFrames()) {
-				weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String val) {
-						CMN.debug("onReceiveValue::", val);
-						try {
-							val = val.substring(1, val.length() - 1);
-							String[] arr=val.split("_");
-							val = arr[0];
-							long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
-							val = arr[1];
-							long pos = IU.TextToNumber_SIXTWO_LE(val);
-							BookPresenter book = getBookById(id);
-							weblist.getMergedFrame().currentPos = pos;
-							book.currentDisplaying = book.getBookEntryAt((int) pos); // 权宜之计
-							tk.showDictTweaker(book, weblist.getMergedFrame());
-						} catch (Exception e) {
-							CMN.debug(e);
+		try {
+			VerseKit tk = getVtk();
+			if (weblist.isMultiRecord()) {
+				if (weblist.isMergingFrames()) {
+					weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String val) {
+							CMN.debug("onReceiveValue::", val);
+							try {
+								val = val.substring(1, val.length() - 1);
+								String[] arr=val.split("_");
+								val = arr[0];
+								long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
+								val = arr[1];
+								long pos = IU.TextToNumber_SIXTWO_LE(val);
+								BookPresenter book = getBookById(id);
+								weblist.getMergedFrame().currentPos = pos;
+								book.currentDisplaying = book.getBookEntryAt((int) pos); // 权宜之计
+								tk.showDictTweaker(book, weblist.getMergedFrame());
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
 						}
-					}
-				});
+					});
+				} else {
+					tk.showDictTweaker(weblist.scrollFocus.presenter, weblist.scrollFocus);
+				}
 			} else {
-				tk.showDictTweaker(weblist.scrollFocus.presenter, weblist.scrollFocus);
+				tk.showDictTweaker(weblist.getWebContext().presenter, weblist.getWebContext());
 			}
-		} else {
-			tk.showDictTweaker(weblist.getWebContext().presenter, weblist.getWebContext());
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -8014,7 +8022,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						else {
 							/* 查询跳转目标 */
-							int idx = invoker.bookImpl.lookUp("SMOKING", true);
+							int idx = invoker.bookImpl.lookUp(url, true);
 							CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
 								if(pop) { // 新窗口打开词条跳转
@@ -10711,7 +10719,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		setRequestedOrientation(ScreenOrientation[idx]);
 	}
 	
-	public void showBookPreferences(BookPresenter...books) {
+	public void showBookPreferences(FragmentActivity fa, BookPresenter...books) {
 		int jd = WeakReferenceHelper.dict_opt;
 		BookOptionsDialog dialog = (BookOptionsDialog) getReferencedObject(jd);
 		if (dialog==null) {
@@ -10721,7 +10729,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dialog.bookOptions.setData(books);
 		try {
 			if (!dialog.isAdded()) {
-				dialog.show(getSupportFragmentManager(), "");
+				dialog.show(fa.getSupportFragmentManager(), "");
 			} else {
 				dialog.getDialog().show();
 			}
@@ -11131,12 +11139,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public static class ViewHolder {
 		public boolean lastSch;
-		int position;
-		final View itemView;
-		WahahaTextView title;
-		WahahaTextView subtitle;
-		WahahaTextView preview;
-		ImageView loader;
+		public int position;
+		public final View itemView;
+		public WahahaTextView title;
+		public WahahaTextView subtitle;
+		public WahahaTextView preview;
+		public ImageView loader;
 		
 		public boolean selectable;
 		
@@ -11298,5 +11306,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void switchSearchEngineLst(boolean schEgn) {
+	}
+	
+	public void showSearchSettingsDlg(Activity context, int realm_id) {
+		if (context!=null) {
+			if (settingsSearcher==null) {
+				settingsSearcher = new SettingsSearcher(this);
+			}
+			settingsSearcher.show(context);
+		}
+	}
+	
+	public void showDictOptions(FragmentActivity fa) {
+		showBookPreferences(fa, currentDictionary);
 	}
 }
