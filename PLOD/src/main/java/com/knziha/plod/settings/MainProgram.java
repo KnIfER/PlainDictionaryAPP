@@ -100,6 +100,17 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 			case "back_web":
 				PDICMainAppOptions.setUseBackKeyGoWebViewBack((Boolean) newValue);
 				break;
+			case "conext":
+				int val = IU.parsint(newValue);
+				if(val>=4){
+					PDICMainAppOptions.setBackToHomePagePreventBack(val>4);
+				} else {
+					PDICMainAppOptions.setBackPrevention(val);
+					CMN.debug("setBackPrevention::", val, PDICMainAppOptions.getBackPrevention());
+					
+					preference.setSummary(getResources().getStringArray(R.array.conext_info)[val]);
+				}
+				break;
 			case "noext":
 				PDICMainAppOptions.exitToBackground((Boolean) newValue);
 				break;

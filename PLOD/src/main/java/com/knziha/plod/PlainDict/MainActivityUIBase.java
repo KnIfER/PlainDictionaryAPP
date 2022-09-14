@@ -2354,6 +2354,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(contentUIData==null) {
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 		}
+//		TypedValue typedValue = new TypedValue();
+//		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
+		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
+		titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).mutate().getConstantState();
+		
 		if(contentview==null) {
 			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
 			if (bottombar!=null) {
@@ -2368,9 +2373,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		weblistHandler.setUpContentView(cbar_key);
 		
-		TypedValue typedValue = new TypedValue();
-		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
-		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
 		setContentDetachType(1);
 		
 		if (etSearch!=null) {
@@ -4987,6 +4989,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			twoColumnAda.setItems(items);
 			
+			
 			// 设置标题
 			if(!bFromTextView && invoker!=null) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
@@ -4999,7 +5002,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				d.setTitle(R.string.text_operation);
 			}
 			
-			ViewUtils.setVisibility(bottomView.findViewById(R.id.appsettings), false);
+			// ViewUtils.setVisibility(bottomView.findViewById(R.id.appsettings), false);
 			
 			if(d.getWindow()!=null) {
 				d.getWindow().getAttributes().width = -2;
@@ -5561,38 +5564,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void showAppTweaker() {
-		String[] DictOpt = getResources().getStringArray(R.array.app_spec);
-		final String[] Coef = DictOpt[0].split("_");
-		final SpannableStringBuilder ssb = new SpannableStringBuilder();
-		
-		TextView tv = buildStandardConfigDialog(this, true, null, R.string.AppOpt);
-		Dialog configurableDialog = (Dialog) tv.getTag();
-
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 16, 1, 1, 0, false);//opt.isFullScreen()//全屏
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 17, 1, 1, 1, false);//opt.isContentBow()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 18, 1, 1, 2, false);//opt.getInDarkMode()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 46, 1, 1, 3, false);//opt.getUseVolumeBtn()//
-		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, null, 0, 0, 0x1, 0, 1, 1, -1, false);//隐藏标题
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 0, 1, 2, -1, false);//opt.getInheritePageScale()//
-		String[] Coef2 = new String[]{Coef[0], Coef[1], Coef[2]};
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef2, 0, 0, 0x3, 0, 2, 2, 4, false);//opt.getNavigationBtnType()//
-//		ssb.append("\r\n").append("\r\n");
-//		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
-//		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
-//		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
-		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 6, 1, 2, -1, false);//opt.getPageTurn1()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 12, Coef, 0, 0, 0x1, 7, 1, 2, -1, false);//opt.getPageTurn2()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 13, Coef, 0, 0, 0x1, 33, 1, 3, -1, false);//opt.getPageTurn3()//
-		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 15, Coef, 0, 1, 0x1, 28, 1, 3, 8, false);//opt.getAllowContentEidt()//编辑页面
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 14, Coef, 0, 0, 0x1, 9, 1, 2, 10, false);//opt.setHistoryStrategy0()//关闭历史纪录
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 16, null, 0, 0, 0x1, 0, 1, 2, 9, false);//历史纪录规则
-		//CMN.Log("ssb len:", ssb.length());
-		tv.setTag(null);
-		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-		configurableDialog.show();
+		// deprecating R.array.app_spec
+		showSearchSettingsDlg(this, -1);
 	}
 	
 	public void showExitDialog(boolean restart) {
@@ -6559,7 +6532,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void showDictTweaker(WebViewListHandler weblist) {
+		if(weblist!=null)
 		try {
+			this.weblist = weblist;
 			VerseKit tk = getVtk();
 			if (weblist.isMultiRecord()) {
 				if (weblist.isMergingFrames()) {
@@ -7449,11 +7424,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewListHandler wlh = getRandomPageHandler(true, false, presenter);
 			WebViewmy randomPage = wlh.getMergedFrame();
 			wlh.setStar(urlKey);
-			try {
-				href.recycle(); // This message cannot be recycled because it is still in use. ???
-			} catch (Exception e) {
-				CMN.debug(e);
-			}
+//			try {
+//				href.recycle(); // This message cannot be recycled because it is still in use. ???
+//			} catch (Exception e) {
+//				CMN.debug(e);
+//			}
 			randomPage.loadUrl(url);
 			return true;
 		}
@@ -8627,7 +8602,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								}
 							}
 							int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-							CMN.debug("文件", uri, mid);
+							//CMN.debug("文件", uri, mid);
 							if(mid>=0 && !(mid>=5&&mid<=18)) {
 								InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
 								if(input!=null) {
@@ -8646,7 +8621,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
-			return emptyResponse;
+			return null;
 		}
 		
 		@Override
@@ -10087,14 +10062,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public InputStream loadCommonAsset(String key) throws IOException {
-		//CMN.debug("loadCommonAsset::", key);
+		CMN.debug("loadCommonAsset::", key);
 		if (BuildConfig.DEBUG || hasRemoteDebugServer) {
 			try {
-				InputStream input = fileToStream(new File("/ASSET/MdbR/" + key));
+				String debugKey = (key.startsWith("MdbR/")? AssetTag:"/ASSET/MdbR/")+key;
+				InputStream input = fileToStream(new File(debugKey));
 				if(input!=null) return input;
 			} catch (Exception e) {
 				CMN.debug(key, e);
 			}
+		}
+		if (key.startsWith("MdbR/")) {
+			key = key.substring(5).replace("/", "\\");
 		}
 		byte[] data = CommonAssets.get(key);
 		if(data==null){
@@ -10126,11 +10105,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CMN.debug("getCommonAsset::", key);
 		if (BuildConfig.DEBUG || hasRemoteDebugServer) {
 			try {
-				String ret = fileToString("/ASSET/MdbR/"+key);
+				String debugKey = (key.startsWith("MdbR/")?AssetTag:"/ASSET/MdbR/")+key;
+				String ret = fileToString(debugKey);
 				if(ret!=null) return ret;
 			} catch (Exception e) {
 				CMN.debug(key, e);
 			}
+		}
+		if (key.startsWith("MdbR/")) {
+			key = key.substring(5).replace("/", "\\");
 		}
 		String ret = CommonAssetsStr.get(key);
 		if (ret==null) {
@@ -11038,8 +11021,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	Drawable.ConstantState titleDrawableCS;
 	public final Drawable titleDrawable() {
-		if(titleDrawableCS==null)
-			titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).mutate().getConstantState();
 		return titleDrawableCS.newDrawable();
 	}
 	
@@ -11313,11 +11294,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (settingsSearcher==null) {
 				settingsSearcher = new SettingsSearcher(this);
 			}
-			settingsSearcher.show(context);
+			settingsSearcher.show(context, realm_id);
 		}
 	}
 	
 	public void showDictOptions(FragmentActivity fa) {
 		showBookPreferences(fa, currentDictionary);
+	}
+	
+	public void checkTint() {
+		try {
+			if (weblist != null) {
+				if (weblist.dictView != null && weblist.dictView == weblist.mMergedFrame) {
+					weblist.getWebContext().presenter.tintBackground(weblist.getWebContext());
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 }

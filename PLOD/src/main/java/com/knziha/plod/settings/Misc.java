@@ -88,15 +88,6 @@ public class Misc extends PlainSettingsFragment implements Preference.OnPreferen
 			case "clear_sel":
 				PDICMainAppOptions.setUseBackKeyClearWebViewFocus((Boolean) newValue);
 			break;
-			case "conext":
-				int val = IU.parsint(newValue);
-				if(val>=4){
-					PDICMainAppOptions.setBackToHomePagePreventBack(val>4);
-				}else{
-					PDICMainAppOptions.setBackPrevention(val);
-					preference.setSummary(getResources().getStringArray(R.array.conext_info)[val]);
-				}
-			break;
 			case "hint_mod":
 				PDICMainAppOptions.setHintSearchMode((Boolean) newValue);
 			break;

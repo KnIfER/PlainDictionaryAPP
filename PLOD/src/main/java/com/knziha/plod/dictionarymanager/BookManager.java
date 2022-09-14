@@ -690,10 +690,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
 			if(!SU.isNotGroupSuffix(name)) {
-				if(!found && fSearch.equals(name)) {
-					found=true;
+				if (!found && fSearch.equals(name)) {
+					found = true;
+				} else {
+					setsArr.add(new File(ConfigFile, name));
 				}
-				setsArr.add(new File(ConfigFile, name));
 			}
 		}
         
@@ -704,15 +705,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		}
         
         lv.setAdapter(new BaseAdapter() {
-			@Override
-			public int getCount() { return setsArr.size(); }
-
-			@Override
-			public Object getItem(int position) { return setsArr.get(position); }
-
-			@Override
-			public long getItemId(int position) { return 0;
-			}
+			@Override public int getCount() { return setsArr.size(); }
+			@Override public Object getItem(int position) { return setsArr.get(position); }
+			@Override public long getItemId(int position) { return 0; }
 			OnClickListener myClicker = new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -818,18 +813,22 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					holder.modify.setImageResource(R.drawable.ic_mode_edit_24dp);
 				}
 			}});
-        AlertDialog.Builder builder = new AlertDialog.Builder(BookManager.this);
-        builder.setView(dialog);
-        builder.setIcon(R.mipmap.ic_directory_parent);
-        builder.setNeutralButton(R.string.delete,null);
-        builder.setPositiveButton(R.string.cancel,null);
-        final AlertDialog d = builder.create();
+		final AlertDialog d = new AlertDialog.Builder(BookManager.this)
+				.setView(dialog)
+				.setIcon(R.mipmap.ic_directory_parent)
+				.setNeutralButton(R.string.delete,null)
+				.setPositiveButton("保存", null)
+				.setNegativeButton(R.string.cancel,null)
+				.create();
+		// d.findViewById(android.R.id.button1)//todo opt
 
         d.setOnDismissListener(dialog1 -> tr.afterTransfer());
         d.show();
-        iv.setOnClickListener(v -> {
+        iv.setOnClickListener(v ->
+		{
 			String newName = SU.trimStart(et.getText().toString());
-			if(newName.equals("") || newName.contains("/")) {
+			if(newName.equals("") || newName.contains("/"))
+			{
 				show(R.string.renamefail0);
 				return;
 			}
@@ -852,7 +851,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				});
 				dd.show();
-			}else {
+			}
+			else {
 				if(tr.transfer(newf)) {
 					d.dismiss();
 				} else {
@@ -864,7 +864,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			deleting = !deleting;
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
 		});
-        d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
+		d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> iv.performClick());
+        // d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
 	}
 	
 	
@@ -1047,7 +1048,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					@Override
 					public boolean transfer(File to) {
 						String newItem = to.getName().substring(0,to.getName().length()-4);
-						boolean append=false;
+						boolean append=true;
 						if(to.exists()) {//文件覆盖已预先处理。
 							append = f2.adapter.getPosition(newItem)==-1;
 						}

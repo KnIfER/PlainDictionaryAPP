@@ -144,7 +144,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	}
 	
 	private Object GetSetIntField(BookPresenter datum, String key, boolean get, Object val) {
-		CMN.Log("GetSetIntField", key, get, val);
+		CMN.debug("GetSetIntField", key, get, val);
 		if (datum instanceof MagentTransient) datum.getFirstFlag();
 		if(datum!=null) {
 			switch (key){
@@ -358,6 +358,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						value = GetSetIntField(datum, rtrStr, b1, str.length()==3);
 						if(b1) return IU.parseBool(value);
 					}
+					if (getActivity() instanceof MainActivityUIBase) {
+						((MainActivityUIBase)getActivity()).checkTint();
+					}
 					return true;
 				}
 			}
@@ -366,6 +369,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				int val = IU.parsint(newValue, 0);
 				for (BookPresenter datum:data) {
 					GetSetIntField(datum, key, false, val);
+				}
+				if (getActivity() instanceof MainActivityUIBase) {
+					((MainActivityUIBase)getActivity()).checkTint();
 				}
 				if(preference instanceof ColorPickerPreference)
 					MainProgram.setColorPreferenceTitle(preference, val);

@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -503,12 +502,14 @@ public abstract class MdictServer extends NanoHTTPD {
 			if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("/")==0) {
 				int sid = uri.lastIndexOf(".");
 				if(sid>0 && sid<uri.length()-2) {
+					String decoded = null;
 					//SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
-					if(presenter.isHasExtStyle()
-							&& uri.endsWith(".css")
-							&& uri.regionMatches(1, presenter.getDictionaryName(), 0, sid-1))
+					if(presenter.isHasExtStyle() && uri.endsWith(".css"))
 					{
-						return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(uri));
+						decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
+						if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
+						return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(decoded));
+						}
 					}
 					if(PDICMainAppOptions.getAllowPlugRes()) {
 						if(PDICMainAppOptions.getAllowPlugResSame()) {
@@ -528,7 +529,9 @@ public abstract class MdictServer extends NanoHTTPD {
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
 						SU.Log("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
-							InputStream input = presenter.getDebuggingResource(uri);
+							if(decoded==null)
+								decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
+							InputStream input = presenter.getDebuggingResource(decoded);
 							if(input!=null) {
 								String MIME = mid==0?"application/x-javascript"
 										:mid==2?"text/css"

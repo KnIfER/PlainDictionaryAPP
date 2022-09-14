@@ -958,6 +958,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		
 		if(ViewUtils.checkSetVersion(versions, 1, a.MainAppBackground)) {
 			contentUIData.bottombar2.setBackgroundColor(a.MainAppBackground);
+			if (pageSchBar != null) {
+				pageSchBar.setBackgroundColor(a.MainAppBackground);
+			}
 		}
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground)) {
 			//if(widget12.getTag(R.id.image)==null)
@@ -1473,7 +1476,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			
 			bar.setContentInsetsAbsolute(0, 0);
 			if(!a.isMultiShare())bar.setLayoutParams(a.toolbar.getLayoutParams());
-			bar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
+			bar.setBackgroundColor(a.MainAppBackground);
 			bar.findViewById(R.id.ivDeleteText).setOnClickListener(this);
 			bar.findViewById(R.id.enter).setOnClickListener(this);
 			this.pageSchBar = bar;
@@ -1863,7 +1866,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public final WebViewmy getWebContext() {
-		//CMN.Log("getWebContext::", isViewSingle(), dictView==null);
+		//CMN.debug("getWebContext::", CMN.idStr(this), src, isViewSingle(), dictView==null);
 		return isViewSingle() ?
 				/*isMultiRecord()*/dictView==null ? getMergedFrame() : dictView
 				: scrollFocus;

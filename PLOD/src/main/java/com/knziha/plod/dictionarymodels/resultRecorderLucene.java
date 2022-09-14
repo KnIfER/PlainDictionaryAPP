@@ -193,14 +193,12 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 	
 	@Override
 	public ArrayList<Long> getBooksAt(ArrayList<Long> books, int pos) {
-//		if(books==null) books=new ArrayList<>();
-//		else {books.clear();}
-//		if(results_size<=0 || pos<0 || pos>results_size-1)
-//			return books;
-//		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
-//		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
-//			return books;
-//		books.add(firstLookUpTable[Rgn+1]);
+		if(books==null) books=new ArrayList<>();
+		else {books.clear();}
+		if(result_size<=0 || pos<0 || pos>=result_size)
+			return books;
+		long id = getOneDictAt(pos);
+		books.add(id);
 		return books;
 	}
 	

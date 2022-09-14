@@ -358,7 +358,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	protected void onCreateContextMenu(ContextMenu menu){
 		//Toast.makeText(getContext(), "ONCCM", 0).show();
-		CMN.Log("webview onCreateContextMenu");
+		CMN.debug("webview onCreateContextMenu");
 		super.onCreateContextMenu(menu);
 	}
 
@@ -772,6 +772,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	public void clearFocus() {
 		CMN.Log("wv::clearFocus");
+		if (presenter.a!=null && presenter.a.stopped) {
+			return;
+		}
 		super.clearFocus();
 	}
 	
@@ -922,14 +925,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		String shareText=getShareText();
 		String SelectAllText=getSelectText();
-		CMN.Log("SelectAllText", SelectAllText, System.identityHashCode(SelectAllText));
+		//CMN.Log("SelectAllText", SelectAllText, System.identityHashCode(SelectAllText));
 		int findCount=2;
 		int ToolsOrder=0;
 		for(int i=0;i<menu.size();i++) {
 			MenuItem m = menu.getItem(i);
 			String title = m.getTitle().toString();
 			int id = m.getItemId();
-			CMN.Log("menu id::", menu, title, Integer.toHexString(id));
+			//CMN.debug("menu id::", menu, title, Integer.toHexString(id));
 			if(title.equals(shareText)) {
 				menu.removeItem(id);//移除 分享
 				i--;
@@ -1242,7 +1245,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			field.setAccessible(true);
 			result = field.getInt(null);
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		return result;
 	}

@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/_30_"
     android:background="@drawable/surrtrip2"
-	android:paddingStart="8dp"
 	>
 	<com.knziha.filepicker.widget.CircleCheckBox
 	    android:id="@+id/check1"
@@ -38,5 +37,15 @@
 		android:layout_weight="1"
 		/>
 
-	<include layout="@layout/checker_s" />
+	<HorizontalScrollView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		>
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			>
+			<include layout="@layout/checker_s" />
+		</LinearLayout>
+	</HorizontalScrollView>
 </LinearLayout>

@@ -66,7 +66,8 @@ public class VersionUtils {
 			PDICMainAppOptions.darkSystem(Build.VERSION.SDK_INT>=29 && !RomUtils.isMIUI());
 			PDICMainAppOptions.setEnableSuperImmersiveScrollMode(GlobalOptions.isSmall);
 			
-			PDICMainAppOptions.restoreLastSch(false);
+			PDICMainAppOptions.restoreLastSch(false); // 默认不恢复
+			//PDICMainAppOptions.setAllowPlugResSame(false); // 默认允许加载
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);

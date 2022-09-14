@@ -1039,6 +1039,10 @@ function debug(e){console.log(e)};
 					showDictTweaker(mWebView, a, this);
 					break;
 				}
+				if (isMergedBook()) {
+					a.showDictTweaker(mWebView.weblistHandler);
+					break;
+				}
 				a.getVtk().setInvoker(this, mWebView, null, null);
 				a.getVtk().onClick(null);
 				break;
@@ -1244,20 +1248,21 @@ function debug(e){console.log(e)};
 			debuggingSlots=new ConcurrentHashMap<>(32);
 		}
 		Integer val = debuggingSlots.get(uri);
-		if(val!=null || debuggingSlots.size()<24)
-		{
-			String p=getPath();
+		if (val != null || debuggingSlots.size() < 24) {
+			String p = getPath();
 			p = p.substring(0, p.lastIndexOf(File.separator));
-			File file = new File(p+uri).getCanonicalFile();
-			//CMN.debug("getDebuggingResource::", file, file.exists(), p, val);
+			File file = new File(p + uri).getCanonicalFile();
+			CMN.debug("getDebuggingResource::", file, file.exists(), p, val);
 			if (file.getPath().startsWith(p)) {
-				if(val==null) {
-					debuggingSlots.put(uri, val=file.exists()?1:0);
+				if (val == null) {
+					debuggingSlots.put(uri, val = file.exists() ? 1 : 0);
 				}
-				if(val==1) {
+				if (val == 1) {
 					return new AutoCloseInputStream(new FileInputStream(file));
 				}
 			}
+		} else {
+			CMN.debug("getDebuggingResource::rejected", val, debuggingSlots.size());
 		}
 		return null;
 	}
@@ -1969,7 +1974,7 @@ function debug(e){console.log(e)};
 					:useInternal? tbgColor
 					:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground
 					:opt.getTitlebarBackgroundColor();
-			CMN.debug("使用内置标题栏颜色：", useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
+			CMN.debug("使用内置标题栏颜色：", this, useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
 			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop)

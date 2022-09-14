@@ -74,6 +74,10 @@
 			android:enabled="false"
 			/>
 
+	<PreferenceCategory
+		android:key="files"
+		android:title="从文件系统加载资源"
+		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugCss"
 			android:title="允许加载同名css文件"
@@ -85,7 +89,7 @@
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugRes"
 			android:title="允许检测同目录资源文件"
-			android:summary="仅支持一级目录，限制最大文件名长度为30，支持js/css/jpg/png/webp/svg/ico/ini后缀，同一词典至多加载20个不同的文件。"
+			android:summary="仅支持一级目录，限制最大文件名长度为30，支持js/css/ini后缀，同一词典至多加载20个不同的文件。"
 			android:persistent="false"
 			/>
 
@@ -102,6 +106,7 @@
 			android:title="仅在父级目录与词典名称相似时，才检测同目录资源文件"
 			android:persistent="false"
 			/>
+	</PreferenceCategory>
 
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="unpackRes"-->

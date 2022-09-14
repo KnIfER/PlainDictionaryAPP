@@ -936,9 +936,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 
 	public void initViews(MainActivityUIBase a) {
-		//CMN.Log("inflateContentView");
 		contentUIData = ContentviewBinding.inflate(a.getLayoutInflater(), root,false);
 		weblistHandler = new WebViewListHandler(a, contentUIData, SearchUI.Fye.MAIN);
+		//CMN.debug("inflateContentView", CMN.idStr(weblistHandler), this);
 		lv1.setAdapter(ActivedAdapter = entryAdapter = new LeftViewAdapter());
 		lv2.setAdapter(bmsAdapter = new RightViewAdapter());
 		
@@ -1093,8 +1093,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		mWebView.evaluateJavascript(isDark? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		bottombar.setBackgroundColor(filteredColor);
-		contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
-		contentUIData.webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
+		weblistHandler.checkUI();
+//		contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
+//		contentUIData.webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
 	}
 
 	float spsubs;
@@ -1195,9 +1196,20 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				a.stopAutoReadProcess();
 				return;
 			}
-			if(mDialog!=null && mDialog.getCurrentFocus()==mWebView && mWebView.bIsActionMenuShown) {
-				mWebView.clearFocus();
-				return;
+			if(mDialog!=null) {
+				View view = mDialog.getCurrentFocus();
+				if (view instanceof WebViewmy) {
+					if (((WebViewmy) view).bIsActionMenuShown) {
+						view.clearFocus();
+						return;
+					}
+				}
+				else if (view instanceof TextView) {
+					if (((TextView) view).hasSelection()) {
+						view.clearFocus();
+						return;
+					}
+				}
 			}
 			if(ViewUtils.removeIfParentBeOrNotBe(a.wordPopup.popupContentView, root, true)){
 				a.wordPopup.popupContentView = null;
@@ -1442,6 +1454,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	MainActivityUIBase a = getMainActivity();
         	if(a==null) return;
 			int pos = position-NumPreEmpter;
+			if (pos>=recyclerBin.size() || pos>=bookIds.size()) {
+				return;
+			}
 			
 			if(selection!=null) {
 				((LayerDrawable) selection.getBackground()).getDrawable(0).setAlpha(0);
@@ -2357,9 +2372,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					closeMenu = false;
 				} break;
 				case R.id.translate: {
-					MenuItemImpl mSTd = a.getMenuSTd(R.id.translate);
-					mSTd.isLongClicked = isLongClicked;
-					a.onMenuItemClick(mSTd);
+					a.onMenuItemClick(trumen);
 				} break;
 				case R.id.pause: {
 					PDICMainAppOptions.fyePaused(checked);

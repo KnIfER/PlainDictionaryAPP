@@ -357,7 +357,7 @@ public class SettingsSearcher {
 	SettingsSearcherDlg dialog;
 	String lastSearch;
 	
-	public void show(Activity context) {
+	public void show(Activity context, int realm_id) {
 		if (dialog == null) {
 			dialog = new SettingsSearcherDlg();
 		}
@@ -418,7 +418,7 @@ public class SettingsSearcher {
 				});
 				ActionMenuItemView ivSch = toolbar.findViewById(R.id.search);
 				if (GlobalOptions.isDark) {
-					etSearch.setTextColor(a.AppWhite);
+					etSearch.setTextColor(a.AppBlack);
 				} else {
 					//iv.setIcon(iv.getIcon().getConstantState().newDrawable());
 					ivSch.getIcon().mutate().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
@@ -435,7 +435,8 @@ public class SettingsSearcher {
 				});
 			}
 			AlertDialog dialog = dialogRef.get();
-			if (dialog==null || dialog.getContext()!=context) {
+			boolean b1 = dialog==null || dialog.getContext()!=context;
+			if (b1) {
 				ViewUtils.removeView(mView);
 				if (dialog!=null) dialog.dismiss();
 				dialog = new AlertDialog.Builder(context)
@@ -451,7 +452,7 @@ public class SettingsSearcher {
 			}
 			dialog.show();
 			etSearch.requestFocus();
-			etSearch.postDelayed((Runnable) etSearch.getTag(), 180);
+			etSearch.postDelayed((Runnable) etSearch.getTag(), b1?250: 180);
 			//dialog.mAlert.wikiBtn.setAlpha(0.3f);
 			ViewUtils.ensureWindowType(dialog, a, null);
 		}
