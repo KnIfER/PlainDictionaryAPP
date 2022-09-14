@@ -3423,10 +3423,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(ActivedAdapter!=null) ActivedAdapter.ClearVOA();
 		//adaptermy.notifyDataSetChanged();
 		
-		if (dictPicker.autoSchPDict()) {
+		
+		adaptermy2.currentKeyText=null;
+		
+		/*if (dictPicker.autoSchPDict()) */{
 			CombinedSearchTask_lastKey=null;
 			adaptermy2.results.shutUp();
-			adaptermy2.currentKeyText=null;
 			adaptermy2.notifyDataSetChanged();
 			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 		}

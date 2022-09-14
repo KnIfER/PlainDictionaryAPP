@@ -67,7 +67,7 @@ public class VersionUtils {
 			PDICMainAppOptions.setEnableSuperImmersiveScrollMode(GlobalOptions.isSmall);
 			
 			PDICMainAppOptions.restoreLastSch(false); // 默认不恢复
-			//PDICMainAppOptions.setAllowPlugResSame(false); // 默认允许加载
+			PDICMainAppOptions.setAllowPlugResSame(false); // 默认允许加载
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);
