@@ -759,7 +759,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			result = loadManager.md_get(dictPicker.adapter_idx=i);
 			bShowLoadErr=bShowErr;
 			
-			if (CurrentViewPage == 1) {
+			if (CurrentViewPage == 1 || true) {
 				currentDictionary = result;
 				if (adaptermy != null) {
 					adaptermy.setPresenter(result);
