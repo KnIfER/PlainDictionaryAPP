@@ -25,6 +25,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -190,6 +191,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 				imageView.setScaleX(1);
 				imageView.setScaleY(1);
 				imageView.setRotation(0);
+				imageView.setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
 				String url=imageUrls[position];
 				vh.path = url;
 				try {
