@@ -3227,20 +3227,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				item.setChecked(newVal);
 				ViewUtils.setVisible(UIData.schtools, newVal);
 			} break;
-			case R.id.peruseList:{//切换主列表翻阅模式
-				if(isLongClicked){
-					AttachPeruseView(false);
-					ret=true;
-				} else {
-					boolean newVal = !item.isChecked();
-					item.setChecked(newVal);
-					opt.setInPeruseMode(newVal);
-					if (opt.getInPeruseMode()) {
-						showTopSnack(null, "点击列表，即进入翻阅模式"
-								, 1f, LONG_DURATION_MS, Gravity.CENTER, 0);
-					}
-				}
-			} break;
 		}
 		if(closeMenu)
 			closeIfNoActionView(mmi);

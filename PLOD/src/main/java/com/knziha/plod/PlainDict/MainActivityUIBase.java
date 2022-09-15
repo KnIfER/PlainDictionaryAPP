@@ -6818,37 +6818,59 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.peruseMode:{
 				ret = closeMenu = true;
 				isLongClicked &= ActivedAdapter!=null;
-				String nowKey=isLongClicked?null:(ActivedAdapter.currentKeyText());
-				boolean proceed=true;
 				if(true && !isLongClicked){
-					WebViewmy currentWebFocus;
-					if(getCurrentFocus() instanceof WebViewmy)
-						currentWebFocus = (WebViewmy) getCurrentFocus();
-					else{
-						currentWebFocus = getCurrentWebContext();
-					}
-					if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
-						proceed = false;
-						currentWebFocus.evaluateJavascript("getSelection().toString()", value -> {
-							String newKey = nowKey;
-							if (value.length() > 2) {
-								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-								if (value.length() > 0) {
-									newKey = value;
-								}
-							}
-							JumpToPeruseModeWithWord(newKey);
-						});
-					}
+					EnterPeruseModeByContent(isLongClicked);
 				}
-				if(proceed && ActivedAdapter!=null){
-					JumpToPeruseModeWithWord(nowKey);
+			} break;
+			case R.id.peruseList:{//切换主列表翻阅模式
+				if(isLongClicked) {
+					AttachPeruseView(false);
+					ret=true;
+				} else {
+					if (isContentViewAttached()) {
+						EnterPeruseModeByContent(false);
+					} else {
+						boolean newVal = !item.isChecked();
+						item.setChecked(newVal);
+						opt.setInPeruseMode(newVal);
+						if (opt.getInPeruseMode()) {
+							showTopSnack(null, "点击列表，即进入翻阅模式"
+									, 1f, LONG_DURATION_MS, Gravity.CENTER, 0);
+						}
+					}
 				}
 			} break;
 		}
 		if(closeMenu)
 			closeIfNoActionView(mmi);
 		return ret;
+	}
+	
+	private void EnterPeruseModeByContent(boolean isLongClicked) {
+		String nowKey=isLongClicked?null:(ActivedAdapter.currentKeyText());
+		boolean proceed=true;
+		WebViewmy currentWebFocus;
+		if(getCurrentFocus() instanceof WebViewmy)
+			currentWebFocus = (WebViewmy) getCurrentFocus();
+		else{
+			currentWebFocus = getCurrentWebContext();
+		}
+		if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
+			proceed = false;
+			currentWebFocus.evaluateJavascript("getSelection().toString()", value -> {
+				String newKey = nowKey;
+				if (value.length() > 2) {
+					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+					if (value.length() > 0) {
+						newKey = value;
+					}
+				}
+				JumpToPeruseModeWithWord(newKey);
+			});
+		}
+		if(proceed && ActivedAdapter!=null){
+			JumpToPeruseModeWithWord(nowKey);
+		}
 	}
 	
 	private void resetMerge(int which, boolean dlg) {

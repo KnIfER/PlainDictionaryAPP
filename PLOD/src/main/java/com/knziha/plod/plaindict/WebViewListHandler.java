@@ -297,7 +297,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void removeAllViews() {
-		//CMN.Log("removeAllViews!!!");
+//		try {
+//			throw new RuntimeException();
+//		} catch (RuntimeException e) {
+//			CMN.debug("removeAllViews::", e);
+//		}
 		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:contentUIData.webholder).removeAllViews();
 	}
 	
@@ -531,7 +535,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.webcontentlister.setPadding(0,0,0,0);
 			bShowingInPopup = false;
 		}
-		if(bMergingFrames!=mergeWebHolder) {
+		if(bMergingFrames!=mergeWebHolder || getViewGroup().getChildCount()==0) {
 			CMN.debug("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
 			if(mergeWebHolder==0) {
 				contentUIData.webcontentlister.setAlpha(1);

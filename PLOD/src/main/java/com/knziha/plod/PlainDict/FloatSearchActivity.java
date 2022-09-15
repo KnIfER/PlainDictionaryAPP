@@ -75,6 +75,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		if (super.PerFormBackPrevention(bBackBtn)) {
 			return true;
 		}
+		
+		if(isContentViewAttached() && true) {
+			DetachContentView(false);
+			return true;
+		}
+		
 		if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()) {
 			moveTaskToBack(false);
 			return true;
@@ -128,6 +134,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	void refreshUIColors() {
 		boolean isHalo=!GlobalOptions.isDark;
 		MainAppBackground = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		CMN.FloatAppBackground = MainAppBackground;
 		int filteredColor = MainAppBackground;
 		lv.setBackgroundColor(AppWhite);
 		lv2.setBackgroundColor(AppWhite);
@@ -291,9 +298,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		AllMenusStamp = Arrays.asList(AllMenus.getItems().toArray(new MenuItemImpl[AllMenus.size()]));
 	
-		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
-		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 3, 2, 4, 5, 6);
+		MainMenu = SingleContentMenu = Multi_ContentMenu
+				= ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 3, 2, 4, 5, 6, 8, 9);
+		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		
 		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
 		PeruseListModeMenu.setChecked(opt.getInFloatPeruseMode());
@@ -392,7 +399,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
-
+		adaptermy.setPresenter(currentDictionary);
+		
 			String keytmp = processIntent(getIntent());
 	        etSearch.addTextChangedListener(tw1);
 	        bWantsSelection=true;
@@ -686,6 +694,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
 		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
+		
+		//contentviewDetachType = 0;
 	}
 	
 	protected void exit() {
@@ -798,7 +808,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 						bIsFirstLaunch=true;
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 					}
-				}else {//back
+				} else {//back
 					contentUIData.webcontentlister.setVisibility(View.GONE);
 					bWantsSelection=false;
 					if(webSingleholder.getChildCount()!=0) {
@@ -859,8 +869,15 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		webSingleholder.removeAllViews();
 		weblistHandler.removeAllViews();
 		bIsFirstLaunch = true;
-		//todo 有时白，fowhy.
 		CombinedSearchTask_lastKey = null;
+		
+		adaptermy2.currentKeyText=null;
+		/*if (dictPicker.autoSchPDict()) */{
+			CombinedSearchTask_lastKey=null;
+			adaptermy2.results.shutUp();
+			adaptermy2.notifyDataSetChanged();
+		}
+		
 		tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 	}
 
@@ -868,5 +885,14 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public int getVisibleHeight() {
 		return root.getHeight();
 	}
-
+	
+	@Override
+	void DetachContentView(boolean leaving) {
+		ViewUtils.removeView(contentview);
+	}
+//
+//	@Override
+//	public boolean isContentViewAttached() {
+//		return contentUIData.webcontentlister.getVisibility()==View.VISIBLE;
+//	}
 }

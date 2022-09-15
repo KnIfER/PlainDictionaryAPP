@@ -2162,7 +2162,8 @@ function debug(e){console.log(e)};
 				|| mWebView.weblistHandler.bDataOnly
 				//|| mWebView.weblistHandler.getSrc()==SearchUI.TapSch.MAIN && true
 				;
-    	//CMN.Log("loadUrl::", loadUrl);
+		//loadUrl = true;
+    	//CMN.debug("loadUrl::", loadUrl);
 		try {
 			if(bookImpl.hasVirtualIndex())
 				try {
@@ -2924,8 +2925,12 @@ function debug(e){console.log(e)};
 							}
 						}
 					}
-				} else if(url.startsWith("/settings.json")) {
-					return server.getSettings();
+				}
+				else if(url.startsWith("/settings.json")) {
+					com.alibaba.fastjson.JSONObject json = new com.alibaba.fastjson.JSONObject();
+					json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
+					json.put("bgr", SU.toHexRGB(a.thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
+					return json.toString();
 				}
 			} catch (Exception e) {
 				CMN.debug(e);

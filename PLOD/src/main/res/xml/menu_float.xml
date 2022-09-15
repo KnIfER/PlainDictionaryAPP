@@ -8,15 +8,20 @@
 
 <!--1--><item android:title="@string/fold_all" android:id="@+id/toolbar_action0" android:visible="false" app:showAsAction="never"/>
 
-<!--2--><item android:title="@string/switch_set" android:id="@+id/toolbar_action3" android:icon="@drawable/book_list" app:showAsAction="never"/>
+<!--2--><item android:title="@string/switch_set" android:id="@+id/toolbar_action3" android:icon="@drawable/book_bundle" app:showAsAction="always"/>
 
 <!--3--><item android:title="@string/switch_dict" android:id="@+id/toolbar_action2" app:showAsAction="never"/>
 
 <!--4--><item android:title="页内查找" android:id="@+id/toolbar_action5" android:checkable="true" android:icon="@drawable/book_list" app:showAsAction="never"/>
 
-<!--5--><item android:title="点击翻译" android:id="@+id/remPagePos" android:checkable="true" android:icon="@drawable/book_list" app:showAsAction="never"/>
+<!--5--><item android:title="点击翻译" android:id="@+id/tapSch" android:checkable="true" android:icon="@drawable/book_list" app:showAsAction="never"/>
 
 <!--6--><item android:title="@string/favorite" android:id="@+id/toolbar_action4" android:icon="@drawable/star_ic" app:showAsAction="never"/>
 
 <!--7--><item android:title="翻阅模式" android:id="@+id/peruseList" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
- </menu>
+
+<!--8--><item android:title="多页面设置" android:id="@+id/viewMode" android:icon="@drawable/ic_viewpager_carousel_vertical" app:showAsAction="never" />
+
+<!--9--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="never"/>
+
+</menu>
