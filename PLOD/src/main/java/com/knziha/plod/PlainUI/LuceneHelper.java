@@ -1,6 +1,7 @@
 package com.knziha.plod.PlainUI;
 
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -460,6 +461,9 @@ public class LuceneHelper {
 							vh.ck.setChecked(enabled && indexingBooks.contains(ph));
 							vh.title.setEnabled(enabled);
 							vh.title.setTextColor(enabled ? a.AppBlack : Color.GRAY);
+							if(GlobalOptions.isDark) {
+								convertView.getBackground().setColorFilter(0x39ffffff & a.AppBlack, PorterDuff.Mode.SRC_IN);
+							}
 							vh.handle.setVisibility(View.GONE);
 							return convertView;
 						}

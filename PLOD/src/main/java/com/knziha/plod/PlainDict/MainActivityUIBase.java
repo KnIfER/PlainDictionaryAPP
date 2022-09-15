@@ -8449,7 +8449,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				key = URLDecoder.decode(key,"UTF-8");
 			} catch (Exception ignored) { }
 			key=key.replace("/", SepWindows);
-			CMN.debug("chrochro_inter_key is",key, fakedDomainResponse);
+			CMN.debug("chrochro_inter_key is", key, fakedDomainResponse);
 			if(!key.startsWith(SepWindows)) key=SepWindows+key;
 			if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
 			
@@ -10016,7 +10016,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} catch (Exception e) {
 				errRinfo = CMN.Log(e);
 			}
-			return errRinfo;
+			return null;
 		} else {
 			return com.knziha.plod.dictionary.Utils.BU.fileToString(new File(path));
 		}

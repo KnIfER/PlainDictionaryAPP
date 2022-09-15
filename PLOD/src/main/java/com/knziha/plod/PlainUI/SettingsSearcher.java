@@ -482,6 +482,7 @@ public class SettingsSearcher {
 			DocEntry entry = results.get(position);
 			entry.bake(SettingsSearcher.this);
 			vh.title.setText(entry.title/*+entry.pid*/);
+			vh.title.setTextColor(a.AppBlack);
 			vh.preview.setText(entry.summary);
 			ViewUtils.setVisible(vh.preview, !TextUtils.isEmpty(entry.summary));
 			vh.subtitle.setText(entry.path);

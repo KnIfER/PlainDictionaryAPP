@@ -1840,26 +1840,27 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			weblistHandler.togSchPage();
 //		if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("译");
 		//if(false)
-		root.postDelayed(() -> {
-			//lv.getChildAt(0).performClick();
+		if (BuildConfig.DEBUG) {
+			root.postDelayed(() -> {
+				//lv.getChildAt(0).performClick();
 //			View cover=((ViewGroup) currentDictionary.mWebView.getParent()).getChildAt(0).findViewById(R.id.cover);
 //			cover.setTag(0); cover.performClick();
 //			ucc.setInvoker(currentDictionary, currentDictionary.mWebView);
-
-			//ReadText("I've worked with TTS a couple of years ago and remember, that there were not so much configuration possibilities.，中国网科技1月6日讯 针对近期比特大陆大规模裁员消息。比特大陆创始人、第一大股东詹克团今日下午再发公开信，称坚决反对这样裁员，自己必须要站出来。他认为，比特大陆有足够的金支持现有员工成本，在AI市场可以像矿机一样从零做到世界第一。");
-			//showTTS();
-			//showSoundTweaker();
-			//JumpToPeruseModeWithWord("doctrine");
-			//myWebCClient.onShowCustomView(v, null);
-
-			//widget12.performLongClick();
-
-			//toolbar.setPopupTheme(R.style.toolbarBaseTheme_dark);
-		}, 350);
-
-		//showAppTweaker();
-		if(CMN.testFLoatSearch)
-			startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
+				
+				//ReadText("I've worked with TTS a couple of years ago and remember, that there were not so much configuration possibilities.，中国网科技1月6日讯 针对近期比特大陆大规模裁员消息。比特大陆创始人、第一大股东詹克团今日下午再发公开信，称坚决反对这样裁员，自己必须要站出来。他认为，比特大陆有足够的金支持现有员工成本，在AI市场可以像矿机一样从零做到世界第一。");
+				//showTTS();
+				//showSoundTweaker();
+				//JumpToPeruseModeWithWord("doctrine");
+				//myWebCClient.onShowCustomView(v, null);
+				
+				//widget12.performLongClick();
+				
+				//toolbar.setPopupTheme(R.style.toolbarBaseTheme_dark);
+			}, 350);
+			//showAppTweaker();
+			//if(CMN.testFLoatSearch)
+				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
+		}
 
 		//JumpToWord("crayon", 1);
 

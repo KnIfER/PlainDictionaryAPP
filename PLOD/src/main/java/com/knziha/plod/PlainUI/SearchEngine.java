@@ -150,6 +150,10 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 		String bookName = helper.indexedbooks.get(position).name;
 		vh.title.setText(bookName);
 		vh.handle.setVisibility(View.GONE);
+		if(GlobalOptions.isDark) {
+			convertView.getBackground().setColorFilter(0x39ffffff & a.AppBlack, PorterDuff.Mode.SRC_IN);
+		}
+		vh.title.setTextColor(a.AppBlack);
 		boolean checked = false;
 		if (schGroup == 0) {
 			checked = a.loadManager.map().containsKey(bookName);
