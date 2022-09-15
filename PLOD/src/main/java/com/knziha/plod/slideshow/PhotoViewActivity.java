@@ -143,6 +143,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 			indicator.setVisibility(View.GONE);
 		}
 		background = findViewById(R.id.background);
+		background.setBackgroundColor(GlobalOptions.isDark?0x33333333:Color.WHITE);
 		float_menu = findViewById(R.id.float_menu);
 		float_exit = findViewById(R.id.float_back);
 		viewPager = findViewById(R.id.pager);
