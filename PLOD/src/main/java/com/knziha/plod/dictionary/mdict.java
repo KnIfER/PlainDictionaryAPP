@@ -372,8 +372,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
-			SU.Log("reducearound:"+(start + len - 1)+"@"+len+": "+new String(_key_block_info_list[start + len - 1].tailerKeyText));
-			SU.Log(start+"::"+end+"   "+new String(_key_block_info_list[start].tailerKeyText,_charset)+"::"+new String(_key_block_info_list[end==_key_block_info_list.length?end-1:end].tailerKeyText,_charset));
+			//SU.Log("reducearound:"+(start + len - 1)+"@"+len+": "+new String(_key_block_info_list[start + len - 1].tailerKeyText));
+			//SU.Log(start+"::"+end+"   "+new String(_key_block_info_list[start].tailerKeyText,_charset)+"::"+new String(_key_block_info_list[end==_key_block_info_list.length?end-1:end].tailerKeyText,_charset));
 			String zhujio = new String(_key_block_info_list[start + len - 1].tailerKeyText,_charset);
 			return phrase.compareTo(/*isCompact*/false?zhujio:processMyText(zhujio))>0
 					? reduce_index_with_keycase(phrase,start+len,end)
@@ -501,7 +501,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 			
 			if(isSrict) {
-				SU.Log(keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
+				//SU.Log(keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
 		}
