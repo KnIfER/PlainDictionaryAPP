@@ -138,19 +138,22 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void refresh() {
-		if(mWebView !=null){
+		if(mWebView != null){
 			if(GlobalOptions.isDark){
 				popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 				pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 				popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
-			} else if(popIvBack.getTag()!=null){
-				popupContentView.getBackground().clearColorFilter();
-				pottombar.getBackground().clearColorFilter();
+			} else /*if(popIvBack.getTag()!=null)*/{ //???
+				popupContentView.getBackground().setColorFilter(null);
+				pottombar.getBackground().setColorFilter(null);
 				popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
 			}
 			if(indicator !=null) {
 				entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
 				indicator.setTextColor(GlobalOptions.isDark?a.AppBlack:0xff2b43c1);
+			}
+			if (dictPicker.pinned()) {
+				dictPicker.refresh();
 			}
 		}
 	}
