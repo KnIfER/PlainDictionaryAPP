@@ -113,11 +113,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
         if (!isInEditMode()) {
         	
 	        mHandle = findViewById(mHandleId);
-	        if (mHandle == null ) {
-	            String name = getResources().getResourceEntryName(mHandleId);
-	            throw new RuntimeException("Panel must have a child of id " + name + "'");
-	
-	        }
 	        
 	        mPrimaryContent = findViewById(mPrimaryContentId);
 	        if (mPrimaryContent == null ) {
@@ -219,7 +214,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 		lastX=ev.getX();
 		lastY=ev.getY();
     	boolean ret = super.onInterceptTouchEvent(ev);
-    	if(!guarded) {
+    	if(mHandle!=null && !guarded) {
     		switch(ev.getAction()) {
     			case MotionEvent.ACTION_POINTER_DOWN:
     			break;
@@ -447,6 +442,10 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 			addView(first);
 			multiplier *= -1;
 		}
+	}
+	
+	public void setHandle(View handle) {
+		mHandle = handle;
 	}
 }
     

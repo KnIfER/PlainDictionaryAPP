@@ -1023,6 +1023,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			SplitView webcontentlister = contentUIData.webcontentlister;
 			webcontentlister.multiplier=-1;
 			webcontentlister.isSlik=true;
+			webcontentlister.setHandle(null);
 			
 	//		webcontentlister.setPrimaryContentSize(a.CachedBBSize,true);
 	//		webcontentlister.setPageSliderInf(a.inf);
