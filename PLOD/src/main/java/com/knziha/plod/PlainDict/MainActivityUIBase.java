@@ -2400,7 +2400,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	protected void populateDictionaryList() {
+	public void populateDictionaryList() {
 		final File def = getStartupFile(opt.fileToConfig());      //!!!原配
 		if(loadManager.md_size==0){
 			populateDictionaryList(def, lazyLoadManager().placeHolders, !def.exists());

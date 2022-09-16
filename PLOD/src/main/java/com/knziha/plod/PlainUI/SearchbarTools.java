@@ -635,7 +635,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if(MainAppBackground!=a.MainAppBackground && settingsLayout!=null){
 			MainAppBackground = a.MainAppBackground;
 			ViewGroup etBar = settingsLayout;
-			fc = ColorUtils.blendARGB(Color.WHITE,GlobalOptions.isDark?MainAppBackground:a.MainBackground, 0.45f) & 0xf0ffffff;
+			fc = ColorUtils.blendARGB(Color.WHITE,MainAppBackground, 0.45f) & 0xf0ffffff;
 			etBar.getChildAt(0).setBackgroundColor(fc);
 			etBar.getChildAt(1).setBackgroundColor(MainAppBackground);
 			etBar.getChildAt(2).setBackgroundColor(fc);

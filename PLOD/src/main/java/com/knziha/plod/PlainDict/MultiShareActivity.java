@@ -48,7 +48,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	protected void populateDictionaryList() {
+	public void populateDictionaryList() {
 		super.populateDictionaryList();
 		findFurtherViews();
 	}

@@ -1056,8 +1056,11 @@ public class Drawer extends Fragment implements
 										renameList.clear();
 										add_book_checker.clear();
 									}
-									if(countRename>0)
+									if(countRename>0){
 										a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
+										a.loadManager.md_size = 0;
+										a.populateDictionaryList();
+									}
 									else
 										a.showT("新加入"+countAdd+"本词典！");
 									if (newAdapterIdx==-1) {
