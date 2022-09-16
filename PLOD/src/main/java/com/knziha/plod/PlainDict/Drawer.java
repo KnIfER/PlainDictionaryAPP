@@ -1063,7 +1063,7 @@ public class Drawer extends Fragment implements
 									} else {
 										a.showT("新加入" + countAdd + "本词典！");
 									}
-									if (countAdd > 0) { // 修复新打开的词典不参与联合搜索 
+									if (countAdd > 0) { // 修复新打开的词典不参与联合搜索
 										a.adaptermy2.currentKeyText = null; //todo
 									}
 									if (newAdapterIdx==-1) {
@@ -1073,8 +1073,8 @@ public class Drawer extends Fragment implements
 										a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
 										a.switch_Dict(newAdapterIdx, true, true, null);
 									}
-								} catch (IOException e1) {
-									e1.printStackTrace();
+								} catch (Exception e) {
+									CMN.debug(e);
 								}
 							}
 						}

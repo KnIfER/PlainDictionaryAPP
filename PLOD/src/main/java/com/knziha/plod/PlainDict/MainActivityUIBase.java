@@ -10197,7 +10197,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			
-			CMN.debug("单本搜索 ： ", normal_idx, normal_idx==-1?"":currentDictionary.bookImpl.getEntryAt(normal_idx<0?(-normal_idx-3):normal_idx), formation_key);
+			CMN.debug("单本搜索 ： ", key, normal_idx, normal_idx==-1?"":currentDictionary.bookImpl.getEntryAt(normal_idx<0?(-normal_idx-3):normal_idx), formation_key);
 			if(normal_idx!=-1) {
 				int tmpIdx = normal_idx;
 				if(normal_idx<0) {

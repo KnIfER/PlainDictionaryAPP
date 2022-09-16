@@ -289,6 +289,8 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 //				presenter.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 //				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				a.contentUIData.PageSlider.setWebview(mWebView, null);
+//				a.lv.setSelectionFromTop((int) treeBuilt[ti].get((int) (pos-idxCount)).position, 0);
+//				CMN.debug("key::", presenter.currentDisplaying); //hot
 				return;
 			}
 			idxCount+=max;

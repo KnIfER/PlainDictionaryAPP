@@ -405,6 +405,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		int blockId = -1;
 		
 		//isGBoldCodec = true;
+		//SU.Log("isKeyCaseSensitive="+isKeyCaseSensitive, "isGBoldCodec="+isGBoldCodec, "isStripKey="+isStripKey);
 		
 		if(isGBoldCodec) {
 			int boudaryCheck = compareByteArray(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,kAB);
@@ -418,12 +419,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 		else {
 			int boudaryCheck = processMyText(new String(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,_charset)).compareTo(keyword);
+			//SU.Log("TailTextStr::", processMyText(new String(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,_charset)), boudaryCheck, keyword);
 			if(boudaryCheck<0)
 				return -1;
 			if(boudaryCheck==0) blockId = (int)_num_key_blocks-1;
 			if(HeaderTextStr==null)
 				HeaderTextStr=processMyText(new String(_key_block_info_list[0].headerKeyText,_charset));
 			boudaryCheck = HeaderTextStr.compareTo(keyword);
+			//SU.Log("HeaderTextStr::", HeaderTextStr, boudaryCheck, keyword);
 			if(boudaryCheck>0) {
 				if(HeaderTextStr.startsWith(keyword)) {
 					return isSrict?-(0+2):0;
