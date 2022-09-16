@@ -474,8 +474,8 @@ public class LuceneHelper {
 			dTmp.findViewById(android.R.id.button1).setOnClickListener(onClickListener);
 			indexBuilderDlg = new WeakReference<>(dTmp);
 		}
-		dTmp.show();
 		ViewUtils.ensureWindowType(dTmp, a, null);
+		dTmp.show();
 		ListView lv = dTmp.getListView();
 		float pad = 2.8f * a.mResource.getDimension(R.dimen._50_) * (a.dm.widthPixels>GlobalOptions.realWidth?1:1.45f);
 		View root = a.root;
