@@ -1056,13 +1056,16 @@ public class Drawer extends Fragment implements
 										renameList.clear();
 										add_book_checker.clear();
 									}
-									if(countRename>0){
-										a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
+									if (countRename > 0) {
+										a.showT("新加入" + countAdd + "本词典, 重定位" + countRename + "次！");
 										a.loadManager.md_size = 0;
 										a.populateDictionaryList();
+									} else {
+										a.showT("新加入" + countAdd + "本词典！");
 									}
-									else
-										a.showT("新加入"+countAdd+"本词典！");
+									if (countAdd > 0) { // 修复新打开的词典不参与联合搜索 
+										a.adaptermy2.currentKeyText = null; //todo
+									}
 									if (newAdapterIdx==-1) {
 										newAdapterIdx = bscAdapterIdx;
 									}
