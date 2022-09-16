@@ -8022,7 +8022,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							int idx = invoker.bookImpl.lookUp(url, true);
 							CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
-								if(pop) { // 新窗口打开词条跳转
+								if(pop) { // 新窗口打开词条跳转 open in new window
 									wlh = getRandomPageHandler(true, true, null);
 									if (mWebView.toTag!=null) {
 										wlh.getMergedFrame().toTag = mWebView.toTag;
@@ -10006,7 +10006,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
 				}
 			} catch (Exception e) {
-				CMN.debug(e);
+				CMN.debug("Failed fileToString1 "+path+" "+e);
 			}
 		}
 		if (path.startsWith("/ASSET")) {
@@ -10036,7 +10036,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return asset.getRecordAt(idx, null, true);
 				}
 			} catch (Exception e) {
-				errRinfo = CMN.Log(e);
+				CMN.debug("Failed fileToString2 "+path+" "+e);
 			}
 			return null;
 		} else {

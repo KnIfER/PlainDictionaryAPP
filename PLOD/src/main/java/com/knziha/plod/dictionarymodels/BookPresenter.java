@@ -3263,6 +3263,11 @@ function debug(e){console.log(e)};
 			return false;
 		}
 		
+		@JavascriptInterface
+		public boolean shouldPopupEntry() {
+			return PDICMainAppOptions.popViewEntry();
+		}
+		
         @JavascriptInterface
         public void popupEntry(int sid, String url) {
 			if(presenter!=null) {

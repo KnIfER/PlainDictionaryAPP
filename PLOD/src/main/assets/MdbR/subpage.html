@@ -132,8 +132,11 @@ function popupEntry(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
-	if(window.app)
+	if(window.app && app.shouldPopupEntry()) {
 		app.popupEntry(sid.get(), t.href);
+		stopLnk = 1;
+		return true;
+	}
 	return false;
 }
 
