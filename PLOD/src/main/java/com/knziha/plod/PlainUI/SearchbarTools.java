@@ -194,17 +194,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			ViewUtils.setOnClickListenersOneDepth(etBar, this, 999, 0, null);
 			settingsLayout = etBar;
 			drpBtn = etBar.getChildAt(etBar.getChildCount()-1).findViewById(R.id.schDropdown);
-			{
-				fc = ColorUtils.blendARGB(Color.WHITE,a.MainBackground, 0.45f) & 0xf0ffffff;
-				etBar.getChildAt(0).setBackgroundColor(fc);
-				etBar.getChildAt(1).setBackgroundColor(a.MainAppBackground);
-				etBar.getChildAt(2).setBackgroundColor(fc);
-				LayerDrawable ld = (LayerDrawable)drpBtn.getBackground().mutate();
-				PorterDuffColorFilter cf = new PorterDuffColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
-				for (int i = 0; i < ld.getNumberOfLayers()-1; i++) {
-					ld.getDrawable(i).setColorFilter(cf);
-				}
-			}
+			refreshColors();
 			if(initWay!=null) {
 				a.mInterceptorListener = null;
 				initWay.onClick(drpBtn);
@@ -404,6 +394,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		((ViewGroup.MarginLayoutParams)settingsLayout.getLayoutParams()).topMargin = topbar==null?0:topbar.getHeight();
 		if(isDirty && mAdapter!=null)
 			mAdapter.notifyDataSetChanged();
+		refreshColors();
 	}
 	
 	@AnyThread
@@ -634,6 +625,27 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			if (etSchExitLP.bottomMargin != height) {
 				etSchExitLP.bottomMargin = height;
 				etSchExit.requestLayout();
+			}
+		}
+	}
+	
+	int MainAppBackground;
+	
+	private void refreshColors() {
+		if(MainAppBackground!=a.MainAppBackground && settingsLayout!=null){
+			MainAppBackground = a.MainAppBackground;
+			ViewGroup etBar = settingsLayout;
+			fc = ColorUtils.blendARGB(Color.WHITE,GlobalOptions.isDark?MainAppBackground:a.MainBackground, 0.45f) & 0xf0ffffff;
+			etBar.getChildAt(0).setBackgroundColor(fc);
+			etBar.getChildAt(1).setBackgroundColor(MainAppBackground);
+			etBar.getChildAt(2).setBackgroundColor(fc);
+			LayerDrawable ld = (LayerDrawable)drpBtn.getBackground().mutate();
+			PorterDuffColorFilter cf = new PorterDuffColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
+			for (int i = 0; i < ld.getNumberOfLayers()-1; i++) {
+				ld.getDrawable(i).setColorFilter(cf);
+			}
+			if (lv != null) {
+				lv.setBackgroundColor(MainAppBackground);
 			}
 		}
 	}
