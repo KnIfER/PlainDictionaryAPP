@@ -2856,6 +2856,12 @@
 				delete defOpt.focusOne;
 			}
 			loadJson("/settings.json", function(e) {
+				if(!window.app) {
+					e = {};
+					var str = localStorage.getItem('opt');
+					if(str) str=JSON.parse(str);
+					if(str) Object.assign(opt, e=str);
+				}
 				Object.assign(opt, e);
 				opt.init();
 				if(e.bg) {
@@ -3512,13 +3518,13 @@
 							}
 						}
 						debug('newOpt = ', newOpt);
-						if(app) {
-							if(saveTm)clearTimeout(saveTm);
-							saveTm = setTimeout(function() {
-								app.saveOpt(sid.get(), JSON.stringify(newOpt).replaceAll('"',''));
-								saveTm = 0;
-							}, 1000)
-						}
+						if(saveTm)clearTimeout(saveTm);
+						saveTm = setTimeout(function() {
+							var str=JSON.stringify(newOpt);
+							if(app)  app.saveOpt(sid.get(), str.replaceAll('"',''));
+							else localStorage.setItem('opt',str)
+							saveTm = 0;
+						}, 1000)
 					}
 					return 1;
 				}

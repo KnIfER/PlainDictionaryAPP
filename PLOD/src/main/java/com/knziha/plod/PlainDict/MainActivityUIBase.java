@@ -11335,4 +11335,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.debug(e);
 		}
 	}
+	
+	public String strOpt;
+	
+	public String getWebSettings() {
+		String ret = strOpt;
+		if (ret==null) {
+			com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(opt.getString("opt", "{}"));
+			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
+			json.put("bgr", SU.toHexRGB(thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
+			return json.toString();
+		}
+		return ret;
+	}
 }

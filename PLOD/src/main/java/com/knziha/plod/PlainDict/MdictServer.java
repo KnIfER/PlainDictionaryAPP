@@ -551,11 +551,17 @@ public abstract class MdictServer extends NanoHTTPD {
 		return null;
 	}
 	
+	
+	public String strOpt;
 	public String getSettings() {
-		JSONObject json = new JSONObject();
-		json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
-		json.put("bgr", SU.toHexRGB(CMN.AppBackground));
-		return json.toString();
+		String ret = strOpt;
+		if (ret==null) {
+			JSONObject json = new JSONObject();
+			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
+			json.put("bgr", SU.toHexRGB(CMN.AppBackground));
+			ret = strOpt = json.toString();
+		}
+		return ret;
 	}
 	
 	protected abstract InputStream convert_tiff_img(InputStream restmp) throws Exception;

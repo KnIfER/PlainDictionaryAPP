@@ -2760,6 +2760,7 @@ function debug(e){console.log(e)};
 					//CMN.Log("saveOpt::", val, JSON.parse(val));
 					presenter.a.opt.putString("opt", val);
 					presenter.a.getMdictServer().strOpt = null;
+					presenter.a.strOpt = null;
 				}
 			}
         }
@@ -2927,10 +2928,7 @@ function debug(e){console.log(e)};
 					}
 				}
 				else if(url.startsWith("/settings.json")) {
-					com.alibaba.fastjson.JSONObject json = new com.alibaba.fastjson.JSONObject();
-					json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
-					json.put("bgr", SU.toHexRGB(a.thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
-					return json.toString();
+					return a.getWebSettings();
 				}
 			} catch (Exception e) {
 				CMN.debug(e);
