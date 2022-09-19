@@ -32,6 +32,7 @@ public class PlainAppPanel extends SettingsPanel {
 	protected boolean bPopIsFocusable;
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
+	protected int MainAppBackground;
 	
 	
 	public PlainAppPanel() {

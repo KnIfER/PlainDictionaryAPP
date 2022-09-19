@@ -84,8 +84,6 @@
 					style="@style/MenuIconIVStyle"
 					android:text="笔记内容"
 					android:src="@drawable/ic_edit_booknotes"
-					android:alpha="0.2"
-					android:tag="暂未实现：准备在完成数据库v2后再实现"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
 					android:id="@drawable/ic_baseline_nightmode_24"

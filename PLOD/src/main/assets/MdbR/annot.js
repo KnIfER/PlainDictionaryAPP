@@ -353,10 +353,19 @@
         var r = mw((c>>16)&0xff,a);
         var g = mw((c>>8)&0xff,a);
         var b = mw(c&0xff,a);
-        var sty = t?"rgba("+r+","+g+","+b+","+t+")":"rgb("+r+","+g+","+b+")";
+        var sty = t?"rgba("+r+","+g+","+b+"/"+t+")":"rgb("+r+","+g+","+b+")";
         n.style.backgroundColor = sty;
         debug('sty='+sty);
         n._bgr = (t<<24) | (r<<16) | (g<<8) | (b);
+    }
+
+    function toRgb(c){
+        if(c===undefined) c=0xffffaaaa;
+        var t = (c>>24)&0xff;
+        var r = (c>>16)&0xff;
+        var g = (c>>8)&0xff;
+        var b = c&0xff;
+        return t && t!=0xff?"rgba("+r+" "+g+" "+b+" / "+parseInt(t*100.0/256)+"%)":"rgb("+r+","+g+","+b+")";
     }
 
     function annot(type, color, note, rootNode, doc, pos) {
@@ -368,11 +377,11 @@
         var ann = doc.createElement("ANNOT");
         if(type==0) {
             ann.className = "PLOD_HL";
-            ann.setAttribute("style", "background:#ffaaaa;");
+            ann.setAttribute("style", "background:"+toRgb(color));
         } else {
             ann.className = "PLOD_UL";
             //ann.style = "color:#ffaaaa;text-decoration: underline";
-            ann.setAttribute("style", "border-bottom:4px solid #000");
+            ann.setAttribute("style", "border-bottom:4px solid "+toRgb(color));
         }
         ann.bg = color;
         ann.note = note;

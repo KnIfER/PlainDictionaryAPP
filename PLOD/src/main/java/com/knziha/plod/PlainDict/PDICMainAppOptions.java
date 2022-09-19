@@ -113,6 +113,44 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public boolean auto_seach_on_switch=true;
 	protected boolean bShouldUseExternalBrowserApp=true;
 
+	public int annotColor(int k, int val, boolean set) {
+		String key = null;
+		int ret = 0, def=0;
+		if (k==0) {
+			key = "_ant_h";
+			def = 0xffffaaaa;
+		}
+		else if (k==1) {
+			key = "_ant_u";
+			def = Color.BLACK;
+		}
+		if (set) {
+			defaultReader.edit().putInt(key, val).apply();
+		} else {
+			ret = defaultReader.getInt(key, def);
+		}
+		return ret;
+	}
+	
+	public int alphaLock(int k, int val, boolean set) {
+		if (set) {
+			if (k==0) {
+				alphaLock0(val);
+			}
+			else if (k==1) {
+				alphaLock1(val);
+			}
+		} else {
+			if (k==0) {
+				return alphaLock0();
+			}
+			else if (k==1) {
+				return alphaLock1();
+			}
+		}
+		return 255;
+	}
+	
 	public int getInt(String key, int i) {
 		return defaultReader.getInt(key, i);
 	}
@@ -2508,6 +2546,21 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=30) public static boolean lastUsingInternalStorage() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=30) public static void lastUsingInternalStorage(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=31, flagSize=3, max=2) public static int currentTool() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31, flagSize=3, max=2) public static void currentTool(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=34, flagSize=8, shift=200) public static int alphaLock0() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34, flagSize=8, shift=200) public static void alphaLock0(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=42, flagSize=8, shift=255) public static int alphaLock1() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=42, flagSize=8, shift=255) public static void alphaLock1(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=40, shift=1) public static boolean forceAlphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40, shift=1) public static void forceAlphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=41, shift=1) public static boolean alphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41, shift=1) public static void alphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	
 	/////////////////////End Seven Flag///////////////////////////////////

@@ -8,6 +8,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.FragmentTransaction;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -116,6 +117,7 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -149,6 +151,7 @@ import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.BookNotes;
 import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.BuildIndexInterface;
@@ -168,6 +171,7 @@ import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.Bag;
+import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
@@ -216,6 +220,7 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.text.ColoredHighLightSpan;
+import com.knziha.text.ColoredTextSpan;
 import com.knziha.text.ColoredTextSpan1;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
@@ -228,6 +233,7 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.lucene.document.Field;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -3928,6 +3934,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 	
+	public String getBookInLstNameByIdNoCreation(long bid) {
+		try {
+			if (getUsingDataV2()) {
+				String fileName = null;
+				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+				try {
+//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//							, currentDictionary.bookImpl.getBooKID());
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+				String ret = null;
+				if (impl!=null) {
+					ret = impl.getFile().getName();
+				} else {
+					ret = new File(prepareHistoryCon().getBookName(bid)).getName();
+				}
+				int idx = ret.lastIndexOf(".");
+				if (idx > 0) {
+					ret = ret.substring(0, idx);
+				}
+				return ret;
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return null;
+	}
+	
 	private void putCurrFavoriteNoteBookId(long value) {
 		opt.putCurrFavoriteNoteBookId(value);
 		prepareHistoryCon().setFavoriteFolderId(value);
@@ -4385,47 +4421,45 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								showT("仅支持数据库v2", 0);
 								break;
 							}
-							AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
-							builder.setTitle(invoker.appendCleanDictionaryName(MainStringBuilder).append(" -> ").append(getString(R.string.bm)).toString());
-							builder.setItems(new String[]{}, null);
-							//builder.setNeutralButton(R.string.delete, null);
-							AlertDialog d = builder.show();
-							ListView list = d.getListView();
-							list.setAdapter(getAnnotationAdapter(lastInDark, invoker));
-							//d.getListView().setFastScrollEnabled(true);
-							list.setOnItemClickListener((parent1, view1, position1, id1) -> {
-								if (prepareHistoryCon().testDBV2) {
-									AnnotAdapter.AnnotationReader reader = (AnnotAdapter.AnnotationReader) mAnnotAdapter.getItem(position1);
-									if (reader!=null) {
-										WebViewmy webview = this.mWebView;
-										if (invoker.getIsWebx()) {
-											String url = reader.entryName;
-											if (url.startsWith("/")) {
-												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
-											}
-											webview.loadUrl(url);
-										} else {
-											UniversalDictionaryInterface book = webview.presenter.bookImpl;
-											int pos = (int) reader.position;
-											if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
-												int tmp_pos = book.lookUp(reader.entryName);
-												if (tmp_pos>=0) {
-													pos = tmp_pos;
-												}
-											}
-//											webview.expectedPos = pagerec.y;
-//											webview.expectedPosX = pagerec.x;
-											myWebClient.shouldOverrideUrlLoading(webview, "entry://@" + pos);
-										}
-										//opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
-										//if(!cb.isChecked())
-									}
-									// todo notify error
-								}
-								d.dismiss();
-							});
+							showBookNotes();
 							
-							list.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
+							
+//							ListView list = d.getListView();
+//							list.setAdapter(getAnnotationAdapter(lastInDark, invoker));
+//							//d.getListView().setFastScrollEnabled(true);
+//							list.setOnItemClickListener((parent1, view1, position1, id1) -> {
+//								if (prepareHistoryCon().testDBV2) {
+//									AnnotAdapter.AnnotationReader reader = (AnnotAdapter.AnnotationReader) mAnnotAdapter.getItem(position1);
+//									if (reader!=null) {
+//										WebViewmy webview = this.mWebView;
+//										if (invoker.getIsWebx()) {
+//											String url = reader.entryName;
+//											if (url.startsWith("/")) {
+//												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
+//											}
+//											webview.loadUrl(url);
+//										} else {
+//											UniversalDictionaryInterface book = webview.presenter.bookImpl;
+//											int pos = (int) reader.position;
+//											if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
+//												int tmp_pos = book.lookUp(reader.entryName);
+//												if (tmp_pos>=0) {
+//													pos = tmp_pos;
+//												}
+//											}
+////											webview.expectedPos = pagerec.y;
+////											webview.expectedPosX = pagerec.x;
+//											myWebClient.shouldOverrideUrlLoading(webview, "entry://@" + pos);
+//										}
+//										//opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
+//										//if(!cb.isChecked())
+//									}
+//									// todo notify error
+//								}
+//								d.dismiss();
+//							});
+//
+//							list.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
 							//d.getListView().setTag(con);
 						} break;
 						/* 词典设置 */
@@ -4558,20 +4592,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case R.string.hi_color:
 							break;
 						/* 高亮 */
-						case R.string.highlight: {
-							Annot(mWebView, R.string.highlight);
-						} break;
+						case R.string.highlight: { Annot(mWebView, 0, null); } break;
 						/* 清除高亮 */
 						case R.string.dehighlight: {
-							mWebView.evaluateJavascript(mWebView.getDeHighLightIncantation().toString(), null);
+							//mWebView.evaluateJavascript(mWebView.getDeHighLightIncantation().toString(), null);
+							annotText(mWebView, 0);
 						} break;
 						/* 下划线 */
-						case R.string.underline: {
-							Annot(mWebView, R.string.underline);
-						} break;
+						case R.string.underline:  { Annot(mWebView, 1, null); } break;
 						/* 清除下划线 */
 						case R.string.deunderline: {
-							mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
+							//mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
+							annotText(mWebView, 1);
 						} break;
 						case R.string.send_dot:
 						case R.string.share_1:
@@ -5107,16 +5139,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return value.length()>length?value.substring(0, length):value;
 	}
 	
-	public void Annot(WebViewmy mWebView, int type) {
+	public void Annot(WebViewmy mWebView, int type, String text) {
 		boolean record = true;//mWebView.presenter.getRecordHiKeys();
-		if(type==R.string.highlight) {
-			type = 0;
-		}
-		else if(type==R.string.underline) {
-			type = 1;
-		}
 		//CMN.Log("Annot_js=", js);
-		mWebView.evaluateJavascript(mWebView.getHighLighter(type, 0, null).toString(), record?new ValueCallback<String>() {
+		mWebView.evaluateJavascript(mWebView.getHighLighter(type, opt.annotColor(type, 0, false), text).toString(), record?new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
 //				if(false)
@@ -5391,16 +5417,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return mBookMarkAdapter;
 	}
 	
-	private AnnotAdapter mAnnotAdapter;
-	public ListAdapter getAnnotationAdapter(boolean darkMode, BookPresenter invoker) {
-		if(mAnnotAdapter==null)
-			mAnnotAdapter=new AnnotAdapter(this,R.layout.drawer_list_item,R.id.text1,invoker, prepareHistoryCon().getDB(),0);
-		else
-			mAnnotAdapter.refresh(invoker, prepareHistoryCon().getDB());
-		mAnnotAdapter.darkMode=darkMode;
-		return mAnnotAdapter;
-	}
-
 	@Override
 	public void processOptionChanged(ClickableSpan clickableSpan, View widget, int processId, int val) {
 		switch (processId){
@@ -5927,6 +5943,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.drawable.ic_options_toolbox_small: {
 				if(v.getParent()==null || id==R.drawable.ic_options_toolbox_small) findWebList(v);
 				showBookSettings();
+			} break;
+			case R.drawable.ic_edit_booknotes: {
+				showBookNotes();
 			} break;
 			//收藏和历史纪录
 			case R.drawable.favoriteg: {// get5:
@@ -11382,4 +11401,125 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return ret;
 	}
+	
+	WeakReference<BookNotes> bookNoteRef = ViewUtils.DummyRef;
+	public void showBookNotes() {
+		BookNotes bookNotes = bookNoteRef.get();
+		if(bookNotes==null) {
+			bookNotes = new BookNotes(MainActivityUIBase.this);
+			bookNoteRef = new WeakReference<BookNotes>(bookNotes);
+		}
+		if (!bookNotes.isVisible()) {
+			bookNotes.toggle(root, null, -1);
+		}
+	}
+	
+	public void annotText(WebViewmy wv, int type) {
+		AlertDialog tkShow = ucc == null || ucc.detached() ? null : ucc.d;
+		if(tkShow!=null) tkShow.hide();
+		View cv = getLayoutInflater().inflate(R.layout.create_note_view, root, false);
+		EditText edit = cv.findViewById(R.id.edit);
+		TextView alphaText = cv.findViewById(R.id.alphaLock);
+		SeekBar alphaSeek = cv.findViewById(R.id.alphaSeek);
+		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLock());
+		alphaText.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				PDICMainAppOptions.alphaLock(!ViewUtils.isVisible(alphaSeek));
+				ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLock());
+			}
+		});
+		Button[] btns = new Button[]{cv.findViewById(R.id.btnH), cv.findViewById(R.id.btnU)};
+		ColorPickerDialog noteDlg =
+				ColorPickerDialog.newBuilder()
+						.setDialogId(123124)
+						.setInitialColor(opt.annotColor(PDICMainAppOptions.currentTool(), 0, false))
+						.create();
+		noteDlg.setContentView(cv);
+		noteDlg.show(getSupportFragmentManager(), "pick-annot-color");
+		ColoredTextSpan[] spans = new ColoredTextSpan[]{new ColoredTextSpan(0xffffaaaa)
+				, new ColoredTextSpan(Color.BLACK, 8.f, 2)};
+		OnClickListener listener = v1 -> {
+			for (int k = 0; k < 2; k++) {
+				if (btns[k] == v1) {
+					PDICMainAppOptions.currentTool(k);
+					btns[k].setAlpha(1);
+					int lock = opt.alphaLock(k, 0, false);
+					noteDlg.alphaLock(lock);
+					String indi = (lock * 100 / 255) + "%";
+					if(indi.length()<3) indi = "0"+indi;
+					alphaText.setText(indi);
+					noteDlg.previewColor(opt.annotColor(PDICMainAppOptions.currentTool(), 0, false));
+					alphaSeek.setProgress(lock);
+					noteDlg.datasetChanged();
+				} else {
+					btns[k].setAlpha(0.1f);
+				}
+			}
+		};
+		for (int k = 0; k < 2; k++) {
+			Button btn = btns[k];
+			btn.setOnClickListener(listener);
+			SpannableStringBuilder ssb = new SpannableStringBuilder();
+			ssb.append(btn.getText());
+			ssb.setSpan(spans[k], 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+			btn.setText(ssb);
+		}
+		F1ag f = new F1ag();
+		ColorPickerDialogListener lst;
+		noteDlg.forceAlphaLock(PDICMainAppOptions.forceAlphaLock());
+		noteDlg.setColorPickerDialogListener(lst=new ColorPickerDialogListener() {
+			@Override
+			public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
+				color = alphaLock(color);
+				opt.annotColor(PDICMainAppOptions.currentTool(), color, true);
+				Annot(wv, PDICMainAppOptions.currentTool(), edit.getText().toString().trim());
+				if(tkShow!=null) tkShow.dismiss();
+			}
+			public int alphaLock(int color) {
+				int k = PDICMainAppOptions.currentTool();
+				int alpha = Color.alpha(color);
+				if(PDICMainAppOptions.forceAlphaLock() || alpha > opt.alphaLock(k,0,false)) {
+					alpha = opt.alphaLock(k,0,false);
+					color = (0xFF000000&(alpha<<24)) | (0x00FFFFFF&color);
+				}
+				return color;
+			}
+			@Override
+			public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
+				if(dialogInterface==null)
+					color = noteDlg.getPreviewingColor();
+				int k = PDICMainAppOptions.currentTool();
+				View btn = btns[k];
+				ColoredTextSpan span = spans[k];
+				color = alphaLock(color);
+				span.mColor = f.val = color;
+				btn.invalidate();
+				if (false && dialogInterface!=null) {
+					opt.annotColor(PDICMainAppOptions.currentTool(), color, true);
+				}
+			}
+			@Override
+			public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
+				if(tkShow!=null) tkShow.show();
+			}
+		});
+		alphaSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int lock, boolean fromUser) {
+				int k = PDICMainAppOptions.currentTool();
+				opt.alphaLock(k, lock, true);
+				String indi = (lock * 100 / 255) + "%";
+				if(indi.length()<3) indi = "0"+indi;
+				alphaText.setText(indi);
+				noteDlg.alphaLock(lock);
+				noteDlg.datasetChanged();
+				lst.onPreviewSelectedColor(null, -1);
+			}
+			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
+			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
+		});
+		btns[type<0?PDICMainAppOptions.currentTool():type].performClick();
+	}
+	
 }

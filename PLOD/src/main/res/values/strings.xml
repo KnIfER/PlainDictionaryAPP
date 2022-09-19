@@ -221,7 +221,7 @@
 	<string name="page_dakai">使用浏览器打开</string>
 	<string name="page_lianjie">复制链接</string>
 	<string name="page_source">查看源代码</string>
-	<string name="dict_opt">词典设置 ✡</string>
+	<string name="dict_opt">词典设置</string>
 	<string name="favor_sel">收藏选中文本</string>
 	<string name="hi_color">选择标注颜色</string>
 	<string name="highlight">高亮</string>
@@ -251,4 +251,6 @@
 	<string name="lucene_search">搜索引擎</string>
 	<string name="qr_scan">二维扫描</string>
 	<string name="text_recog">文字识别</string>
+	<string name="book_notes">笔记列表</string>
+	<string name="write_sth">随便写写</string>
 </resources>

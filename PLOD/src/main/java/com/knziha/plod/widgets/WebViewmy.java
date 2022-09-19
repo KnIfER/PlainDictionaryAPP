@@ -1,5 +1,7 @@
 package com.knziha.plod.widgets;
 
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -15,7 +17,12 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.CharacterStyle;
+import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -35,6 +42,8 @@ import android.webkit.WebSettings;
 
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -46,11 +55,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
+import com.jaredrummler.colorpicker.ColorPickerDialog;
+import com.jaredrummler.colorpicker.ColorPickerDialogListener;
+import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
@@ -58,6 +72,7 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.rbtree.additiveMyCpr1;
+import com.knziha.text.ColoredTextSpan;
 
 import org.knziha.metaline.Metaline;
 
@@ -69,6 +84,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import io.noties.markwon.SpannableBuilder;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
 	public long currentPos;
@@ -699,10 +716,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		int id = item.getItemId();
 		switch(id) {
 			case R.id.toolbar_action0:{
-				if (getContext() instanceof MainActivityUIBase) {
-					((MainActivityUIBase) getContext()).Annot(this, R.string.highlight);
+				MainActivityUIBase a = presenter.a;
+				if (a==null && getContext() instanceof MainActivityUIBase) {
+					a = ((MainActivityUIBase) getContext());
+				}
+				if (a != null) {
+					a.Annot(this, 0, null);
 				} else {
-					evaluateJavascript(getHighLighter(0,0,null).toString(), value -> invalidate());
+					evaluateJavascript(getHighLighter(0, 0, null).toString(), value -> invalidate());
 				}
 				MyMenuinversed=!MyMenuinversed;
 			} return true;
@@ -846,8 +867,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
 																	public boolean onLongClick(View v) {
-																		if (presenter.a!=null) {
-																			presenter.a.Annot(WebViewmy.this, R.string.underline);
+																		MainActivityUIBase a = presenter.a;
+																		if (a!=null) {
+																			a.Annot(WebViewmy.this, 1, null);
 																		}
 																		return true;
 																	}
@@ -857,22 +879,24 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
 																	public boolean onLongClick(View v) {
+																		MainActivityUIBase a = presenter.a;
+																		a.annotText(WebViewmy.this, -1);
 																		/* 📕📕📕 微空间内爆术 📕📕📕 */
-																		Context c = getContext();
-																		//CMN.Log(c);
-																		if(c instanceof ContextWrapper && !(c instanceof MainActivityUIBase)){
-																			c = ((ContextWrapper)c).getBaseContext();
-																		}
-																		if(c instanceof MainActivityUIBase){
-																			MainActivityUIBase a = (MainActivityUIBase) c;
-																			if(MainActivityUIBase.PreferredToolId !=-1){
-																				MainActivityUIBase.VerseKit ucc = a.getVtk();
-																				ucc.bFromWebView=true;
-																				a.weblist = weblistHandler;
-																				ucc.setInvoker(presenter, WebViewmy.this, null, null);
-																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false, true);
-																			}
-																		}
+//																		Context c = getContext();
+//																		//CMN.Log(c);
+//																		if(c instanceof ContextWrapper && !(c instanceof MainActivityUIBase)){
+//																			c = ((ContextWrapper)c).getBaseContext();
+//																		}
+//																		if(c instanceof MainActivityUIBase){
+//																			MainActivityUIBase a = (MainActivityUIBase) c;
+//																			if(MainActivityUIBase.PreferredToolId !=-1){
+//																				MainActivityUIBase.VerseKit ucc = a.getVtk();
+//																				ucc.bFromWebView=true;
+//																				a.weblist = weblistHandler;
+//																				ucc.setInvoker(presenter, WebViewmy.this, null, null);
+//																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false, true);
+//																			}
+//																		}
 																		return true;
 																	}
 																});
@@ -1035,8 +1059,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private final static  String DeHighLightIncantation="DEHI";
 
 	public StringBuilder getHighLighter(int typ, int clr, String note) {
-		return new StringBuilder().append(HighLightIncantation)
-				.append("(").append(typ).append(",").append(clr).append(",").append(note).append(")");
+		StringBuilder sb = new StringBuilder() .append(HighLightIncantation)
+				.append("(").append(typ).append(",").append(clr).append(",");
+		if (!TextUtils.isEmpty(note)) {
+			sb.append("' (").append(note).append(") '");
+		}
+		return sb.append(")");
 	}
 
 	public StringBuilder getDeHighLightIncantation() {

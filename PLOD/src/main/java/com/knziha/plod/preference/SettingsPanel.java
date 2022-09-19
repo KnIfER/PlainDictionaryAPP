@@ -414,6 +414,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			} else {
 				settingsLayout.setTranslationY(targetTrans);
 			}
+			settingsLayout.setAlpha(targetAlpha);
 			onAnimationEnd(null);
 			bSuppressNxtAnimation = false;
 		} else {

@@ -56,6 +56,9 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			, R.string.lucene_idx
 			, R.string.lucene_search
 			, 0
+			, R.string.book_notes
+			, R.string.write_sth
+			, 0
 //			, R.string.qr_scan
 //			, R.string.text_recog
 			, -1
@@ -377,6 +380,10 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			case R.string.lucene_search:
 			{
 				getLuceneHelper().showSearchEngineDlg();
+			} break;
+			case R.string.book_notes:
+			{
+				a.showBookNotes();
 			} break;
 		}
 	}

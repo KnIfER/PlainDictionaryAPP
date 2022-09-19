@@ -197,13 +197,13 @@
 	<string name="page_del">删除重载页面</string>
 	<string name="page_rukou">添加为入口</string>
 	<string name="page_nav">输入网址…（未完成）</string>
-	<string name="dict_opt">词典设置 ✡</string>
+	<string name="dict_opt">词典设置</string>
 	<string name="favor_sel">收藏选中文本</string>
-	<string name="hi_color">选择标注颜色</string>
-	<string name="highlight">高亮</string>
-	<string name="dehighlight">清除高亮</string>
-	<string name="underline">下划线</string>
-	<string name="deunderline">清除下划线</string>
+	<string name="hi_color">清除标记</string>
+	<string name="highlight">高亮标注</string>
+	<string name="dehighlight">高亮笔记 🖌</string>
+	<string name="underline">下划线标注</string>
+	<string name="deunderline">下划线笔记</string>
 	<string name="share_1">分享#1</string>
 	<string name="share_2">分享#2</string>
 	<string name="share_3">分享#3</string>>
@@ -223,5 +223,7 @@
 	<string name="ts_pick">繁简选字</string>
 	<string name="qr_scan">二维扫描</string>
 	<string name="text_recog">文字识别</string>
+	<string name="book_notes">笔记列表</string>
+	<string name="write_sth">随便写写</string>
 	>
 </resources>

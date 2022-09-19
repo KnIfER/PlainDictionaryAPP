@@ -35,7 +35,6 @@ public class AlloydPanel extends PlainAppPanel {
 	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> RandomMenu;
 	public List<MenuItemImpl> PopupMenu;
-	private int MainAppBackground;
 	public MenuItemImpl fetchWordMenu;
 	
 	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler handler) {
