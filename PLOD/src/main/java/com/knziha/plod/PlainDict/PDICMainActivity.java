@@ -22,6 +22,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -140,6 +141,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -1789,15 +1791,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
-		
-//		try {
-//			String path = CMN.AssetTag + "liba.mdx";
-//			//BookPresenter mdx = new BookPresenter(new File(path), this, 0, null);
-//			BookPresenter mdx = md.get(0);
-//			TestHelper.insertMegaInAnnotDb(prepareHistoryCon().getDB(), (mdict) mdx.bookImpl);
-//		} catch (Exception e) {
-//			CMN.Log(e);
-//		}
+		//TestHelper.annotRetrieveTest(this);
 		
 		//String[] array = getResources().getStringArray(R.array.drawer_hints);
 		//CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
@@ -1815,13 +1809,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
-		
-//		try {
-//			md.add(new BookPresenter(new File("/ASSET/vocabulary.web"), this, 0, opt));
-//			switch_To_Dict_Idx(md.size()-1, false, false, null);
-//		} catch (Exception e) {
-//			CMN.Log(e);
-//		}
 
 		//startActivity(new Intent().putExtra("realm",8).setClass(this, SettingsActivity.class));
 		//popupWord("History of love", 0, 0);
@@ -1834,8 +1821,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		intent.setType("text/plain");
 		startActivity(intent);*/
 
-		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
-		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 		if(opt.schPage())
 			weblistHandler.togSchPage();
 //		if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("译");
@@ -1858,7 +1843,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//toolbar.setPopupTheme(R.style.toolbarBaseTheme_dark);
 			}, 350);
 			//showAppTweaker();
-			//if(CMN.testFLoatSearch)
+			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		}
 
@@ -3165,12 +3150,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			case R.id.toolbar_action7://切换词典
 				if(isLongClicked) break;
-				dismissPopup();
-				showChooseDictDialog(0);
-			break;
+				try {
+					findViewById(R.drawable.book_list).performClick();  // get2
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+				break;
 			case R.id.toolbar_action8://切换切换分组
 				if(isLongClicked) break;
-				findViewById(R.drawable.book_list).performClick();  // get2
+				dismissPopup();
+				showChooseDictDialog(0);
 			break;
 			case R.id.toolbar_action9:{//存书签
 				if(isLongClicked) break;

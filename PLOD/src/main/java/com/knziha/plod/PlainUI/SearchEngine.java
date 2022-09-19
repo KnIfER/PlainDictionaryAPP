@@ -297,9 +297,9 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 			dialog.findViewById(android.R.id.button1).setOnClickListener(this);
 		}
 		refresh();
+		ViewUtils.ensureWindowType(dialog, a, null);
 		dialog.show();
 		dialog.mAlert.wikiBtn.setAlpha(0.3f);
-		ViewUtils.ensureWindowType(dialog, a, null);
 		if (helper.indexChanged) {
 			helper.prepareSearch(false);
 			helper.reloadIndexedBookList();

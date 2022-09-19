@@ -27,6 +27,7 @@ if(!debug) debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 window._edEtJts={};
+var remarked=false;
 window.edEtJts=function(a, b, c){
 	if(!_edEtJts[b]) {
 		window.addEventListener(a, b, c);
@@ -46,6 +47,7 @@ window.addEventListener('touchstart',wrappedDown);
 // 	e.stopPropagation();
 // }
 function wrappedOnLoadFunc(){
+	debug('wrappedOnLoadFunc');
 	window.addEventListener('click',parent.window.tpshc); //wtf??
 	// //document.body.style.fontSize=35+'px';
 	// highlight(null);
@@ -86,7 +88,47 @@ function wrappedOnLoadFunc(){
 	} else if(pw.app){
 		window.shzh=app.rcsp(sid.get());
 	}
+	if(!remarked) {
+		restoreMarks(pw); 
+		remarked = true;
+	}
 	//todo 处理背景色？
+}
+
+
+function restoreMarks(pw){
+	debug('remarkByUrl???');
+	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
+	var t = app.remarkByUrl(sid.get(), url);
+	if(multi) {
+		t = t.split('\n\n\n');
+		var frames = document.getElementsByClassName('_PDict_body'), map=[];
+	 	for(var i=0,f;f=frames[i++];) {
+			map[f.getAttribute('pd_pos')] = f;
+		}
+		debug('remarkByUrl::multi::', t, map);
+	 	for(var i=0,f,n;n=t[i];i+=2) {
+			f = map[i+1];
+			if(f) remark(n, f, document, pw); 
+		}
+	} else {
+		remark(t, document.body, document, pw); 
+	}
+}
+
+function remark(t, rootNode, doc, w){
+	t = t.split('\n');
+	for(var i=0;i<t.length;i++) {
+		var ann = JSON.parse(t[i]);
+		var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
+		if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
+		else if(nn.length!=2) continue;
+		var r = w.MakeRange(n0, n1, rootNode, doc);
+		if(r) {
+			ann = w.MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
+			w.WrapRange(r, ann, rootNode)
+		}
+	}
 }
 
 function loadVI(pos){

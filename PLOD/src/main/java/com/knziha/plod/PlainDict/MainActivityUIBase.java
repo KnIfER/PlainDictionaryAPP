@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
@@ -60,7 +59,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
-import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -130,8 +128,6 @@ import com.alexvasilkov.gestures.commons.DepthPageTransformer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.DecodeFormat;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
@@ -493,6 +489,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Metaline
 	public final static String randx_remake="";
 	public final static String randx_off="window.randx_mode=0";
+	/**debug('fatal debug annot::restoring::???');
+	 (function(){
+		 function cb(){
+		 	if(window.remarkPage) remarkPage(remark);
+	 		else remark(currentPos);
+		 }
+		 function remark(position, rootNode, doc){
+				var t = app.remark(sid.get(), position);
+	 			if(t.length) {
+					t = t.split('\n');
+					for(var i=0;i<t.length;i+=2) {
+	 					if(t[i].length){
+							var ann = JSON.parse(t[i]);
+							var nid = parseInt(t[i+1]);
+							var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
+							if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
+							else if(nn.length!=2) continue;
+							var r = MakeRange(n0, n1, rootNode, doc);
+							console.log('fatal debug annot::restoring::', nn, r);
+							if(r) {
+								ann = MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
+								WrapRange(r, ann, rootNode)
+							}
+						}
+					}
+				}
+			}
+			try{loadJs('//mdbr/annot.js', cb)}catch(e){window.loadJsCb=cb;app.loadJs(sid.get(),'annot.js')}
+		})()
+	 */
+	@Metaline(trim = false)
+	public final static String RESTORE_MARKS = "";
 	LexicalDBHelper favoriteCon;//public LexicalDBHelper getFDB(){return favoriteCon;};
 	/** Use a a filename-directory map to keep a record of lost files so that users could add them back without the need of restore every specific directory.  */
 	HashMap<String,String> lostFiles;
@@ -1251,7 +1279,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
 		//ViewUtils.setWebDebug(this);
-		//WebView.setWebContentsDebuggingEnabled(true);
+		WebView.setWebContentsDebuggingEnabled(true); //hot
 		if (BuildConfig.isDebug) {
 			CMN.debug("android.os.Build.MODEL", android.os.Build.MODEL);
 			CMN.debug("mid", CMN.mid, getClass());
@@ -5080,48 +5108,53 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void Annot(WebViewmy mWebView, int type) {
-		boolean record = mWebView.presenter.getRecordHiKeys();
-		String js = (type==R.string.highlight?mWebView.getHighLightIncantation(record)
-				:mWebView.getUnderlineIncantation(record)).toString();
+		boolean record = true;//mWebView.presenter.getRecordHiKeys();
+		if(type==R.string.highlight) {
+			type = 0;
+		}
+		else if(type==R.string.underline) {
+			type = 1;
+		}
 		//CMN.Log("Annot_js=", js);
-		mWebView.evaluateJavascript(js, record?new ValueCallback<String>() {
+		mWebView.evaluateJavascript(mWebView.getHighLighter(type, 0, null).toString(), record?new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
-				if(value!=null && value.length()>=3 && value.charAt(0)=='"')
-				try {
-					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-					if (getUsingDataV2()) {
-						String entry = mWebView.word;
-						PlainWeb webx = mWebView.presenter.getWebx();
-						if (webx!=null) {
-							entry = mWebView.getUrl();
-							if (entry.startsWith(webx.getHost()))
-								entry = entry.substring(webx.getHost().length());
-						}
-						long entryHash = hashKey(entry);
-						String lex = value;
-						long lexHash = hashKey(lex);
-						ContentValues values = new ContentValues();
-						values.put("bid", mWebView.presenter.getId());
-						values.put("entry", entry);
-						values.put("entryHash", entryHash);
-						values.put("entryDig", digestKey(entry, 3));
-						values.put("lex", lex);
-						values.put("lexHash", lexHash);
-						values.put("lexDig", digestKey(lex, 2));
-						values.put("pos", mWebView.currentPos);
-						long now = CMN.now();
-						values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
-						values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
-						JSONObject json = new JSONObject();
-						json.put("x", mWebView.getScrollX());
-						json.put("y", mWebView.getScrollY());
-						json.put("s", mWebView.webScale);
-						values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
-						prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
-						//showT(id+", "+value);
-					}
-				} catch (JSONException e) { CMN.debug(e); }
+//				if(false)
+//				if(value!=null && value.length()>=3 && value.charAt(0)=='"')
+//				try {
+//					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+//					if (getUsingDataV2()) {
+//						String entry = mWebView.word;
+//						PlainWeb webx = mWebView.presenter.getWebx();
+//						if (webx!=null) {
+//							entry = mWebView.getUrl();
+//							if (entry.startsWith(webx.getHost()))
+//								entry = entry.substring(webx.getHost().length());
+//						}
+//						long entryHash = hashKey(entry);
+//						String lex = value;
+//						long lexHash = hashKey(lex);
+//						ContentValues values = new ContentValues();
+//						values.put("bid", mWebView.presenter.getId());
+//						values.put("entry", entry);
+//						values.put("entryHash", entryHash);
+//						values.put("entryDig", digestKey(entry, 3));
+//						values.put("lex", lex);
+//						values.put("lexHash", lexHash);
+//						values.put("lexDig", digestKey(lex, 2));
+//						values.put("pos", mWebView.currentPos);
+//						long now = CMN.now();
+//						values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
+//						values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
+//						JSONObject json = new JSONObject();
+//						json.put("x", mWebView.getScrollX());
+//						json.put("y", mWebView.getScrollY());
+//						json.put("s", mWebView.webScale);
+//						values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
+//						prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+//						//showT(id+", "+value);
+//					}
+//				} catch (JSONException e) { CMN.debug(e); }
 			}
 		}:null);
 	}
@@ -7663,6 +7696,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//mWebView.clearHistory();
 					}
 				}
+				else mWebView.evaluateJavascript(RESTORE_MARKS, null);
 				CMN.debug("ivk::raw::", invoker);
 //				else if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
 //					int st = schemaIdx+12+7+1;
@@ -8596,7 +8630,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
 			try {
-				CMN.debug("getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+				CMN.debug("getPlugRes!", "Ext::"+presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 				if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
 					int sid = uri.lastIndexOf(".");
 					if(sid>0 && sid<uri.length()-2) {
@@ -8615,7 +8649,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if(sep>0) {
 									String d = presenter.getDictionaryName();
 									if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
-										//SU.Log("同名目录!");
+										// CMN.debug("同名目录!");
 										p=null;
 									}
 								}
@@ -10047,8 +10081,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public InputStream fileToStream(File f) {
 		String path = f.getPath();
 		boolean b1 = path.startsWith("/", 6);
-		if (!b1 && hasRemoteDebugServer) {
-			InputStream input = getRemoteServerRes(path.substring(AssetTag.length()), false);
+		if (/*!b1 && */hasRemoteDebugServer) {
+			InputStream input = getRemoteServerRes(path.substring(AssetTag.length() + (b1 ? -1 : 0)), false);
 			if (input != null) {
 				return input;
 			}
@@ -10091,7 +10125,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				InputStream input = fileToStream(new File(debugKey));
 				if(input!=null) return input;
 			} catch (Exception e) {
-				CMN.debug(key, e);
+				CMN.debug("fail loadCommonAsset::"+key+"  "+e);
 			}
 		}
 		if (key.startsWith("MdbR/")) {
@@ -10310,7 +10344,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	/** 仿效 GoldenDict 返回尽可能多的结果 */
+	/** 仿效 GoldenDict 返回尽可能多的结果 mergedPos */
 	long[] getMergedClickPositions(long pos) {
 		long[] ret;
 		LongSparseArray<Integer> KeyHeaders = mergedKeyHeaders;

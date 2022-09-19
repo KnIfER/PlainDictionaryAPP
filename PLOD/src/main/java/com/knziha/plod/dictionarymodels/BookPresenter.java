@@ -66,6 +66,7 @@ import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.CharSequenceKey;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MainActivityUIBase.VerseKit;
 import com.knziha.plod.plaindict.MdictServer;
@@ -87,6 +88,7 @@ import com.knziha.plod.widgets.XYTouchRecorder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.JSONException;
 import org.knziha.metaline.Metaline;
 
 import java.io.ByteArrayInputStream;
@@ -119,6 +121,7 @@ import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
+import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
 
 import io.noties.markwon.Markwon;
 
@@ -1241,7 +1244,7 @@ function debug(e){console.log(e)};
 		return json;
 	}
 	
-	public static ConcurrentHashMap<String, Integer> debuggingSlots;
+	public ConcurrentHashMap<String, Integer> debuggingSlots;
 	
 	public InputStream getDebuggingResource(String uri) throws IOException {
 		if(debuggingSlots==null) {
@@ -1252,17 +1255,18 @@ function debug(e){console.log(e)};
 			String p = getPath();
 			p = p.substring(0, p.lastIndexOf(File.separator));
 			File file = new File(p + uri).getCanonicalFile();
-			CMN.debug("getDebuggingResource::", file, file.exists(), p, val);
+			CMN.debug("getDebuggingResource::", file, "exists="+file.exists(), p, val);
 			if (file.getPath().startsWith(p)) {
 				if (val == null) {
 					debuggingSlots.put(uri, val = file.exists() ? 1 : 0);
 				}
 				if (val == 1) {
+					CMN.debug("getDebuggingResource!!!");
 					return new AutoCloseInputStream(new FileInputStream(file));
 				}
 			}
 		} else {
-			CMN.debug("getDebuggingResource::rejected", val, debuggingSlots.size());
+			CMN.debug("getDebuggingResource::rejected", val, "size="+debuggingSlots.size());
 		}
 		return null;
 	}
@@ -2138,7 +2142,7 @@ function debug(e){console.log(e)};
 	
 	public void plugCssWithSameFileName(StringBuilder sb) {
 		if(isHasExtStyle()) {
-			CMN.Log("外挂同名 css");
+			CMN.debug("外挂同名 css");
 			String fullFileName = bookImpl.getDictionaryName();
 			int end = fullFileName.length();
 			if (unwrapSuffix) {
@@ -2404,8 +2408,9 @@ function debug(e){console.log(e)};
 //		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
 //		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
 		htmlBuilder.append("window.shzh=").append(mWebView.weblistHandler.tapSch?1:0).append(";");
-		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
-		htmlBuilder.append("entryKey='").append(mWebView.word).append("';");
+		htmlBuilder.append("window.frameAt=").append(mWebView.frameAt).append(";");
+		htmlBuilder.append("window.entryKey='").append(mWebView.word).append("';");
+		htmlBuilder.append("window.currentPos=").append(mWebView.currentPos).append(";");
 		//htmlBuilder.append("hasFiles='").append(hasFilesTag()).append("';");
 		
 		/** see {@link AppHandler#view} */
@@ -2763,6 +2768,144 @@ function debug(e){console.log(e)};
 					presenter.a.strOpt = null;
 				}
 			}
+        }
+		
+        @JavascriptInterface
+        public long annot(int sid, String text, String annot, int pos, int type, int color, String note) {
+			if (presenter!=null) {
+				WebViewmy mWebView = findWebview(sid);
+				if (mWebView != null) {
+					CMN.debug("annot::marking", text, annot, pos, mWebView.presenter);
+					try {
+						if (presenter.a.getUsingDataV2()) {
+							String entry = mWebView.word;
+							PlainWeb webx = mWebView.presenter.getWebx();
+							if (webx!=null) {
+								entry = mWebView.getUrl();
+								if (entry.startsWith(webx.getHost()))
+									entry = entry.substring(webx.getHost().length());
+							}
+							long entryHash = hashKey(entry);
+							ContentValues values = new ContentValues();
+							values.put("bid", mWebView.presenter.getId());
+							values.put("pos", pos);
+							values.put("entry", entry);
+							values.put("lex", text);
+							values.put("annot", annot);
+							values.put("type", type);
+							values.put("color", color);
+							// values.put("note", note); //不单独存储笔记了
+							long now = CMN.now();
+							values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
+							values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
+							JSONObject json = new JSONObject();
+							json.put("x", mWebView.getScrollX());
+							json.put("y", mWebView.getScrollY());
+							json.put("s", mWebView.webScale);
+							values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
+							return presenter.a.prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+							//showT(id+", "+value);
+						}
+					} catch (Exception e) { CMN.debug(e); }
+				}
+			}
+			return -1;
+        }
+		
+		private StringBuilder getMarksByPos(StringBuilder sb, long bid, long position) {
+			//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
+			String[] where = new String[]{""+bid, ""+position};
+			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id, annot from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=?", where);
+			CMN.debug("cursor::", position, cursor.getCount());
+//			cursor.moveToLast();
+//			while (cursor.moveToPrevious()) {
+			while (cursor.moveToNext()) {
+				String annot = cursor.getString(0);
+				if(annot!=null) {
+					if(sb==null) sb = new StringBuilder();
+					sb.append(cursor.getString(1)).append("\n");
+					sb.append(cursor.getLong(0)).append("\n");
+				}
+			}
+			cursor.close();
+			CMN.debug("remark=", sb);
+			return sb;
+		}
+		
+        @JavascriptInterface
+        public String remarkByUrl(int sid, String url) {
+			CMN.debug("annot:::remarkByUrl::", url);
+			StringBuilder sb = null;
+			if (presenter!=null) {
+				WebViewmy mWebView = findWebview(sid);
+				if (mWebView != null) {
+					long bid = presenter.getId();
+					int schemaIdx = url.indexOf(":");
+					if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
+						int idx = url.indexOf('_', schemaIdx + 20), ed = url.length();
+						boolean multi = url.indexOf('_', idx + 1) > 0;
+						CharSequenceKey key = new CharSequenceKey(url, idx + 1);
+						bid = presenter.a.getMdictServer().getBookIdByURLPath(url, schemaIdx + 20, idx);
+						if (multi) {
+							idx++;
+							do {
+								int nxt = url.indexOf('_', idx + 1);
+								if (nxt == -1) nxt = ed;
+								if (nxt > idx) {
+									key.reset(idx, nxt);
+									long position = IU.TextToNumber_SIXTWO_LE(key);
+									sb = getMarksByPos(sb, bid, position);
+									if (sb != null) {
+										sb.append(position).append("\n\n\n");
+										sb.append(position).append(key);
+										sb.append(position).append("\n\n\n");
+									}
+								}
+								idx = nxt + 1;
+							} while (idx < ed);
+						} else {
+							long position = IU.TextToNumber_SIXTWO_LE(key);
+							sb = getMarksByPos(sb, bid, position);
+						}
+					}
+				}
+			}
+			if (sb!=null) {
+				return sb.toString();
+			}
+			return "";
+		}
+		
+		@JavascriptInterface
+        public String remark(int sid, int position) {
+			CMN.debug("annot:::remark::", position);
+			if (presenter!=null) {
+				WebViewmy mWebView = findWebview(sid);
+				if (mWebView != null) {
+					CMN.debug("annot::restore::remark::", position, mWebView.presenter);
+					try {
+						if (presenter.a.getUsingDataV2()) {
+							PlainWeb webx = mWebView.presenter.getWebx();
+							if (webx!=null) {
+								position = -1;
+								String entry = mWebView.getUrl();
+								if (entry.startsWith(webx.getHost()))
+									entry = entry.substring(webx.getHost().length());
+								Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id from "+LexicalDBHelper.TABLE_BOOK_NOTE_v2+" where lex=? limit 1", new String[]{entry});
+								if (cursor.moveToNext()) {
+									position = cursor.getInt(0);
+								}
+								cursor.close();
+							}
+							StringBuilder sb = getMarksByPos(null, mWebView.presenter.getId(), position);
+							if (sb!=null) {
+								return sb.toString();
+							}
+						}
+					} catch (Exception e) { CMN.debug(e); }
+				}
+			}
+			return "";
         }
 		
         @JavascriptInterface

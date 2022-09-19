@@ -604,6 +604,27 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 		return getRecordAt(i, null, true);
 	}
+	
+	
+	/**debug('fatal debug annot::restoring::multiple!!!');
+	 window.remarkPage = function(fun) {
+	 	var frames = document.getElementsByClassName('_PDict_body');
+	 	for(var i=0,f;f=frames[i++];) {
+	 		fun(parseInt(f.getAttribute('pd_pos')), f)
+		}
+	 }
+	 window.markPage = function(t, c, n) {
+	 	var f = getSelection().getRangeAt(0).startContainer;
+	 	while(f=f.parentNode) {
+		 	if(f.classList.contains('_PDict_body')) {
+	 			MakeMark(t, c, n, f, 0, parseInt(n.getAttribute('pd_pos')))
+			 	break;
+			 }
+		 }
+	 }
+	 */
+	@Metaline(trim = false)
+	public final static String RESTORE_MARKS = "";
 
 	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, long... positions) throws IOException {
 		if(isResourceFile)
@@ -614,9 +635,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			ret = getRecordAt(p0, getRecordAtInterceptor, true);
 		} else {
 			StringBuilder sb = new StringBuilder();
+			sb.append("<script>");
+			sb.append(RESTORE_MARKS);
+			sb.append("</script>");
 			int c=0;
 			for(long i:positions) {
+				sb.append("<div class='_PDict_body' pd_pos=").append(i).append(">");
 				sb.append(getRecordAt(i, getRecordAtInterceptor, true));//.trim()
+				sb.append("</div>");
 				if(c!=positions.length-1)
 					sb.append("<HR>");
 				c++;

@@ -40,8 +40,8 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	//public static final String TABLE_BOOKMARK_v2 = "bookmark";
 	public static final String TABLE_FAVORITE_v2 = "favorite";
 	public static final String TABLE_FAVORITE_FOLDER_v2 = "favfolder";
-	public static final String TABLE_BOOK_NOTE_v2 = "booknote";
-	public static final String TABLE_BOOK_ANNOT_v2 = "bookannot";
+	public static final String TABLE_BOOK_NOTE_v2 = "booknote"; // 记录书签以及词条重写 以及单个页面的全部标记
+	public static final String TABLE_BOOK_ANNOT_v2 = "bookmarks"; // 一个一个的文本标记  // 表 bookannot 废弃
 	public static final String TABLE_DATA_v2 = "data";
 	public static final String TABLE_APPID_v2 = "appid";
 	
@@ -159,7 +159,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		if (testDBV2) {
 			String sqlBuilder;
 			
-//			db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_ANNOT_v2);
+//			db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_ANNOT_v2); //hot
 //			db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
 //			db.execSQL("DROP INDEX if exists bookannot_time_index");
 			// TABLE_BOOK_ANNOT_v2 记录高亮标记
@@ -168,25 +168,26 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					"(" +
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
 					", bid INTEGER NOT NULL"+
-					", entryHash INTEGER NOT NULL" +
-					", lexHash INTEGER NOT NULL" +
-					", entryDig VARCHAR(5)" +
-					", lexDig VARCHAR(5)" +
+					// ", entryHash INTEGER NOT NULL" +
+					// ", entryDig VARCHAR(5)" +
+					", pos INTEGER NOT NULL"+
 					", hasNotes BOOLEAN DEFAULT 0 NOT NULL" +
 					", entry LONGVARCHAR" +
 					", lex LONGVARCHAR" +
-					", pos INTEGER NOT NULL"+
+					", annot TEXT"+
+					", type INTEGER"+
+					", color INTEGER"+
+					", note INTEGER"+ // 暂未使用
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
 					", param BLOB" +
-					", notes BLOB" +
 					")";
 			db.execSQL(sqlBuilder);
-			//db.execSQL("CREATE INDEX if not exists booknote_book_index ON bookannot (bid)");
-			db.execSQL("CREATE INDEX if not exists bookannot_book_hash_index ON bookannot (bid, entryDig, entryHash, lexHash, lexDig, pos, hasNotes)"); // 查询，页面笔记视图
-			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON bookannot (bid, last_edit_time)"); // 词典笔记视图
-			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON bookannot (last_edit_time)"); // 全部笔记视图
+			//db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
+			db.execSQL("CREATE INDEX if not exists bookannot_book_hash_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos)"); // 页面笔记视图
+			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, last_edit_time)"); // 词典笔记视图
+			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON "+TABLE_BOOK_ANNOT_v2+" (last_edit_time)"); // 全部笔记视图
 //			db.execSQL("DROP INDEX if exists favorite_term_index");
 //			db.execSQL("DROP INDEX if exists favorite_folder_index");
 //			db.execSQL("DROP INDEX if exists booknote_term_index");
@@ -210,10 +211,18 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", param BLOB" +
 					", notesType INTEGER DEFAULT 0" +
 					", notes BLOB" +
+					", annotsType INTEGER DEFAULT 0" +
+					", annots BLOB"+
 					")";
 			db.execSQL(sqlBuilder);
-			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex, bid, notesType)"); // query view | booknotes view1
-			db.execSQL("CREATE INDEX if not exists booknote_book_index ON booknote (bid, last_edit_time, notesType)"); // booknotes view
+			if (!columnExists(db, TABLE_BOOK_NOTE_v2, "annotsType")) {
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_NOTE_v2+" ADD COLUMN annots BLOB");
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_NOTE_v2+" ADD COLUMN annotsType INTEGER DEFAULT 0");
+				db.execSQL("DROP INDEX if exists booknote_term_index");
+				db.execSQL("DROP INDEX if exists booknote_book_index");
+			}
+			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex, bid, notesType, annotsType)"); // query view | booknotes view1
+			db.execSQL("CREATE INDEX if not exists booknote_book_index ON booknote (bid, last_edit_time, notesType, annotsType)"); // booknotes view
 			db.execSQL("CREATE INDEX if not exists booknote_time_index ON booknote (last_edit_time)"); // all view
 			//db.execSQL("CREATE INDEX if not exists booknote_edit_index ON booknote (edit_count)"); // edit_count view
 			

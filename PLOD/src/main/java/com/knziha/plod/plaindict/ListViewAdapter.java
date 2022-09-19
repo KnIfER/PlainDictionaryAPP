@@ -181,6 +181,7 @@ public class ListViewAdapter extends BasicAdapter {
 		lastClickedPosBefore=-1;
 //		a.bNeedReAddCon=false;
 		lastClickedPos = -1;
+		a.mergedKeyHeaders.clear();
 		super.onItemClick(parent, view, pos, id);
 	}
 	

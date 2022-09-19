@@ -49,7 +49,6 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PeruseView;
@@ -703,7 +702,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				if (getContext() instanceof MainActivityUIBase) {
 					((MainActivityUIBase) getContext()).Annot(this, R.string.highlight);
 				} else {
-					evaluateJavascript(getHighLightIncantation(false).toString(), value -> invalidate());
+					evaluateJavascript(getHighLighter(0,0,null).toString(), value -> invalidate());
 				}
 				MyMenuinversed=!MyMenuinversed;
 			} return true;
@@ -847,7 +846,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
 																	public boolean onLongClick(View v) {
-																		evaluateJavascript(getUnderlineIncantation(false).toString(),null);
+																		if (presenter.a!=null) {
+																			presenter.a.Annot(WebViewmy.this, R.string.underline);
+																		}
 																		return true;
 																	}
 																});
@@ -910,7 +911,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		String ColorCurse = String.format("%06X", highlightColor&0xFFFFFF);
 		Spanned text = Html.fromHtml("<span style='background:#"+ColorCurse+"; color:#"+ColorCurse+";'>高亮</span>");
 
-		if(false) {
+		if(true) {
 			MenuItem MyMenu = menu.add(0, R.id.toolbar_action0, 0, text);
 			
 			//Toast.makeText(getContext(),""+MyMenu.view,0).show();
@@ -976,155 +977,21 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 	}
 	
+	/** (function(t,c,n){
+		 function mark() {
+	 		if(window.markPage) markPage(t, c, n)
+	 		else MakeMark(t, c, n)
+		 }
+		 if(window.MakeMark) {
+			return mark()
+		 } else {
+			try{loadJs('//mdbr/annot.js', mark)}catch(e){window.loadJsCb=mark;app.loadJs(sid.get(),'annot.js')}
+			return '_pd_wt'
+		 }
+	})*/
+	@Metaline(trim=false, compile=false)
+	private final static String HighLightIncantation="HI";
 	
-	/**
-	function getNextNode(b) {
-		var a = b.firstChild;
-		if (a) {
-			return a
-		}
-		while (b) {
-			if ((a = b.nextSibling)) {
-				return a
-			}
-			b = b.parentNode
-		}
-	}
-	function getNodesInRange(c) {
-		var b = [];
-		var f = c.startContainer;
-		var a = c.endContainer;
-		var d = c.commonAncestorContainer;
-		var e;
-		for (e = f.parentNode; e; e = e.parentNode) {
-			b.push(e);
-			if (e == d) {
-				break
-			}
-		}
-		b.reverse();
-		for (e = f; e; e = getNextNode(e)) {
-			b.push(e);
-			if (e == a) {
-				break
-			}
-		}
-		return b
-	}
-	function getNodeIndex(b) {
-		var a = 0;
-		while ((b = b.previousSibling)) {
-			++a
-		}
-		return a
-	}
-	function insertAfter(d, b) {
-		var a = b.nextSibling,
-			c = b.parentNode;
-		if (a) {
-				c.insertBefore(d, a)
-			} else {
-				c.appendChild(d)
-			}
-		return d
-	}
-	function splitDataNode(c, a) {
-		var b = c.cloneNode(false);
-		b.deleteData(0, a);
-		c.deleteData(a, c.length - a);
-		insertAfter(b, c);
-		return b
-	}
-	function isCharacterDataNode(b) {
-		var a = b.nodeType;
-		return a == 3 || a == 4 || a == 8
-	}
-	function splitRangeBoundaries(b) {
-		var f = b.startContainer,
-			e = b.startOffset,
-			c = b.endContainer,
-			a = b.endOffset;
-		var d = (f === c);
-		if (isCharacterDataNode(c) && a > 0 && a < c.length) {
-				splitDataNode(c, a)
-			}
-		if (isCharacterDataNode(f) && e > 0 && e < f.length) {
-				f = splitDataNode(f, e);
-				if (d) {
-					a -= e;
-					c = f
-				} else {
-					if (c == f.parentNode && a >= getNodeIndex(f)) {
-						++a
-					}
-				}
-				e = 0
-			}
-		b.setStart(f, e);
-		b.setEnd(c, a)
-	}
-	function getTextNodesInRange(b) {
-		var f = [];
-		var a = getNodesInRange(b);
-		for (var c = 0, e, d; e = a[c++];) {
-			if (e.nodeType == 3) {
-				f.push(e);
-			}
-		}
-		return f;
-	}
-	function surroundRangeContents(b, g) {
-		splitRangeBoundaries(b);
-		var f = getTextNodesInRange(b);
-		if (f.length == 0) {
-			return;
-		}
-		for (var c = 0, e, d; e = f[c++];) {
-			if (e.nodeType == 3) {
-				d = g.cloneNode(false);
-				e.parentNode.insertBefore(d, e);
-				d.appendChild(e);
-			}
-		}
-		b.setStart(f[0], 0);
-		var a = f[f.length - 1];
-		b.setEnd(a, a.length);
-	}
-	*/
-    @Metaline(trim=true)
-	private final static String commonIcan="COMMONJS";
-	private static int commonIcanBaseLen=0;
-	private static StringBuilder HighlightBuilder;
-
-	/**
-	 (function(t,r){
-		var sel = window.getSelection();
-		var ret = r?sel.toString():'';
-		try {
-			var ann = document.createElement("span");
-			if(t==0){
-				ann.className = "PLOD_HL";
-				ann.setAttribute("style", "background:#ffaaaa;");
-			}else{
-				ann.className = "PLOD_UL";
-				//ann.style = "color:#ffaaaa;text-decoration: underline";
-				ann.setAttribute("style", "border-bottom:1px solid #ffaaaa");
-			}
-			var ranges = [];
-			var range;
-			for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-				ranges.push(sel.getRangeAt(i))
-			} //sel.removeAllRanges();
-			i = ranges.length;
-			while (i--) {
-				range = ranges[i];
-				surroundRangeContents(range, ann)
-			}
-		} catch (e) {console.log(e)}
-		return ret;
-	 });*/
-	@Metaline(trim=true, compile=true)
-	private final static  String HighLightIncantation="HI";
 	/**
 	function recurseDeWrap(b, t) {
 		if (b) {
@@ -1167,50 +1034,39 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Metaline(trim=true, compile=true)
 	private final static  String DeHighLightIncantation="DEHI";
 
-	private StringBuilder prepareHighlightBuilder() {
-		if(HighlightBuilder==null){
-			HighlightBuilder = new StringBuilder(commonIcan);
-			commonIcanBaseLen=HighlightBuilder.length();
-		}
-		HighlightBuilder.setLength(commonIcanBaseLen);
-		return HighlightBuilder;
-	}
-
-	public StringBuilder getHighLightIncantation(boolean record) {
-		return prepareHighlightBuilder().append(HighLightIncantation)
-				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
-				.append("(")
-				.append("0")
-				.append(",")
-				.append(record?"1":"0")
-				.append(")");
+	public StringBuilder getHighLighter(int typ, int clr, String note) {
+		return new StringBuilder().append(HighLightIncantation)
+				.append("(").append(typ).append(",").append(clr).append(",").append(note).append(")");
 	}
 
 	public StringBuilder getDeHighLightIncantation() {
-		return prepareHighlightBuilder()
-				.append(DeHighLightIncantation)
-				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
-				.append("(")
-				.append("'PLOD_HL');");
+		return null;
+//		return prepareHighlightBuilder()
+//				.append(DeHighLightIncantation)
+//				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+//				.append("(")
+//				.append("'PLOD_HL');");
 	}
 
 	public StringBuilder getUnderlineIncantation(boolean record) {
-		prepareHighlightBuilder();
-		return HighlightBuilder.append(HighLightIncantation)
-				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
-				.append("(")
-				.append("1")
-				.append(",")
-				.append(record?"1":"0")
-				.append(")");
+		return null;
+//		prepareHighlightBuilder();
+//		return HighlightBuilder.append(HighLightIncantation)
+//				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+//				.append("(")
+//				.append("1")
+//				.append(",")
+//				.append(record?"1":"0")
+//				.append(")");
 	}
 
 	public StringBuilder getDeUnderlineIncantation() {
-		return prepareHighlightBuilder()
-				.append(DeHighLightIncantation)
-				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
-				.append("(")
-				.append("'PLOD_UL');");
+		return null;
+//		return prepareHighlightBuilder()
+//				.append(DeHighLightIncantation)
+//				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+//				.append("(")
+//				.append("'PLOD_UL');");
 	}
 
 	/**

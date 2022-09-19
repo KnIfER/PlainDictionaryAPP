@@ -3,6 +3,7 @@ package com.knziha.plod.plaindict;
 import android.app.KeyguardManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.PowerManager;
@@ -38,8 +39,7 @@ public class TestHelper {
 		//opt.get
 	}
 	
-	public static void insertMegaInAnnotDb(SQLiteDatabase db, mdict mdict) throws JSONException {
-	
+	public static void insertMegaInAnnotDb(SQLiteDatabase db, mdict mdict, int start, int numEntry, int noteStart, int numNotes) throws JSONException {
 //		String entry = mWebView.word;
 //		String lex = value;
 //
@@ -47,7 +47,7 @@ public class TestHelper {
 		int cc=0;
 		CMN.rt();
 		String sql = "INSERT INTO "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2
-				+"(bid,entry,entryHash,entryDig,lex,lexHash,lexDig,pos,last_edit_time,creation_time,param) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+				+"(bid,entry,entryHash,entryDig,lex,lexHash,lexDig,pos,last_edit_time,creation_time,param,annot) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 		SQLiteStatement preparedInsertExecutor = db.compileStatement(sql);
 		db.beginTransaction();  //开启事务
 		
@@ -56,18 +56,22 @@ public class TestHelper {
 		try {
 			Random rand = new Random();
 			bid = mdict.getBooKID();
-			for (pos = 0; pos < mdict.getNumberEntries(); pos++) {
-				if(pos>1500) break;
+			Random random1 = new Random(100);
+			Random random2 = new Random(24);
+			numEntry += start;
+			for (pos = start; pos < mdict.getNumberEntries(); pos++) {
+				if(pos>numEntry) break;
 				entry = mdict.getEntryAt(pos);
 				content = mdict.getRecordAt(pos, null, true);
 				content = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().replaceAll("[\r\n]", "_");
 				st=10;
+				if(noteStart>0) st += noteStart*20;
 				BreakIteratorHelper iteratorHelper = new BreakIteratorHelper();
 				iteratorHelper.setText(content);
 				st = iteratorHelper.following(st);
-				for (int j = 0; j < 10; ) {
+				for (int j = 0; j < numNotes; ) {
 					ed = iteratorHelper.following(st);
-					if (ed<0 || ed>=content.length()) break;
+					if (st<0 || ed<0 || ed>=content.length()) break;
 					String lexTmp = content.substring(st, ed).trim();
 					st = ed;
 					if(lexTmp.length()<3) continue;
@@ -83,6 +87,11 @@ public class TestHelper {
 					preparedInsertExecutor.bindLong(8, pos);
 					preparedInsertExecutor.bindLong(9, now);
 					preparedInsertExecutor.bindLong(10, now);
+					String path = "";
+					for (int i = 0, len=Math.max(7, random1.nextInt(20)); i < len; i++) {
+						path += random2.nextInt(29) + "/";
+					}
+					preparedInsertExecutor.bindString(11, path);
 					JSONObject json = new JSONObject();
 					json.put("x", 0);
 					json.put("y", 0);
@@ -128,7 +137,7 @@ public class TestHelper {
 		db.endTransaction();  //结束事务
 		
 		
-		CMN.Log("成功插入几条：", cc, "每秒插入：", cc*1000/CMN.pt());
+		CMN.Log("成功插入几条：", cc, "每秒插入：", CMN.pt()==0?"INF":cc*1000/CMN.pt());
 		
 		CMN.rt();
 		lex += "HAHHA";
@@ -138,8 +147,6 @@ public class TestHelper {
 		values.put("entryHash", hashKey(entry));
 		values.put("entryDig", digestKey(entry, 3));
 		values.put("lex", lex);
-		values.put("lexHash", hashKey(lex));
-		values.put("lexDig", digestKey(lex, 2));
 		values.put("pos", pos);
 		values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
 		values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
@@ -230,5 +237,100 @@ public class TestHelper {
 			sb.append(c);
 		}
 		return sb.toString();
+	}
+	
+	public static void annotRetrieveTest(PDICMainActivity a) {
+		try {
+//			BookPresenter mdx = currentDictionary;
+//			//TestHelper.insertMegaInAnnotDb(prepareHistoryCon().getDB(), (mdict) mdx.bookImpl, 0, 1500, 0, 10);
+
+//			for (int i = 0; i < 10; i++) {
+//				if (a.loadManager.md_get(i).isMdict()) {
+//					TestHelper.insertMegaInAnnotDb(a.prepareHistoryCon().getDB(), a.loadManager.md_get(i).getMdict(), 0, 20000, 0, 30);
+//				}
+//			}
+
+
+			int sep = 1000;
+			int slice = 20000/1000;
+			for (int step = 0; step < sep; step++) {
+				for (int i = 0; i < 10; i++) {
+					if (a.loadManager.md_get(i).isMdict()) {
+						TestHelper.insertMegaInAnnotDb(a.prepareHistoryCon().getDB(), a.loadManager.md_get(i).getMdict(), step*slice, slice, 0, 30);
+					}
+				}
+			}
+			
+			Random rand = new Random(100);
+			if (true) {
+				for (int i = 0; i < 10; i++) { // 十本书
+					BookPresenter md = a.loadManager.md_get(i);
+					if (md.isMdict()) {
+						CMN.rt();
+						int pageCnt = 0;
+						int annotCnt = 0;
+						int st = 8500 + rand.nextInt(10000);
+						for (int j = 0; j < 1000; j++) { // 一千页
+							int pos = st + j;
+							if (pos >= md.bookImpl.getNumberEntries()) {
+								break;
+							}
+							//String entry = md.bookImpl.getEntryAt(pos);
+							Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select annot from bookannot where bid=? and pos=?", new String[]{md.getId()+""
+									//, ""+hashKey(entry), digestKey(entry, 3)
+									, ""+pos
+							});
+							while (cursor.moveToNext()) {
+								String annot = cursor.getString(0);
+								annotCnt++;
+							}
+							cursor.close();
+							pageCnt++;
+						}
+						long total = CMN.pt();
+						CMN.Log("共"+pageCnt+"页"+annotCnt+"标记", " 平均每页获取时间:", total/pageCnt);
+					}
+				}
+			} else {
+				ArrayList<Long> intws = new ArrayList<>();
+				for (int i = 0; i < 10; i++) { // 十本书
+					BookPresenter md = a.loadManager.md_get(i);
+					if (md.isMdict()) {
+						CMN.rt();
+						int pageCnt = 0;
+						int annotCnt = 0;
+						int st = 8500 + rand.nextInt(10000);
+						for (int j = 0; j < 1000; j++) { // 一千页
+							int pos = st + j;
+							if (pos >= md.bookImpl.getNumberEntries()) {
+								break;
+							}
+							//String entry = md.bookImpl.getEntryAt(pos);
+							Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select id from bookannot where bid=? and pos=?", new String[]{md.getId()+""
+									//, ""+hashKey(entry), digestKey(entry, 3)
+									, ""+pos
+							});
+							intws.clear();
+							while (cursor.moveToNext()) {
+								intws.add(cursor.getLong(0));
+								annotCnt++;
+							}
+							cursor.close();
+							for (int k = 0; k < intws.size(); k++) {
+								cursor = a.prepareHistoryCon().getDB().rawQuery("select annot from bookannot where id=? limit 1", new String[]{intws.get(k)+""});
+								cursor.moveToNext();
+								String annot = cursor.getString(0);
+								cursor.close();
+							}
+							pageCnt++;
+						}
+						long total = CMN.pt();
+						CMN.Log("共"+pageCnt+"页"+annotCnt+"标记", " 平均每页获取时间:", total/pageCnt);
+					}
+				}
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
 	}
 }

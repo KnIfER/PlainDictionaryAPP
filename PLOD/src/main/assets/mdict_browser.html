@@ -11,6 +11,7 @@
 	<script src="MdbR/listview/jquery.mousewheel.js"></script>
 	<script src="MdbR/listview/seekbar.js"></script>
 	<script src="MdbR/trans.js"></script>
+	<script src="MdbR/annot.js"></script>
 	
 	<link rel="icon" href="MdbR/MdbR.png" type="image/x-icon"/>
 	<link rel="shortcut icon" href="MdbR/MdbR.png" type="image/x-icon"/>
@@ -721,6 +722,18 @@
 				return;
 			}
 			rawAddEvent(a,b,c);
+		}
+		window.remarkPage = function(){
+			
+		}
+		window.markPage = function(t, echo) {
+			// var n = getSelection().getRangeAt(0).startContainer;
+			// while(n=n.parentNode) {
+			// 	if(n.classList.contains('_PDict_body')) {
+			// 		MakeMark(t, echo, n, 0, parseInt(n.getAttribute('pd_pos')))
+			// 		break;
+			// 	}
+			// }
 		}
 		var pengDingPos = -1;
 		var lv;
