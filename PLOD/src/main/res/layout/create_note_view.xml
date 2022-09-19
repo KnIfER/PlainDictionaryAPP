@@ -7,6 +7,18 @@
 	android:layout_height="match_parent"
 	>
 
+
+	<ImageView
+		android:id="@+id/editShow"
+		android:layout_width="45dp"
+		android:layout_height="40dp"
+		android:layout_above="@+id/alpha"
+		android:layout_marginBottom="80dp"
+		android:background="@drawable/popup_background3__"
+		android:src="@drawable/ic_edit_black_24dp"
+		android:padding="5dp"
+		/>
+
 	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -15,11 +27,13 @@
 		android:layout_gravity="center"
 		android:layout_centerInParent="true"
 		android:background="#EFFFFFFF"
+		android:visibility="gone"
+		tools:visibility="visible"
 		>
 		<EditText
+			android:id="@+id/edit"
 			android:gravity="top"
 			android:hint="输入笔记内容…"
-			android:id="@+id/edit"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:singleLine="false"
@@ -29,6 +43,7 @@
 	</FrameLayout>
 
 	<LinearLayout
+		android:id="@+id/alpha"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_above="@+id/btns"
@@ -36,7 +51,7 @@
 		<TextView
 			android:id="@+id/alphaLock"
 			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
+			android:layout_height="40dp"
 			android:textSize="18sp"
 			android:textColor="#000"
 			android:text="80%"

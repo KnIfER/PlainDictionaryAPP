@@ -11419,14 +11419,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(tkShow!=null) tkShow.hide();
 		View cv = getLayoutInflater().inflate(R.layout.create_note_view, root, false);
 		EditText edit = cv.findViewById(R.id.edit);
+		View editShow = cv.findViewById(R.id.editShow);
 		TextView alphaText = cv.findViewById(R.id.alphaLock);
 		SeekBar alphaSeek = cv.findViewById(R.id.alphaSeek);
 		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLock());
+		ViewUtils.setVisible(ViewUtils.getNthParentNonNull(edit, 1), PDICMainAppOptions.editNote());
 		alphaText.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				PDICMainAppOptions.alphaLock(!ViewUtils.isVisible(alphaSeek));
 				ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLock());
+			}
+		});
+		editShow.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				v = ViewUtils.getNthParentNonNull(edit, 1);
+				PDICMainAppOptions.editNote(!ViewUtils.isVisible(v));
+				ViewUtils.setVisible(v, PDICMainAppOptions.editNote());
 			}
 		});
 		Button[] btns = new Button[]{cv.findViewById(R.id.btnH), cv.findViewById(R.id.btnU)};

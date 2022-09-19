@@ -2556,11 +2556,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=42, flagSize=8, shift=255) public static int alphaLock1() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=42, flagSize=8, shift=255) public static void alphaLock1(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=40, shift=1) public static boolean forceAlphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
-	@Metaline(flagPos=40, shift=1) public static void forceAlphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static boolean forceAlphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static void forceAlphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=41, shift=1) public static boolean alphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
-	@Metaline(flagPos=41, shift=1) public static void alphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static boolean alphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static void alphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=52, shift=1) public static boolean editNote() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static void editNote(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	
 	/////////////////////End Seven Flag///////////////////////////////////
