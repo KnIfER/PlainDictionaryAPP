@@ -1,11 +1,15 @@
 //(function(){ // based on rangy.js
     var doc = document;
     function log(...e) {console.log(e)}
-	function getNextNode(n) {
-        var a;
-        if (n.tagName!=='ANNOT' || !n.classList.contains('note')) {
-            a = n.firstChild;
-            if (a) return a
+	function getNextNode(n, e) {
+        var a = n.firstChild;
+        if (a) {
+            if (n.tagName!=='ANNOT' || !n.classList.contains('note')) {
+                return a
+            }
+            if(a==e) {
+                return null;
+            }
         }
 		while (n) {
 			if ((a = n.nextSibling)) {
@@ -28,7 +32,8 @@
 			}
 		}
 		b.reverse();
-		for (n = s; n; n = getNextNode(n)) {
+		for (n = s; n; n = getNextNode(n, e)) {
+            if(!n) break
 			b.push(n);
 			if (n == e) {
 				break
@@ -131,7 +136,7 @@
 		r.setStart(f[0], 0);
 		var a = f[f.length - 1];
 		r.setEnd(a, a.length);
-        debug('fatal web annot::', r);
+        debug('fatal web annot::wrapRange::', r);
         if(n.note) {
             var last = nodes[nodes.length-1]
             d = n.cloneNode(false);
@@ -392,7 +397,7 @@
             var range = sel.getRangeAt(0);
             if(!rootNode) rootNode = doc.body;
             var r = store(range, rootNode);
-            wrapRange(range, ann)
+            var nodes = wrapRange(range, ann)
             if(pos==undefined)
                 pos = window.currentPos || 0; 
             ann = {};
