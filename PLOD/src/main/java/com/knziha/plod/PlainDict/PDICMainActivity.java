@@ -2834,7 +2834,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	@Override
-	void DetachContentView(boolean leaving) {
+	public void DetachContentView(boolean leaving) {
 		//CMN.Log("DetachContentView");
 		PostDCV_TweakTBIC();
 		if (ActivedAdapter!=null) {

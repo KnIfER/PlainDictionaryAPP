@@ -5813,7 +5813,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return contentview.getParent()!=null;
 	}
 	
-	void DetachContentView(boolean leaving) {
+	public void DetachContentView(boolean leaving) {
 		//ViewUtils.removeView(contentview);  multishare
 	}
 	
@@ -11205,7 +11205,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public boolean selectable;
 		
 		public ViewHolder(MainActivityUIBase a, int resId, ViewGroup parent) {
-			itemView = LayoutInflater.from(a).inflate(resId, parent, false);
+			itemView = resId==0?parent:LayoutInflater.from(a).inflate(resId, parent, false);
 			itemView.setId(R.id.lvitems);
 			title = itemView.findViewById(R.id.text);
 			subtitle = itemView.findViewById(R.id.subtext);
@@ -11403,9 +11403,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	WeakReference<BookNotes> bookNoteRef = ViewUtils.DummyRef;
+	public AnnotAdapter[] annotAdapters = new AnnotAdapter[2];
 	public void showBookNotes() {
 		BookNotes bookNotes = bookNoteRef.get();
-		if(bookNotes==null) {
+		//if(bookNotes==null)
+		{
 			bookNotes = new BookNotes(MainActivityUIBase.this);
 			bookNoteRef = new WeakReference<BookNotes>(bookNotes);
 		}

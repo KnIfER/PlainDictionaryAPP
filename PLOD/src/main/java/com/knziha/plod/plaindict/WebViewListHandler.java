@@ -99,7 +99,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public long did;
 	public additiveMyCpr1 jointResult;
 	public WebViewmy mMergedFrame;
-	BookPresenter mMergedBook;
+	public BookPresenter mMergedBook;
 	public ArrayList<BookPresenter> frames = new ArrayList();
 	public ArrayList<long[]> framesDisplaying = new ArrayList();
 	public ArrayList<PlainWeb> moders = new ArrayList();
@@ -1838,7 +1838,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return ret == null ? "Error!!!" : ret.key;
 	}
 	
-	void setBottomNavWeb(boolean nav) {
+	public void setBottomNavWeb(boolean nav) {
 		if (!bDataOnly && nav!=bottomNavWeb) {
 			if (nav) {
 				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_recess);

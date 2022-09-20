@@ -82,7 +82,7 @@
 				<com.knziha.plod.widgets.DescriptiveImageView
 					android:id="@drawable/ic_edit_booknotes"
 					style="@style/MenuIconIVStyle"
-					android:text="笔记内容"
+					android:text="笔记列表"
 					android:src="@drawable/ic_edit_booknotes"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView

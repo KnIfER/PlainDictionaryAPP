@@ -7,7 +7,7 @@ import android.view.ViewConfiguration;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-//https://www.likecs.com/show-308551262.html?sc=720
+//https://www.cnblogs.com/kangweifeng/p/5310442.html
 //https://blog.csdn.net/weixin_41147026/article/details/81588732
 public class NiceDrawerLayout extends DrawerLayout {
 	private int mTouchSlop;

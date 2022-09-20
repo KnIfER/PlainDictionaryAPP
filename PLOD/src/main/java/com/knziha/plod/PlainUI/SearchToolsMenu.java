@@ -57,7 +57,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			, R.string.lucene_search
 			, 0
 			, R.string.book_notes
-			, R.string.write_sth
+			//, R.string.write_sth
 			, 0
 //			, R.string.qr_scan
 //			, R.string.text_recog
@@ -162,8 +162,16 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				holder = (MenuItemViewHolder) convertView.getTag();
 			}
 			//convertView.getLayoutParams().width = id==0?1:menu_width;
+			int tid = menu_ids[position];
 			holder.tv.setText(menuList.get(position));
-			holder.tv.setImageResource(position==0?R.drawable.ic_translate_ts:R.drawable.ic_view_comfy_2_black_24dp);
+			int did = R.drawable.ic_view_comfy_2_black_24dp;
+			if (tid==R.string.ts_convert) {
+				did = R.drawable.ic_translate_ts;
+			}
+			else if (tid==R.string.book_notes) {
+				did = R.drawable.ic_edit_booknotes;
+			}
+			holder.tv.setImageResource(did);
 		}
 		return convertView;
 	}

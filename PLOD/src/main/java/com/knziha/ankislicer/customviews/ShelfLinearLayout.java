@@ -13,7 +13,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 public class ShelfLinearLayout extends LinearLayout {
-	Paint p = new Paint();public Paint getPaint(){return p;}
+	Paint p = new Paint();
+	private int selectedToolIdx;
+	
+	public Paint getPaint(){return p;}
 	Rect r = new Rect();
 	public boolean drawRectOver=false;
 	
@@ -57,13 +60,14 @@ public class ShelfLinearLayout extends LinearLayout {
 	
 	public View selectedTool;
 	public void selectToolView(View v) {
-		if (selectedTool!=v) {
+		//if (selectedTool!=v)
+		{
 			selectedTool = v;
 			v.getDrawingRect(r);
 			if(getOrientation()==LinearLayout.VERTICAL) {
 				r.top += v.getTop();
 				r.bottom += v.getTop();
-			}else {
+			} else {
 				r.left += v.getLeft();
 				r.right += v.getLeft();
 			}
@@ -71,6 +75,7 @@ public class ShelfLinearLayout extends LinearLayout {
 		}
 	}
 	public void selectToolIndex(int i) {
+		selectedToolIdx = i;
 		selectToolView(getChildAt(i));
 	}
 	
@@ -87,6 +92,15 @@ public class ShelfLinearLayout extends LinearLayout {
 		int cc = getChildCount();
 		for (int i = 0; i < cc; i++) {
 			getChildAt(i).setOnLongClickListener(l);
+		}
+	}
+	
+	@Override
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
+		super.onLayout(changed, l, t, r, b);
+		View child = getChildAt(selectedToolIdx);
+		if (child != null) {
+			child.getDrawingRect(this.r);
 		}
 	}
 }

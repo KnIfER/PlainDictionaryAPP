@@ -887,7 +887,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	void DetachContentView(boolean leaving) {
+	public void DetachContentView(boolean leaving) {
 		ViewUtils.removeView(contentview);
 	}
 //

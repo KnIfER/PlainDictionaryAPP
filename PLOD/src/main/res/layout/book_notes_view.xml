@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.knziha.plod.widgets.NiceDrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/drawer_layout"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
@@ -18,6 +19,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_gravity="start"
+		tools:layout_gravity=""
 		>
 		<LinearLayout
 			android:layout_width="match_parent"
@@ -39,13 +41,43 @@
 					app:title="笔记列表"
 					/>
 			</FrameLayout>
-			<ListView
-				android:id="@+id/lst"
+
+			<com.knziha.plod.widgets.NoScrollViewPager
+				android:id="@+id/viewpager"
 				android:layout_width="match_parent"
 				android:layout_height="0dp"
 				android:layout_weight="1"
 				android:background="#fff"
 				/>
+
+			<View
+				android:layout_width="match_parent"
+				android:layout_height=".5dp"
+				android:background="#bbb"
+				/>
+
+
+			<com.knziha.ankislicer.customviews.ShelfLinearLayout
+				android:id="@+id/btns"
+				android:orientation="horizontal"
+				android:layout_width="match_parent"
+				android:layout_height="50dp"
+				android:background="?attr/colorPrimary"
+				>
+				<TextView
+					android:text="全部"
+					style="@style/book_note_foot"
+					/>
+				<TextView
+					android:text="当前词典"
+					style="@style/book_note_foot"
+					/>
+				<TextView
+					android:text="当前页"
+					style="@style/book_note_foot"
+					/>
+			</com.knziha.ankislicer.customviews.ShelfLinearLayout>
+
 		</LinearLayout>
 	</FrameLayout>
 </com.knziha.plod.widgets.NiceDrawerLayout>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+	android:background="?attr/listChoiceBackgroundIndicator"
+	>
+	<FrameLayout
+		android:layout_height="match_parent"
+		android:layout_width="18dp"
+		android:paddingLeft="9dp"
+		>
+		<com.knziha.filepicker.widget.MaterialCheckbox
+			android:id="@+id/dotVue"
+			style="@style/MaterialCheckbox"
+			android:layout_height="match_parent"
+			android:layout_width="15dp"
+			android:layout_marginRight="0dp"
+			android:paddingRight="0dp"
+			/>
+	</FrameLayout>
+	<include
+		android:layout_width="0dp"
+		android:layout_weight="1"
+		android:layout_height="wrap_content"
+		layout="@layout/listview_item01"
+		/>
+	<TextView
+		android:layout_height="match_parent"
+		android:layout_width="40dp"
+		android:text=" "
+		android:visibility="gone"
+		android:id="@+id/subtext"
+		android:textSize="35dp"
+		android:textColor="#888"
+		android:textStyle="bold"
+		android:gravity="center"
+		tools:text="T"
+		tools:visibility="visible"
+		/>
+</LinearLayout>
+
