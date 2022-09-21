@@ -497,6 +497,12 @@
 		<item name="android:background">?attr/listChoiceBackgroundIndicator</item>
 		<item name="android:clickable">true</item>
 	</style>
+
+	<style name="pop_menu_animation" parent="android:Animation">
+		<item name="android:windowEnterAnimation">@anim/pop_menu_enter</item>
+		<item name="android:windowExitAnimation">@anim/pop_menu_exit</item>
+	</style>
+
 </resources>
 
 

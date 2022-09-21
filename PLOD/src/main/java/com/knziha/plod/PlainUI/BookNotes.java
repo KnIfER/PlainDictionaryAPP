@@ -4,6 +4,7 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.util.SparseArray;
 import android.view.ContextThemeWrapper;
@@ -25,8 +26,7 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
-import com.knziha.plod.dictionary.UniversalDictionaryInterface;
-import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.plaindict.CMN;
@@ -40,7 +40,7 @@ import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
-public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListener{
+public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListener, PopupMenuHelper.PopupMenuListener {
 	MainActivityUIBase a;
 	NiceDrawerLayout drawer;
 	int drawerStat;
@@ -50,6 +50,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	ViewGroup bar;
 	ShelfLinearLayout btns;
 	Toolbar toolbar;
+	
+	PopupMenuHelper popupMenu;
 	
 	public BookNotes(MainActivityUIBase a) {
 		super(a, true);
@@ -131,7 +133,9 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				}
 				@Override public int getCount() { return 3; }
 				@Override public void destroyItem(ViewGroup container, int position, @NonNull Object object) {
-					container.removeView(viewList[position]);
+					RecyclerView child = viewList[position];
+					container.removeView(child);
+					child.stopScroll();
 				}
 				@NonNull @Override
 				public Object instantiateItem(ViewGroup container, int position) {
@@ -159,7 +163,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						if (lv.getAdapter()==null) {
 							lv.setAdapter(getAnnotationAdapter(false, a.currentDictionary,lv, i));
 						} else {
-							a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB());
+							a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv);
 						}
 					}
 				}
@@ -228,6 +232,10 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	@Override
 	public void onClick(View v) {
 		if (ViewUtils.getNthParentNonNull(v, 1)==btns) {
+			RecyclerView lv = viewList[viewPager.getCurrentItem()];
+			if (lv != null) {
+				lv.stopScroll();
+			}
 			int k = btns.indexOfChild(v);
 			viewPager.setCurrentItem(k, true);
 		}
@@ -251,11 +259,57 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	public final SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
 	int avoyagerIdx=0;
 	int adelta=0;
+	long pressedRowId;
 	
-	public void click(AnnotAdapter annotAdapter, View itemView, AnnotAdapter.VueHolder vh) {
-		setUpContentView();
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		if (!isLongClick) {
+			popupMenuHelper.dismiss();
+			try {
+				SQLiteDatabase database = a.prepareHistoryCon().getDB();
+				int cnt = database.delete(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, "id=?", new String[]{pressedRowId + ""});
+				if (cnt > 0) {
+					for (int i = 0; i < 2; i++) {
+						RecyclerView lv = viewList[i];
+						if (lv.getAdapter() != null) {
+							lv.suppressLayout(true);
+							AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
+							adapter.refresh(a.currentDictionary, database, lv);
+						}
+					}
+					a.showT("删除成功");
+					return true;
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			a.showT("删除失败！");
+			return true;
+		}
+		return false;
+	}
+	
+	public void click(AnnotAdapter annotAdapter, View itemView, AnnotAdapter.VueHolder vh, boolean isLongClick) {
 		int pos = vh.getLayoutPosition();
 		AnnotAdapter.AnnotationReader reader = annotAdapter.dataAdapter.getReaderAt(pos);
+		pressedRowId = reader.row_id;
+		if (isLongClick) {
+			PopupMenuHelper popupMenu = a.getPopupMenu();
+			
+			int[] texts = new int[]{
+					R.string.delete};
+			popupMenu.initLayout(texts, this);
+			
+			int[] vLocationOnScreen = new int[2];
+			viewPager.getLocationOnScreen(vLocationOnScreen);
+			int x=(int)viewPager.lastX;
+			int y=(int)viewPager.lastY;
+			popupMenu.show(drawer, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+			ViewUtils.preventDefaultTouchEvent(drawer, x, y);
+			
+			return;
+		}
+		setUpContentView();
 		BookPresenter currentDictionary = a.getBookById(reader.bid);
 		int idx = (int) reader.position;
 		String key = reader.entryName;

@@ -23,12 +23,13 @@ import com.knziha.filepicker.widget.MaterialCheckbox;
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorAdapter;
 import com.knziha.paging.CursorReader;
+import com.knziha.paging.CursorReaderMultiSortNum;
+import com.knziha.paging.MultiFieldPagingCursorAdapter;
 import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.DBroswer;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -37,12 +38,13 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.text.ColoredTextSpan;
 
 import java.lang.ref.WeakReference;
+import java.util.Date;
 
 /**
  * Created by KnIfER on 2021/11/16.
  */
 
-public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> implements View.OnClickListener, PagingCursorAdapter.OnLoadListener {
+public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> implements View.OnClickListener, PagingCursorAdapter.OnLoadListener, View.OnLongClickListener {
 	BookPresenter presenter;
 	public boolean showDelete;
 	int resourceID;
@@ -50,11 +52,10 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	MainActivityUIBase a;
 	public boolean darkMode;
 	WeakReference<BookNotes> bookNotesRef = ViewUtils.DummyRef;
-	RecyclerView lv;
 	final int scope;
 	
 	private PagingAdapterInterface<AnnotationReader> DummyReader = new CursorAdapter<>(EmptyCursor, new AnnotationReader());
-	PagingAdapterInterface<AnnotationReader> dataAdapter = DummyReader;
+	PagingAdapterInterface<? extends AnnotationReader> dataAdapter = DummyReader;
 	ImageView pageAsyncLoader;
 	
 	public AnnotAdapter(MainActivityUIBase a, int resource, int textViewResourceId, BookPresenter md_
@@ -62,30 +63,52 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			, RecyclerView lv) {
 		//this(a,resource,textViewResourceId,objects);
 		this.a=a;
-		this.lv=lv;
 		resourceID=resource;
 		textViewResourceID=textViewResourceId;
 		presenter=md_;
 		this.scope = scope;
-		refresh(md_, database);
+		refresh(md_, database, lv);
 	}
 	
 	@Override
 	public void onClick(View v) {
 		BookNotes notes = bookNotesRef.get();
 		if (notes != null) {
-			notes.click(this, v, (VueHolder)v.getTag());
+			notes.click(this, v, (VueHolder)v.getTag(), false);
 		}
 	}
 	
-	public /*static*/ class AnnotationReader implements CursorReader {
+	@Override
+	public boolean onLongClick(View v) {
+		BookNotes notes = bookNotesRef.get();
+		if (notes != null) {
+			notes.click(this, v, (VueHolder)v.getTag(), true);
+		}
+		return true;
+	}
+	
+	public static class AnnotationMultiSortReader extends AnnotationReader implements CursorReaderMultiSortNum{
+		@Override
+		public void ReadCursor(Cursor cursor, long rowID, long[] sortNums) {
+			multiSorts = 3;
+			sort_numbers = sortNums;
+			//sort_numbers = new long[sortNums.length];
+			//System.arraycopy(sortNums, 0, sort_numbers, 0, sortNums.length);
+			ReadCursor(cursor, rowID, sortNums[0]);
+		}
+		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationMultiSortReader();
+	}
+	
+	public static class AnnotationReader implements CursorReader{
 		public long row_id;
 		public long sort_number;
+		public long[] sort_numbers;
 		public String entryName;
 		public String annotText;
 		public long position;
 		public long bid;
 		public JSONObject annot;
+		int multiSorts = 0;
 		
 		@Override
 		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
@@ -96,15 +119,15 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 				row_id = cursor.getLong(0);
 				sort_number = cursor.getLong(1);
 			}
-			entryName = cursor.getString(2);
-			annotText = cursor.getString(3);
-			position = cursor.getLong(4);
-			bid = cursor.getLong(5);
+			entryName = cursor.getString(multiSorts+2);
+			annotText = cursor.getString(multiSorts+3);
+			position = cursor.getLong(multiSorts+4);
+			bid = cursor.getLong(multiSorts+5);
 			try {
-				annot = JSONObject.parseObject(cursor.getString(6));
+				annot = JSONObject.parseObject(cursor.getString(multiSorts+6));
 			} catch (Exception e) {
+				CMN.debug(e);
 				annot = new JSONObject();
-				CMN.debug();
 			}
 		}
 		
@@ -115,18 +138,18 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					"entry='" + entryName + '\'' +
 					'}';
 		}
+		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationReader();
 	}
-	ConstructorInterface<AnnotationReader> BookmarkDatabaseReaderConstructor = length -> new AnnotationReader();
 	
-	final static SparseArray<long[]> savedPositions = new SparseArray();
-	
-	public void refresh(BookPresenter invoker, SQLiteDatabase database) {
+	public void refresh(BookPresenter invoker, SQLiteDatabase database, RecyclerView lv) {
 		//if(invoker!=md || con!=con_ || cr==null)
 		try {
 			presenter = invoker;
 			dataAdapter.close();
 			dataAdapter = DummyReader;
 			{
+				int sortType = scope==0?PDICMainAppOptions.annotDBSortBy():PDICMainAppOptions.annotDB1SortBy();
+				sortType = 2;
 				boolean bSingleThreadLoading = false;
 				if (bSingleThreadLoading) {
 					String sql = "select id,last_edit_time,entry,lex,pos,bid,annot from "
@@ -139,37 +162,105 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					CMN.Log("查询个数::"+cursor.getCount());
 					dataAdapter = new CursorAdapter<>(cursor, new AnnotationReader());
 					notifyDataSetChanged();
-				} else {
-					if (pageAsyncLoader==null) {
+				}
+				else if (sortType <= 1) {
+					if (pageAsyncLoader == null) {
 						pageAsyncLoader = new ImageView(a);
 					}
+					saveListPosition();
 					PagingCursorAdapter<AnnotationReader> dataAdapter = new PagingCursorAdapter<>(database
 							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
-							, BookmarkDatabaseReaderConstructor
+							, AnnotationReader.readerMaker
 							, AnnotationReader[]::new);
 					this.dataAdapter = dataAdapter;
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
-							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_CREATE_TIME, true, "entry,lex,pos,bid,annot");
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_CREATE_TIME, sortType==0, "entry,lex,pos,bid,annot");
 					if (scope == 1) {
-						dataAdapter.where("bid=?", new String[]{presenter.getId()+""});
+						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
 					}
-					// savedPositions.get(getFragmentId(), 0L)
-					long lastTm=0, offset=0;
+					long[] pos = savedPositions.get(getFragmentId());
+					long lastTm = 0, offset = 0;
+					if (pos != null) {
+						lastTm = pos[0];
+						offset = pos[1];
+					}
 					dataAdapter.startPaging(lastTm, offset, 20, 15, this);
+					notifyDataSetChanged();
+				}
+				else {
+					if (pageAsyncLoader == null) {
+						pageAsyncLoader = new ImageView(a);
+					}
+					saveListPosition();
+					MultiFieldPagingCursorAdapter<AnnotationMultiSortReader> dataAdapter = new MultiFieldPagingCursorAdapter(database
+							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
+							, AnnotationMultiSortReader.readerMaker
+							, AnnotationMultiSortReader[]::new);
+					this.dataAdapter = dataAdapter;
+					String[] sortBy;
+					if (sortType<=5) {
+						String sf = sortType <= 3 ? "tPos" : FIELD_CREATE_TIME;
+						sortBy = new String[]{"bid", "pos", sf, "ROWID"};
+					} else {
+						sortBy = new String[]{"bid", FIELD_CREATE_TIME};
+					}
+					dataAdapter.bindTo(lv)
+							.setAsyncLoader(a, pageAsyncLoader)
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, sortType%2==0, "entry,lex,pos,bid,annot");
+					if (scope == 1) {
+						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
+					}
+					long[] pos = savedPositions.get(getFragmentId());
+					long lastTm = 0, offset = 0;
+					if (pos != null) {
+						lastTm = pos[0];
+						offset = pos[1];
+					}
+					// dataAdapter.new_sorts(0)
+					dataAdapter.startPaging(null, offset, 20, 15, this);
+					notifyDataSetChanged();
 				}
 			}
 		} catch (Exception e) {
+			CMN.debug(e);
 			dataAdapter = DummyReader;
 		}
 	}
 	
+	/** type[act|ui|db], long[]{pos, view offset} */
+	public final static SparseArray<long[]> savedPositions = new SparseArray();
+	
+	public int getFragmentId() {
+		return (scope<<15)|a.thisActType.ordinal();
+	}
+	
+	private void saveListPosition() {
+		try {
+			BookNotes notes = bookNotesRef.get();
+			View view = notes.viewList[scope].getChildAt(0);
+			if (view!=null) {
+				VueHolder holder = (VueHolder) view.getTag();
+				AnnotationReader reader = (AnnotationReader) holder.tag;
+				// CMN.debug("saveListPosition::", holder.getLayoutPosition());
+				if (holder.getLayoutPosition() > 0) {
+					savedPositions.put(getFragmentId(), new long[]{reader.sort_number, view.getTop()});
+				} else {
+					savedPositions.remove(getFragmentId());
+				}
+				CMN.debug("savedPositions::save::", scope+" "+reader.entryName+" "+new Date(reader.sort_number).toLocaleString());
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
 	
 	@NonNull
 	@Override
 	public AnnotAdapter.VueHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		VueHolder vh = new VueHolder(a, parent, LayoutInflater.from(a).inflate(R.layout.listview_item01_book_notes, parent, false));
 		vh.itemView.setOnClickListener(this);
+		vh.itemView.setOnLongClickListener(this);
 		return vh;
 	}
 	
@@ -188,6 +279,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			entry="";
 			bookName="";
 		}
+		holder.tag = reader;
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 		ssb.append(" ");
 		ssb.append(lex);
@@ -230,13 +322,15 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		
 		ssb.clear();
 		ssb.clearSpans();
-		ssb.append(bookName);
 		if (!TextUtils.isEmpty(entry)) {
-			ssb.append(" | ").
-					//ssb.append(" — ").
-							append(Character.toUpperCase(entry.charAt(0)))
-					.append(entry, 1, entry.length());
+			ssb
+				//ssb.append(" — ").
+				.append(Character.toUpperCase(entry.charAt(0)))
+				.append(entry, 1, entry.length())
+				.append(" | ")
+			;
 		}
+		ssb.append(bookName);
 		vh.subtitle.setText(ssb);
 		//vh.ivDel.setVisibility(showDelete?View.VISIBLE:View.GONE);
 	}
@@ -265,6 +359,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		final MainActivityUIBase.ViewHolder vh;
 		MaterialCheckbox dotVue;
 		View typVue;
+		AnnotationReader tag;
 		VueHolder(MainActivityUIBase a, ViewGroup parent, View view) {
 			super(view);
 			view.setTag(this);
@@ -286,10 +381,10 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	}
 	
 	@Override
-	public void onLoaded(PagingCursorAdapter adapter) {
+	public void onLoaded(PagingAdapterInterface adapter) {
 		BookNotes notes = bookNotesRef.get();
 		if (notes!=null) {
-			lv.suppressLayout(false);
+			notes.viewList[scope].suppressLayout(false);
 		}
 	}
 }

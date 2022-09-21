@@ -227,6 +227,33 @@
         ret = ret.reverse();
         return ret.join("/") + ":" + o;
     }
+    function storeTextPos(n, o, rootNode) {
+        var p = n.parentNode;
+        while (p && skip(p)) {
+            p = p.parentNode;
+        }
+        // 获得原始非标注父节点
+        if(p) {
+            for (var t=p; t; t = getNextNode(t)) {
+                if (t == n) {
+                    break
+                }
+                if(t.nodeType == 3) {
+                    o += t.length;
+                }
+            }
+            
+            for (var t=rootNode; t; t = getNextNode(t)) {
+                if (t == p) {
+                    break
+                }
+                if(t.nodeType == 3) {
+                    o += t.length;
+                }
+            }
+        }
+        return o;
+    }
     function skip(n) {
         return n.tagName=='ANNOT'||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.tagName=='MARK'||n.classList.contains('_PDict');
     }
@@ -373,7 +400,7 @@
         return t && t!=0xff?"rgba("+r+" "+g+" "+b+" / "+parseInt(t*100.0/256)+"%)":"rgb("+r+","+g+","+b+")";
     }
 
-    function annot(type, color, note, rootNode, doc, pos) {
+    function annot(type, color, note, rootNode, doc, pos, bid) {
         log('MakeAnnotation::', type, color, note);
         //note = ' (笔记测试) ';
         if(type==undefined) type=0;
@@ -395,17 +422,18 @@
         try {
             var text = sel.toString();
             var range = sel.getRangeAt(0);
+            var tPos = storeTextPos(range.startContainer, range.startOffset, rootNode);
             if(!rootNode) rootNode = doc.body;
             var r = store(range, rootNode);
             var nodes = wrapRange(range, ann)
             if(pos==undefined)
                 pos = window.currentPos || 0; 
-            ann = {};
-            ann.n = r;
-            if(type) ann.typ = type;
-            if(color) ann.clr = color;
-            if(note) ann.note = note;
-            var nid = app.annot(sid.get(), text, JSON.stringify(ann), pos, type, color, note);
+            var nota = {};
+            nota.n = r;
+            if(type) nota.typ = type;
+            if(color) nota.clr = color;
+            if(note) nota.note = note;
+            var nid = app.annot(sid.get(), text, JSON.stringify(nota), window.entryKey||null, pos, tPos, type, color, note, bid||null);
             for(var i,n;n=nodes[i++];) {
                 n.nid = nid;
             }

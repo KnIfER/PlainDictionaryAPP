@@ -89,27 +89,42 @@ function wrappedOnLoadFunc(){
 		window.shzh=app.rcsp(sid.get());
 	}
 	if(!remarked) {
-		restoreMarks(pw); 
+		if(fe) {
+			restoreMarks(pw); 
+		} else if(app){
+			loadJs('/MdbR/annot.js', function(){restoreMarks(window)})
+		}
 		remarked = true;
 	}
 	//todo 处理背景色？
 }
 
 
+function loadJs(url,callback){
+	var e=document.createElement('script');
+	e.type="text/javascript";
+	e.onload=callback;
+	e.src=url;
+	document.body.appendChild(e);
+}
+
 function restoreMarks(pw){
-	debug('remarkByUrl???');
 	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
 	var t = app.remarkByUrl(sid.get(), url);
+	debug('remarkByUrl???', url, t);
 	if(multi) {
-		t = t.split('\n\n\n');
+		t = t.split('\t'); // \n\n\n
 		var frames = document.getElementsByClassName('_PDict_body'), map=[];
 	 	for(var i=0,f;f=frames[i++];) {
 			map[f.getAttribute('pd_pos')] = f;
 		}
-		debug('remarkByUrl::multi::', t, map);
+		debug('remarkByUrl::multi::', t, 'map=',map);
 	 	for(var i=0,f,n;n=t[i];i+=2) {
-			f = map[i+1];
-			if(f) remark(n, f, document, pw); 
+			f = map[t[i+1]];
+			if(f) {
+				debug('remark=', t[i+1], f);
+				remark(n, f, document, pw); 
+			}
 		}
 	} else {
 		remark(t, document.body, document, pw); 
@@ -118,17 +133,52 @@ function restoreMarks(pw){
 
 function remark(t, rootNode, doc, w){
 	t = t.split('\n');
-	for(var i=0;i<t.length;i++) {
-		var ann = JSON.parse(t[i]);
-		var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
-		if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
-		else if(nn.length!=2) continue;
-		var r = w.MakeRange(n0, n1, rootNode, doc);
-		if(r) {
-			ann = w.MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
-			w.WrapRange(r, ann, rootNode)
-		}
+	for(var i=0;i<t.length;i+=2) {
+		try{
+			var ann = JSON.parse(t[i]);
+			var nid = parseInt(t[i+1]);
+			// debug('read::remark=',ann);
+			var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
+			if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
+			else if(nn.length!=2) continue;
+			var r = w.MakeRange(n0, n1, rootNode, doc);
+			if(r) {
+				ann = w.MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
+				w.WrapRange(r, ann, rootNode, nid)
+			}
+		} catch(e) {console.log('error::', t[i], e)}
 	}
+}
+
+window.markPage = function(type, color, note) {
+	var s = window.getSelection();
+	if(s && !s.isCollapsed) {
+		var wh = whereSelection();
+		MakeMark(type, color, note, wh[2], document, wh[0], wh[1])
+	}
+}
+
+function whereSelection(){
+	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
+	var pos, did = did = url.substring(url.lastIndexOf('/',idx)+1, idx), rootNode=document.body;
+	if(multi) {
+		var n = getSelection().getRangeAt(0).startContainer;
+		while(n=n.parentNode) {
+			if(n.classList.contains('_PDict_body')) {
+				pos = parseInt(n.getAttribute('pd_pos'))
+				rootNode = n;
+				break;
+			}
+		}
+	} else {
+		//todo handle ? parms
+		pos = window.pos;
+		if(pos==undefined) pos = parent.window.decodePosid(url.substring(idx+1));
+	}
+
+	debug('whereSelection::', pos, did, url.substring(idx+1));
+	return [pos, did, rootNode];
+
 }
 
 function loadVI(pos){

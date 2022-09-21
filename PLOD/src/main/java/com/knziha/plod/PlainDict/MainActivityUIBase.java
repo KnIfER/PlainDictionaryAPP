@@ -161,6 +161,7 @@ import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
 import com.knziha.plod.PlainUI.PlainAppPanel;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.SettingsSearcher;
@@ -507,17 +508,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					t = t.split('\n');
 					for(var i=0;i<t.length;i+=2) {
 	 					if(t[i].length){
-							var ann = JSON.parse(t[i]);
-							var nid = parseInt(t[i+1]);
-							var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
-							if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
-							else if(nn.length!=2) continue;
-							var r = MakeRange(n0, n1, rootNode, doc);
-							console.log('fatal debug annot::restoring::', nn, r);
-							if(r) {
-								ann = MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
-								WrapRange(r, ann, rootNode)
-							}
+	 						try{
+								var ann = JSON.parse(t[i]);
+								var nid = parseInt(t[i+1]);
+								var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
+								if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
+								else if(nn.length!=2) continue;
+								var r = MakeRange(n0, n1, rootNode, doc);
+								console.log('fatal debug annot::restoring::', nn, r);
+								if(r) {
+									ann = MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
+									WrapRange(r, ann, rootNode)
+								}
+							} catch(e) {console.log('error::', t[i], e)}
 						}
 					}
 				}
@@ -11416,6 +11419,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	// create_note
 	public void annotText(WebViewmy wv, int type) {
 		AlertDialog tkShow = ucc == null || ucc.detached() ? null : ucc.d;
 		if(tkShow!=null) tkShow.hide();
@@ -11461,7 +11465,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					String indi = (lock * 100 / 255) + "%";
 					if(indi.length()<3) indi = "0"+indi;
 					alphaText.setText(indi);
-					noteDlg.previewColor(opt.annotColor(PDICMainAppOptions.currentTool(), 0, false));
+					noteDlg.setPreviewColor(opt.annotColor(PDICMainAppOptions.currentTool(), 0, false));
 					alphaSeek.setProgress(lock);
 					noteDlg.datasetChanged();
 				} else {
@@ -11534,4 +11538,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		btns[type<0?PDICMainAppOptions.currentTool():type].performClick();
 	}
 	
+	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;
+	public PopupMenuHelper getPopupMenu() {
+		PopupMenuHelper ret = popupMenuRef.get();
+		if (ret==null) {
+			ret  = new PopupMenuHelper(this, null, null);
+			popupMenuRef = new WeakReference<>(ret);
+		}
+		return ret;
+	}
 }

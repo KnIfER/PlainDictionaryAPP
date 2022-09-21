@@ -111,12 +111,14 @@ public class CharSequenceKey implements CharSequence {
 	}
 	
 	public CharSequenceKey reset(int st, int ed) {
+		valueSlim=null;
 		this.start = st;
 		this.end = ed<st?value.length():ed;
 		return this;
 	}
 	
 	public CharSequenceKey reset(int st) {
+		valueSlim=null;
 		this.start = st;
 		return this;
 	}

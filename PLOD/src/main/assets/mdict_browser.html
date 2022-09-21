@@ -726,7 +726,19 @@
 		window.remarkPage = function(){
 			
 		}
-		window.markPage = function(t, echo) {
+		window.markPage = function(type, color, note) {
+			for (var i=0,fx; fx=frames[i++];) {
+				var s = 0, w=fx.item;
+				if(w && w.contentWindow) {
+					w = w.contentWindow;
+					s = w.getSelection();
+				}
+				if(s && !s.isCollapsed) {
+					var wh = w.whereSelection();
+					MakeMark(type, color, note, wh[2], w.document, wh[0], wh[1])
+					break;
+				}
+			}
 			// var n = getSelection().getRangeAt(0).startContainer;
 			// while(n=n.parentNode) {
 			// 	if(n.classList.contains('_PDict_body')) {
@@ -2987,7 +2999,10 @@
 					}
 				});
 			}
-			if(params.q)params.q=decodeURIComponent(params.q);
+			if(params.q){
+				params.q=decodeURIComponent(params.q);
+				window.entryKey = params.q;
+			}
 			if(params.s)params.s=decodeURIComponent(params.s);
 			if(params.xp) decodeExp(params);
 			return params;
@@ -3870,6 +3885,34 @@
 			}
 			if(negative) sb+='~';
 			return sb;
+		}
+		
+		function decodePosid(text)
+		{
+			if("8m85Y0n8LzA~"==text) return 0x8000000000000000;
+			var scale = 62;
+			var num = 0;
+			var len=text.length,i=len-1;
+			if(len>0) {
+				var negative=text.charCodeAt(i)==126;
+				if(negative) i--;
+				var index;
+				var c;
+				for(; i >= 0; i--)
+				{
+					c = text.charCodeAt(i);
+					if(c>=65&&c<=90) {
+						index = c-65+10;
+					} else if(c>=97&&c<=122){
+						index = c-97+36;
+					} else {
+						index = (c-48)%10;
+					}
+					num += index * Math.pow(scale, i);
+				}
+				if(negative) num=-num;
+			}
+			return num;
 		}
 
 		var shin,shy,shyst;

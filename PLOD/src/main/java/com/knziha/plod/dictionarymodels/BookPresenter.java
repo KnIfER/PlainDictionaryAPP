@@ -2771,15 +2771,22 @@ function debug(e){console.log(e)};
         }
 		
         @JavascriptInterface
-        public long annot(int sid, String text, String annot, int pos, int type, int color, String note) {
+        public long annot(int sid, String text, String annot, String entry, int pos, int tPos, int type, int color, String note, String did) {
 			if (presenter!=null) {
 				WebViewmy mWebView = findWebview(sid);
 				if (mWebView != null) {
-					CMN.debug("annot::marking", text, annot, pos, mWebView.presenter);
+					CMN.debug("annot::marking", text, annot, "pos="+pos, "tPos="+tPos, mWebView.presenter, did);
 					try {
 						if (presenter.a.getUsingDataV2()) {
-							String entry = mWebView.word;
-							PlainWeb webx = mWebView.presenter.getWebx();
+							BookPresenter book = mWebView.presenter;
+							if(did!=null) {
+								book = book.a.getMdictServer().md_getByURL(did);
+								if(book==null) return -1;
+							}
+							if (entry == null) {
+								entry = mWebView.word;
+							}
+							PlainWeb webx = book.getWebx();
 							if (webx!=null) {
 								entry = mWebView.getUrl();
 								if (entry.startsWith(webx.getHost()))
@@ -2787,13 +2794,14 @@ function debug(e){console.log(e)};
 							}
 							long entryHash = hashKey(entry);
 							ContentValues values = new ContentValues();
-							values.put("bid", mWebView.presenter.getId());
+							values.put("bid", book.getId());
 							values.put("pos", pos);
 							values.put("entry", entry);
 							values.put("lex", text);
 							values.put("annot", annot);
 							values.put("type", type);
 							values.put("color", color);
+							values.put("tPos", tPos);
 							// values.put("note", note); //不单独存储笔记了
 							long now = CMN.now();
 							values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
@@ -2823,8 +2831,8 @@ function debug(e){console.log(e)};
 				String annot = cursor.getString(0);
 				if(annot!=null) {
 					if(sb==null) sb = new StringBuilder();
-					sb.append(cursor.getString(1)).append("\n");
-					sb.append(cursor.getLong(0)).append("\n");
+					sb.append(cursor.getString(1)).append("\n"); // {}
+					sb.append(cursor.getLong(0)).append("\n"); // note id
 				}
 			}
 			cursor.close();
@@ -2854,11 +2862,13 @@ function debug(e){console.log(e)};
 								if (nxt > idx) {
 									key.reset(idx, nxt);
 									long position = IU.TextToNumber_SIXTWO_LE(key);
+									CMN.Log("asdasdsaaA::", key, url.substring(idx, nxt));
+									int len = sb == null ? 0 : sb.length();
 									sb = getMarksByPos(sb, bid, position);
-									if (sb != null) {
-										sb.append(position).append("\n\n\n");
-										sb.append(position).append(key);
-										sb.append(position).append("\n\n\n");
+									if (sb != null && sb.length() > len) {
+										sb.append("\t");
+										sb.append(position);
+										sb.append("\t");
 									}
 								}
 								idx = nxt + 1;

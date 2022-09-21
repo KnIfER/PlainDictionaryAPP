@@ -79,6 +79,9 @@ public class CMN {
 					} else if (o1 instanceof byte[]) {
 						msg.append(Arrays.toString((byte[]) o1));
 						continue;
+					} else if (o1 instanceof long[]) {
+						msg.append(Arrays.toString((long[]) o1));
+						continue;
 					}
 				}
 				if(msg.length()>0) msg.append(", ");

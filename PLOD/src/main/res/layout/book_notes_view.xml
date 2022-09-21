@@ -5,13 +5,13 @@
 	android:id="@+id/drawer_layout"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
-	<LinearLayout
+	<FrameLayout
 		android:id="@+id/main"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
 		>
-	</LinearLayout>
+	</FrameLayout>
 
 	<FrameLayout
 		android:id="@+id/book_notes_drawer"

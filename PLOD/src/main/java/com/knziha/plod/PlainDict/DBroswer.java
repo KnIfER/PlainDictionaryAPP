@@ -83,6 +83,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 import static com.knziha.plod.plaindict.DeckListAdapter.*;
 
+//  todo 分表显示
 @SuppressLint("SetTextI18n")
 public class DBroswer extends DialogFragment implements
 		View.OnClickListener, OnLongClickListener, RecyclerViewmy.OnItemClickListener, OnItemLongClickListener, Toolbar.OnMenuItemClickListener {
@@ -97,8 +98,8 @@ public class DBroswer extends DialogFragment implements
 	ContentviewBinding contentUIData;
 	PeruseView peruseView;
 	
-	/** db type, long[]{pos, view offset} */
-	final static SparseArray<long[]> savedPositions = new SparseArray();
+	/** type[act|ui|db], long[]{pos, view offset} */
+	public final static SparseArray<long[]> savedPositions = new SparseArray();
 	
 	RecyclerView lv;
 	int lastDragPos=-1;
@@ -123,7 +124,7 @@ public class DBroswer extends DialogFragment implements
 	InputMethodManager imm;
 	private int MainAppBackground;
 	
-	/** see {@link #toggleFavor} */
+	/** see {@link #toggleFavor}*/
 	public int try_goBack(){
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null || !initialized) return 0;
@@ -304,7 +305,7 @@ public class DBroswer extends DialogFragment implements
 				} else {
 					savedPositions.remove(getFragmentType());
 				}
-				//CMN.debug("savedPositions::save::", getFragmentType()+" "+reader.record+" "+new Date(reader.sort_number).toLocaleString());
+				CMN.debug("savedPositions::save::", getFragmentType()+" "+reader.record+" "+new Date(reader.sort_number).toLocaleString());
 			}
 		} catch (Exception e) {
 			CMN.debug(e);

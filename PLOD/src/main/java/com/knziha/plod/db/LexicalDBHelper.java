@@ -171,6 +171,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					// ", entryHash INTEGER NOT NULL" +
 					// ", entryDig VARCHAR(5)" +
 					", pos INTEGER NOT NULL"+
+					", tPos INTEGER DEFAULT 0"+
 					", hasNotes BOOLEAN DEFAULT 0 NOT NULL" +
 					", entry LONGVARCHAR" +
 					", lex LONGVARCHAR" +
@@ -184,10 +185,14 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", param BLOB" +
 					")";
 			db.execSQL(sqlBuilder);
+			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "tPos")) {
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN tPos INTEGER DEFAULT 0");
+			}
 			//db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
-			db.execSQL("CREATE INDEX if not exists bookannot_book_hash_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos)"); // 页面笔记视图
-			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, last_edit_time)"); // 词典笔记视图
-			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON "+TABLE_BOOK_ANNOT_v2+" (last_edit_time)"); // 全部笔记视图
+			db.execSQL("CREATE INDEX if not exists bookmarks_bpt_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, last_edit_time, id)"); // 页面笔记视图
+			db.execSQL("CREATE INDEX if not exists bookmarks_bpp_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, tPos, id)"); // 页面笔记视图
+			db.execSQL("CREATE INDEX if not exists bookmarks_time_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, last_edit_time)"); // 词典笔记视图
+			db.execSQL("CREATE INDEX if not exists bookmarks_time_index ON "+TABLE_BOOK_ANNOT_v2+" (last_edit_time)"); // 全部笔记视图
 //			db.execSQL("DROP INDEX if exists favorite_term_index");
 //			db.execSQL("DROP INDEX if exists favorite_folder_index");
 //			db.execSQL("DROP INDEX if exists booknote_term_index");
