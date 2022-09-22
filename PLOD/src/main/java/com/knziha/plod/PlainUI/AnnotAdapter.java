@@ -12,6 +12,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -28,16 +29,22 @@ import com.knziha.paging.MultiFieldPagingCursorAdapter;
 import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.CharSequenceKey;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.additiveMyCpr1;
 import com.knziha.text.ColoredTextSpan;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -57,18 +64,28 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	private PagingAdapterInterface<AnnotationReader> DummyReader = new CursorAdapter<>(EmptyCursor, new AnnotationReader());
 	PagingAdapterInterface<? extends AnnotationReader> dataAdapter = DummyReader;
 	ImageView pageAsyncLoader;
-	public int sortType;
+	private int sortType = -1;
+	
+	public int sortType(BookNotes bookNotes) {
+		if (sortType == -1) {
+			sortType = bookNotes.sortTypes[scope] =
+				scope==0?PDICMainAppOptions.annotDBSortBy()
+						:scope==1?PDICMainAppOptions.annotDB1SortBy()
+						:PDICMainAppOptions.annotDB2SortBy();
+		}
+		return sortType;
+	}
 	
 	public AnnotAdapter(MainActivityUIBase a, int resource, int textViewResourceId, BookPresenter md_
 			, SQLiteDatabase database, int scope
-			, RecyclerView lv) {
+			, RecyclerView lv, BookNotes bookNotes) {
 		//this(a,resource,textViewResourceId,objects);
 		this.a=a;
 		resourceID=resource;
 		textViewResourceID=textViewResourceId;
 		presenter=md_;
 		this.scope = scope;
-		refresh(md_, database, lv, null);
+		refresh(md_, database, lv, null, bookNotes);
 	}
 	
 	@Override
@@ -142,15 +159,15 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationReader();
 	}
 	
-	public void refresh(BookPresenter invoker, SQLiteDatabase database, RecyclerView lv, View sortView) {
+	public void refresh(BookPresenter invoker, SQLiteDatabase database, RecyclerView lv, View sortView, BookNotes bookNotes) {
 		//if(invoker!=md || con!=con_ || cr==null)
 		try {
 			presenter = invoker;
 			dataAdapter.close();
 			dataAdapter = DummyReader;
 			{
-				int sortType = scope==0?PDICMainAppOptions.annotDBSortBy():PDICMainAppOptions.annotDB1SortBy();
-				this.sortType = sortType;
+				this.sortType = bookNotes.sortTypes[scope];
+				int sortType = sortType(bookNotes);
 				//sortType = 2;
 				boolean bSingleThreadLoading = false;
 				if (bSingleThreadLoading) {
@@ -178,17 +195,29 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
 							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_CREATE_TIME, sortType==0, "entry,lex,pos,bid,annot");
-					if (scope == 1) {
-						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
-					}
 					long[] pos = savedPositions.get(getFragmentId());
 					long lastTm = 0, offset = 0;
 					if (pos != null) {
 						lastTm = pos[2];
 						offset = pos[5];
 					}
+					if (scope == 1) {
+						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
+					}
+					else if (scope == 2) {
+						WebViewListHandler wlh = a.weblistHandler;
+						long finalLastTm = lastTm;
+						long finalOffset = offset;
+						if (wlh.isMergingFrames() || wlh.isViewSingle()) {;
+							wlh.getMergedFrame().evaluateJavascript("expUrl()", value -> {
+								updateByExpUrl(dataAdapter, value, finalLastTm, finalOffset);
+							});
+						} else {
+							updateByExpUrl(dataAdapter, wlh.collectExpUrl(), finalLastTm, finalOffset);
+						}
+						return;
+					}
 					dataAdapter.startPaging(lastTm, offset, 20, 15, this);
-					
 					notifyDataSetChanged();
 				}
 				else {
@@ -213,9 +242,6 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
 							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, sortType%2==0, "entry,lex,pos,bid,annot");
-					if (scope == 1) {
-						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
-					}
 					long[] sorts = null;
 					long[] pos = savedPositions.get(getFragmentId());
 					long offset = 0;
@@ -233,7 +259,22 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 						}
 						offset = pos[5];
 					}
-					// dataAdapter.new_sorts(0)
+					if (scope == 1) {
+						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
+					}
+					else if(scope == 2){
+						WebViewListHandler wlh = a.weblistHandler;
+						long[] finalLastTm = sorts;
+						long finalOffset = offset;
+						if (wlh.isMergingFrames() || wlh.isViewSingle()) {;
+							wlh.getMergedFrame().evaluateJavascript("expUrl()", value -> {
+								updateByExpUrl(dataAdapter, value, finalLastTm, finalOffset);
+							});
+						} else {
+							updateByExpUrl(dataAdapter, wlh.collectExpUrl(), finalLastTm, finalOffset);
+						}
+						return;
+					}
 					dataAdapter.startPaging(sorts, offset, 20, 15, this);
 					notifyDataSetChanged();
 				}
@@ -241,6 +282,98 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		} catch (Exception e) {
 			CMN.debug(e);
 			dataAdapter = DummyReader;
+		}
+	}
+	
+	private void updateByExpUrl(MultiFieldPagingCursorAdapter<AnnotationMultiSortReader> dataAdapter, String value, long[] finalLastTm, long finalOffset) {
+		StringBuilder sb = new StringBuilder();
+		ArrayList<String> args = new ArrayList<>();
+		CMN.debug("exp=::", value);
+		try {
+			if (value.startsWith("\"")) {
+				value = value.substring(1, value.length()-1);
+			}
+			boolean encoded = value.startsWith("d") || value.startsWith("w");
+			String[] arr = value.split("-");
+			for (int i = 0; i < arr.length; i++) {
+				String[] dp = arr[i].split("_");
+				//CMN.debug("dp::", value, dp);
+				long bid = encoded?IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(dp[0], 1)):IU.parseLong(dp[0]);
+				long pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1]):IU.parseLong(dp[1]);
+				if(sb.length()>0)
+					sb.append(" or ");
+				sb.append("(");
+				if (dp.length > 2) {
+					sb.append("bid=? and (");
+					args.add(""+bid);
+					for (int j = 0; j < dp.length - 1; j++) {
+						if(j>0) sb.append(" or ");
+						sb.append("pos=?");
+						pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1+j]):IU.parseLong(dp[1+j]);
+						args.add(""+ pos1);
+					}
+					sb.append(")");
+				} else {
+					sb.append("bid=? and pos=?");
+					args.add(""+bid);
+					args.add(""+ pos1);
+				}
+				sb.append(")");
+			}
+			CMN.debug("exp=::", value, sb, args);
+			dataAdapter.where(sb.toString(), args.toArray(new String[0]));
+			dataAdapter.startPaging(finalLastTm, finalOffset, 20, 15, AnnotAdapter.this);
+			notifyDataSetChanged();
+		} catch (Exception e) {
+			this.dataAdapter.close();
+			AnnotAdapter.this.dataAdapter = DummyReader;
+			CMN.debug(e);
+		}
+	}
+	
+	private void updateByExpUrl(PagingCursorAdapter<AnnotationReader> dataAdapter, String value, long finalLastTm, long finalOffset) {
+		StringBuilder sb = new StringBuilder();
+		ArrayList<String> args = new ArrayList<>();
+		CMN.debug("exp=::", value);
+		try {
+			if (value.startsWith("\"")) {
+				value = value.substring(1, value.length()-1);
+			}
+			boolean encoded = value.startsWith("d") || value.startsWith("w");
+			String[] arr = value.split("-");
+			for (int i = 0; i < arr.length; i++) {
+				String[] dp = arr[i].split("_");
+				//CMN.debug("dp::", value, dp);
+				long bid = encoded?IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(dp[0], 1)):IU.parseLong(dp[0]);
+				long pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1]):IU.parseLong(dp[1]);
+				if(sb.length()>0)
+					sb.append(" or ");
+				sb.append("(");
+				if (dp.length > 2) {
+					sb.append("bid=? and (");
+					args.add(""+bid);
+					for (int j = 0; j < dp.length - 1; j++) {
+						if(j>0) sb.append(" or ");
+						sb.append("pos=?");
+						pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1+j]):IU.parseLong(dp[1+j]);
+						args.add(""+ pos1);
+					}
+					sb.append(")");
+				} else {
+					sb.append("bid=? and pos=?");
+					args.add(""+bid);
+					args.add(""+ pos1);
+				}
+				sb.append(")");
+			}
+			CMN.debug("exp=::", value, sb, args);
+			dataAdapter.where(sb.toString(), args.toArray(new String[0]));
+			dataAdapter.startPaging(finalLastTm, finalOffset, 20, 15, AnnotAdapter.this);
+			notifyDataSetChanged();
+		} catch (Exception e) {
+			this.dataAdapter.close();
+			AnnotAdapter.this.dataAdapter = DummyReader;
+			CMN.debug(e);
 		}
 	}
 	

@@ -2087,4 +2087,23 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		CMN.debug("getShareUrl::", url);
 		return url;
 	}
+	
+	public String collectExpUrl() {
+		ViewGroup vg = getViewGroup();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < vg.getChildCount(); i++) {
+			WebViewmy mWebView = vg.getChildAt(i).findViewById(R.id.webviewmy);
+			if (mWebView != null) {
+				long[] red = mWebView.currentRendring;
+				if (red != null) {
+					if (sb.length()>0) sb.append("-");
+					sb.append(mWebView.presenter.getId());
+					for (int j = 0; j < red.length; j++) {
+						sb.append("_"); sb.append(red[j]);
+					}
+				}
+			}
+		}
+		return sb.toString();
+	}
 }

@@ -2407,6 +2407,7 @@ function debug(e){console.log(e)};
 		htmlBuilder.append("<script class=\"_PDict\">");
 //		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
 //		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
+		htmlBuilder.append("window.bid=").append(getId()).append(";");
 		htmlBuilder.append("window.shzh=").append(mWebView.weblistHandler.tapSch?1:0).append(";");
 		htmlBuilder.append("window.frameAt=").append(mWebView.frameAt).append(";");
 		htmlBuilder.append("window.entryKey='").append(mWebView.word).append("';");

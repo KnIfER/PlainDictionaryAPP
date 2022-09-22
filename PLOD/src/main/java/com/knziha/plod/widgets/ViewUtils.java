@@ -29,6 +29,7 @@ import android.app.PendingIntent;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -2039,5 +2040,37 @@ public class ViewUtils {
 			ret |= ((long) child.getTop()) << 32;
 		}
 		return ret;
+	}
+	
+	public static ContentValues dumpCursorValues(Cursor cursor) {
+		ContentValues cv = null;
+		try {
+			for (int i = 0; i < cursor.getColumnCount(); i++) {
+				switch (cursor.getType(i))  {
+					case Cursor.FIELD_TYPE_FLOAT:
+						if(cv==null) cv = new ContentValues();
+						cv.put(cursor.getColumnName(i), cursor.getFloat(i));
+						break;
+					case Cursor.FIELD_TYPE_INTEGER:
+						if(cv==null) cv = new ContentValues();
+						cv.put(cursor.getColumnName(i), cursor.getLong(i));
+						break;
+					case Cursor.FIELD_TYPE_STRING:
+						if(cv==null) cv = new ContentValues();
+						cv.put(cursor.getColumnName(i), cursor.getString(i));
+						break;
+					case Cursor.FIELD_TYPE_BLOB:
+						if(cv==null) cv = new ContentValues();
+						cv.put(cursor.getColumnName(i), cursor.getBlob(i));
+						break;
+					default:
+						CMN.debug("未知类型::", cursor.getColumnName(i));
+						break;
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return cv;
 	}
 }

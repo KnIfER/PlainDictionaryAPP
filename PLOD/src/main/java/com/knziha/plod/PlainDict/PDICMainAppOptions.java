@@ -2573,6 +2573,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=56, flagSize=3) public static int annotDB1SortBy() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=56, flagSize=3) public static void annotDB1SortBy(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	/** 0,1=时间 2,3=页码段落 4,5=页码时间 */
+	@Metaline(flagPos=59, flagSize=3) public static int annotDB2SortBy() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=59, flagSize=3) public static void annotDB2SortBy(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
 	
 	/////////////////////End Seven Flag///////////////////////////////////
 	

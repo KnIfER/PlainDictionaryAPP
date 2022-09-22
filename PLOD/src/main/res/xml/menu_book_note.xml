@@ -4,6 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 	tools:ignore="AppCompatResource"
 	>
-<!--0--><item android:title="" android:id="@drawable/ic_sort_path_asc" android:icon="@drawable/ic_sort" app:showAsAction="always"/>
+<!--0--><item android:title="" android:id="@drawable/ic_baseline_undo_24" android:icon="@drawable/ic_baseline_undo_24" app:showAsAction="always"/>
+
+<!--1--><item android:title="" android:id="@drawable/ic_sort_path_asc" android:icon="@drawable/ic_sort" app:showAsAction="always"/>
 
 </menu>

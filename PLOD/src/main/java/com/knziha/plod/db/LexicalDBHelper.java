@@ -178,7 +178,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", annot TEXT"+
 					", type INTEGER"+
 					", color INTEGER"+
-					", note INTEGER"+ // 暂未使用
+					", hue INTEGER"+
+					", hue1 INTEGER"+
+					//", note INTEGER"+ // 暂未使用
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
@@ -188,7 +190,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "tPos")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN tPos INTEGER DEFAULT 0");
 			}
-			db.execSQL("DROP INDEX if exists bookmarks_bpp_index");
+			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "hue")) {
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue INTEGER DEFAULT 0");
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue1 INTEGER DEFAULT 0");
+			}
+//			db.execSQL("DROP INDEX if exists bookmarks_bpp_index");
 			db.execSQL("CREATE INDEX if not exists bookmarks_bpt_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, last_edit_time, id)"); // 页面笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_bpp_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, tPos, last_edit_time, id)"); // 页面笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_time_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, last_edit_time)"); // 词典笔记视图

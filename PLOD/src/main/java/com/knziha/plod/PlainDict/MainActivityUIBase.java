@@ -11,6 +11,7 @@ import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
@@ -11406,7 +11407,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	WeakReference<BookNotes> bookNoteRef = ViewUtils.DummyRef;
-	public AnnotAdapter[] annotAdapters = new AnnotAdapter[2];
+	public AnnotAdapter[] annotAdapters = new AnnotAdapter[3];
+	public ArrayList<ContentValues> annotUndoStack = new ArrayList<>();
 	public void showBookNotes() {
 		BookNotes bookNotes = bookNoteRef.get();
 		//if(bookNotes==null)

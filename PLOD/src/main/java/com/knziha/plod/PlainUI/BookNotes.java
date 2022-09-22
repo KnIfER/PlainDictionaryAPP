@@ -1,11 +1,15 @@
 package com.knziha.plod.PlainUI;
 
+import static android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT;
+import static android.database.sqlite.SQLiteDatabase.CONFLICT_FAIL;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.util.SparseArray;
@@ -50,6 +54,7 @@ import com.knziha.plod.widgets.WebViewmy;
 import java.lang.ref.WeakReference;
 
 public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListener, PopupMenuHelper.PopupMenuListener, Toolbar.OnMenuItemClickListener {
+	public int[] sortTypes;
 	MainActivityUIBase a;
 	NiceDrawerLayout drawer;
 	int drawerStat;
@@ -114,6 +119,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			btns = drawer.findViewById(R.id.btns);
 			viewList = new RecyclerView[3];
 			bar = drawer.findViewById(R.id.bar);
+			sortTypes = new int[]{-1, -1, -1};
 			for (int i = 0; i < 3; i++) {
 				RecyclerView lv = viewList[i] = new RecyclerView(new ContextThemeWrapper(a, R.style.RecyclerViewStyle));
 				lv.setLayoutManager(new LinearLayoutManager(a));
@@ -167,12 +173,11 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					}
 					btns.selectToolIndex(lastPos = i);
 					lv = viewList[i];
-					if (i < 2) {
-						if (lv.getAdapter()==null) {
-							lv.setAdapter(getAnnotationAdapter(false, a.currentDictionary,lv, i));
-						} else {
-							a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, null);
-						}
+					
+					if (lv.getAdapter()==null) {
+						lv.setAdapter(getAnnotationAdapter(false, a.currentDictionary,lv, i));
+					} else {
+						/*切页刷新*/a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, null, BookNotes.this);
 					}
 				}
 			});
@@ -194,7 +199,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	public AnnotAdapter getAnnotationAdapter(boolean darkMode, BookPresenter invoker, RecyclerView lv, int scope) {
 		AnnotAdapter adapter=a.annotAdapters[scope];
 		if (adapter == null) {
-			adapter = a.annotAdapters[scope] = new AnnotAdapter(a, R.layout.drawer_list_item, R.id.text1, invoker, a.prepareHistoryCon().getDB(), scope, lv);
+			adapter = a.annotAdapters[scope] = new AnnotAdapter(a, R.layout.drawer_list_item, R.id.text1, invoker
+					, a.prepareHistoryCon().getDB(), scope, lv, this);
 		}
 		adapter.darkMode=darkMode;
 		adapter.setBookNotes(this);
@@ -276,14 +282,17 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			int i = viewPager.getCurrentItem();
 			if (i == 0) {
 				PDICMainAppOptions.annotDBSortBy(sortBy);
-			} else {
+			} else if(i==1){
 				PDICMainAppOptions.annotDB1SortBy(sortBy);
+			} else {
+				PDICMainAppOptions.annotDB2SortBy(sortBy);
 			}
+			sortTypes[i] = sortBy;
 			RecyclerView lv = viewList[i];
 			if (lv.getAdapter() != null) {
 				lv.suppressLayout(true);
 				AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
-				adapter.refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, pressedV.get());
+				/*变换排序规则*/adapter.refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, pressedV.get(), this);
 			}
 		}
 	}
@@ -322,7 +331,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						a.showT(tx);
 					}
 				} break;
-				case R.string.share_dot:{
+				case R.string.send_dot:{
 					View iteView = pressedV.get();
 					String tx = ((AnnotAdapter.VueHolder) iteView.getTag()).vh.title.getText().toString();
 					a.getVtk().setInvoker(null, null, null, tx);
@@ -331,6 +340,15 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				case R.string.delete:{
 					try {
 						SQLiteDatabase database = a.prepareHistoryCon().getDB();
+						Cursor cursor = database.rawQuery("select * from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1", new String[]{pressedRowId + ""});
+						if (cursor.moveToNext()) {
+							ContentValues cv = ViewUtils.dumpCursorValues(cursor);
+							CMN.debug("cv::", cv);
+							if (cv != null) {
+								a.annotUndoStack.add(cv);
+							}
+						}
+						cursor.close();
 						int cnt = database.delete(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, "id=?", new String[]{pressedRowId + ""});
 						if (cnt > 0) {
 							for (int i = 0; i < 2; i++) {
@@ -338,7 +356,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 								if (lv.getAdapter() != null) {
 									lv.suppressLayout(true);
 									AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
-									adapter.refresh(a.currentDictionary, database, lv, null);
+									/*删除*/adapter.refresh(a.currentDictionary, database, lv, null, this);
 								}
 							}
 							a.showT("删除成功");
@@ -351,7 +369,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				} break;
 				case R.string.sortby:{
 					if (viewPager.getCurrentItem()<=2) {
-						PopupMenuHelper popupMenu = getSortPopupMenu();
+						PopupMenuHelper popupMenu = getSortByPopupMenu();
 						
 						int[] vLocationOnScreen = new int[2];
 						viewPager.getLocationOnScreen(vLocationOnScreen);
@@ -370,7 +388,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	
 	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;
 	WeakReference<View> pressedV = ViewUtils.DummyRef;
-	public PopupMenuHelper getSortPopupMenu() {
+	public PopupMenuHelper getSortByPopupMenu() {
 		PopupMenuHelper ret = popupMenuRef.get();
 		if (ret==null) {
 			ret  = new PopupMenuHelper(a, null, null);
@@ -399,28 +417,29 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		int k = viewPager.getCurrentItem();
 		AnnotAdapter ada = a.annotAdapters[k];
 		if (ada != null) {
-			int sortType = ada.sortType;
+			final int sortType = ada.sortType(this), rowAct;
 			if (ret.tag != k) {
 				boolean b1 = sortType % 2 == 0;
-				if (sortType > 5) sortType = 1;
-				else if (sortType > 3) sortType = 3;
-				else if (sortType > 1) sortType = 2;
-				else sortType = 0;
+				if (sortType > 5) rowAct = 1;
+				else if (sortType > 3) rowAct = 3;
+				else if (sortType > 1) rowAct = 2;
+				else rowAct = 0;
+				CMN.debug("activate::", rowAct, ada.sortType(this));
 				for (int i = 0; i < 4; i++) {
 					View view = ret.lv.getChildAt(i);
 					TextMenuView tv = (TextMenuView) ((ViewGroup) view).getChildAt(0);
 					if (i == 0) {
-						ViewUtils.setVisible(view, k == 0);
+						ViewUtils.setVisible(view, k != 1);
 					}
-					tv.activated = sortType == i;
-					tv.setTextColor(sortType != i || b1 ? a.AppBlack : Color.BLUE);
+					tv.activated = rowAct == i;
+					tv.setTextColor(rowAct != i || b1 ? a.AppBlack : Color.BLUE);
 					if (tv.getTag()==null) {
 						tv.setTag(tv.getText());
 					}
 					String text = (String) tv.getTag();
 					tv.setText(k==0?text:text.substring(text.indexOf("+")+1));
 				}
-				ret.tag = (ada.sortType << 2) | k;
+				ret.tag = (sortType << 2) | k;
 			}
 		}
 		return ret;
@@ -436,7 +455,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			
 			int[] texts = new int[]{
 					R.string.copy
-					, R.string.share_dot
+					, R.string.send_dot
 					, R.string.sortby
 					, R.string.delete
 			};
@@ -556,13 +575,36 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		if (item.getItemId()==R.drawable.ic_sort_path_asc) {
 			pressedV.clear();
 			if (viewPager.getCurrentItem()<=2) {
-				PopupMenuHelper popupMenu = getSortPopupMenu();
+				PopupMenuHelper popupMenu = getSortByPopupMenu();
 				
 				int[] vLocationOnScreen = new int[2];
 				toolbar.getLocationOnScreen(vLocationOnScreen);
 				int x = toolbar.getWidth(), y = toolbar.getHeight();
 				popupMenu.show(toolbar, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
 				ViewUtils.preventDefaultTouchEvent(toolbar, x, y);
+			}
+		}
+		if (item.getItemId()==R.drawable.ic_baseline_undo_24) {
+			if (a.annotUndoStack.size() > 0) {
+				ContentValues undo = a.annotUndoStack.remove(a.annotUndoStack.size() - 1);
+				
+				SQLiteDatabase database = a.prepareHistoryCon().getDB();
+				long res = database.insertWithOnConflict(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, undo, CONFLICT_FAIL);
+				if (res==-1) {
+					undo.remove("id");
+					res = database.insertWithOnConflict(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, undo, CONFLICT_ABORT);
+				}
+				
+				if (res != -1) {
+					a.showT("撤销成功!");
+					int i = viewPager.getCurrentItem();
+					RecyclerView lv = viewList[i];
+					if (lv.getAdapter() != null) {
+						lv.suppressLayout(true);
+						AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
+						/*撤销删除*/adapter.refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, null, this);
+					}
+				}
 			}
 		}
 		if(closeMenu)

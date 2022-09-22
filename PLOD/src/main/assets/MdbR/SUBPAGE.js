@@ -47,3 +47,6 @@ function loadJs(url,callback){
     script.src=url;
     d.body.appendChild(script);
 }
+window.expUrl = function() {
+	return bid+"_"+currentPos;
+}

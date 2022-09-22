@@ -158,6 +158,10 @@ window.markPage = function(type, color, note) {
 	}
 }
 
+window.expUrl = function() {
+	return url.substring(url.lastIndexOf('/',idx));
+}
+
 function whereSelection(){
 	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
 	var pos, did = did = url.substring(url.lastIndexOf('/',idx)+1, idx), rootNode=document.body;
