@@ -57,6 +57,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	private PagingAdapterInterface<AnnotationReader> DummyReader = new CursorAdapter<>(EmptyCursor, new AnnotationReader());
 	PagingAdapterInterface<? extends AnnotationReader> dataAdapter = DummyReader;
 	ImageView pageAsyncLoader;
+	public int sortType;
 	
 	public AnnotAdapter(MainActivityUIBase a, int resource, int textViewResourceId, BookPresenter md_
 			, SQLiteDatabase database, int scope
@@ -67,7 +68,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		textViewResourceID=textViewResourceId;
 		presenter=md_;
 		this.scope = scope;
-		refresh(md_, database, lv);
+		refresh(md_, database, lv, null);
 	}
 	
 	@Override
@@ -90,7 +91,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	public static class AnnotationMultiSortReader extends AnnotationReader implements CursorReaderMultiSortNum{
 		@Override
 		public void ReadCursor(Cursor cursor, long rowID, long[] sortNums) {
-			multiSorts = 3;
+			multiSorts = sortNums.length - 1;
 			sort_numbers = sortNums;
 			//sort_numbers = new long[sortNums.length];
 			//System.arraycopy(sortNums, 0, sort_numbers, 0, sortNums.length);
@@ -141,7 +142,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationReader();
 	}
 	
-	public void refresh(BookPresenter invoker, SQLiteDatabase database, RecyclerView lv) {
+	public void refresh(BookPresenter invoker, SQLiteDatabase database, RecyclerView lv, View sortView) {
 		//if(invoker!=md || con!=con_ || cr==null)
 		try {
 			presenter = invoker;
@@ -149,7 +150,8 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			dataAdapter = DummyReader;
 			{
 				int sortType = scope==0?PDICMainAppOptions.annotDBSortBy():PDICMainAppOptions.annotDB1SortBy();
-				sortType = 2;
+				this.sortType = sortType;
+				//sortType = 2;
 				boolean bSingleThreadLoading = false;
 				if (bSingleThreadLoading) {
 					String sql = "select id,last_edit_time,entry,lex,pos,bid,annot from "
@@ -167,7 +169,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					if (pageAsyncLoader == null) {
 						pageAsyncLoader = new ImageView(a);
 					}
-					saveListPosition();
+					saveListPosition(sortView);
 					PagingCursorAdapter<AnnotationReader> dataAdapter = new PagingCursorAdapter<>(database
 							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
 							, AnnotationReader.readerMaker
@@ -182,43 +184,57 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					long[] pos = savedPositions.get(getFragmentId());
 					long lastTm = 0, offset = 0;
 					if (pos != null) {
-						lastTm = pos[0];
-						offset = pos[1];
+						lastTm = pos[2];
+						offset = pos[5];
 					}
 					dataAdapter.startPaging(lastTm, offset, 20, 15, this);
+					
 					notifyDataSetChanged();
 				}
 				else {
 					if (pageAsyncLoader == null) {
 						pageAsyncLoader = new ImageView(a);
 					}
-					saveListPosition();
+					saveListPosition(sortView);
 					MultiFieldPagingCursorAdapter<AnnotationMultiSortReader> dataAdapter = new MultiFieldPagingCursorAdapter(database
 							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
 							, AnnotationMultiSortReader.readerMaker
 							, AnnotationMultiSortReader[]::new);
 					this.dataAdapter = dataAdapter;
 					String[] sortBy;
-					if (sortType<=5) {
-						String sf = sortType <= 3 ? "tPos" : FIELD_CREATE_TIME;
-						sortBy = new String[]{"bid", "pos", sf, "ROWID"};
+					if (sortType<=3) {
+						sortBy = new String[]{"bid", "pos", "tPos", FIELD_CREATE_TIME, "id"};
+					}  else if (sortType<=5) {
+						sortBy = new String[]{"bid", "pos", FIELD_CREATE_TIME, "id"};
 					} else {
 						sortBy = new String[]{"bid", FIELD_CREATE_TIME};
 					}
+					CMN.debug("sortBy::", sortBy);
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
 							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, sortType%2==0, "entry,lex,pos,bid,annot");
 					if (scope == 1) {
 						dataAdapter.where("bid=?", new String[]{presenter.getId() + ""});
 					}
+					long[] sorts = null;
 					long[] pos = savedPositions.get(getFragmentId());
-					long lastTm = 0, offset = 0;
+					long offset = 0;
 					if (pos != null) {
-						lastTm = pos[0];
-						offset = pos[1];
+						if (sortType <= 5) {
+							sorts = new long[sortType <= 3 ? 5 : 4];
+							System.arraycopy(pos, 0, sorts, 0, 4);
+							if(sortType <= 3) {
+								sorts[2]=pos[4]; // tPos
+								sorts[3]=pos[2]; // time
+								sorts[4]=pos[3]; // id
+							}
+						} else {
+							sorts = new long[]{pos[0], pos[2]};
+						}
+						offset = pos[5];
 					}
 					// dataAdapter.new_sorts(0)
-					dataAdapter.startPaging(null, offset, 20, 15, this);
+					dataAdapter.startPaging(sorts, offset, 20, 15, this);
 					notifyDataSetChanged();
 				}
 			}
@@ -235,20 +251,33 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		return (scope<<15)|a.thisActType.ordinal();
 	}
 	
-	private void saveListPosition() {
+	public void saveListPosition(View view) {
 		try {
 			BookNotes notes = bookNotesRef.get();
-			View view = notes.viewList[scope].getChildAt(0);
+			boolean b1 = view==null;
+			if(b1) {
+				view = notes==null||notes.viewList==null?null:notes.viewList[scope].getChildAt(0);
+			}
 			if (view!=null) {
 				VueHolder holder = (VueHolder) view.getTag();
 				AnnotationReader reader = (AnnotationReader) holder.tag;
-				// CMN.debug("saveListPosition::", holder.getLayoutPosition());
-				if (holder.getLayoutPosition() > 0) {
-					savedPositions.put(getFragmentId(), new long[]{reader.sort_number, view.getTop()});
+				//CMN.debug("saveListPosition::", holder.getLayoutPosition());
+				if (holder.getLayoutPosition() > 0 || !b1) {
+					Cursor cursor = notes.a.prepareHistoryCon().getDB().rawQuery("select bid,pos," + FIELD_CREATE_TIME + ",id,tPos from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1"
+							, new String[]{"" + reader.row_id});
+					if (cursor.moveToNext()) {
+						long[] sorts = new long[6];
+						for (int i = 0; i < 5; i++) {
+							sorts[i] = cursor.getLong(i);
+						}
+						sorts[5] = view.getTop(); // !b1其实没用。。
+						savedPositions.put(getFragmentId(), sorts);
+					}
+					cursor.close();
 				} else {
 					savedPositions.remove(getFragmentId());
 				}
-				CMN.debug("savedPositions::save::", scope+" "+reader.entryName+" "+new Date(reader.sort_number).toLocaleString());
+				CMN.debug("savedPositions::save::", scope+" "+reader.entryName+" "+new Date(reader.sort_number), holder.vh.title.getText());
 			}
 		} catch (Exception e) {
 			CMN.debug(e);

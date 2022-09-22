@@ -3,17 +3,23 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.util.SparseArray;
 import android.view.ContextThemeWrapper;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
@@ -37,10 +43,13 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.NiceDrawerLayout;
 import com.knziha.plod.widgets.NoScrollViewPager;
+import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
-public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListener, PopupMenuHelper.PopupMenuListener {
+import java.lang.ref.WeakReference;
+
+public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListener, PopupMenuHelper.PopupMenuListener, Toolbar.OnMenuItemClickListener {
 	MainActivityUIBase a;
 	NiceDrawerLayout drawer;
 	int drawerStat;
@@ -115,7 +124,6 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				divider.setDrawable(a.mResource.getDrawable(R.drawable.divider4));
 				lv.addItemDecoration(divider);
 				
-				
 				//取消更新item时闪烁
 				RecyclerView.ItemAnimator anima = lv.getItemAnimator();
 				if(anima instanceof DefaultItemAnimator)
@@ -163,7 +171,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						if (lv.getAdapter()==null) {
 							lv.setAdapter(getAnnotationAdapter(false, a.currentDictionary,lv, i));
 						} else {
-							a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv);
+							a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, null);
 						}
 					}
 				}
@@ -177,6 +185,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					drawer.close();
 				}
 			});
+			toolbar.inflateMenu(R.xml.menu_book_note);
+			toolbar.setOnMenuItemClickListener(this);
 			settingsLayout = drawer;
 		}
 	}
@@ -238,6 +248,43 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			}
 			int k = btns.indexOfChild(v);
 			viewPager.setCurrentItem(k, true);
+			return;
+		}
+		int sortBy = -1;
+		switch (v.getId()) {
+			case R.string.st_time:
+				sortBy = 0;
+			break;
+			case R.string.st_dpp:
+				sortBy = 2;
+			break;
+			case R.string.st_dpt:
+				sortBy = 4;
+			break;
+			case R.string.st_d_tm:
+				sortBy = 6;
+			break;
+		}
+		if (sortBy >= 0) {
+			PopupMenuHelper ret = popupMenuRef.get();
+			if (ret!=null) {
+				ret.dismiss();
+				ret.tag=-1;
+			}
+			if(v instanceof ImageView)
+				sortBy++;
+			int i = viewPager.getCurrentItem();
+			if (i == 0) {
+				PDICMainAppOptions.annotDBSortBy(sortBy);
+			} else {
+				PDICMainAppOptions.annotDB1SortBy(sortBy);
+			}
+			RecyclerView lv = viewList[i];
+			if (lv.getAdapter() != null) {
+				lv.suppressLayout(true);
+				AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
+				adapter.refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, pressedV.get());
+			}
 		}
 	}
 	
@@ -265,39 +312,134 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
 		if (!isLongClick) {
 			popupMenuHelper.dismiss();
-			try {
-				SQLiteDatabase database = a.prepareHistoryCon().getDB();
-				int cnt = database.delete(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, "id=?", new String[]{pressedRowId + ""});
-				if (cnt > 0) {
-					for (int i = 0; i < 2; i++) {
-						RecyclerView lv = viewList[i];
-						if (lv.getAdapter() != null) {
-							lv.suppressLayout(true);
-							AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
-							adapter.refresh(a.currentDictionary, database, lv);
-						}
+			switch (v.getId()) {
+				case R.string.copy:{
+					View iteView = pressedV.get();
+					CharSequence tx = ((AnnotAdapter.VueHolder) iteView.getTag()).vh.title.getText();
+					ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
+					if(cm!=null){
+						cm.setPrimaryClip(ClipData.newPlainText(null, tx));
+						a.showT(tx);
 					}
-					a.showT("删除成功");
-					return true;
-				}
-			} catch (Exception e) {
-				CMN.debug(e);
+				} break;
+				case R.string.share_dot:{
+					View iteView = pressedV.get();
+					String tx = ((AnnotAdapter.VueHolder) iteView.getTag()).vh.title.getText().toString();
+					a.getVtk().setInvoker(null, null, null, tx);
+					a.getVtk().onClick(null);
+				} break;
+				case R.string.delete:{
+					try {
+						SQLiteDatabase database = a.prepareHistoryCon().getDB();
+						int cnt = database.delete(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, "id=?", new String[]{pressedRowId + ""});
+						if (cnt > 0) {
+							for (int i = 0; i < 2; i++) {
+								RecyclerView lv = viewList[i];
+								if (lv.getAdapter() != null) {
+									lv.suppressLayout(true);
+									AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
+									adapter.refresh(a.currentDictionary, database, lv, null);
+								}
+							}
+							a.showT("删除成功");
+							return true;
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+					a.showT("删除失败！");
+				} break;
+				case R.string.sortby:{
+					if (viewPager.getCurrentItem()<=2) {
+						PopupMenuHelper popupMenu = getSortPopupMenu();
+						
+						int[] vLocationOnScreen = new int[2];
+						viewPager.getLocationOnScreen(vLocationOnScreen);
+						int x=(int)viewPager.lastX;
+						int y=(int)viewPager.lastY;
+						popupMenu.show(drawer, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+						ViewUtils.preventDefaultTouchEvent(drawer, x, y);
+					}
+				} break;
 			}
-			a.showT("删除失败！");
 			return true;
 		}
 		return false;
+	}
+	
+	
+	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;
+	WeakReference<View> pressedV = ViewUtils.DummyRef;
+	public PopupMenuHelper getSortPopupMenu() {
+		PopupMenuHelper ret = popupMenuRef.get();
+		if (ret==null) {
+			ret  = new PopupMenuHelper(a, null, null);
+			//ret.lv.removeAllViews();
+			int[] texts = new int[]{
+				R.string.st_time
+				,R.string.st_d_tm
+				,R.string.st_dpp
+				,R.string.st_dpt
+			};
+			ret.tag = 0;
+			for (int i = 0; i < texts.length; i++) {
+				View view = a.getLayoutInflater().inflate(R.layout.menu_with_btn_view, ret.lv, false);
+				TextMenuView tv = view.findViewById(R.id.text);
+				tv.setId(texts[i]);
+				tv.setText(texts[i]);
+				tv.setOnClickListener(this);
+				tv.leftDrawable = ret.leftDrawable;
+				View v = view.findViewById(R.id.btn);
+				v.setId(texts[i]);
+				v.setOnClickListener(this);
+				ret.lv.addView(view);
+			}
+			popupMenuRef = new WeakReference<>(ret);
+		}
+		int k = viewPager.getCurrentItem();
+		AnnotAdapter ada = a.annotAdapters[k];
+		if (ada != null) {
+			int sortType = ada.sortType;
+			if (ret.tag != k) {
+				boolean b1 = sortType % 2 == 0;
+				if (sortType > 5) sortType = 1;
+				else if (sortType > 3) sortType = 3;
+				else if (sortType > 1) sortType = 2;
+				else sortType = 0;
+				for (int i = 0; i < 4; i++) {
+					View view = ret.lv.getChildAt(i);
+					TextMenuView tv = (TextMenuView) ((ViewGroup) view).getChildAt(0);
+					if (i == 0) {
+						ViewUtils.setVisible(view, k == 0);
+					}
+					tv.activated = sortType == i;
+					tv.setTextColor(sortType != i || b1 ? a.AppBlack : Color.BLUE);
+					if (tv.getTag()==null) {
+						tv.setTag(tv.getText());
+					}
+					String text = (String) tv.getTag();
+					tv.setText(k==0?text:text.substring(text.indexOf("+")+1));
+				}
+				ret.tag = (ada.sortType << 2) | k;
+			}
+		}
+		return ret;
 	}
 	
 	public void click(AnnotAdapter annotAdapter, View itemView, AnnotAdapter.VueHolder vh, boolean isLongClick) {
 		int pos = vh.getLayoutPosition();
 		AnnotAdapter.AnnotationReader reader = annotAdapter.dataAdapter.getReaderAt(pos);
 		pressedRowId = reader.row_id;
+		pressedV = new WeakReference<>(itemView);
 		if (isLongClick) {
 			PopupMenuHelper popupMenu = a.getPopupMenu();
 			
 			int[] texts = new int[]{
-					R.string.delete};
+					R.string.copy
+					, R.string.share_dot
+					, R.string.sortby
+					, R.string.delete
+			};
 			popupMenu.initLayout(texts, this);
 			
 			int[] vLocationOnScreen = new int[2];
@@ -401,5 +543,30 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			contentUIData.PageSlider.setWebview(webview, null);
 			someView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 		}
+	}
+	
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		int id = item.getItemId();
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:a.getDummyMenuImpl(id);
+		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
+		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
+		boolean ret = !isLongClicked;
+		boolean closeMenu=ret;
+		if (item.getItemId()==R.drawable.ic_sort_path_asc) {
+			pressedV.clear();
+			if (viewPager.getCurrentItem()<=2) {
+				PopupMenuHelper popupMenu = getSortPopupMenu();
+				
+				int[] vLocationOnScreen = new int[2];
+				toolbar.getLocationOnScreen(vLocationOnScreen);
+				int x = toolbar.getWidth(), y = toolbar.getHeight();
+				popupMenu.show(toolbar, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+				ViewUtils.preventDefaultTouchEvent(toolbar, x, y);
+			}
+		}
+		if(closeMenu)
+			a.closeIfNoActionView(mmi);
+		return ret;
 	}
 }

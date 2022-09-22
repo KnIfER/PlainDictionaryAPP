@@ -225,5 +225,6 @@
 	<string name="text_recog">文字识别</string>
 	<string name="book_notes">笔记列表</string>
 	<string name="write_sth">随便写写</string>
+	<string name="st_time">时间排序，由新到旧</string>
 	>
 </resources>

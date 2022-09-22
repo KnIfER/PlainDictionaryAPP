@@ -188,9 +188,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "tPos")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN tPos INTEGER DEFAULT 0");
 			}
-			//db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
+			db.execSQL("DROP INDEX if exists bookmarks_bpp_index");
 			db.execSQL("CREATE INDEX if not exists bookmarks_bpt_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, last_edit_time, id)"); // 页面笔记视图
-			db.execSQL("CREATE INDEX if not exists bookmarks_bpp_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, tPos, id)"); // 页面笔记视图
+			db.execSQL("CREATE INDEX if not exists bookmarks_bpp_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, tPos, last_edit_time, id)"); // 页面笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_time_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, last_edit_time)"); // 词典笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_time_index ON "+TABLE_BOOK_ANNOT_v2+" (last_edit_time)"); // 全部笔记视图
 //			db.execSQL("DROP INDEX if exists favorite_term_index");

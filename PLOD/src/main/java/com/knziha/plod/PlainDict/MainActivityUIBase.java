@@ -1932,7 +1932,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	void closeIfNoActionView(MenuItemImpl mi) {
+	public void closeIfNoActionView(MenuItemImpl mi) {
 		if(mi!=null && !mi.isActionButton()) {
 			mi.mMenu.close();
 		}
@@ -6740,7 +6740,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	MenuItemImpl dummyMenuImpl;
-	protected MenuItemImpl getDummyMenuImpl(int id) {
+	public MenuItemImpl getDummyMenuImpl(int id) {
 		if (dummyMenuImpl == null) {
 			dummyMenuImpl = new MenuItemImpl(AllMenus, 0, id, 0, 0, null, 0);
 		}

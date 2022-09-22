@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:clickable="true">
+	<com.knziha.plod.widgets.TextMenuView
+		android:id="@+id/text"
+		style="@style/MenuTextStyle1"
+		android:text="测试测试" />
+
+	<ImageView
+		android:id="@+id/btn"
+		android:layout_width="45dp"
+		android:layout_height="match_parent"
+		android:layout_gravity="end|center_vertical"
+		android:layout_marginEnd="2dp"
+		android:paddingStart="5dp"
+		android:paddingEnd="5dp"
+		android:paddingTop="5dp"
+		android:paddingBottom="5dp"
+		android:src="@drawable/ic_baseline_360_24"
+		android:background="?listChoiceBackgroundIndicator"
+		/>
+</FrameLayout>
