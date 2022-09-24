@@ -498,19 +498,13 @@ public abstract class MdictServer extends NanoHTTPD {
 	}
 	
 	private Response getPlugRes(BookPresenter presenter, String uri) {
+		//SU.Log("server::getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 		try {
-			if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("/")==0) {
+			if(uri.length()<32*5 && uri.length()>3) {
 				int sid = uri.lastIndexOf(".");
 				if(sid>0 && sid<uri.length()-2) {
 					String decoded = null;
-					//SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
-					if(presenter.isHasExtStyle() && uri.endsWith(".css"))
-					{
-						decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
-						if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
-						return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(decoded));
-						}
-					}
+					//SU.Log("同名CSS!", URLDecoder.decode(uri), presenter.getDictionaryName());
 					if(PDICMainAppOptions.getAllowPlugRes()) {
 						if(PDICMainAppOptions.getAllowPlugResSame()) {
 							String p = presenter.getPath();
@@ -523,11 +517,18 @@ public abstract class MdictServer extends NanoHTTPD {
 								}
 							}
 							if(p!=null) {
+								if(presenter.isHasExtStyle() && uri.endsWith(".css") && PDICMainAppOptions.getAllowPlugCss())
+								{
+									decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
+									if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
+										return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(decoded));
+									}
+								}
 								return null;
 							}
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-						SU.Log("文件", uri, mid);
+						//SU.Log("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							if(decoded==null)
 								decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
@@ -541,6 +542,13 @@ public abstract class MdictServer extends NanoHTTPD {
 										;
 								return newChunkedResponse(Status.OK,MIME, input);
 							}
+						}
+					}
+					if(presenter.isHasExtStyle() && uri.endsWith(".css") && PDICMainAppOptions.getAllowPlugCss())
+					{
+						decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
+						if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
+							return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(decoded));
 						}
 					}
 				}
@@ -822,7 +830,10 @@ public abstract class MdictServer extends NanoHTTPD {
 					.append(presenter.getId())
 					.append(",").append(pos)
 					.append(",").append(0)
-					.append(")</script>");
+					.append(");")
+					//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
+					.append("window.pos=").append(pos).append(";")
+					.append("</script>");
 			MdPageBuilder.append("</head>")
 					.append(record)
 					.append(MdPage_fragment3)
@@ -850,7 +861,10 @@ public abstract class MdictServer extends NanoHTTPD {
 							.append(presenter.getId())
 							.append(",").append(pos)
 							.append(",").append(0)
-							.append(")</script>")
+							.append(");")
+							//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
+							.append("window.pos=").append(pos).append(";")
+							.append("</script>")
 						.append(idx==-1?"</head>":"")
 						.append(end);
 				return MdPageBuilder.toString();
