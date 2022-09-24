@@ -4425,7 +4425,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								showT("仅支持数据库v2", 0);
 								break;
 							}
-							showBookNotes();
+							showBookNotes(2);
 							
 							
 //							ListView list = d.getListView();
@@ -5825,7 +5825,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(DBrowser==null || opt.debuggingDBrowser()>0) {
 			DBrowser = DBrowserHolder.get();
 			if(DBrowser==null || opt.debuggingDBrowser()>0){
-				// CMN.debug("重建收藏夹历史记录视图");
+				CMN.debug("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
@@ -5949,7 +5949,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showBookSettings();
 			} break;
 			case R.drawable.ic_edit_booknotes: {
-				showBookNotes();
+				showBookNotes(1);
 			} break;
 			//收藏和历史纪录
 			case R.drawable.favoriteg: {// get5:
@@ -11409,12 +11409,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	WeakReference<BookNotes> bookNoteRef = ViewUtils.DummyRef;
 	public AnnotAdapter[] annotAdapters = new AnnotAdapter[3];
 	public ArrayList<ContentValues> annotUndoStack = new ArrayList<>();
-	public void showBookNotes() {
+	/** src界面来源; 0=toolbar  1=menu grid   2=vtk */
+	public void showBookNotes(int src) {
+		BookPresenter invoker = null;
+		if (src==0) {
+			if(ActivedAdapter!=null) invoker = ActivedAdapter.getPresenter();
+		}
+		else if(weblist!=null) {
+			invoker = weblist.getWebContext().presenter;
+		}
+		if (invoker == null || invoker == EmptyBook) {
+			invoker = currentDictionary;
+		}
 		BookNotes bookNotes = bookNoteRef.get();
-		//if(bookNotes==null)
+		if(bookNotes==null)
 		{
 			bookNotes = new BookNotes(MainActivityUIBase.this);
 			bookNoteRef = new WeakReference<BookNotes>(bookNotes);
+			bookNotes.setInvoker(invoker);
+		} else {
+			bookNotes.setInvoker(invoker);
+			bookNotes.checkBoundary();
 		}
 		if (!bookNotes.isVisible()) {
 			bookNotes.toggle(root, null, -1);

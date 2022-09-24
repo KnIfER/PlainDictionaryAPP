@@ -393,7 +393,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 				offset = pos[1];
 			}
 			dataAdapter.startPaging(lastTm, offset, 20, 15, this);
-			CMN.debug("savedPositions::read::", browser.getFragmentType()+" "+new Date(lastTm).toLocaleString());
+			CMN.debug("rebuildCursor::savedPositions::read::", browser.getFragmentType()+" "+new Date(lastTm).toLocaleString());
 		}
 		//CMN.Log("mAdapter.rebuildCursor!!!");
 		//todo 记忆 lastFirst

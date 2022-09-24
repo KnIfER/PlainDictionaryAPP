@@ -2778,6 +2778,7 @@ function debug(e){console.log(e)};
 				if (mWebView != null) {
 					CMN.debug("annot::marking", text, annot, "pos="+pos, "tPos="+tPos, mWebView.presenter, did);
 					try {
+						LexicalDBHelper.increaseAnnotDbVer();
 						if (presenter.a.getUsingDataV2()) {
 							BookPresenter book = mWebView.presenter;
 							if(did!=null) {

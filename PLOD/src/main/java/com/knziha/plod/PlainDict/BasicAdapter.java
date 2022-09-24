@@ -107,6 +107,10 @@ public abstract class BasicAdapter extends BaseAdapter
 			this.presenter = presenter;
 		}
 	
+		public BookPresenter getPresenter() {
+			return presenter;
+		}
+	
 		@Override
 		public void onClick(View v) {
 			View f = presenter==null?null:presenter.a.getCurrentFocus();

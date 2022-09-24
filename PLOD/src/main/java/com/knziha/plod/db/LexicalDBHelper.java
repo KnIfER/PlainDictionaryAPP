@@ -1043,4 +1043,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public void removePage(long bid, String entry){
 		database.delete(TABLE_BOOK_NOTE_v2, "lex=? and bid=?", new String[]{entry, ""+bid});
 	}
+	
+	public static long annotDbVer;
+	public static long increaseAnnotDbVer() {
+		return annotDbVer++;
+	}
+	
 }

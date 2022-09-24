@@ -3481,21 +3481,20 @@ ViewTreeObserver.OnTouchModeChangeListener {
 //		CMN.Log("postDelayed::", action, delayMillis);
 //		return super.postDelayed(action, delayMillis);
 //	}
-	
-	
-	@Override
-	public boolean postDelayed(Runnable action, long delayMillis) {
-		CMN.Log(action);
-		if(true) {action.run();  return true;}
-		return super.postDelayed(action, delayMillis);
-	}
-	
-	@Override
-	public boolean post(Runnable action) {
-		CMN.Log(action);
-		if(true) {action.run();  return true;}
-		return super.post(action);
-	}
+
+//	@Override
+//	public boolean postDelayed(Runnable action, long delayMillis) {
+//		CMN.Log(action);
+//		if(true) {action.run();  return true;}
+//		return super.postDelayed(action, delayMillis);
+//	}
+//
+//	@Override
+//	public boolean post(Runnable action) {
+//		CMN.Log(action);
+//		if(true) {action.run();  return true;}
+//		return super.post(action);
+//	}
 }
 
 

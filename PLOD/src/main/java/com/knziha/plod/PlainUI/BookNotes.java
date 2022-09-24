@@ -52,6 +52,7 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListener, PopupMenuHelper.PopupMenuListener, Toolbar.OnMenuItemClickListener {
 	public int[] sortTypes;
@@ -60,19 +61,20 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	int drawerStat;
 	boolean drawerOpen;
 	NoScrollViewPager viewPager;
+	boolean[] inited;
 	RecyclerView[] viewList;
 	ViewGroup bar;
 	ShelfLinearLayout btns;
 	Toolbar toolbar;
-	
-	PopupMenuHelper popupMenu;
+	BookPresenter invoker;
 	
 	public BookNotes(MainActivityUIBase a) {
-		super(a, true);
+		super(a, false);
 		this.bottomPadding = 0;
 		this.bPopIsFocusable = true;
 		this.bFadeout = -2;
 		this.bAnimate = false;
+		this.a = a;
 		setShowInDialog();
 	}
 	
@@ -107,12 +109,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	@SuppressLint("ResourceType")
 	@Override
 	public void init(Context context, ViewGroup root) {
-		if(a==null) {
-			a=(MainActivityUIBase) context;
-			mBackgroundColor = 0;
-			setShowInDialog();
-		}
-		if (settingsLayout==null) {
+		if (a!=null && settingsLayout==null) {
 			drawer = (NiceDrawerLayout) a.getLayoutInflater().inflate(R.layout.book_notes_view, a.root, false);
 			drawer.addDrawerListener(this);
 			viewPager = drawer.findViewById(R.id.viewpager);
@@ -166,6 +163,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				@Override public void onPageScrolled(int arg0, float arg1, int arg2) { }
 				@Override
 				public void onPageSelected(int i) {
+					CMN.debug("onPageSelected::", i);
 					RecyclerView lv = viewList[lastPos];
 					if (lv != null) {
 						// fix Inconsistency detected. Invalid view holder adapter position
@@ -174,11 +172,14 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					btns.selectToolIndex(lastPos = i);
 					lv = viewList[i];
 					
+					AnnotAdapter ada = getAnnotationAdapter(false, lv, i);
 					if (lv.getAdapter()==null) {
-						lv.setAdapter(getAnnotationAdapter(false, a.currentDictionary,lv, i));
+						lv.setAdapter(ada);
+						ada.resumeListPos(lv);
 					} else {
-						/*切页刷新*/a.annotAdapters[i].refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, null, BookNotes.this);
+						/*切页刷新*/ada.refresh(a.prepareHistoryCon().getDB(), BookNotes.this, lv);
 					}
+					//ada.dataAdapter.getReaderAt(0);
 				}
 			});
 			viewPager.setCurrentItem(1);
@@ -196,17 +197,16 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		}
 	}
 	
-	public AnnotAdapter getAnnotationAdapter(boolean darkMode, BookPresenter invoker, RecyclerView lv, int scope) {
+	public AnnotAdapter getAnnotationAdapter(boolean darkMode, RecyclerView lv, int scope) {
 		AnnotAdapter adapter=a.annotAdapters[scope];
 		if (adapter == null) {
-			adapter = a.annotAdapters[scope] = new AnnotAdapter(a, R.layout.drawer_list_item, R.id.text1, invoker
+			adapter = a.annotAdapters[scope] = new AnnotAdapter(a, R.layout.drawer_list_item, R.id.text1
 					, a.prepareHistoryCon().getDB(), scope, lv, this);
 		}
 		adapter.darkMode=darkMode;
 		adapter.setBookNotes(this);
 		return adapter;
 	}
-	
 	
 	@Override
 	protected void onShow() {
@@ -222,6 +222,12 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		super.onDismiss();
 		drawerOpen = false;
 		drawer.closeDrawer(GravityCompat.START, false);
+		int k = viewPager.getCurrentItem();
+		RecyclerView lv = viewList[k];
+		if (lv.getAdapter() != null) {
+			AnnotAdapter adapter = getAnnotationAdapter(false, lv, k);
+			adapter.saveListPosition(null);
+		}
 	}
 	
 	@Override
@@ -242,6 +248,17 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
 			btns.setSCC(btns.ShelfDefaultGray=gray);
+		}
+	}
+	
+	public void checkBoundary() {
+		int k = viewPager.getCurrentItem();
+		RecyclerView lv = viewList[k];
+		AnnotAdapter ada = getAnnotationAdapter(false, lv, k);
+		if (lv.getAdapter()!=null
+				/*&& (k==2 || ada.dbWriteVer != LexicalDBHelper.annotDbWriteVer
+				|| ada.dbVer != LexicalDBHelper.annotDbVer)*/) {
+			ada.refresh(a.prepareHistoryCon().getDB(), BookNotes.this, lv); CMN.debug("/*启动刷新*/");
 		}
 	}
 	
@@ -291,8 +308,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			RecyclerView lv = viewList[i];
 			if (lv.getAdapter() != null) {
 				lv.suppressLayout(true);
-				AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
-				/*变换排序规则*/adapter.refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, pressedV.get(), this);
+				AnnotAdapter adapter = getAnnotationAdapter(false, lv, i);
+				/*变换排序规则*/adapter.rebuildCursor(a.prepareHistoryCon().getDB(), pressedV.get(), this, null);
 			}
 		}
 	}
@@ -341,23 +358,28 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					try {
 						SQLiteDatabase database = a.prepareHistoryCon().getDB();
 						Cursor cursor = database.rawQuery("select * from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1", new String[]{pressedRowId + ""});
+						ContentValues cv = null;
 						if (cursor.moveToNext()) {
-							ContentValues cv = ViewUtils.dumpCursorValues(cursor);
+							cv = ViewUtils.dumpCursorValues(cursor);
 							CMN.debug("cv::", cv);
 							if (cv != null) {
-								a.annotUndoStack.add(cv);
+								ArrayList<ContentValues> stack = a.annotUndoStack;
+								stack.add(cv);
+								if (stack.size() >= 150) {
+									stack.subList(0, stack.size()-100).clear();
+								}
 							}
 						}
 						cursor.close();
 						int cnt = database.delete(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, "id=?", new String[]{pressedRowId + ""});
 						if (cnt > 0) {
-							for (int i = 0; i < 2; i++) {
-								RecyclerView lv = viewList[i];
-								if (lv.getAdapter() != null) {
-									lv.suppressLayout(true);
-									AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
-									/*删除*/adapter.refresh(a.currentDictionary, database, lv, null, this);
-								}
+							int k = viewPager.getCurrentItem();
+							RecyclerView lv = viewList[k];
+							if (lv.getAdapter() != null) {
+								lv.suppressLayout(true);
+								AnnotAdapter adapter = getAnnotationAdapter(false, lv, k);
+								LexicalDBHelper.increaseAnnotDbVer();
+								/*删除*/adapter.rebuildCursor(database, null, this, null);
 							}
 							a.showT("删除成功");
 							return true;
@@ -601,8 +623,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					RecyclerView lv = viewList[i];
 					if (lv.getAdapter() != null) {
 						lv.suppressLayout(true);
-						AnnotAdapter adapter = getAnnotationAdapter(false, a.currentDictionary, lv, i);
-						/*撤销删除*/adapter.refresh(a.currentDictionary, a.prepareHistoryCon().getDB(), lv, null, this);
+						AnnotAdapter adapter = getAnnotationAdapter(false, lv, i);
+						/*撤销删除*/adapter.rebuildCursor(a.prepareHistoryCon().getDB(), null, this, null);
 					}
 				}
 			}
@@ -610,5 +632,10 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		if(closeMenu)
 			a.closeIfNoActionView(mmi);
 		return ret;
+	}
+	
+	public void setInvoker(BookPresenter invoker) {
+		//CMN.debug("setInvoker::", invoker);
+		this.invoker = invoker;
 	}
 }

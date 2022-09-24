@@ -391,7 +391,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			} break;
 			case R.string.book_notes:
 			{
-				a.showBookNotes();
+				a.showBookNotes(0);
 			} break;
 		}
 	}

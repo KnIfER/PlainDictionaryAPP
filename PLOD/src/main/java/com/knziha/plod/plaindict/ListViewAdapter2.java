@@ -302,6 +302,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		weblistHandler.setStar(lstKey);
 		
+		presenter = a.getBookById(results.bookId);
 		
 		a.bWantsSelection=true;
 //		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
