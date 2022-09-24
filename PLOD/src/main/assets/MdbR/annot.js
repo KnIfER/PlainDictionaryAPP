@@ -4,15 +4,15 @@
 	function getNextNode(n, e) {
         var a = n.firstChild;
         if (a) {
-            if (n.tagName!=='ANNOT' || !n.classList.contains('note')) {
-                return a
+            if(!skipIfNonTex(n)) { // 将这些考虑为没有文本的节点；不要进去。
+                return a;
             }
             if(a==e) {
                 return null;
             }
         }
 		while (n) {
-			if ((a = n.nextSibling)) {
+			if (a = n.nextSibling) {
 				return a
 			}
 			n = n.parentNode
@@ -227,6 +227,7 @@
         ret = ret.reverse();
         return ret.join("/") + ":" + o;
     }
+
     function storeTextPos(n, o, rootNode) {
         var p = n.parentNode;
         while (p && skip(p)) {
@@ -239,11 +240,13 @@
                     break
                 }
                 if(t.nodeType == 3) {
+                    debug('1::', t, t.parentNode, t.nodeType, t.length);
                     o += t.length;
                 }
             }
-            
+            debug('');
             for (var t=rootNode; t; t = getNextNode(t)) {
+                debug('2::', t, t.parentNode, t.nodeType, p, t.length);
                 if (t == p) {
                     break
                 }
@@ -252,10 +255,18 @@
                 }
             }
         }
+        debug('storeTextPos', o);
         return o;
     }
     function skip(n) {
-        return n.tagName=='ANNOT'||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.tagName=='MARK'||n.classList.contains('_PDict');
+        if(n.nodeType==1)
+            return n.tagName=='ANNOT'||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.tagName=='MARK'||n.classList.contains('_PDict');
+        else return n.nodeType!==3;
+    }
+    function skipIfNonTex(n) {
+        if(n.nodeType==1)
+            return (n.tagName=='ANNOT'&&n.classList.contains('note'))||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.classList.contains('_PDict');
+        else return n.nodeType!==3;
     }
     function restorePos(str, rootNode, ex) {
         var parts = str.split(":");
@@ -422,8 +433,8 @@
         try {
             var text = sel.toString();
             var range = sel.getRangeAt(0);
-            var tPos = storeTextPos(range.startContainer, range.startOffset, rootNode);
             if(!rootNode) rootNode = doc.body;
+            var tPos = storeTextPos(range.startContainer, range.startOffset, rootNode);
             var r = store(range, rootNode);
             var nodes = wrapRange(range, ann)
             if(pos==undefined)
