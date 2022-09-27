@@ -1327,7 +1327,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void set(boolean setSH) {
-		if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(a.TFStamp))
+		if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(a.flags[2]))
 			a.popupWord(null,null, 0, null);
 		if (mWebView!=null) {
 			if(weblistHandler.btmV!=SearchUI.btmV) {

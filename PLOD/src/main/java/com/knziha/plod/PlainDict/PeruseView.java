@@ -756,10 +756,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			a.getWindowManager().getDefaultDisplay().getMetrics(dm);
 			spsubs = hBox.getPrimaryContentSize()*1.f/dm.widthPixels;
 			
-			a.opt.defaultReader.edit().putFloat("spsubs", spsubs)
-					.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
+//			a.opt.putFloat("spsubs", spsubs)
+//					.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize());
 			
-			a.opt.putFirstFlag();
+			//todo f123 a.opt.putFirstFlag();
+			
 			if (dummyPanel.isVisible()) {
 				dummyPanel.toggleDummy(a);
 			}
@@ -2065,10 +2066,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					int BKHistroryVagranter = a.opt.getInt("bkHVgrt", -1);
 					BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
 					String rec = currentDictionary.getDictionaryName() + "/?Pos=" + id;
-					a.opt.putter()//.putString("bkmk", rec)
+					a.opt//.putString("bkmk", rec)
 							.putString("bkh" + BKHistroryVagranter, rec)
 							.putInt("bkHVgrt", BKHistroryVagranter)
-							.apply();
+							;
 					if (ToD) {
 						pullBookMarks();
 					}
@@ -2160,7 +2161,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					contentUIData.bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 				}
 				a.opt.setPerUseToL(ToL);
-				a.opt.putFirstFlag();
+				//todo f123 a.opt.putFirstFlag();
 			break;
 			case R.id.valve1:
 				if(ToR=!ToR) {
@@ -2173,7 +2174,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				resetBottomBar();
 				a.opt.setPerUseToR(ToR);
-				a.opt.putFirstFlag();
+				//todo f123 a.opt.putFirstFlag();
 			break;
 			case R.id.valve2:
 				if(ToD=!ToD) {
@@ -2193,7 +2194,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				bmsAdapter.notifyDataSetChanged();
 				a.opt.setPerUseToD(ToD);
-				a.opt.putFirstFlag();
+				//todo f123 a.opt.putFirstFlag();
 				lastswicthtime=System.currentTimeMillis();
 			break;
 			case R.id.valve3:

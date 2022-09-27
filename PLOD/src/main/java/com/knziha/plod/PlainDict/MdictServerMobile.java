@@ -195,11 +195,11 @@ public class MdictServerMobile extends MdictServer {
 				//if(host!=null) urlConnection.setRequestProperty("Host", host);
 				urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
 				urlConnection.connect();
-				InputStream input = urlConnection.getInputStream();
+				final InputStream input = urlConnection.getInputStream();
 //				String val = BU.StreamToString(input);
 //				//input = new AutoCloseNetStream(input, urlConnection);
 //				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
-				// CMN.Log("请求的是本机调试资源…", key);
+//				CMN.debug("请求的是本机调试资源…", key);
 				return input;
 			} catch (Exception e) {
 				if (check) {

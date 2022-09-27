@@ -17,7 +17,6 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
-import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -35,6 +34,7 @@ import org.knziha.metaline.Metaline;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -50,14 +50,35 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	SharedPreferences defaultReader;
 	public static String locale;
 	
+	private final Object mEditorLock = new Object();
+	public final HashMap<String, Object> mModified = new HashMap<>();
+	public boolean dirty;
+	
+	public boolean checkModified(long[] flags, boolean commit) {
+		boolean fc = isFlagsChanged(flags);
+		if (fc || mModified.size() > 0) {
+			if (fc) {
+				putFlags();
+			} else {
+				fc = true;
+			}
+			if (commit) tmpEditor.commit();
+			else tmpEditor.apply();
+			mModified.clear();
+			tmpEditor = null;
+		}
+		dirty = false;
+		return fc;
+	}
+	
 	public PDICMainAppOptions(Context a_){
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
 		magicStr=a_.getResources().getString(R.string.defPlan);
 		if (SearchUI.tapZoomWait==0) {
 			SearchUI.tapZoomWait = getInt("dtm", 100);
 			SearchUI.pBc.tapAlignment(IU.parsint(getString("tzby", "0"), 0));
-			SearchUI.pBc.tapZoomRatio = defaultReader.getFloat("tzlv", 2);
-			SearchUI.pBc.tapZoomXOffset = defaultReader.getFloat("tz_x", 0);
+			SearchUI.pBc.tapZoomRatio = getFloat("tzlv", 2);
+			SearchUI.pBc.tapZoomXOffset = getFloat("tz_x", 0);
 			SearchUI.pBc.tapZoom(true);
 		}
 	}
@@ -125,9 +146,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			def = Color.BLACK;
 		}
 		if (set) {
-			defaultReader.edit().putInt(key, val).apply();
+			putInt(key, val);
 		} else {
-			ret = defaultReader.getInt(key, def);
+			ret = getInt(key, def);
 		}
 		return ret;
 	}
@@ -151,41 +172,101 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return 255;
 	}
 	
-	public int getInt(String key, int i) {
-		return defaultReader.getInt(key, i);
+	Editor tmpEditor;
+	public final Editor tmpEdit() {
+		if(tmpEditor==null) tmpEditor = defaultReader.edit();
+		return tmpEditor;
 	}
-	public Editor putter() {
-		return defaultReader.edit();
+	
+	public int getInt(String key, int val) {
+		if (mModified.size() > 0) {
+			Object ret = mModified.get(key);
+			if (ret != null) {
+				return (Integer) ret;
+			}
+		}
+		return defaultReader.getInt(key, val);
 	}
-	public void putString(String key, String val) {
-		defaultReader.edit().putString(key, val).apply();
+	public PDICMainAppOptions putInt(String key, int val) {
+		tmpEdit().putInt(key, val);
+		mModified.put(key, val);
+		dirty = true;
+		return this;
 	}
+	
+	private long getLong(String key, int def) {
+		if (mModified.size() > 0) {
+			Object ret = mModified.get(key);
+			if (ret != null) {
+				return (Long) ret;
+			}
+		}
+		try {
+			return defaultReader.getLong(key, def);
+		} catch (Exception e) {
+			CMN.Log(e);
+			return (long) defaultReader.getInt(key, def);
+		}
+	}
+	
+	public PDICMainAppOptions putLong(String key, long val) {
+		tmpEdit().putLong(key, val);
+		mModified.put(key, val);
+		dirty = true;
+		return this;
+	}
+	
+	public float getFloat(String key, float val) {
+		if (mModified.size() > 0) {
+			Object ret = mModified.get(key);
+			if (ret != null) {
+				return (Float) ret;
+			}
+		}
+		return defaultReader.getFloat(key, val);
+	}
+	public PDICMainAppOptions putFloat(String key, float val) {
+		tmpEdit().putFloat(key, val);
+		mModified.put(key, val);
+		dirty = true;
+		return this;
+	}
+	
 	public String getString(String key, String defValue) {
+		if (mModified.size() > 0) {
+			Object ret = mModified.getOrDefault(key, key);
+			if (ret != key) {
+				return (String) ret;
+			}
+		}
 		return defaultReader.getString(key, defValue);
 	}
-
-	public Editor defaultputter() {
-		return defaultReader.edit();
+	public PDICMainAppOptions putString(String key, String val) {
+		tmpEdit().putString(key, val);
+		mModified.put(key, val);
+		dirty = true;
+		defaultReader.edit().putString(key, val).apply();
+		return this;
 	}
 
 	public String getLocale() {
-		return locale!=null?locale:(locale=defaultReader.getString("locale",""));
+		return locale!=null?locale:(locale=getString("locale",""));
 	}
 
 	public File getLastMdlibPath() {
-		String path = defaultReader.getString("lastMdlibPath",null);
+		String path = getString("lastMdlibPath",null);
 		return path==null?null:(lastMdlibPath=new File(path));
 	}
 
 	public void setLastMdlibPath(String lastMdlibPath) {
-		defaultReader.edit().putString("lastMdlibPath",lastMdlibPath).commit();
+		putString("lastMdlibPath",lastMdlibPath);
 	}
 	public String getCurrFavoriteDBName() {//currFavoriteDBName
-		return defaultReader.getString("DB1",null);
+		return getString("DB1",null);
 	}
 
 	public void putCurrFavoriteDBName(String name) {
-		defaultReader.edit().putString("DB1",name).apply();
+		putString("DB1",name);
 	}
 
 	public long getCurrFavoriteNoteBookId() {
@@ -193,60 +274,59 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public void putCurrFavoriteNoteBookId(long id) {
-		defaultReader.edit().putLong("NID", id).apply();
+		putLong("NID", id);
 	}
 
 	public String getLastMdFn(String key) {
-		return defaultReader.getString(key,null);
+		return getString(key,null);
 	}
 	public void putLastMdFn(String key, String name) {
-		defaultReader.edit().putString(key, name).apply();
+		putString(key, name);
 	}
 	
 	public void putLastVSGoNumber(int position) {
 		if(getLastVSGoNumber()!=position) {
-			defaultReader.edit().putInt("VSGo", position).apply();
+			putInt("VSGo", position);
 		}
 	}
 	
 	public int getLastVSGoNumber() {
-		return defaultReader.getInt("VSGo", -1);
+		return getInt("VSGo", -1);
 	}
 	
 	public int getExpandTopPageNum() {
-		return defaultReader.getInt("expand_top", 3);
+		return getInt("expand_top", 3);
 	}
 	
 	/** 当页面数大于返回数值时，才使用合并的url地址 */
 	public int getMergeUrlForFrames() {
-		return defaultReader.getInt("merge_min", 1);
+		return getInt("merge_min", 1);
 	}
 	
 	public String getLastPlanName(String key) {
-		return SU.legacySetFileName(lastMdPlanName=defaultReader.getString(key,magicStr));
+		return SU.legacySetFileName(lastMdPlanName=getString(key,magicStr));
 	}
 	public void putLastPlanName(String key, String name) {
-		defaultReader.edit().putString(key, lastMdPlanName=name).apply();
+		putString(key, lastMdPlanName=name);
 	}
 
 	public String getFontLibPath() {
-		return defaultReader.getString("fntlb",pathToMainFolder().append("Fonts").toString());
+		return getString("fntlb",pathToMainFolder().append("Fonts").toString());
 	}
 	public void setFontLibPath(String name) {
-		defaultReader.edit().putString("fntlb", name).apply();
+		putString("fntlb", name);
 	}
 
 	public String getAppBottomBarProject() {
-		return defaultReader.getString("btmprj",null);
+		return getString("btmprj",null);
 	}
-	
 	
 	public String getAppContentBarProject(int idx) {
 		return getAppContentBarProject("ctnp#"+idx);
 	}
 	
 	public String getAppContentBarProject(String key) {
-		String ret = defaultReader.getString(key, null);
+		String ret = getString(key, null);
 		if(ret!=null && ret.startsWith("ref")){
 			int ref = IU.parsint(ret.substring(3));
 			if(ref<0||ref>10) return null;
@@ -257,7 +337,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	private String getContextbarProjectRecursive(int idx, int ref_tree) {
-		String current = defaultReader.getString("ctnp#"+idx, null);
+		String current = getString("ctnp#"+idx, null);
 		if(current!=null && current.startsWith("ref")){
 			int ref = IU.parsint(current.substring(3));
 			if(ref<0||ref>10) return null;
@@ -270,7 +350,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	private int getContextbarProjectRecursive1(int idx, int ref_tree) {
-		String current = defaultReader.getString("ctnp#"+idx, null);
+		String current = getString("ctnp#"+idx, null);
 		if(current!=null && current.startsWith("ref")){
 			int ref = IU.parsint(current.substring(3));
 			if(ref<0||ref>10) return -1;
@@ -284,35 +364,31 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	/** 关联拷贝或数据拷贝 */
 	public void linkContentbarProject(int idx, int linkTo) {
-		defaultReader.edit()
-				.putString("ctnp#"+idx , getLinkContentBarProj()?("ref"+linkTo):getAppContentBarProject(linkTo))
-				.apply();
+		putString("ctnp#"+idx , getLinkContentBarProj()?("ref"+linkTo):getAppContentBarProject(linkTo));
 	}
 	
 	public void putAppProject(AppUIProject projectContext) {
-		defaultReader.edit().putString(projectContext.key, projectContext.currentValue).apply();
+		putString(projectContext.key, projectContext.currentValue);
 	}
 	
 	public void clearAppProjects(String key) {
-		Editor editor = defaultReader.edit();
 		if(getRestoreAllBottombarProj()){
-			editor.putString("btmprj", null);
+			putString("btmprj", null);
 			for (int i = 0; i < 3; i++) {
-				editor.putString("ctnp#"+i, null);
+				putString("ctnp#"+i, null);
 			}
 		} else {
-			editor.putString(key, null);
+			putString(key, null);
 		}
-		editor.apply();
 	}
 	
 	public boolean isAppContentBarProjectRelative(int idx) {
-		String ret = defaultReader.getString("ctnp#"+idx, null);
+		String ret = getString("ctnp#"+idx, null);
 		return ret!=null && ret.startsWith("ref");
 	}
 	
 	public boolean isAppContentBarProjectReferTo(String key, int ref_idx) {
-		String ret = defaultReader.getString(key, null);
+		String ret = getString(key, null);
 		if(ret!=null && ret.startsWith("ref")){
 			int ref = IU.parsint(ret.substring(3));
 			int ref_tree = 1<<ref;
@@ -323,28 +399,28 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 
 	public int getGlobalPageBackground() {
-		return defaultReader.getInt("GPBC", Color.WHITE); //0xFFC7EDCC
+		return getInt("GPBC", Color.WHITE); //0xFFC7EDCC
 	}
 	public void putGlobalPageBackground(int val) {
-		defaultReader.edit().putInt("GPBC",val).apply();
+		putInt("GPBC",val);
 	}
 	public int getMainBackground() {
-		return defaultReader.getInt("BCM",Constants.DefaultMainBG);
+		return getInt("BCM",Constants.DefaultMainBG);
 	}
 	public int getFloatBackground() {
-		return defaultReader.getInt("BCF",Constants.DefaultMainBG);
+		return getInt("BCF",Constants.DefaultMainBG);
 	}
 	public int getToastBackground() {
-		return defaultReader.getInt("TTB",0xFFBFDEF8);
+		return getInt("TTB",0xFFBFDEF8);
 	}
 	public int getToastColor() {
-		return defaultReader.getInt("TTT",0xFF0D2F4B);
+		return getInt("TTT",0xFF0D2F4B);
 	}
 	public int getTitlebarForegroundColor() {
-		return defaultReader.getInt("TIF",0xFFffffff);
+		return getInt("TIF",0xFFffffff);
 	}
 	public int getTitlebarBackgroundColor() {
-		return defaultReader.getInt("TIB",Constants.DefaultMainBG);
+		return getInt("TIB",Constants.DefaultMainBG);
 	}
 
 	public boolean UseTripleClick() {
@@ -352,23 +428,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	
-	private Long getLong(String key, int def) {
-		try {
-			return defaultReader.getLong(key, def);
-		} catch (Exception e) {
-			CMN.Log(e);
-			return (long) defaultReader.getInt(key, def);
-		}
-	}
-	
 	public int getBottombarSize(int def) {
-		return defaultReader.getInt("BBS", def);
+		return getInt("BBS", def);
 	}
 	public int getFloatBottombarSize(int def) {
-		return defaultReader.getInt("FBBS", def);
+		return getInt("FBBS", def);
 	}
 	public int getPeruseBottombarSize(int def) {
-		return defaultReader.getInt("PBBS", def);
+		return getInt("PBBS", def);
 	}
 	
 	public final static int PLAIN_TARGET_APP_AUTO = 0;
@@ -391,22 +458,22 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	 * */
 	public int getPasteTarget()
 	{
-		return IU.parsint(defaultReader.getString("tgt_paste", "0"));
+		return IU.parsint(getString("tgt_paste", "0"));
 	}
 	/** @return integer: see {@link #getPasteTarget} */
 	public int getShareToTarget()
 	{
-		return IU.parsint(defaultReader.getString("tgt_share", "0"), 0);
+		return IU.parsint(getString("tgt_share", "0"), 0);
 	}
 	/** @return integer: see {@link #getPasteTarget} */
 	public int getColorDictTarget()
 	{
-		return IU.parsint(defaultReader.getString("tgt_color", "3"), 3);
+		return IU.parsint(getString("tgt_color", "3"), 3);
 	}
 	/** @return integer: see {@link #getPasteTarget} */
 	public int getTextProcessorTarget()
 	{
-		return IU.parsint(defaultReader.getString("tgt_text", "3"), 3);
+		return IU.parsint(getString("tgt_text", "3"), 3);
 	}
 
 	//////////////
@@ -416,28 +483,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	//}
 
 	public int getDefaultFontScale(int def) {
-		return defaultReader.getInt("f_size", def);
+		return getInt("f_size", def);
 	}
 	public void putDefaultFontScale(int def) {
-		defaultReader.edit().putInt("f_size", def).apply();
+		putInt("f_size", def);
 	}
 
-
-	/** @param CommitOrApplyOrNothing 0=nothing;1=apply;2=commit*/
-	public void setFlags(Editor editor, int CommitOrApplyOrNothing) {
-		if(editor==null){
-			editor = defaultReader.edit();
-			CommitOrApplyOrNothing=1;
-		}
-		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag).putLong("MTF", ThirdFlag)
-				.putLong("MQF", FourthFlag).putLong("MVF", FifthFlag)
-				.putLong("MVIF", SixthFlag())
-				.putLong("M7F", SevenFlag())
-		;
-		if(CommitOrApplyOrNothing==1) editor.apply();
-		else if(CommitOrApplyOrNothing==2) editor.commit();
-		//CMN.Log("apply changes");
-	}
 	//////////   Tmp Flag   //////////
 	private static long tmpFlag;
 	private static void updateTmpAt(int o, boolean val) {
@@ -467,33 +518,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return FirstFlag;
 	}
-	private void putFirstFlag(long val) {
-		defaultReader.edit().putLong("MFF",FirstFlag=val).apply();
-	}
-
-	public void putFlags() {
-		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag)
-				.putLong("MTF",ThirdFlag).putLong("MVF",FifthFlag)
-				.putLong("MVIF",SixthFlag())
-				.putLong("M7F",SevenFlag())
-				.apply();
-	}
-
-	public void putFirstFlag() {
-		putFirstFlag(FirstFlag);
-	}
+	
 	public long FirstFlag() {
 		return FirstFlag;
 	}
 	private static void updateFFAt(int o, boolean val) {
 		FirstFlag &= (~o);
 		if(val) FirstFlag |= o;
-		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 	private void updateFFAt(long o, boolean val) {
 		FirstFlag &= (~o);
 		if(val) FirstFlag |= o;
-		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 
 	public boolean isCombinedSearching() {//false
@@ -882,12 +917,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return SecondFlag;
 	}
-	private void putSecondFlag(long val) {
-		defaultReader.edit().putLong("MSF",SecondFlag=val).apply();
-	}
-	public void putSecondFlag() {
-		putFirstFlag(SecondFlag);
-	}
 	public long SecondFlag() {
 		return SecondFlag;
 	}
@@ -897,12 +926,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private static void updateSFAt(int o, boolean val) {
 		SecondFlag &= (~o);
 		if(val) SecondFlag |= o;
-		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 	private static void updateSFAt(long o, boolean val) {
 		SecondFlag &= (~o);
 		if(val) SecondFlag |= o;
-		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 
 
@@ -1267,21 +1294,16 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return ThirdFlag;
 	}
-	private void putThirdFlag(long val) {
-		defaultReader.edit().putLong("MTF",ThirdFlag=val).apply();
-	}
 	public long ThirdFlag() {
 		return ThirdFlag;
 	}
 	private void updateTFAt(int o, boolean val) {
 		ThirdFlag &= (~o);
 		if(val) ThirdFlag |= o;
-		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 	private static void updateTFAt(long o, boolean val) {
 		ThirdFlag &= (~o);
 		if(val) ThirdFlag |= o;
-		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 
 	/** Get Back Prevention Type. Default to 1<br/>
@@ -1729,9 +1751,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return FourthFlag;
 	}
-	private void putFourthFlag(long val) {
-		defaultReader.edit().putLong("MQF",FourthFlag=val).apply();
-	}
 	public long FourthFlag() {
 		return FourthFlag;
 	}
@@ -2100,7 +2119,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=0, max=3, flagSize=5, shift=1) public static int getSendToAppTarget(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=0, max=3, flagSize=5, shift=1) public static void setSendToAppTarget(int val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	
-	public int getSendToShareTarget(){ return IU.parsint(defaultReader.getString("share_to", null), 1); }
+	public int getSendToShareTarget(){ return IU.parsint(getString("share_to", null), 1); }
 	
 	
 	@Metaline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
@@ -2272,9 +2291,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return SixthFlag;
 	}
-	private void putSixthFlag(long val) {
-		defaultReader.edit().putLong("MVIF",SixthFlag=val).apply();
-	}
 	public final long SixthFlag() {
 		return SixthFlag;
 	}
@@ -2440,8 +2456,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=62) public static boolean adjPstBtnShown(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=62) public boolean adjPstBtnTog() { SixthFlag=SixthFlag; throw new IllegalArgumentException(); }
-
 	
+	@Metaline(flagPos=63) public static boolean showBubbleForFootNote() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=63) public static void showBubbleForFootNote(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+
 //	@Metaline(flagPos=51) public static boolean entrySeekbarTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 //	@Metaline(flagPos=51) public static void entrySeekbarTapSch(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 //
@@ -2464,9 +2482,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			return SevenFlag=getLong("M7F",0);
 		}
 		return SevenFlag;
-	}
-	private void putSevenFlag(long val) {
-		defaultReader.edit().putLong("M7F",SevenFlag=val).apply();
 	}
 	public final long SevenFlag() {
 		return SevenFlag;
@@ -2577,8 +2592,30 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=59, flagSize=3) public static int annotDB2SortBy() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=59, flagSize=3) public static void annotDB2SortBy(int v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=63) public static boolean showBubbleForEmbedNote() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=63) public static void showBubbleForEmbedNote(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
 	
 	/////////////////////End Seven Flag///////////////////////////////////
+	/////////////////////Start Eight Flag///////////////////////////////////
+	//SE
+	private static long EightFlag=0;
+	public long getEightFlag() {
+		if(EightFlag==0) {
+			return EightFlag=getLong("M8F",0);
+		}
+		return EightFlag;
+	}
+	public final long EightFlag() {
+		return EightFlag;
+	}
+	
+	@Metaline(flagPos=0, flagSize=3) public static int currentNoteType() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, flagSize=3) public static void currentNoteType(int v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=4) public static boolean noteInBubble() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=4) public static void noteInBubble(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	
 	///////
 	///////
@@ -2834,11 +2871,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public String pathToGlide(@NonNull Context context) {
-		return defaultReader.getString("cache_p", GlideCacheModule.DEFAULT_GLIDE_PATH=context.getExternalCacheDir().getAbsolutePath()+"/thumnails/");
-	}
-
-	public Editor edit() {
-		return defaultReader.edit();
+		return getString("cache_p", GlideCacheModule.DEFAULT_GLIDE_PATH=context.getExternalCacheDir().getAbsolutePath()+"/thumnails/");
 	}
 
 	public long Flag(int flagIndex) {
@@ -2859,10 +2892,47 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			return SixthFlag();
 			case 7:
 			return SevenFlag();
+			case 8:
+			return EightFlag();
 		}
 		return tmpFlag;
 	}
-
+	
+	public final void fillFlags(long[] flags) {
+		flags[0] = FirstFlag;
+		flags[1] = SecondFlag;
+		flags[2] = ThirdFlag;
+		flags[3] = FourthFlag;
+		flags[4] = FifthFlag;
+		flags[5] = SixthFlag;
+		flags[6] = SevenFlag;
+		flags[7] = EightFlag;
+	}
+	
+	public final boolean isFlagsChanged(long[] flags) {
+		return flags[0] != FirstFlag
+				|| flags[1] != SecondFlag
+				|| flags[2] != ThirdFlag
+				|| flags[3] != FourthFlag
+				|| flags[4] != FifthFlag
+				|| flags[5] != SixthFlag
+				|| flags[6] != SevenFlag
+				|| flags[7] != EightFlag
+			;
+	}
+	
+	private void putFlags() {
+		Editor edit = tmpEdit();
+		edit.putLong("MFF",FirstFlag)
+			.putLong("MSF",SecondFlag)
+			.putLong("MTF",ThirdFlag)
+			.putLong("MQF",FourthFlag)
+			.putLong("MVF",FifthFlag)
+			.putLong("MVIF",SixthFlag)
+			.putLong("M7F",SevenFlag)
+			.putLong("M8F",EightFlag);
+	}
+	
 	public void Flag(int flagIndex, long val) {
 		switch (flagIndex){
 			case -1:
@@ -2889,6 +2959,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			case 7:
 				SevenFlag=val;
 			break;
+			case 8:
+				EightFlag=val;
+			break;
 			default:
 				tmpFlag=val;
 			break;
@@ -2902,21 +2975,21 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public JSONObject getDimensionalSharePatternByIndex(int position) {
-		String val = defaultReader.getString("dsp#"+position, null);
+		String val = getString("dsp#"+position, null);
 		JSONObject ret = null;
 		if(val!=null) {
 			try {
 				ret = new JSONObject(val);
 			} catch (JSONException e) {
-				e.printStackTrace();
+				CMN.debug(e);
 			}
 		}
 		return ret;
 	}
 
 	public void putDimensionalSharePatternByIndex(int position, JSONObject json) {
-		CMN.Log("保存", position);
-		defaultReader.edit().putString("dsp#"+position, json==null||json.length()==0?null:json.toString()).apply();
+		CMN.debug("保存", position);
+		putString("dsp#"+position, json==null||json.length()==0?null:json.toString());
 	}
 	
 	@SuppressLint("ClickableViewAccessibility")

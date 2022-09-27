@@ -2825,7 +2825,7 @@ function debug(e){console.log(e)};
 		private StringBuilder getMarksByPos(StringBuilder sb, long bid, long position) {
 			//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
 			String[] where = new String[]{""+bid, ""+position};
-			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id, annot from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=?", where);
+			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id, annot from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=? order by tPos", where);
 			CMN.debug("cursor::", position, cursor.getCount());
 //			cursor.moveToLast();
 //			while (cursor.moveToPrevious()) {

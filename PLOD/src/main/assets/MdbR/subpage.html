@@ -135,26 +135,26 @@ function remark(t, rootNode, doc, w){
 	t = t.split('\n');
 	for(var i=0;i<t.length;i+=2) {
 		try{
-			var ann = JSON.parse(t[i]);
+			var row = JSON.parse(t[i]);
 			var nid = parseInt(t[i+1]);
-			// debug('read::remark=',ann);
-			var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
+			// debug('read::remark=',row);
+			var nn = row.n.split(';'), n0=nn[0], n1=nn[1];
 			if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
 			else if(nn.length!=2) continue;
 			var r = w.MakeRange(n0, n1, rootNode, doc);
 			if(r) {
-				ann = w.MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
-				w.WrapRange(r, ann, rootNode, nid)
+				row = w.MakeMark(row.typ, row.clr, row.note, row, -1, 0, 0);
+				w.WrapRange(r, row, rootNode, nid)
 			}
 		} catch(e) {console.log('error::', t[i], e)}
 	}
 }
 
-window.markPage = function(type, color, note) {
+window.markPage = function(tcn) {
 	var s = window.getSelection();
 	if(s && !s.isCollapsed) {
 		var wh = whereSelection();
-		MakeMark(type, color, note, wh[2], document, wh[0], wh[1])
+		MakeMark(tcn, wh[2], document, wh[0], wh[1])
 	}
 }
 

@@ -177,6 +177,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", lex LONGVARCHAR" +
 					", annot TEXT"+
 					", type INTEGER"+
+					", noteType INTEGER"+ // 正文/气泡/脚注
 					", color INTEGER"+
 					", hue INTEGER"+
 					", hue1 INTEGER"+
@@ -193,6 +194,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "hue")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue INTEGER DEFAULT 0");
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue1 INTEGER DEFAULT 0");
+			}
+			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "noteType")) {
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN noteType INTEGER DEFAULT 0");
 			}
 //			db.execSQL("DROP INDEX if exists bookmarks_bpp_index");
 			db.execSQL("CREATE INDEX if not exists bookmarks_bpt_index ON "+TABLE_BOOK_ANNOT_v2+" (bid, pos, last_edit_time, id)"); // 页面笔记视图

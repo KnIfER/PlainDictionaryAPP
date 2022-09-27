@@ -18,11 +18,9 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -110,7 +108,6 @@ import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
-import com.knziha.plod.PlainUI.SettingsSearcher;
 import com.knziha.plod.settings.SchOpt;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
@@ -141,7 +138,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -2249,14 +2245,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	private void dumpSettiings(){
-		Editor putter = null;
-		//CMN.Log(webcontentlist.isDirty,"dumpSettiings", webcontentlist.getPrimaryContentSize());
-		if(contentUIData.webcontentlister.isDirty)
-			putter = opt.edit().putInt("BBS",contentUIData.webcontentlister.getPrimaryContentSize());
-		if(checkFlagsChanged())
-			opt.setFlags((putter==null?putter=opt.edit():putter), 0);
-		if(putter!=null)
-			putter.apply();
+//		if(contentUIData.webcontentlister.isDirty)
+//			putter = opt.edit().putInt("BBS",contentUIData.webcontentlister.getPrimaryContentSize());
+		opt.checkModified(flags, true);
 	}
 
 	@Override
@@ -2373,17 +2364,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	private void checkColors() {
 		if(systemIntialized) {
-			if(PDICMainAppOptions.getShowPasteBin()!=PDICMainAppOptions.getShowPasteBin(SFStamp)){
+			if(PDICMainAppOptions.getShowPasteBin()!=PDICMainAppOptions.getShowPasteBin(flags[1])){
 				drawerFragment.SetupPasteBin();
 			}
-			if(PDICMainAppOptions.getKeepScreen()!=PDICMainAppOptions.getKeepScreen(SFStamp)){
+			if(PDICMainAppOptions.getKeepScreen()!=PDICMainAppOptions.getKeepScreen(flags[1])){
 				if(PDICMainAppOptions.getKeepScreen()){
 					getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 				}else{
 					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 				}
 			}
-			if(PDICMainAppOptions.getSimpleMode()!=PDICMainAppOptions.getSimpleMode(QFStamp)){
+			if(PDICMainAppOptions.getSimpleMode()!=PDICMainAppOptions.getSimpleMode(flags[3])){
 				adaptermy.notifyDataSetChanged();
 			}
 			
@@ -3276,7 +3267,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					PDICMainAppOptions.ChangedMap = null;
 				}
 				if (duco!=null && duco.getBooleanExtra("result2", false)) {
-					opt.putFirstFlag();
+					//todo f123 opt.putFirstFlag();
 					CMN.Log("保存页码");
 				}
 				//todo 延时清除

@@ -726,7 +726,7 @@
 		window.remarkPage = function(){
 			
 		}
-		window.markPage = function(type, color, note) {
+		window.markPage = function(tcn) {
 			for (var i=0,fx; fx=frames[i++];) {
 				var s = 0, w=fx.item;
 				if(w && w.contentWindow) {
@@ -735,7 +735,7 @@
 				}
 				if(s && !s.isCollapsed) {
 					var wh = w.whereSelection();
-					MakeMark(type, color, note, wh[2], w.document, wh[0], wh[1])
+					MakeMark(tcn, wh[2], w.document, wh[0], wh[1], nf)
 					break;
 				}
 			}

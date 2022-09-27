@@ -613,11 +613,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	 		fun(parseInt(f.getAttribute('pd_pos')), f)
 		}
 	 }
-	 window.markPage = function(t, c, n) {
+	 window.markPage = function(tcn) {
 	 	var f = getSelection().getRangeAt(0).startContainer;
 	 	while(f=f.parentNode) {
 		 	if(f.classList.contains('_PDict_body')) {
-	 			MakeMark(t, c, n, f, 0, parseInt(n.getAttribute('pd_pos')))
+	 			MakeMark(tcn, f, 0, parseInt(n.getAttribute('pd_pos')))
 			 	break;
 			 }
 		 }

@@ -64,7 +64,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	boolean[] inited;
 	RecyclerView[] viewList;
 	ViewGroup bar;
-	ShelfLinearLayout btns;
+	ShelfLinearLayout bottomShelf;
 	Toolbar toolbar;
 	BookPresenter invoker;
 	
@@ -113,7 +113,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			drawer = (NiceDrawerLayout) a.getLayoutInflater().inflate(R.layout.book_notes_view, a.root, false);
 			drawer.addDrawerListener(this);
 			viewPager = drawer.findViewById(R.id.viewpager);
-			btns = drawer.findViewById(R.id.btns);
+			bottomShelf = drawer.findViewById(R.id.btns);
 			viewList = new RecyclerView[3];
 			bar = drawer.findViewById(R.id.bar);
 			sortTypes = new int[]{-1, -1, -1};
@@ -136,7 +136,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				anima.setMoveDuration(0);
 				anima.setRemoveDuration(0);
 				
-				btns.getChildAt(i).setOnClickListener(this);
+				bottomShelf.getChildAt(i).setOnClickListener(this);
 			}
 			viewPager.setAdapter(new PagerAdapter() {
 				@Override public boolean isViewFromObject(@NonNull View arg0, @NonNull Object arg1) {
@@ -155,7 +155,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					return child;
 				}
 			});
-			btns.post(() -> btns.selectToolIndex(1));
+			bottomShelf.post(() -> bottomShelf.selectToolIndex(1));
 			viewPager.setNoScroll(true);
 			viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 				int lastPos;
@@ -169,7 +169,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						// fix Inconsistency detected. Invalid view holder adapter position
 						lv.stopScroll();
 					}
-					btns.selectToolIndex(lastPos = i);
+					bottomShelf.selectToolIndex(lastPos = i);
 					lv = viewList[i];
 					
 					AnnotAdapter ada = getAnnotationAdapter(false, lv, i);
@@ -238,16 +238,16 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			toolbar.setTitleTextColor(a.AppWhite);
 			MainAppBackground = a.MainAppBackground;
 			bar.setBackgroundColor(MainAppBackground);
-			btns.setBackgroundColor(MainAppBackground);
+			bottomShelf.setBackgroundColor(MainAppBackground);
 			viewPager.setBackgroundColor(a.AppWhite);
 			for (int i = 0; i < 3; i++) {
 				//((TextView)btns.getChildAt(i)).setTextColor(a.AppBlack);
-				((TextView)btns.getChildAt(i)).setTextColor(a.AppWhite);
+				((TextView) bottomShelf.getChildAt(i)).setTextColor(a.AppWhite);
 			}
 			int gray = 0x55888888;
 			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
-			btns.setSCC(btns.ShelfDefaultGray=gray);
+			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
 		}
 	}
 	
@@ -264,12 +264,12 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	
 	@Override
 	public void onClick(View v) {
-		if (ViewUtils.getNthParentNonNull(v, 1)==btns) {
+		if (ViewUtils.getNthParentNonNull(v, 1)== bottomShelf) {
 			RecyclerView lv = viewList[viewPager.getCurrentItem()];
 			if (lv != null) {
 				lv.stopScroll();
 			}
-			int k = btns.indexOfChild(v);
+			int k = bottomShelf.indexOfChild(v);
 			viewPager.setCurrentItem(k, true);
 			return;
 		}

@@ -82,13 +82,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	public long lastClickTime=0;
 
-	protected long FFStamp;
-	protected long SFStamp;
-	public long TFStamp;
-	protected long QFStamp;
-	protected long VFStamp;
-	protected long VIStamp;
-	protected long V7Stamp;
+	public long[] flags = new long[8];
 	protected long layoutFlagStamp;
 	public int MainAppBackground = 0xFF03A9F4;
 	public int MainBackground = 0xFF03A9F4;
@@ -137,13 +131,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	   mResource = getResources();
 	   mConfiguration = new Configuration(mResource.getConfiguration());
 	   Display display = getWindowManager().getDefaultDisplay();
-	   FFStamp = opt.getFirstFlag();
-	   SFStamp = opt.getSecondFlag();
-	   TFStamp = opt.getThirdFlag();
-	   QFStamp = opt.getFourthFlag();
-	   VFStamp = opt.getFifthFlag();
-	   VIStamp = opt.getSixthFlag();
-	   V7Stamp = opt.getSevenFlag();
+	   opt.fillFlags(flags);
 	   display.getRealMetrics(dm);
 	   if (GlobalOptions.realWidth <= 0) {
 		   readSizeConfigs();
@@ -288,22 +276,9 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	protected void checkFlags() {
-		if(checkFlagsChanged()){
-			opt.setFlags(null, 1);
-			FFStamp=opt.FirstFlag();
-			SFStamp=opt.SecondFlag();
-			TFStamp=opt.ThirdFlag();
-			QFStamp=opt.FourthFlag();
-			VFStamp=opt.FifthFlag();
-			VIStamp=opt.SixthFlag();
-			V7Stamp=opt.SevenFlag();
+		if (opt.checkModified(flags, false)) {
+			opt.fillFlags(flags);
 		}
-	}
-
-	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.ThirdFlag() || QFStamp!=opt.FourthFlag() || VFStamp!=opt.FifthFlag()
-				|| VIStamp!=opt.SixthFlag() || V7Stamp!=opt.SevenFlag()
-				;
 	}
 
 	protected void checkLanguage() {

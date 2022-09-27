@@ -1,10 +1,7 @@
 package com.knziha.plod.widgets;
 
-import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,12 +14,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.text.Html;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextUtils;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.CharacterStyle;
-import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -42,8 +34,6 @@ import android.webkit.WebSettings;
 
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -55,16 +45,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
-import com.jaredrummler.colorpicker.ColorPickerDialog;
-import com.jaredrummler.colorpicker.ColorPickerDialogListener;
-import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
@@ -72,7 +57,6 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.rbtree.additiveMyCpr1;
-import com.knziha.text.ColoredTextSpan;
 
 import org.knziha.metaline.Metaline;
 
@@ -84,8 +68,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import io.noties.markwon.SpannableBuilder;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
 	public long currentPos;
@@ -723,9 +705,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				if (a != null) {
 					a.Annot(this, 0, null);
 				} else {
-					evaluateJavascript(getHighLighter(0, 0, null).toString(), value -> invalidate());
+					evaluateJavascript(getHighLighter("{}").toString(), value -> invalidate());
 				}
 				MyMenuinversed=!MyMenuinversed;
+			} return true;
+			case R.id.toolbar_action2:{
+				MainActivityUIBase a = presenter.a;
+				a.annotText(WebViewmy.this, -1);
 			} return true;
 			case R.id.toolbar_action1:{//工具复用，我真厉害啊啊啊啊！
 				//evaluateJavascript("document.execCommand('selectAll'); console.log('dsadsa')",null);
@@ -760,12 +746,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean onMenuItemClick(MenuItem item) {
 		return onMenuItemClick(null, item);
 	}
-//
-//	@Override
-//	public boolean postDelayed(Runnable action, long delayMillis) {
-//		CMN.Log("postDelayed", action, delayMillis);
-//		return super.postDelayed(action, delayMillis);
-//	}
+
+	@Override
+	public boolean postDelayed(Runnable action, long delayMillis) {
+		if (action.getClass().getName().startsWith("FloatingActionMode", 27)) {
+			CMN.debug("postDelayed::", action, delayMillis, action.getClass().getSimpleName(), "???", action.getClass().getName());
+			return presenter.a.hdl.post(action);
+		}
+		return super.postDelayed(action, delayMillis);
+	}
+	
 //	@Override
 //	public boolean post(Runnable action) {
 //		CMN.Log("post", action);
@@ -970,7 +960,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			}
 			//if(findCount==0) break;
 		}
-
+		
+		menu.add(0,R.id.toolbar_action2,++ToolsOrder,"笔记");
+		
 		menu.add(0,R.id.toolbar_action1,++ToolsOrder,R.string.tools);
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
@@ -1001,10 +993,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 	}
 	
-	/** (function(t,c,n){
+	/** (function(tcn){
 		 function mark() {
-	 		if(window.markPage) markPage(t, c, n)
-	 		else MakeMark(t, c, n)
+	 		if(window.markPage) markPage(tcn)
+	 		else MakeMark(tcn)
 		 }
 		 if(window.MakeMark) {
 			return mark()
@@ -1058,12 +1050,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Metaline(trim=true, compile=true)
 	private final static  String DeHighLightIncantation="DEHI";
 
-	public StringBuilder getHighLighter(int typ, int clr, String note) {
+	public StringBuilder getHighLighter(String tnc) {
 		StringBuilder sb = new StringBuilder() .append(HighLightIncantation)
-				.append("(").append(typ).append(",").append(clr).append(",");
-		if (!TextUtils.isEmpty(note)) {
-			sb.append("' (").append(note).append(") '");
-		}
+				.append("(").append(tnc);
 		return sb.append(")");
 	}
 

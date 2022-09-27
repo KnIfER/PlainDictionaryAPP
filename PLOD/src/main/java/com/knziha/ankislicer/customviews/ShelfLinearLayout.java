@@ -60,9 +60,14 @@ public class ShelfLinearLayout extends LinearLayout {
 	
 	public View selectedTool;
 	public void selectToolView(View v) {
-		//if (selectedTool!=v)
-		{
+		selectTool(indexOfChild(v), v);
+	}
+	
+	private void selectTool(int index, View v) {
+		//if (selectedTool!=v) {
 			selectedTool = v;
+			selectedToolIdx = index;
+			selectedToolIdx = indexOfChild(v);
 			v.getDrawingRect(r);
 			if(getOrientation()==LinearLayout.VERTICAL) {
 				r.top += v.getTop();
@@ -72,11 +77,11 @@ public class ShelfLinearLayout extends LinearLayout {
 				r.right += v.getLeft();
 			}
 			invalidate();
-		}
+		//}
 	}
+	
 	public void selectToolIndex(int i) {
-		selectedToolIdx = i;
-		selectToolView(getChildAt(i));
+		selectTool(i, getChildAt(i));
 	}
 	
 	@Override
@@ -96,11 +101,18 @@ public class ShelfLinearLayout extends LinearLayout {
 	}
 	
 	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		super.onLayout(changed, l, t, r, b);
+	protected void onLayout(boolean changed, int l, int t, int rz, int b) {
+		super.onLayout(changed, l, t, rz, b);
 		View child = getChildAt(selectedToolIdx);
 		if (child != null) {
 			child.getDrawingRect(this.r);
+			if(getOrientation()==LinearLayout.VERTICAL) {
+				r.top += child.getTop();
+				r.bottom += child.getTop();
+			} else {
+				r.left += child.getLeft();
+				r.right += child.getLeft();
+			}
 		}
 	}
 }

@@ -8,7 +8,6 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.FragmentTransaction;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentValues;
@@ -118,7 +117,6 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -139,7 +137,7 @@ import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
-import com.jaredrummler.colorpicker.ColorPickerDialogListener;
+import com.jaredrummler.colorpicker.ColorPickerListener;
 import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
@@ -151,6 +149,7 @@ import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AnnotAdapter;
+import com.knziha.plod.PlainUI.AnnotationDialog;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.BookNotes;
 import com.knziha.plod.PlainUI.BookmarkAdapter;
@@ -173,7 +172,6 @@ import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.Bag;
-import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
@@ -222,7 +220,6 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.text.ColoredHighLightSpan;
-import com.knziha.text.ColoredTextSpan;
 import com.knziha.text.ColoredTextSpan1;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
@@ -235,7 +232,6 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.lucene.document.Field;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -510,16 +506,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					for(var i=0;i<t.length;i+=2) {
 	 					if(t[i].length){
 	 						try{
-								var ann = JSON.parse(t[i]);
+								var row = JSON.parse(t[i]);
 								var nid = parseInt(t[i+1]);
-								var nn = ann.n.split(';'), n0=nn[0], n1=nn[1];
+								var nn = row.n.split(';'), n0=nn[0], n1=nn[1];
 								if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
 								else if(nn.length!=2) continue;
 								var r = MakeRange(n0, n1, rootNode, doc);
 								console.log('fatal debug annot::restoring::', nn, r);
 								if(r) {
-									ann = MakeMark(ann.typ, ann.clr, ann.note, -1, 0, 0);
-									WrapRange(r, ann, rootNode)
+									var el = MakeMark(row, -1, 0, 0);
+									WrapRange(r, el, rootNode, doc, nid)
 								}
 							} catch(e) {console.log('error::', t[i], e)}
 						}
@@ -3997,7 +3993,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			sb.setLength(newIdx+1);
 			size--;
 		}
-		opt.putter().putString("bkHVgrts", sb.toString()).putInt("bkHSize", size).apply();
+		opt.putString("bkHVgrts", sb.toString()).putInt("bkHSize", size);
 	}
 	
 	public final class VerseKit implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
@@ -4156,7 +4152,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									.setDialogId(123123)
 									.setInitialColor(invoker.getUseInternalBG()?invoker.getContentBackground():GlobalPageBackground)
 									.create();
-					asd.setColorPickerDialogListener(new ColorPickerDialogListener() {
+					asd.setColorPickerListener(new ColorPickerListener() {
 						@Override
 						public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
 							//CMN.Log("onColorSelected");
@@ -4241,7 +4237,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					boolean enabled = opt.getTurnPageEnabled();
 					SearchUI.tapZoomV++;
 					tools_lock.setImageResource(enabled?R.drawable.un_locked:R.drawable.locked);
-					opt.putFirstFlag();
+					//todo f123 opt.putFirstFlag();
 					showTopSnack(null, enabled?R.string.PT1:R.string.PT2
 							, 0.8f, LONG_DURATION_MS, -1, 0);
 				} return;
@@ -5131,6 +5127,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			setInvoker(presenter, wv, null, null);
 			onClick(null);
 		}
+		
+		public AlertDialog getDialog() {
+			return d;
+		}
 	}
 	
 	public static long hashKey(String value) {
@@ -5143,10 +5143,50 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return value.length()>length?value.substring(0, length):value;
 	}
 	
-	public void Annot(WebViewmy mWebView, int type, String text) {
+	public void Annot(WebViewmy mWebView, int type, AnnotationDialog annot) {
 		boolean record = true;//mWebView.presenter.getRecordHiKeys();
 		//CMN.Log("Annot_js=", js);
-		mWebView.evaluateJavascript(mWebView.getHighLighter(type, opt.annotColor(type, 0, false), text).toString(), record?new ValueCallback<String>() {
+		int color = opt.annotColor(type, 0, false);
+		String note = null;
+		if (annot != null) {
+			color = annot.uiData.colors[annot.uiData.toolIdx];
+			note = annot.getNoteText();
+			if (TextUtils.isEmpty(note)) {
+				note = null;
+			}
+		}
+		JSONObject row = new JSONObject();
+		try {
+			row.put("typ", type);
+			row.put("clr", color);
+			if (note!=null) {
+				int noteType = annot.uiData.noteType;
+				row.put("note", note);
+				row.put("ntyp", noteType);
+				if (noteType == 1) {
+					// 将笔记直接显示在气泡之中
+					if (annot.uiData.noteInBubble) {
+						row.put("bon", 1);
+					}
+				}
+				// 其他形式的笔记也可以显示气泡，使其更加显著
+				boolean showBubble = annot.uiData.showBubbles[noteType];
+				if (showBubble||noteType == 1) {
+					row.put("bin", 1);
+					color = annot.uiData.bubbleColors[noteType];
+					if (color!=0) {
+						row.put("bclr", color);
+					}
+				}
+				color = annot.uiData.fontColors[noteType];
+				if (color!=0) row.put("fclr", color);
+				int size = annot.uiData.fontSizes[noteType];
+				if (size!=-1) row.put("fsz", size);
+			}
+		} catch (JSONException e) {
+			CMN.debug(e);
+		}
+		mWebView.evaluateJavascript(mWebView.getHighLighter(row.toString()).toString(), record?new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
 //				if(false)
@@ -5434,9 +5474,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					opt.setLastMdlibPath((String)SU.UniversalObject);
 					SU.UniversalObject=null;
 				} else if(svm) {
-					if(checkFlagsChanged()) {
-						opt.setFlags(null, 2);
-					}
+					opt.checkModified(flags, true);
 				}
 				ViewUtils.CleanExitApp(this, false/*restart*/&&PDICMainAppOptions.getRestartVMOnExit(), opt.getClearTasksOnExit(), svm);
 			} break;
@@ -9699,7 +9737,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	PeruseView getPeruseView() {
 		if(peruseView ==null) {
 			peruseView = new PeruseView(MainBackground);
-			peruseView.spsubs = opt.defaultReader.getFloat("spsubs", 0.706f);
+			peruseView.spsubs = opt.getFloat("spsubs", 0.706f);
 			peruseView.dm = dm;
 			peruseView.opt = opt;
 			peruseView.density = dm.density;
@@ -11438,121 +11476,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	// create_note
 	public void annotText(WebViewmy wv, int type) {
-		AlertDialog tkShow = ucc == null || ucc.detached() ? null : ucc.d;
-		if(tkShow!=null) tkShow.hide();
-		View cv = getLayoutInflater().inflate(R.layout.create_note_view, root, false);
-		EditText edit = cv.findViewById(R.id.edit);
-		View editShow = cv.findViewById(R.id.editShow);
-		TextView alphaText = cv.findViewById(R.id.alphaLock);
-		SeekBar alphaSeek = cv.findViewById(R.id.alphaSeek);
-		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLock());
-		ViewUtils.setVisible(ViewUtils.getNthParentNonNull(edit, 1), PDICMainAppOptions.editNote());
-		alphaText.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				PDICMainAppOptions.alphaLock(!ViewUtils.isVisible(alphaSeek));
-				ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLock());
-			}
-		});
-		editShow.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				v = ViewUtils.getNthParentNonNull(edit, 1);
-				PDICMainAppOptions.editNote(!ViewUtils.isVisible(v));
-				ViewUtils.setVisible(v, PDICMainAppOptions.editNote());
-			}
-		});
-		Button[] btns = new Button[]{cv.findViewById(R.id.btnH), cv.findViewById(R.id.btnU)};
-		ColorPickerDialog noteDlg =
-				ColorPickerDialog.newBuilder()
-						.setDialogId(123124)
-						.setInitialColor(opt.annotColor(PDICMainAppOptions.currentTool(), 0, false))
-						.create();
-		noteDlg.setContentView(cv);
-		noteDlg.show(getSupportFragmentManager(), "pick-annot-color");
-		ColoredTextSpan[] spans = new ColoredTextSpan[]{new ColoredTextSpan(0xffffaaaa)
-				, new ColoredTextSpan(Color.BLACK, 8.f, 2)};
-		OnClickListener listener = v1 -> {
-			for (int k = 0; k < 2; k++) {
-				if (btns[k] == v1) {
-					PDICMainAppOptions.currentTool(k);
-					btns[k].setAlpha(1);
-					int lock = opt.alphaLock(k, 0, false);
-					noteDlg.alphaLock(lock);
-					String indi = (lock * 100 / 255) + "%";
-					if(indi.length()<3) indi = "0"+indi;
-					alphaText.setText(indi);
-					noteDlg.setPreviewColor(opt.annotColor(PDICMainAppOptions.currentTool(), 0, false));
-					alphaSeek.setProgress(lock);
-					noteDlg.datasetChanged();
-				} else {
-					btns[k].setAlpha(0.1f);
-				}
-			}
-		};
-		for (int k = 0; k < 2; k++) {
-			Button btn = btns[k];
-			btn.setOnClickListener(listener);
-			SpannableStringBuilder ssb = new SpannableStringBuilder();
-			ssb.append(btn.getText());
-			ssb.setSpan(spans[k], 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-			btn.setText(ssb);
-		}
-		F1ag f = new F1ag();
-		ColorPickerDialogListener lst;
-		noteDlg.forceAlphaLock(PDICMainAppOptions.forceAlphaLock());
-		noteDlg.setColorPickerDialogListener(lst=new ColorPickerDialogListener() {
-			@Override
-			public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
-				color = alphaLock(color);
-				opt.annotColor(PDICMainAppOptions.currentTool(), color, true);
-				Annot(wv, PDICMainAppOptions.currentTool(), edit.getText().toString().trim());
-				if(tkShow!=null) tkShow.dismiss();
-			}
-			public int alphaLock(int color) {
-				int k = PDICMainAppOptions.currentTool();
-				int alpha = Color.alpha(color);
-				if(PDICMainAppOptions.forceAlphaLock() || alpha > opt.alphaLock(k,0,false)) {
-					alpha = opt.alphaLock(k,0,false);
-					color = (0xFF000000&(alpha<<24)) | (0x00FFFFFF&color);
-				}
-				return color;
-			}
-			@Override
-			public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
-				if(dialogInterface==null)
-					color = noteDlg.getPreviewingColor();
-				int k = PDICMainAppOptions.currentTool();
-				View btn = btns[k];
-				ColoredTextSpan span = spans[k];
-				color = alphaLock(color);
-				span.mColor = f.val = color;
-				btn.invalidate();
-				if (false && dialogInterface!=null) {
-					opt.annotColor(PDICMainAppOptions.currentTool(), color, true);
-				}
-			}
-			@Override
-			public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
-				if(tkShow!=null) tkShow.show();
-			}
-		});
-		alphaSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int lock, boolean fromUser) {
-				int k = PDICMainAppOptions.currentTool();
-				opt.alphaLock(k, lock, true);
-				String indi = (lock * 100 / 255) + "%";
-				if(indi.length()<3) indi = "0"+indi;
-				alphaText.setText(indi);
-				noteDlg.alphaLock(lock);
-				noteDlg.datasetChanged();
-				lst.onPreviewSelectedColor(null, -1);
-			}
-			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
-			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
-		});
-		btns[type<0?PDICMainAppOptions.currentTool():type].performClick();
+		new AnnotationDialog(this).show(wv, type);
 	}
 	
 	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;

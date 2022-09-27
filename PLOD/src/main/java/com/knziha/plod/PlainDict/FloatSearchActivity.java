@@ -737,18 +737,18 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	private void dumpSettings(){
 		if(systemIntialized) {
-
 			opt.setFloatBottombarOnBottom(contentUIData.webcontentlister.multiplier==-1);
-			Editor putter = opt.defaultputter();
-			putter.putLong("MFF", opt.FirstFlag())//FVDOCKED
-			.putInt("FVH",mfv_lp.height)
-			.putInt("FVW",mfv_lp.width)
-			.putInt("FVTX",(int) mainfv.getTranslationX())
-			.putInt("FVTY",(int) mainfv.getTranslationY())
-			.putInt("UDFVW",FVW_UNDOCKED)
-			.putInt("UDFVH",FVH_UNDOCKED)
-			.putInt("FBBS",contentUIData.webcontentlister.getPrimaryContentSize())//FloatBottombarSize
-			.commit();
+			// Editor editor = opt.tmpEdit();
+			opt
+				.putInt("FVH",mfv_lp.height)
+				.putInt("FVW",mfv_lp.width)
+				.putInt("FVTX",(int) mainfv.getTranslationX())
+				.putInt("FVTY",(int) mainfv.getTranslationY())
+				.putInt("UDFVW",FVW_UNDOCKED)
+				.putInt("UDFVH",FVH_UNDOCKED)
+				.putInt("FBBS",contentUIData.webcontentlister.getPrimaryContentSize());
+			
+			opt.checkModified(flags, true);
 		}
 	}
 

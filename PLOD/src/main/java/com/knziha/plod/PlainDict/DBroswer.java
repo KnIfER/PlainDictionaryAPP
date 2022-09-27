@@ -934,7 +934,7 @@ public class DBroswer extends DialogFragment implements
 	void initMenuPopup(){
 		View view = getActivity().getLayoutInflater().inflate(R.layout.popup_more_tools, null);
 		menuPopup = new PopupWindow(view,
-				(int)(160 * getResources().getDisplayMetrics().density), LayoutParams.WRAP_CONTENT);
+				(int)(160 * GlobalOptions.density), LayoutParams.WRAP_CONTENT);
 		menuPopup.setOnDismissListener(() -> {
 		});
 		final ListView shareList = view.findViewById(R.id.share_list);

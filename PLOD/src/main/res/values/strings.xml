@@ -257,4 +257,5 @@
 	<string name="st_d_tm">词典+时间排序，由新到旧</string>
 	<string name="st_dpp">词典+页码+段落排序，从小到大</string>
 	<string name="st_dpt">词典+页码+时间排序，从小到大</string>
+	<string name="lnk_note">链接到已有笔记…</string>
 </resources>
