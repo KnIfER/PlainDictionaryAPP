@@ -797,6 +797,14 @@ public class ViewUtils {
 		return vg.findViewById(id);
 	}
 	
+	public static View findViewById(ViewGroup vg, int id, int st) {
+		for (int i = st,len=vg.getChildCount(); i < len; i++) {
+			View c = vg.getChildAt(i);
+			if(c.getId()==id) return c;
+		}
+		return vg.findViewById(id);
+	}
+	
 	public static void ResizeNavigationIcon(Toolbar toolbar) {
 		if(realWidth/GlobalOptions.density<365) {
 			View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);

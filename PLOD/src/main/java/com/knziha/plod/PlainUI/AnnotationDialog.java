@@ -1,13 +1,17 @@
 package com.knziha.plod.PlainUI;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.view.Display;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -19,6 +23,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.percentlayout.widget.PercentRelativeLayout;
 
 import com.alibaba.fastjson.JSONArray;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
@@ -40,6 +45,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	MainActivityUIBase a;
 	ColorPickerDialog noteDlg;
 	public ViewGroup editPanel;
+	public View botPad;
 	public ViewGroup editTools;
 	public ShelfLinearLayout2 editToolbar;
 	public EditText edit;
@@ -111,8 +117,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			lnkToAdapter = new ArrayAdapter<>(a, R.layout.popup_list_item, new String[]{a.mResource.getString(R.string.lnk_note)});
 			binAdapter = new ArrayAdapter<>(a, R.layout.popup_list_item, new ArrayList<>(Collections.singletonList("展开笔记到气泡中")));
 			editPanel = cv.findViewById(R.id.editPanel);
-			edit = editPanel.findViewById(R.id.edit);
-			editTools = editPanel.findViewById(R.id.editTools);
+			edit = (EditText) ViewUtils.findViewById(editPanel, R.id.edit, 1);
+			editTools = (ViewGroup) ViewUtils.findViewById(editPanel, R.id.editTools);
+			botPad = ViewUtils.findViewById(editPanel, R.id.botPad);
 			editToolbar = (ShelfLinearLayout2) editTools.getChildAt(0);
 			noteTypes = editToolbar.findViewById(R.id.noteTypes);
 			bubbleBtn = editToolbar.findViewById(R.id.bubble);
@@ -155,8 +162,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			noteTypes.getChildAt(uiData.noteType).performClick();
 			noteTypes.setTag(null);
 		}
-		
 		refresh();
+		//ViewUtils.removeView(editTools);
+		//ViewUtils.addViewToParent(editTools, editPanel, 1);
 	}
 	
 	// click
@@ -391,7 +399,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		ViewUtils.setVisible(seekBar, vis);
 		ViewUtils.setVisible(value, vis);
 		name.setText(b1?"不透明度":"字体大小");
-		pickName.setText(b1?"修改气泡颜色":"修改字体颜色");
+		pickName.setText(b1?"修改气泡颜色":"修改气泡中的字体颜色");
 
 		final boolean enabled = !b1 || uiData.bubbleColorsEnabled[k];
 		seekBar.setEnabled(enabled);
@@ -584,6 +592,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			gray = 0x5501374F;
 			editToolbar.setCheckedColor(gray);
 		}
+		boolean landScape = a.dm.heightPixels < a.dm.widthPixels;
+		((PercentRelativeLayout.LayoutParams)editPanel.getLayoutParams()).getPercentLayoutInfo().heightPercent=landScape?0.8f:0.8f;
+		botPad.getLayoutParams().height = (int) (GlobalOptions.density*(landScape?10:15));
 	}
 	
 	private Editable getText() {

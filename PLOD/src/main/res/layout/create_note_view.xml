@@ -37,20 +37,21 @@
 		android:id="@+id/editPanel"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:minHeight="150dp"
 		app:layout_widthPercent="80%"
-		app:layout_heightPercent="50%"
-		android:layout_gravity="center"
+		app:layout_heightPercent="80%"
 		android:layout_centerInParent="true"
-		android:background="#EFFFFFFF"
 		android:visibility="gone"
 		tools:visibility="visible"
 		android:orientation="vertical"
-		android:elevation="5dp"
+		android:elevation="15dp"
+		android:padding="6dp"
+		android:background="@drawable/frame_edit_panel"
 		>
 		<HorizontalScrollView
 			android:id="@+id/editTools"
 			android:layout_width="match_parent"
-			android:layout_height="@dimen/_38_"
+			android:layout_height="@dimen/_45_"
 			android:background="@color/colorPrimary"
 			>
 			<com.knziha.ankislicer.customviews.ShelfLinearLayout2
@@ -107,7 +108,7 @@
 						/>
 					<TextView
 						android:id="@+id/ntyp3"
-						android:text="脚注"
+						android:text="注释"
 						style="@style/SearchbarMenuTextStyle1"
 						/>
 				</LinearLayout>
@@ -132,7 +133,9 @@
 		</HorizontalScrollView>
 		<FrameLayout
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			android:background="#FFF"
 			>
 			<EditText
 				android:id="@+id/edit"
@@ -176,6 +179,12 @@
 					/>
 			</FrameLayout>
 		</FrameLayout>
+		<View
+			android:id="@+id/botPad"
+			android:layout_width="match_parent"
+			android:layout_height="10dp"
+			android:background="@color/colorPrimary"
+			/>
 	</LinearLayout>
 
 	<LinearLayout
