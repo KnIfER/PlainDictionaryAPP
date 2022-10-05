@@ -24,6 +24,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.alibaba.fastjson.JSON;
@@ -66,6 +67,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -94,10 +96,14 @@ import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Cache;
 import okhttp3.Dns;
+import okhttp3.FormBody;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
 
 
 /*
@@ -310,7 +316,7 @@ public class PlainWeb extends DictionaryAdapter {
 		if (jinkeSheaths!=null) {
 			builder.dns(hostname -> {
 				String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
-				// CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
+				 CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
 				if (addr != null) {
 					return Collections.singletonList(InetAddress.getByName(addr));
 				}
@@ -329,6 +335,18 @@ public class PlainWeb extends DictionaryAdapter {
 //				CMN.debug("headers::", kI, headers.get(kI));
 //			}
 			//CMN.Log("host::", host);
+			String postData = null;
+			if (url.endsWith("AJAXINTERCEPT")) {
+				int ed = url.length()-13;
+				int idx = url.lastIndexOf("/", ed);
+				String requestId = url.substring(idx + 1, ed);
+				WeakReference<String> ref = BookPresenter.AppHandler.AjaxData.remove(requestId);
+				if (ref != null) {
+					postData = ref.get();
+				}
+				url = url.substring(0, idx);
+				CMN.debug("postData::", url, requestId, postData, ref);
+			}
 			if(context==null) context=this.context;
 			String acc = headers.get("Accept");
 			//CMN.Log("SIR::Accept_", acc, acc.equals("*/*"));
@@ -365,10 +383,23 @@ public class PlainWeb extends DictionaryAdapter {
 	//							.header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
 				if(host!=null && !host.contains("mdbr")) k3request.header("Host", host);
 				k3request.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+				if (postData!=null) {
+//					FormBody.Builder formBody = new FormBody.Builder();
+//					String[] arr = postData.split("&");
+//					for (int i = 0; i < arr.length; i++) {
+//						String parm = arr[i];
+//						int idx = parm.indexOf("=");
+//						if (idx>0) {
+//							formBody.add(parm.substring(0, idx), URLDecoder.decode(parm.substring(idx+1)));
+//						}
+//					}
+//					k3request.post(formBody.build());
+					k3request.post(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded; charset=utf-8"), postData));
+				}
 				Response k3response = klient.newCall(k3request.build()).execute();
 				MIME = k3response.header("content-type");
 				//CMN.Log("重定向啦拉拉!!!", k3response.isRedirect(), url);
-//				 CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
+				//CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
 				if (moders!=null) {
 					String raw = k3response.body().string();
 					for (Pair p:moders) {

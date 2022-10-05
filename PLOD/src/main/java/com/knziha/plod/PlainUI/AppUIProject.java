@@ -59,6 +59,7 @@ public class AppUIProject {
 			R.drawable.ic_options_toolbox_small,//25
 			R.drawable.customize_bars,//26
 			R.drawable.ic_keyboard_show_24,
+			R.drawable.ic_edit_booknotes_btn,
 	};
 	
 	public int type=-1;

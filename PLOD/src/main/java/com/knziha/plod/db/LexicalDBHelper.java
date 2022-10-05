@@ -176,7 +176,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", entry LONGVARCHAR" +
 					", lex LONGVARCHAR" +
 					", annot TEXT"+
-					", type INTEGER"+
+					", type INTEGER"+ // 下划线/高亮
 					", noteType INTEGER"+ // 正文/气泡/脚注
 					", color INTEGER"+
 					", hue INTEGER"+
@@ -184,7 +184,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					//", note INTEGER"+ // 暂未使用
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" +
-					", visit_count INTEGER DEFAULT 0 NOT NULL" +
+					", edit_count INTEGER DEFAULT 0 NOT NULL" +
 					", param BLOB" +
 					")";
 			db.execSQL(sqlBuilder);
@@ -194,6 +194,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "hue")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue INTEGER DEFAULT 0");
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue1 INTEGER DEFAULT 0");
+			}
+			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "edit_count")) {
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN edit_count INTEGER DEFAULT 0");
 			}
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "noteType")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN noteType INTEGER DEFAULT 0");

@@ -433,6 +433,7 @@
 		<item>管理词典</item>
 		<item>进入设置</item>
 		<item>打开键盘</item>
+		<item>笔记列表</item>
 	</string-array>
 
 	<string-array name="customize_ctn">
@@ -458,6 +459,7 @@
 		<item>浏览选项</item>
 		<item>定制底栏</item>
 		<item>打开键盘</item>
+		<item>笔记列表</item>
 	</string-array>
 
 </resources>

@@ -711,7 +711,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			} return true;
 			case R.id.toolbar_action2:{
 				MainActivityUIBase a = presenter.a;
-				a.annotText(WebViewmy.this, -1);
+				a.annotText(WebViewmy.this, -1, false);
 			} return true;
 			case R.id.toolbar_action1:{//工具复用，我真厉害啊啊啊啊！
 				//evaluateJavascript("document.execCommand('selectAll'); console.log('dsadsa')",null);
@@ -852,7 +852,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																		return true;
 																	}
 																});
-															} else if(tv.getText().length()==2 && tv.getText().toString().equals("高亮")){
+															}
+															else if(tv.getText().length()==2 && tv.getText().toString().equals("高亮")){
 																//CMN.Log("yes!!! 高亮");
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
@@ -864,13 +865,25 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																		return true;
 																	}
 																});
-															} else if(tv.getText().length()==2 && tv.getText().toString().equals("工具")){
+															}
+															else if(tv.getText().length()==2 && tv.getText().toString().equals("笔记")){
+																//CMN.Log("yes!!! 高亮");
+																vgg.setOnLongClickListener(new OnLongClickListener() {
+																	@Override
+																	public boolean onLongClick(View v) {
+																		MainActivityUIBase a = presenter.a;
+																		a.annotText(WebViewmy.this, -1, true);
+																		return true;
+																	}
+																});
+															}
+															else if(tv.getText().length()==2 && tv.getText().toString().equals("工具")){
 																CMN.Log("yes!!! 工具");
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
 																	public boolean onLongClick(View v) {
 																		MainActivityUIBase a = presenter.a;
-																		a.annotText(WebViewmy.this, -1);
+																		a.annotText(WebViewmy.this, -1, false);
 																		/* 📕📕📕 微空间内爆术 📕📕📕 */
 //																		Context c = getContext();
 //																		//CMN.Log(c);
@@ -1009,43 +1022,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private final static String HighLightIncantation="HI";
 	
 	/**
-	function recurseDeWrap(b, t) {
-		if (b) {
-			for (var e = b.length - 1, d; e >= 0; e--) {
-				d = b[e];
-				if (d.className == t) {
-					var c = 0;
-					for (var f = d.childNodes.length - 1; f >= 0; f--) {
-						var a = d.childNodes[f];
-						if (!c) {
-							c = d
-						}
-						d.parentNode.insertBefore(a, c);
-						c = a
-					}
-					d.parentNode.removeChild(d)
-				}
-			}
-		}
-	}
-	(function(t){
-	 	if (window.getSelection) {
-			var ann = document.createElement("span");
-			ann.className = "highlight";
-			var sel = window.getSelection();
-			var ranges = [];
-			var range;
-			for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-				ranges.push(sel.getRangeAt(i))
-			} //sel.removeAllRanges();
-			i = ranges.length;
-			while (i--) {
-				range = ranges[i];
-				var nodes = getNodesInRange(range);
-				recurseDeWrap(nodes, t)
-			}
-	 	}
-	 });
 	 */
 	@Metaline(trim=true, compile=true)
 	private final static  String DeHighLightIncantation="DEHI";

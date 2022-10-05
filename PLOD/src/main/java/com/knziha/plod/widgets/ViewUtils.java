@@ -78,6 +78,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -150,7 +151,7 @@ import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.debug;
 import static com.knziha.plod.plaindict.MdictServerMobile.*;
 
-public class ViewUtils {
+public class ViewUtils extends VU {
 	public static final CharSequence WAIT = "WAIT";
 	public static float density;
 	
@@ -364,154 +365,6 @@ public class ViewUtils {
 			}
 		}
 		return -1;
-	}
-	
-	public static View getViewItemByPath(View obj, int...path) {
-		int cc=0;
-		while(cc<path.length) {
-			//CMN.Log(cc, obj);
-			if(obj instanceof ViewGroup) {
-				obj = ((ViewGroup)obj).getChildAt(path[cc]);
-			} else {
-				obj = null;
-				break;
-			}
-			cc++;
-		}
-		return (View)obj;
-	}
-	
-	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, int depth, Object[] viewFetcher) {
-		int cc = vg.getChildCount();
-		View ca;
-		boolean longClickable = clicker instanceof View.OnLongClickListener;
-		boolean touhable = clicker instanceof View.OnTouchListener;
-		if(vg.isClickable()) {
-			click(vg, clicker, longClickable, touhable);
-		}
-		for (int i = 0; i < cc; i++) {
-			ca = vg.getChildAt(i);
-			//CMN.Log("setOnClickListenersOneDepth", ca, (i+1)+"/"+(cc));
-			if(ca instanceof ViewGroup) {
-				if(--depth>0) {
-					if(ca.isClickable()) {
-						click(ca, clicker, longClickable, touhable);
-					} else {
-						setOnClickListenersOneDepth((ViewGroup) ca, clicker, depth, viewFetcher);
-					}
-				}
-			} else {
-				int id = ca.getId();
-				if(ca.getId()!=View.NO_ID || ca.isClickable()){
-					if(!(ca instanceof EditText) && ca.isEnabled()) {
-						click(ca, clicker, longClickable, touhable);
-					}
-					if(viewFetcher!=null) {
-						for (int j = 0; j < viewFetcher.length; j++) {
-							if(viewFetcher[j] instanceof Integer && (int)viewFetcher[j]==id) {
-								viewFetcher[j]=ca;
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, SparseArray<View> viewFetcher, int depth) {
-		int cc = vg.getChildCount();
-		View ca;
-		boolean longClickable = clicker instanceof View.OnLongClickListener;
-		boolean touhable = clicker instanceof View.OnTouchListener;
-		if(vg.isClickable()) {
-			click(vg, clicker, longClickable, touhable);
-		}
-		for (int i = 0; i < cc; i++) {
-			ca = vg.getChildAt(i);
-			//CMN.Log("setOnClickListenersOneDepth", ca, (i+1)+"/"+(cc));
-			if(ca instanceof ViewGroup) {
-				if(--depth>0) {
-					if(ca.isClickable()) {
-						click(ca, clicker, longClickable, touhable);
-					} else {
-						setOnClickListenersOneDepth((ViewGroup) ca, clicker, viewFetcher, depth);
-					}
-				}
-			} else {
-				int id = ca.getId();
-				if(ca.getId()!=View.NO_ID){
-					if(!(ca instanceof EditText) && ca.isEnabled()) {
-						click(ca, clicker, longClickable, touhable);
-					}
-					if(viewFetcher!=null) {
-						viewFetcher.put(ca.getId(), ca);
-					}
-				}
-			}
-		}
-	}
-	
-	private static void click(View ca, View.OnClickListener clicker, boolean longClickable, boolean touhable) {
-		ca.setOnClickListener(clicker);
-		if(longClickable&&ca.isLongClickable()) {
-			ca.setOnLongClickListener((View.OnLongClickListener) clicker);
-		}
-		if(touhable) {
-			ca.setOnTouchListener((View.OnTouchListener) clicker);
-		}
-	}
-	
-	public static boolean removeView(View viewToRemove) {
-		return removeIfParentBeOrNotBe(viewToRemove, null, false);
-	}
-	
-	public static boolean removeIfParentBeOrNotBe(View view, ViewGroup parent, boolean tobe) {
-		if(view!=null) {
-			ViewParent svp = view.getParent();
-			if((parent!=svp) ^ tobe) {
-				if(svp!=null) {
-					((ViewGroup)svp).removeView(view);
-					//CMN.Log("removing from...", svp, view.getParent(), view);
-					return view.getParent()==null;
-				}
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public static boolean addViewToParent(View view2Add, ViewGroup parent, int index) {
-		if(removeIfParentBeOrNotBe(view2Add, parent, false)) {
-			int cc=parent.getChildCount();
-			if(index<0) {
-				index = cc+index;
-				if(index<0) {
-					index = 0;
-				}
-			} else if(index>cc) {
-				index = cc;
-			}
-			parent.addView(view2Add, index);
-			return true;
-		}
-		return false;
-	}
-	
-	public static boolean addViewToParent(View view2Add, ViewGroup parent, View index) {
-		return addViewToParent(view2Add, parent, parent.indexOfChild(index)+1);
-	}
-	
-	public static boolean addViewToParent(View view2Add, ViewGroup parent) {
-		if(parent!=null && removeIfParentBeOrNotBe(view2Add, parent, false)) {
-			parent.addView(view2Add);
-			return true;
-		}
-		return false;
-	}
-	
-	public static void postInvalidateLayout(View view) {
-		view.post(view::requestLayout);
 	}
 	
 	static int resourceId=-1;
@@ -732,31 +585,6 @@ public class ViewUtils {
 		return tag==null?null:((WeakReference)tag).get();
 	}
 	
-	public static boolean isVisible(View v) {
-		return v.getVisibility()==View.VISIBLE;
-	}
-	
-	public static boolean isVisibleV2(View v) {
-		return v!=null && v.getVisibility()==View.VISIBLE && v.getParent()!=null;
-	}
-	
-	public static void setVisible(View v, boolean visible) {
-		v.setVisibility(visible?View.VISIBLE:View.GONE);
-	}
-	
-	public static void setVisibility(View v, boolean visible) {
-		v.setVisibility(visible?View.VISIBLE:View.INVISIBLE);
-	}
-	
-	public static void setVisibleV3(View v, boolean visible) {
-		int vis = visible?View.VISIBLE:View.INVISIBLE;
-		if(v.getVisibility()!=vis) v.setVisibility(vis);
-	}
-	
-	public static void setVisibleV2(View v, boolean visible) {
-		if(v!=null)v.setVisibility(visible?View.VISIBLE:View.GONE);
-	}
-	
 	public static boolean toggleFadeInFadeOut(TextViewmy view) {
 		boolean vis = isVisible(view);
 		if(vis) {
@@ -787,22 +615,6 @@ public class ViewUtils {
 			}
 		}
 		return null;
-	}
-	
-	public static View findViewById(ViewGroup vg, int id) {
-		for (int i = 0,len=vg.getChildCount(); i < len; i++) {
-			View c = vg.getChildAt(i);
-			if(c.getId()==id) return c;
-		}
-		return vg.findViewById(id);
-	}
-	
-	public static View findViewById(ViewGroup vg, int id, int st) {
-		for (int i = st,len=vg.getChildCount(); i < len; i++) {
-			View c = vg.getChildAt(i);
-			if(c.getId()==id) return c;
-		}
-		return vg.findViewById(id);
 	}
 	
 	public static void ResizeNavigationIcon(Toolbar toolbar) {

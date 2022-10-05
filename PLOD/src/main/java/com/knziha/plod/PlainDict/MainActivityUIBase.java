@@ -20,6 +20,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -653,6 +656,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int thisActMask;
 	public boolean awaiting;
 	Runnable postTask;
+	View EmptyView;
 	
 	public View favoriteBtn() {
 		return contentUIData.browserWidget8;
@@ -2371,6 +2375,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if (debugMsg.length()>0) {
 			showT(debugMsg);
+			CMN.debug(debugMsg);
 		}
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		
@@ -4031,7 +4036,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				,R.string.select_all
 				,R.string.hi_color
 				,R.string.highlight
-				,R.string.dehighlight
+				,R.string.annote
 				,R.string.underline
 				,R.string.deunderline
 				,R.string.share_1
@@ -4147,14 +4152,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					root.post(() -> showTopSnack(null, msg, 0.8f, -1, -1, 0x4));
 					
 					d.hide();
-					ColorPickerDialog asd =
-							ColorPickerDialog.newBuilder()
-									.setDialogId(123123)
-									.setInitialColor(invoker.getUseInternalBG()?invoker.getContentBackground():GlobalPageBackground)
-									.create();
+					ColorPickerDialog asd = ColorPickerDialog.newInstance(null, invoker.getUseInternalBG()?invoker.getContentBackground():GlobalPageBackground);
 					asd.setColorPickerListener(new ColorPickerListener() {
 						@Override
-						public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
+						public boolean onColorSelected(ColorPickerDialog dialogInterface, int color, boolean doubleTap) {
 							//CMN.Log("onColorSelected");
 							if(invoker.getUseInternalBG()) {
 								invoker.setContentBackground(color);
@@ -4183,6 +4184,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 								}
 							}
+							return true;
 						}
 						@Override
 						public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
@@ -4593,17 +4595,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							break;
 						/* 高亮 */
 						case R.string.highlight: { Annot(mWebView, 0, null); } break;
-						/* 清除高亮 */
-						case R.string.dehighlight: {
-							//mWebView.evaluateJavascript(mWebView.getDeHighLightIncantation().toString(), null);
-							annotText(mWebView, 0);
+						/* 高亮笔记 */
+						case R.string.annote: {
+							//todo check webview
+							mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
+								@Override
+								public void onReceiveValue(String value) {
+									annotText(mWebView, 0, "1".equals(value));
+								}
+							});
 						} break;
 						/* 下划线 */
 						case R.string.underline:  { Annot(mWebView, 1, null); } break;
 						/* 清除下划线 */
 						case R.string.deunderline: {
 							//mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
-							annotText(mWebView, 1);
+							annotText(mWebView, 1, false);
 						} break;
 						case R.string.send_dot:
 						case R.string.share_1:
@@ -5144,89 +5151,96 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void Annot(WebViewmy mWebView, int type, AnnotationDialog annot) {
-		boolean record = true;//mWebView.presenter.getRecordHiKeys();
 		//CMN.Log("Annot_js=", js);
-		int color = opt.annotColor(type, 0, false);
+		int value = opt.annotColor(type, 0, false);
 		String note = null;
+		com.alibaba.fastjson.JSONObject row = new com.alibaba.fastjson.JSONObject();
+		row.put("typ", type);
+		row.put("clr", value);
+		int noteType = 0;
 		if (annot != null) {
-			color = annot.uiData.colors[annot.uiData.toolIdx];
+			value = annot.uiData.colors[annot.uiData.toolIdx];
 			note = annot.getNoteText();
 			if (TextUtils.isEmpty(note)) {
 				note = null;
 			}
-		}
-		JSONObject row = new JSONObject();
-		try {
-			row.put("typ", type);
-			row.put("clr", color);
 			if (note!=null) {
-				int noteType = annot.uiData.noteType;
+				noteType = annot.uiData.noteType;
+				int k = PDICMainAppOptions.colorSameForNoteTypes()?0:noteType;
 				row.put("note", note);
 				row.put("ntyp", noteType);
-				if (noteType == 1) {
-					// 将笔记直接显示在气泡之中
-					if (annot.uiData.noteInBubble) {
-						row.put("bon", 1);
-					}
+				if (noteType == 1 && annot.uiData.noteOnBubble) {
+					row.put("bon", 1); // 将笔记直接显示在气泡之中
 				}
-				// 其他形式的笔记也可以显示气泡，使其更加显著
+				// 注释笔记也可以显示气泡，使其更加显著
 				boolean showBubble = annot.uiData.showBubbles[noteType];
 				if (showBubble||noteType == 1) {
-					row.put("bin", 1);
-					color = annot.uiData.bubbleColors[noteType];
-					if (color!=0) {
-						row.put("bclr", color);
+					if(noteType!=1) row.put("bin", 1);
+					if (annot.uiData.bubbleColorsEnabled[k]) {
+						value = annot.uiData.bubbleColors[k];
+						if (value!=0) row.put("bclr", value);
 					}
 				}
-				color = annot.uiData.fontColors[noteType];
-				if (color!=0) row.put("fclr", color);
-				int size = annot.uiData.fontSizes[noteType];
-				if (size!=-1) row.put("fsz", size);
+				if (annot.uiData.fontColorEnabled[k]) {
+					value = annot.uiData.fontColors[k];
+					if (value!=0) row.put("fclr", value);
+				}
+				if (annot.uiData.fontSizesEnabled[k]) {
+					value = annot.uiData.fontSizes[k];
+					if (value>0) row.put("fsz", value);
+				}
+				noteType++;
 			}
-		} catch (JSONException e) {
-			CMN.debug(e);
+			long edit = annot.editingNoteId;
+			if (edit != -1) {
+				Cursor cursor = null;
+				try {
+					SQLiteDatabase database = prepareHistoryCon().getDB();
+					String[] wh = new String[]{edit + ""};
+					cursor = database.rawQuery("select * from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1", wh);
+					ContentValues cv = null;
+					String newAnnot = null;
+					if (cursor.moveToNext()) {
+						cv = ViewUtils.dumpCursorValues(cursor);
+						CMN.debug("cv::", cv);
+						cv.put("type", type);
+						cv.put("color", value);
+						cv.put("noteType", noteType);
+						cv.put("edit_count", IU.parsint(cv.get("edit_count"), 0)+1);
+						com.alibaba.fastjson.JSONObject data = com.alibaba.fastjson.JSONObject.parseObject(cv.getAsString("annot"));
+						CMN.debug("oldNote::", data);
+						for(String key:row.keySet()) {
+							data.put(key, row.get(key));
+						}
+						if (data.containsKey("bclr") && !row.containsKey("bclr")) {
+							data.remove("bclr");
+						}
+						if (data.containsKey("fclr") && !row.containsKey("fclr")) {
+							data.remove("fclr");
+						}
+						if (data.containsKey("fsz") && !row.containsKey("fsz")) {
+							data.remove("fsz");
+						}
+						cv.put("annot", newAnnot=data.toString());
+						CMN.debug("newNote::", data);
+					}
+					cursor.close();
+					cursor = null;
+					int cnt = database.update(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, cv, "id=?", wh);
+					CMN.debug("newNote::update=", cnt);
+					annot.mWebView.evaluateJavascript("PatchNote("+edit+", '"+newAnnot+"')", null);
+					LexicalDBHelper.increaseAnnotDbVer();
+				}
+				catch (Exception e) {
+					CMN.debug(e);
+				}
+				if (cursor != null) {
+					cursor.close();
+				}
+				return;
+			}
 		}
-		mWebView.evaluateJavascript(mWebView.getHighLighter(row.toString()).toString(), record?new ValueCallback<String>() {
-			@Override
-			public void onReceiveValue(String value) {
-//				if(false)
-//				if(value!=null && value.length()>=3 && value.charAt(0)=='"')
-//				try {
-//					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-//					if (getUsingDataV2()) {
-//						String entry = mWebView.word;
-//						PlainWeb webx = mWebView.presenter.getWebx();
-//						if (webx!=null) {
-//							entry = mWebView.getUrl();
-//							if (entry.startsWith(webx.getHost()))
-//								entry = entry.substring(webx.getHost().length());
-//						}
-//						long entryHash = hashKey(entry);
-//						String lex = value;
-//						long lexHash = hashKey(lex);
-//						ContentValues values = new ContentValues();
-//						values.put("bid", mWebView.presenter.getId());
-//						values.put("entry", entry);
-//						values.put("entryHash", entryHash);
-//						values.put("entryDig", digestKey(entry, 3));
-//						values.put("lex", lex);
-//						values.put("lexHash", lexHash);
-//						values.put("lexDig", digestKey(lex, 2));
-//						values.put("pos", mWebView.currentPos);
-//						long now = CMN.now();
-//						values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
-//						values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
-//						JSONObject json = new JSONObject();
-//						json.put("x", mWebView.getScrollX());
-//						json.put("y", mWebView.getScrollY());
-//						json.put("s", mWebView.webScale);
-//						values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
-//						prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
-//						//showT(id+", "+value);
-//					}
-//				} catch (JSONException e) { CMN.debug(e); }
-			}
-		}:null);
+		mWebView.evaluateJavascript(mWebView.getHighLighter(row.toString()).toString(), null);
 	}
 	
 	public boolean getPinVSDialog() {
@@ -6012,6 +6026,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				etSearch.setSelectAllOnFocus(false);
 				//imm.showin(InputMethodManager.SHOW_FORCED, 0);
 			} break;
+			case R.drawable.ic_edit_booknotes_btn: {
+				showBookNotes(1);
+			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
 				if(ViewUtils.isVisible(lv2)) {
@@ -6751,9 +6768,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public View anyView(int id) {
-		View v = new View(this);
-		v.setId(id);
-		return v;
+		if (EmptyView==null) {
+			EmptyView = new View(this);
+		}
+		EmptyView.setId(id);
+		return EmptyView;
 	}
 	
 	/** see {@link #getMenuGridRootViewForPanel} */
@@ -8218,7 +8237,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -8286,12 +8305,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						key = url.substring(slashIdx);
 					}
 					else {
-						//CMN.debug("wlh.moders::", wlh.moders);
+						CMN.debug("wlh.moders::", wlh.moders);
 						for (PlainWeb book : wlh.moders) { // java.util.ConcurrentModificationException
 							WebResourceResponse resp = book.modifyRes(MainActivityUIBase.this, url, false);
 							if (resp != null) {
 								CMN.debug("修改了::http::", url);
 								return resp;
+							}
+							if (book.jinkeSheaths!=null&&book.jinkeSheaths.containsKey(SubStringKey.new_hostKey(url))) {
+								return (WebResourceResponse) book.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
 							}
 						}
 					}
@@ -11445,8 +11467,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	WeakReference<BookNotes> bookNoteRef = ViewUtils.DummyRef;
+	WeakReference<AnnotationDialog> annotDlgRef = ViewUtils.DummyRef;
 	public AnnotAdapter[] annotAdapters = new AnnotAdapter[3];
 	public ArrayList<ContentValues> annotUndoStack = new ArrayList<>();
+	public BookNotes getBookNotes() {
+		BookNotes bookNotes = bookNoteRef.get();
+		if(bookNotes==null)
+		{
+			bookNotes = new BookNotes(MainActivityUIBase.this);
+			bookNoteRef = new WeakReference<BookNotes>(bookNotes);
+		}
+		return bookNotes;
+	}
 	/** src界面来源; 0=toolbar  1=menu grid   2=vtk */
 	public void showBookNotes(int src) {
 		BookPresenter invoker = null;
@@ -11474,9 +11506,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	// create_note
-	public void annotText(WebViewmy wv, int type) {
-		new AnnotationDialog(this).show(wv, type);
+	/** type: 0=下划线  1=高亮 -1=保持不变   */
+	public void annotText(WebViewmy wv, int type, boolean showAnteNotes) {
+		AnnotationDialog dialog = annotDlgRef.get();
+		if(dialog==null)
+		{
+			dialog = new AnnotationDialog(this);
+			annotDlgRef = new WeakReference<>(dialog);
+		}
+		dialog.show(wv, type, showAnteNotes);
 	}
 	
 	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;
@@ -11487,5 +11525,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			popupMenuRef = new WeakReference<>(ret);
 		}
 		return ret;
+	}
+	
+	public Drawable getListChoiceBackground() {
+		TypedArray ta = obtainStyledAttributes(new int[] {R.attr.listChoiceBackgroundIndicator});
+		Drawable draw = ta.getDrawable(0);
+		ta.recycle();
+		return draw;
 	}
 }

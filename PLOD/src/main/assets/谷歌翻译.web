@@ -1,5 +1,5 @@
 {
-	,"host": "https://translate.google.cn"
+	,"host": "https://translate.google.com.hk"
 	,"index": ""
 	,"style": "header,.VjFXz{display:none!important}#gtyexp{display:none;position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.25s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;}"
 	,"search": "/?sl=auto&tl=zh-CN&text=%s&op=translate"
@@ -316,12 +316,15 @@ succ"
 	,"translator":"true"
 	,"drawHighlightOnTop":"true"
 	,"excludeRes":"fonts.gstatic.com/s/roboto"
+	,"hosts": "208.80.154.224 www.wikipedia.org
+220.181.174.226 translate.googleapis.com
+198.35.26.112 upload.wikimedia.org"
 	,"fastFontsx":"true"
 	,"modifiers":[
 		{url:"https://translate-pa.googleapis.com/v1/supportedLanguages"}
 		,{url:"https://www.google.com/images/cleardot.gif"}
 		,{url:"http://translate.google.com/gen204x"}
-		,{url:"https://translate.google.cn/translate_a/element.js"}
+		,{url:"https://translate.google.com.hk/translate_a/element.js"}
 		,{urlv4:"https://translate.googleapis.com/_/translate_http/_/js/k=translate_http.tr.zh_CN.tbokbaq6GcI.O/am=AQ/d=1/exm=el_conf/ed=1/rs=AN8SPfpDwbSVWpQ6RLn8qBOWrZ8KB0pUCg/m=el_main"}
 	]
 	,"settings":{
@@ -335,6 +338,31 @@ succ"
 	,"pageTranslator":"
 		var debug = window.debug||function(e){console.log(e)};
 		if(!window.gTrans){
+			function generateRandom() {
+				return sid.get() + Math.floor((1 + Math.random()) * 0x10000)
+				.toString(16)
+				.substring(1);
+			}
+			XMLHttpRequest.prototype.reallyOpen = XMLHttpRequest.prototype.open;
+			XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+				this.requestID = generateRandom();
+				// var idx = url.indexOf('&tk=');
+				// if(idx) {
+				// 	var end = url.indexOf('&', idx+4);
+				// 	if(end<0) end=url.length();
+				// 	var tk = '&tk=757170.883413';
+				// 	url = url.slice(0,idx) + tk + url.slice(end);
+				// }
+				console.log('open!!!', this.requestID, url);
+				var signed_url = url + '/' + this.requestID + 'AJAXINTERCEPT';
+				this.reallyOpen(method, signed_url , async, user, password);
+			};
+			XMLHttpRequest.prototype.reallySend = XMLHttpRequest.prototype.send;
+			XMLHttpRequest.prototype.send = function(body) {
+				console.log('send!!!', this.requestID, body);
+				app.pushAjax(sid.get(), this.requestID, body);
+				this.reallySend(body);
+			};
 			(function(){
 				var cc=0;
 				clearTimeout(window.gTransTime);
@@ -494,7 +522,7 @@ succ"
 				//.goog-te-menu-frame{position:absolute}
 				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
 				document.body.id='body';
-				loadJs('https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit')
+				loadJs('https://translate.google.com.hk/translate_a/element.js?cb=googleTranslateElementInit')
 			})();
 			window.googleTranslateElementInit=function() {
 				var e=new google.translate.TranslateElement(
@@ -545,6 +573,6 @@ succ"
 			}
 			//setTimeout(tweakDone, 1500);
 		</script>
-	  	<script src='https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit '></script>
+	  	<script src='https://translate.google.com.hk/translate_a/element.js?cb=googleTranslateElementInit '></script>
 	"
 }

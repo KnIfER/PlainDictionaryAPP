@@ -85,6 +85,7 @@ import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
+import com.knziha.text.BreakIteratorHelper;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -101,11 +102,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -518,7 +521,7 @@ function debug(e){console.log(e)};
 	
 	@Metaline(flagPos=25) public boolean getShowToolsBtn(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=25) public void setShowToolsBtn(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=26, shift=1) public boolean getRecordHiKeys(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Deprecated @Metaline(flagPos=26, shift=1) public boolean getRecordHiKeys(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=27) public boolean getOfflineMode(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
@@ -2724,6 +2727,47 @@ function debug(e){console.log(e)};
 				}
 			}
 		}
+		
+		public static HashMap<String, WeakReference<String>> AjaxData = new HashMap<>();
+	
+		@JavascriptInterface
+		public void pushAjax(int sid, String requestId, String body) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					CMN.debug("pushAjax::", requestId, body);
+					AjaxData.put(requestId, new WeakReference<>(body));
+				}
+			}
+		}
+		
+		@JavascriptInterface
+		public long probeWord(int sid, String paragraph, String text) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					CMN.debug("probeWord::", paragraph, text);
+					BreakIteratorHelper helper = new BreakIteratorHelper();
+					helper.setText(paragraph);
+					int now = text.length();
+					int st = helper.preceding(now);
+					int ed = helper.following(st);
+					if (ed <= now) {
+						st = now;
+						ed = helper.following(now);
+					}
+					try {
+						CMN.debug("probeWord=", st, ed);
+						long ret = (((long)st)<<32)|(long)ed;
+						CMN.debug("probeWord=", paragraph.substring(st, ed), ret);
+						return ret;
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			}
+			return 0;
+		}
 	
 		@JavascriptInterface
         public String decodeExp(String val) {
@@ -2813,7 +2857,9 @@ function debug(e){console.log(e)};
 							json.put("y", mWebView.getScrollY());
 							json.put("s", mWebView.webScale);
 							values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
+							
 							return presenter.a.prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+							
 							//showT(id+", "+value);
 						}
 					} catch (Exception e) { CMN.debug(e); }

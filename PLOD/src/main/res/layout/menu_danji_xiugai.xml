@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:layout_width="wrap_content"
+	android:clickable="true">
+	<com.knziha.plod.widgets.TextMenuView
+		android:id="@+id/editNote"
+		style="@style/MenuTextStyle1"
+		android:text="点击修改"
+		android:paddingEnd="50dp"
+		android:layout_marginEnd="2dp"
+		/>
+
+	<ImageView
+		android:id="@+id/editNoteBtn"
+		android:layout_width="45dp"
+		android:layout_height="match_parent"
+		android:layout_gravity="end|center_vertical"
+		android:layout_marginEnd="2dp"
+		android:paddingStart="5dp"
+		android:paddingEnd="5dp"
+		android:paddingTop="5dp"
+		android:paddingBottom="5dp"
+		android:src="@drawable/ic_mode_edit_24dp"
+		android:background="?actionBarItemBackground"
+		/>
+</FrameLayout>

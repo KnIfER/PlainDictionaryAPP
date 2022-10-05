@@ -5,19 +5,9 @@
 	android:orientation="vertical"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:id="@+id/create_note"
+	android:clickable="true"
 	>
-
-
-	<ImageView
-		android:id="@+id/editShow"
-		android:layout_width="45dp"
-		android:layout_height="40dp"
-		android:layout_above="@+id/alpha"
-		android:layout_marginBottom="80dp"
-		android:background="@drawable/popup_background3__"
-		android:src="@drawable/ic_edit_black_24dp"
-		android:padding="5dp"
-		/>
 
 	<ImageView
 		android:id="@+id/closeEdit"
@@ -33,6 +23,56 @@
 		android:visibility="gone"
 		/>
 
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="100dp"
+		android:background="@drawable/shadow_dim_bottom"
+		android:layout_above="@+id/btnPanel"
+		/>
+
+	<ImageView
+		android:id="@+id/editShow"
+		android:layout_width="45dp"
+		android:layout_height="40dp"
+		android:layout_above="@+id/btnPanel"
+		android:background="@drawable/popup_background3__"
+		android:padding="5dp"
+		android:src="@drawable/ic_edit_black_24dp"
+		android:layout_alignParentRight="true"
+		/>
+
+	<LinearLayout
+		android:id="@+id/alpha"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/btnPanel"
+		>
+		<TextView
+			android:id="@+id/alphaLock"
+			android:layout_width="wrap_content"
+			android:layout_height="40dp"
+			android:textSize="18sp"
+			android:textColor="#000"
+			android:text="80%"
+			android:gravity="center"
+			android:background="@drawable/popup_background3__"
+			android:padding="4dp"
+			/>
+		<SeekBar
+			android:id="@+id/alphaSeek"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:textSize="25sp"
+			android:textColor="#000"
+			android:text="80%"
+			android:layout_marginRight="100dp"
+			android:visibility="gone"
+			tools:visibility="visible"
+			android:max="255"
+			android:min="28"
+			/>
+	</LinearLayout>
+
 	<LinearLayout
 		android:id="@+id/editPanel"
 		android:layout_width="match_parent"
@@ -40,6 +80,8 @@
 		android:minHeight="150dp"
 		app:layout_widthPercent="80%"
 		app:layout_heightPercent="80%"
+		app:layout_marginTopPercent="0%"
+		android:layout_centerHorizontal="true"
 		android:layout_centerInParent="true"
 		android:visibility="gone"
 		tools:visibility="visible"
@@ -182,40 +224,7 @@
 		<View
 			android:id="@+id/botPad"
 			android:layout_width="match_parent"
-			android:layout_height="10dp"
-			android:background="@color/colorPrimary"
-			/>
-	</LinearLayout>
-
-	<LinearLayout
-		android:id="@+id/alpha"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_above="@+id/btnPanel"
-		>
-		<TextView
-			android:id="@+id/alphaLock"
-			android:layout_width="wrap_content"
-			android:layout_height="40dp"
-			android:textSize="18sp"
-			android:textColor="#000"
-			android:text="80%"
-			android:gravity="center"
-			android:background="@drawable/popup_background3__"
-			android:padding="4dp"
-			/>
-		<SeekBar
-			android:id="@+id/alphaSeek"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:textSize="25sp"
-			android:textColor="#000"
-			android:text="80%"
-			android:layout_marginRight="100dp"
-			android:visibility="gone"
-			tools:visibility="visible"
-			android:max="255"
-			android:min="28"
+			android:layout_height="4dp"
 			/>
 	</LinearLayout>
 

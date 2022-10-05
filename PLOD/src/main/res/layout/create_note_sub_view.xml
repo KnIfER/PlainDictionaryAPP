@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	>
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="100dp"
+		android:background="@drawable/shadow_dim_bottom"
+		android:layout_above="@+id/bottom"
+		/>
 	<LinearLayout
+		android:id="@+id/bottom"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
 		android:layout_gravity="bottom"
+		android:layout_alignParentBottom="true"
 		>
-		<View
-			android:layout_width="match_parent"
-			android:layout_height="100dp"
-			android:background="@drawable/shadow_dim_bottom"
-			/>
 		<FrameLayout
 			android:layout_width="match_parent"
 			android:layout_height="25dp"
@@ -44,6 +47,7 @@
 				android:paddingRight="5dp"
 				android:src="@drawable/ic_overflow_hor_small"
 				android:background="?listChoiceBackgroundIndicator"
+				android:visibility="gone"
 				/>
 		</FrameLayout>
 		<LinearLayout
@@ -93,4 +97,4 @@
 				/>
 		</LinearLayout>
 	</LinearLayout>
-</FrameLayout>
+</RelativeLayout>

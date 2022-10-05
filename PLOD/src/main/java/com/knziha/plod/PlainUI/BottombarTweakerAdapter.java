@@ -222,7 +222,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 							aa.bottombar_project = projectContext = new AppUIProject("btmprj", aa.BottombarBtnIcons, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
 						}
 						if(projectContext.iconData==null){
-							projectContext.instantiate(aa.getResources().getStringArray(R.array.customize_btm));
+							projectContext.instantiate(aa.mResource.getStringArray(R.array.customize_btm));
 						}
 					}
 					else {

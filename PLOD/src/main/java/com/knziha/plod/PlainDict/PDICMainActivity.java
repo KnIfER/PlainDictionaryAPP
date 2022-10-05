@@ -203,6 +203,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			R.drawable.book_bundle2,
 			R.drawable.ic_settings_black_24dp,
 			R.drawable.ic_keyboard_show_24,
+			R.drawable.ic_edit_booknotes_btn,
 	};
 	public final ImageView[] BottombarBtns = new ImageView[BottombarBtnIcons.length];
 	

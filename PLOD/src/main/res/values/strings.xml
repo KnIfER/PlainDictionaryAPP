@@ -225,7 +225,7 @@
 	<string name="favor_sel">收藏选中文本</string>
 	<string name="hi_color">选择标注颜色</string>
 	<string name="highlight">高亮</string>
-	<string name="dehighlight">清除高亮</string>
+	<string name="annote">高亮笔记</string>
 	<string name="underline">下划线</string>
 	<string name="deunderline">清除下划线</string>
 	<string name="share_1">分享#1</string>
@@ -258,4 +258,5 @@
 	<string name="st_dpp">词典+页码+段落排序，从小到大</string>
 	<string name="st_dpt">词典+页码+时间排序，从小到大</string>
 	<string name="lnk_note">链接到已有笔记…</string>
+	<string name="edit_yy_note">修改已选笔记</string>
 </resources>

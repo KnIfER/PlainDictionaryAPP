@@ -724,7 +724,7 @@
 			rawAddEvent(a,b,c);
 		}
 		window.remarkPage = function(){
-			
+			// 在子页面处理
 		}
 		window.markPage = function(tcn) {
 			for (var i=0,fx; fx=frames[i++];) {
@@ -735,17 +735,10 @@
 				}
 				if(s && !s.isCollapsed) {
 					var wh = w.whereSelection();
-					MakeMark(tcn, wh[2], w.document, wh[0], wh[1], nf)
+					MakeMark(tcn, wh[2], w.document, wh[0], wh[1])
 					break;
 				}
 			}
-			// var n = getSelection().getRangeAt(0).startContainer;
-			// while(n=n.parentNode) {
-			// 	if(n.classList.contains('_PDict_body')) {
-			// 		MakeMark(t, echo, n, 0, parseInt(n.getAttribute('pd_pos')))
-			// 		break;
-			// 	}
-			// }
 		}
 		var pengDingPos = -1;
 		var lv;

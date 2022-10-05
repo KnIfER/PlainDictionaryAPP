@@ -62,10 +62,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			} else {
 				fc = true;
 			}
-			if (commit) tmpEditor.commit();
-			else tmpEditor.apply();
 			mModified.clear();
-			tmpEditor = null;
+			if (tmpEditor != null) {
+				if (commit) tmpEditor.commit();
+				else tmpEditor.apply();
+				tmpEditor = null;
+			}
 		}
 		dirty = false;
 		return fc;
@@ -194,7 +196,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return this;
 	}
 	
-	private long getLong(String key, int def) {
+	public long getLong(String key, long def) {
 		if (mModified.size() > 0) {
 			Object ret = mModified.get(key);
 			if (ret != null) {
@@ -205,11 +207,18 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			return defaultReader.getLong(key, def);
 		} catch (Exception e) {
 			CMN.Log(e);
-			return (long) defaultReader.getInt(key, def);
+			return (long) defaultReader.getInt(key, (int) def);
 		}
 	}
 	
 	public PDICMainAppOptions putLong(String key, long val) {
+		try {
+			if (defaultReader.getLong(key, val)==val) {
+				return this;
+			}
+		} catch (Exception e) {
+			tmpEdit().remove(key);
+		}
 		tmpEdit().putLong(key, val);
 		mModified.put(key, val);
 		dirty = true;
@@ -2574,8 +2583,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=50, shift=1) public static boolean forceAlphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=50, shift=1) public static void forceAlphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=51, shift=1) public static boolean alphaLock() { SevenFlag=SevenFlag; throw new RuntimeException();}
-	@Metaline(flagPos=51, shift=1) public static void alphaLock(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static boolean alphaLockVisible() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static void alphaLockVisible(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=52, shift=1) public static boolean editNote() { SevenFlag=SevenFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52, shift=1) public static void editNote(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
@@ -2613,8 +2622,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=0, flagSize=3) public static int currentNoteType() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=0, flagSize=3) public static void currentNoteType(int v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	/** display notes on bubble directly  */
 	@Metaline(flagPos=4) public static boolean noteInBubble() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=4) public static void noteInBubble(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=5, shift=1) public static boolean colorSameForNoteTypes() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5, shift=1) public static void colorSameForNoteTypes(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=6, shift=1) public static boolean tapEditAnteNote() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6, shift=1) public static void tapEditAnteNote(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
 	///////
@@ -2899,14 +2915,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public final void fillFlags(long[] flags) {
-		flags[0] = FirstFlag;
-		flags[1] = SecondFlag;
-		flags[2] = ThirdFlag;
-		flags[3] = FourthFlag;
-		flags[4] = FifthFlag;
-		flags[5] = SixthFlag;
-		flags[6] = SevenFlag;
-		flags[7] = EightFlag;
+		flags[0] = getFirstFlag();
+		flags[1] = getSecondFlag();
+		flags[2] = getThirdFlag();
+		flags[3] = getFourthFlag();
+		flags[4] = getFifthFlag();
+		flags[5] = getSixthFlag();
+		flags[6] = getSevenFlag();
+		flags[7] = getEightFlag();
 	}
 	
 	public final boolean isFlagsChanged(long[] flags) {

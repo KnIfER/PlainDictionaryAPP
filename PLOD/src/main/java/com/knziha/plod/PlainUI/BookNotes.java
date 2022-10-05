@@ -200,7 +200,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	public AnnotAdapter getAnnotationAdapter(boolean darkMode, RecyclerView lv, int scope) {
 		AnnotAdapter adapter=a.annotAdapters[scope];
 		if (adapter == null) {
-			adapter = a.annotAdapters[scope] = new AnnotAdapter(a, R.layout.drawer_list_item, R.id.text1
+			adapter = a.annotAdapters[scope] = new AnnotAdapter(a, R.id.text1
 					, a.prepareHistoryCon().getDB(), scope, lv, this);
 		}
 		adapter.darkMode=darkMode;
@@ -252,13 +252,15 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	}
 	
 	public void checkBoundary() {
-		int k = viewPager.getCurrentItem();
-		RecyclerView lv = viewList[k];
-		AnnotAdapter ada = getAnnotationAdapter(false, lv, k);
-		if (lv.getAdapter()!=null
+		if (viewPager!=null) {
+			int k = viewPager.getCurrentItem();
+			RecyclerView lv = viewList[k];
+			AnnotAdapter ada = getAnnotationAdapter(false, lv, k);
+			if (lv.getAdapter()!=null
 				/*&& (k==2 || ada.dbWriteVer != LexicalDBHelper.annotDbWriteVer
 				|| ada.dbVer != LexicalDBHelper.annotDbVer)*/) {
-			ada.refresh(a.prepareHistoryCon().getDB(), BookNotes.this, lv); CMN.debug("/*启动刷新*/");
+				ada.refresh(a.prepareHistoryCon().getDB(), BookNotes.this, lv); CMN.debug("/*启动刷新*/");
+			}
 		}
 	}
 	
@@ -355,6 +357,9 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					a.getVtk().onClick(null);
 				} break;
 				case R.string.delete:{
+					CMN.debug("cv::", R.string.delete, pressedRowId);
+					boolean b1 = popupMenuHelper == popupMenuRef.get();
+					//if(true) return true;
 					try {
 						SQLiteDatabase database = a.prepareHistoryCon().getDB();
 						Cursor cursor = database.rawQuery("select * from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1", new String[]{pressedRowId + ""});
@@ -373,21 +378,28 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						cursor.close();
 						int cnt = database.delete(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, "id=?", new String[]{pressedRowId + ""});
 						if (cnt > 0) {
-							int k = viewPager.getCurrentItem();
-							RecyclerView lv = viewList[k];
-							if (lv.getAdapter() != null) {
-								lv.suppressLayout(true);
-								AnnotAdapter adapter = getAnnotationAdapter(false, lv, k);
-								LexicalDBHelper.increaseAnnotDbVer();
-								/*删除*/adapter.rebuildCursor(database, null, this, null);
+							LexicalDBHelper.increaseAnnotDbVer();
+							if (isVisible()) {
+								int k = viewPager.getCurrentItem();
+								RecyclerView lv = viewList[k];
+								if (lv.getAdapter() != null) {
+									lv.suppressLayout(true);
+									AnnotAdapter adapter = getAnnotationAdapter(false, lv, k);
+									/*删除*/
+									adapter.rebuildCursor(database, null, this, null);
+								}
 							}
 							a.showT("删除成功");
+							// todo refresh webview
 							return true;
 						}
 					} catch (Exception e) {
 						CMN.debug(e);
 					}
 					a.showT("删除失败！");
+					if (!b1) {
+						return false;
+					}
 				} break;
 				case R.string.sortby:{
 					if (viewPager.getCurrentItem()<=2) {

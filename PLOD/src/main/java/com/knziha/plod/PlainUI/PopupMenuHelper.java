@@ -29,7 +29,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	public final LinearLayout lv;
 	public final Context context;
 	public Drawable leftDrawable;
-	private int[] texts;
+	public int[] texts;
 	private PopupMenuListener listener;
 	private final Runnable postDismissRunnable = this::dismiss;
 	private boolean bRecycle = false;
@@ -127,6 +127,10 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 		mPopupWindow.showAtLocation(anchorView, Gravity.TOP | Gravity.START, windowPos[0], windowPos[1]);
 	}
 	
+	public void showAt(View anchorView, int x, int y, int grav) {
+		mPopupWindow.showAtLocation(anchorView, grav, x, y);
+	}
+	
 	public static int[] calculatePopWindowPos(View anchorView
 			, View popView, View itemTestView
 			, int anchorX, int anchroY) {
@@ -139,7 +143,10 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 		int padding = popView.getPaddingTop();
 		int popHeight = popView.getMeasuredHeight()  - padding*2;
 		int popWidth = popView.getMeasuredWidth()    - padding*2;
-		int itemHeight = itemTestView==null?0:itemTestView.getHeight() + padding;
+		int itemHeight = padding;
+		if (itemTestView!=null) {
+			itemHeight += itemTestView.getMeasuredHeight();
+		}
 		boolean showUp = screenHeight + itemHeight - anchroY < popHeight;
 		boolean showLeft = screenWidth - anchorX < popWidth;
 		

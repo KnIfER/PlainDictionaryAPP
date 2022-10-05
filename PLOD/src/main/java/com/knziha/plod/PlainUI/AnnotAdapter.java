@@ -50,12 +50,13 @@ import java.util.Date;
 
 public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> implements View.OnClickListener, PagingCursorAdapter.OnLoadListener, View.OnLongClickListener {
 	public boolean showDelete;
-	int resourceID;
 	int textViewResourceID;
 	MainActivityUIBase a;
 	public boolean darkMode;
 	WeakReference<BookNotes> bookNotesRef = ViewUtils.DummyRef;
+	/** 0=全部   1=当前词典   2=当前页 */
 	final int scope;
+	private final boolean bRangeNotes;
 	
 	private PagingAdapterInterface<AnnotationReader> DummyReader = new CursorAdapter<>(EmptyCursor, new AnnotationReader());
 	PagingAdapterInterface<? extends AnnotationReader> dataAdapter = DummyReader;
@@ -64,6 +65,17 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	long dbVer;
 	private long bid;
 	private String expUrl = "";
+	
+	public AnnotAdapter(MainActivityUIBase a, int textViewResourceId
+			, SQLiteDatabase database, int scope
+			, RecyclerView lv, BookNotes bookNotes) {
+		//this(a,resource,textViewResourceId,objects);
+		this.a=a;
+		textViewResourceID=textViewResourceId;
+		this.scope = scope;
+		this.bRangeNotes = scope==-1;
+		rebuildCursor(database, null, bookNotes, null);
+	}
 	
 	public int sortType(BookNotes bookNotes) {
 		int ret = bookNotes.sortTypes[scope];
@@ -74,17 +86,6 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 						:PDICMainAppOptions.annotDB2SortBy();
 		}
 		return ret;
-	}
-	
-	public AnnotAdapter(MainActivityUIBase a, int resource, int textViewResourceId
-			, SQLiteDatabase database, int scope
-			, RecyclerView lv, BookNotes bookNotes) {
-		//this(a,resource,textViewResourceId,objects);
-		this.a=a;
-		resourceID=resource;
-		textViewResourceID=textViewResourceId;
-		this.scope = scope;
-		rebuildCursor(database, null, bookNotes, null);
 	}
 	
 	@Override
@@ -116,14 +117,25 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationMultiSortReader();
 	}
 	
+	
+	public static class AnnotationRangeReader extends AnnotationReader{
+		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
+			multiSorts = -2;
+			super.ReadCursor(cursor, rowID, sortNum);
+		}
+		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationRangeReader();
+	}
+	
 	public static class AnnotationReader implements CursorReader{
 		public long row_id;
 		public long sort_number;
 		public long[] sort_numbers;
 		public String entryName;
+		/** the marked range */
 		public String annotText;
 		public long position;
 		public long bid;
+		/** the note */
 		public JSONObject annot;
 		int multiSorts = 0;
 		
@@ -205,12 +217,18 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		}
 	}
 	
-	
 	public void rebuildCursor(SQLiteDatabase database, View sortView, BookNotes bookNotes, String expUrl) {
 		CMN.debug("rebuildCursor::", scope);
 		try {
 			dataAdapter.close();
 			dataAdapter = DummyReader;
+			if(bRangeNotes) {
+				if (expUrl!=null) {
+					dataAdapter = new AnnotRangeAdapter<>(database, AnnotationRangeReader.readerMaker, expUrl.split(","));
+				}
+				notifyDataSetChanged();
+				return;
+			}
 			dbVer = LexicalDBHelper.annotDbVer;
 			RecyclerView lv = bookNotes.viewList[scope];
 			{
@@ -230,6 +248,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 //					dataAdapter = new CursorAdapter<>(cursor, new AnnotationReader());
 //					notifyDataSetChanged();
 				}
+				// 时间
 				else if (sortType <= 1) {
 					if (pageAsyncLoader == null) {
 						pageAsyncLoader = new ImageView(a);
@@ -284,11 +303,11 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 							, AnnotationMultiSortReader[]::new);
 					this.dataAdapter = dataAdapter;
 					String[] sortBy;
-					if (sortType<=3) {
+					if (sortType<=3) { // 词典页码段落
 						sortBy = new String[]{"bid", "pos", "tPos", FIELD_CREATE_TIME, "id"};
-					}  else if (sortType<=5) {
+					}  else if (sortType<=5) { // 词典页码时间
 						sortBy = new String[]{"bid", "pos", FIELD_CREATE_TIME, "id"};
-					} else {
+					} else { // 词典时间
 						sortBy = new String[]{"bid", FIELD_CREATE_TIME};
 					}
 					CMN.debug("sortBy::", sortBy);
@@ -504,7 +523,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			entry="";
 			bookName="";
 		}
-		holder.tag = reader;
+		holder.tag = reader; //???
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 		ssb.append(" ");
 		ssb.append(lex);

@@ -50,6 +50,14 @@ public class BreakIteratorHelper {
 		}
 	}
 	
+	public int preceding(int offset) {
+		if(isAndroidBreakerAvailable){
+			return BreakIteratorI.preceding(offset);
+		}else{
+			return BreakIteratorJ.preceding(offset);
+		}
+	}
+	
 	public int next() {
 		if(isAndroidBreakerAvailable){
 			return BreakIteratorI.next();

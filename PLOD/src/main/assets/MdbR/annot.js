@@ -18,6 +18,16 @@
 			n = n.parentNode
 		}
 	}
+	function getNextNodeRaw(n) {
+        var a = n.firstChild;
+        if (a) return a;
+		while (n) {
+			if (a = n.nextSibling) {
+				return a
+			}
+			n = n.parentNode
+		}
+	}
 	function getNodesInRange(r) {
         //r=getSelection().getRangeAt(0);
 		var b = [];
@@ -138,7 +148,7 @@
         }
     }
 
-	function wrapRange(r, el, rootNode, doc, nid) {
+	function wrapRange(r, el, rootNode, doc, nid, neo) {
         var tcn = el.tcn;
         if(!el){
             el = doc.createElement("ANNOT");
@@ -156,26 +166,29 @@
 		if (f.length == 0) {
 			return;
 		}
-        var nodes = [];
-        var first=1;
+        //var nodes = [];
+        var first=0, last;
 		for (var c = 0, e, d; e = f[c++];) {
 			if (e.nodeType == 3) {
                 //log(e);
 				d = el.cloneNode(false);
 				d.bg = tcn.bg;
-                if(first) {
+                if(!first) {
                     d.id = '_pd_annot'+nid;
-                    first = 0;
+                    first = d;
                 }
+                last = d;
                 // if(e.parentNode.tagName==='ANNOT' && e.parentNode.bg==d.bg) {
                 //     whiterRgb(d, e.parentNode)
                 // }
 				e.parentNode.insertBefore(d, e);
 				d.appendChild(e);
-                nodes.push(d);
+                //nodes.push(d);
                 d.nid = nid;
 			}
 		}
+        first.end = last;
+        debug('last=!!!!!!!!!!!!=',tcn.note,first,last);
 		r.setStart(f[0], 0);
 		var a = f[f.length - 1];
 		r.setEnd(a, a.length);
@@ -183,10 +196,10 @@
         if(tcn.note) { // 文本笔记
             var noteType=tcn.ntyp, note=tcn.note;
             //noteType=1;
-            var last = nodes[nodes.length-1]
             d = el.cloneNode(false);
             d.className = 'note';
             d.id = '_pd_note'+nid;
+            d.nid = nid;
             insertAfter(d, last);
             function craft(t, p, c) {
                 var e=doc.createElement(t);
@@ -200,12 +213,24 @@
                 var sty = doc.getElementById(id);
                 if(!sty) {
                     sty = craft('STYLE', doc.head);
-                    sty.innerText = '._PDBP{position:relative}._PDBX{position:absolute;left:95%;bottom:80%;}._PDB{border-radius: 16px;background:#abcdef;color:#fff;white-space:nowrap;padding:0px 8px;margin:0px;font-size:14px;}._PDBF>A{color:white}._PDBF{padding:2px 8px}';
+                    sty.innerText = '._PDBP{position:relative}._PDBV::after{content:attr(data-tex)}._PDBX{position:absolute;left:95%;bottom:80%;}._PDB{border-radius: 16px;background:#abcdef;color:#fff;white-space:nowrap;padding:0px 8px;margin:0px;font-size:14px;}._PDBF>A{color:white}._PDBF{padding:2px 8px}';
                     sty.id = id;
+                    sty.click = function(){
+                        debug('点击！！！');
+                    }
                 }
                 if(el) {
                     el.style.position = 'relative';
-                    return craft('DIV',el,'_PDB _PDBX');  
+                    el = craft('Annot',el,'_PDB _PDBX note');
+                    // if(tcn.bnt) // no text selection
+                    //     el.classList.add('_PDB_NT');
+                    // if(tcn.bnc) // no click
+                    //     el.classList.add('_PDB_NC');
+                    //else el // click to edit note
+                    el.addEventListener('click', sty.click);
+                    if(tcn.bclr) 
+                        el.style.background = toRgb(tcn.bclr);
+                    return el;
                 }
             }
             if(noteType==0) { // 正文
@@ -213,31 +238,33 @@
                     note = ' ('+note+') ';
                 d.innerText = note;
                 if(tcn.bin) {
-                    var bel=bubbleInto(d, tcn);
+                    var bel=bubbleInto(d);
                     bel.innerHTML = '&emsp;';
-                    if(tcn.bclr) 
-                        bel.style.background = toRgb(tcn.bclr);
                 }
                 if(tcn.fclr) 
                     d.style.color = toRgb(tcn.fclr);
                 if(tcn.fsz) 
                     d.style.fontSize = (parseInt(tcn.fsz)||100)+'%';
+                last = d;
             }
             else if(noteType==1) { // 气泡
                 var bel = bubbleInto(last);
                 if(tcn.bon) {
                     bel.innerText = note;
-                    if(tcn.fclr) 
-                        bel.style.color = toRgb(tcn.fclr);
-                    if(tcn.fsz) 
-                        d.style.fontSize = (parseInt(tcn.fsz)||100)+'%';
-                } else
-                    bel.innerText = '···';
-                if(tcn.bclr) 
-                    bel.style.background = toRgb(tcn.bclr);
+                } else {
+                    //bel.innerText = '···';
+                    bel.classList.add('_PDBV');
+                    bel.setAttribute('data-tex', '···');
+                }
+                if(tcn.fclr) 
+                    bel.style.color = toRgb(tcn.fclr);
+                if(tcn.fsz) 
+                    bel.style.fontSize = (parseInt(tcn.fsz)||100)+'%';
                 d.parentNode.removeChild(d);
+                last = bel;
             }
             else { // 脚注
+                last = d;
                 var lnkTo = null;
                 if(note.startsWith('_pd_lnk='))
                     lnkTo = parseInt(note.slice(8));
@@ -245,7 +272,7 @@
                 var sty = doc.getElementById(id);
                 if(!sty) {
                     sty = craft('STYLE', doc.head);
-                    sty.innerText = '.RefList>LI:focus{background:rgba(5,109,232,.08)}SUP:focus{box-shadow:0 0 0 2px #ffffff, 0 0 0 4px rgb(5 109 232 / 30%)}.RefBack{color:#175199;padding-right:0.25em;font-weight:600;}.RefBack,SUP>A{text-decoration:none}.RefList>LI{counter-reset:_pd_ref}.RefSup{color:#175199;padding-right:0.25em;font-weight:600}.RefBacks:before{counter-increment:_pd_ref;content:counter(_pd_ref, lower-alpha)}';
+                    sty.innerText = '.RefList>LI:focus{background:rgba(5,109,232,.08)}SUP:focus{box-shadow:0 0 0 2px #ffffff, 0 0 0 4px rgb(5 109 232 / 30%)}.RefBack{color:#175199;padding-right:0.25em;font-weight:600;}.RefBack,SUP>A{text-decoration:none}.RefList>LI{counter-reset:_pd_ref}.RefSup{color:#175199;padding-right:0.25em;font-weight:600}.RefBacks:before{counter-increment:_pd_ref;content:counter(_pd_ref, lower-alpha)}._pdn_sup:before{counter-increment:_pdn_sup;content:\'[\'counter(_pdn_sup)\']\'}._PDict_body,body{counter-reset:_pdn_sup}';
                     sty.id = id;
                 }
                 var clk = doc._pd_clks;
@@ -276,13 +303,36 @@
                 else
                     id = '_pd_ref'+nid;
                 var has=doc.getElementById(id);
-                var num = rootNode._pd_refs||0;
-                if(!has) {
-                    num = rootNode._pd_refs = num+1;
+                var num = 0;
+                //if(!neo) {
+                if(0) {
+                    num = rootNode._pd_refs||0;
+                    if(!has) {
+                        num = rootNode._pd_refs = num+1;
+                    }
+                } else {
+                    if(rootNode._pd_ref) {
+                        function reduce(arr, p, st, ed) { // 二分法
+                            var len = ed - st;
+                            if (len > 1) {
+                              len = len >> 1;
+                              //debug('reduce', st, len, ed);
+                              return p > (arr[st + len - 1].tPos||0)
+                                        ? reduce(arr, p, st+len, ed)
+                                        : reduce(arr, p, st, st+len);
+                            } else {
+                              return st;
+                            }
+                        }
+                        var lst = rootNode._pd_ref.childNodes;
+                        num = (reduce(lst, tcn.tPos, 0, lst.length))||0;
+                        debug('reduce=', tcn.note, num)
+                    }
                 }
                 var sup = craft('SUP');
                 var lnk = craft('A', sup);
-                lnk.innerText = '['+num+']';
+                //lnk.innerText = '['+num+']';
+                lnk.className = '_pdn_sup';
                 lnk.href = '#'+id;
                 sup.id = '_pd_sup'+nid;
                 lnk.addEventListener('click', clk[0], 1);
@@ -305,17 +355,27 @@
                     var row = craft('LI', rootNode._pd_ref);
                     row.setAttribute('tabindex',0)
                     row.id = id;
+                    row.tPos = tcn.tPos;
                     lnk = craft('A', row, 'RefBack');
                     lnk.innerText = '^';
                     lnk.href = '#'+sup.id;
                     craft('SPAN', row).innerText = note;
                     row.addEventListener('click', clk[2]);
                     lnk.addEventListener('click', clk[1], 1);
+                    if(true && num>=0) {
+                        var nodes = rootNode._pd_ref.childNodes, n = nodes[num], ibf=0;
+                        while(n && n.tPos>tcn.tPos) {
+                            ibf = n;
+                            n = n.nextElementSibling;
+                        }
+                        if(ibf && ibf!=row) rootNode._pd_ref.insertBefore(row, ibf);
+                    }
                 }
             }
             log('笔记=', d, last)
         }
-        return nodes;
+        first.end = last;
+        debug('last=',tcn.note,first,last);
 	}
     function getNodeIndex(node) {
         var i = 0;
@@ -581,6 +641,92 @@
         return t && t!=0xff?"rgba("+r+" "+g+" "+b+" / "+parseInt(t*100.0/256)+"%)":"rgb("+r+","+g+","+b+")";
     }
 
+	function getNidsInRange(det) {
+        var rg=getSelection().getRangeAt(0);
+        debug("NidsInRange::", det, rg);
+        if(det) {
+            var el=rg.startContainer, e=rg.endContainer, p=el.parentNode;
+            while(el) {
+                if(p && p.tagName==='ANNOT' && p.nid!==undefined) {
+                    return 1;
+                }
+                if(el.tagName==='ANNOT' && el.nid!==undefined) {
+                    return 1;
+                }
+                if(el==e) break;
+                el = getNextNodeRaw(el);
+            }
+            return 0;
+        } else {
+            var ret='', f = {}, a = getNodesInRange(rg), p = rg.startContainer.parentNode;
+            while(p && p.tagName==='ANNOT') {
+                a.push(p);
+                p = p.parentNode;
+            }
+            for (var c = 0, e; e = a[c++];) {
+                debug("\t\tgetNidsInRange::", e, e.nid);
+                if (e.nid!=undefined) {
+                    if(!f[e.nid]) {
+                        f[e.nid]=1;
+                        if(ret.length) ret+=',';
+                        ret+=e.nid;
+                    }
+                }
+            }
+            return ret;
+        }
+	}
+
+    function deWrap(ds) {
+		for (var e = ds.length - 1, d; e >= 0; e--) {
+            d = ds[e];
+            if(!d.classList.contains('note')) {
+                var c = 0;
+                for (var f = d.childNodes.length - 1; f >= 0; f--) {
+                    var a = d.childNodes[f];
+                    d.parentNode.insertBefore(a, c?c:d);
+                    c = a
+                }
+            }
+            d.parentNode.removeChild(d)
+        }
+	}
+
+    function patchNote(nid, tcn) {
+        var el = document.getElementById('_pd_annot'+nid);
+        console.log('fatal patchNote::', nid, el, tcn);
+        if(el) {
+            var e = el.end, nds=[];
+            debug('patchNote::', nid, el, e);
+            while(el) {
+                if(el.nid===nid) {
+                    nds.push(el);
+                    //debug('should deWrap::', el);
+                }
+                if(el==e) break;
+                el = getNextNodeRaw(el);
+            }
+            deWrap(nds);
+        }
+        el = document.getElementById('_pd_ref'+nid);
+        if(el) {
+            el.remove();
+        }
+        if(tcn) {
+            var rootNode = document.body, doc = document;
+            var row = JSON.parse(tcn);
+            var nn = row.n.split(';'), n0=nn[0], n1=nn[1];
+            if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
+            else if(nn.length!=2) return;
+            var r = makeRange(n0, n1, rootNode, doc);
+            console.log('fatal debug annot::renewing::', tcn, r);
+            if(r) {
+                var el = annot(row, -1, 0, 0);
+                wrapRange(r, el, rootNode, doc, nid)
+            }
+        }
+    }
+
     function annot(tcn, rootNode, doc, pos, bid) {
         log('MakeAnnotation::', tcn);
         if(typeof tcn==='string') tcn = JSON.parse(tcn);
@@ -600,25 +746,35 @@
         if(rootNode==-1) return el;
         var sel = window.getSelection();
         try {
+            var nntd = '_pd_nntd'
+            var sty = doc.getElementById(nntd);
+            if(!sty) {
+                sty = doc.createElement('STYLE');
+                doc.head.appendChild(sty);
+                sty.id = nntd;
+            }
+            sty.innerText = 'annot.note{visibility:hidden}'; // skip note texts
             var text = sel.toString();
+            sty.innerText = '';
+            if(text.length==0) return;
             var range = sel.getRangeAt(0);
             if(!rootNode) rootNode = doc.body;
             var tPos = storeTextPos(range.startContainer, range.startOffset, rootNode);
             var r = store(range, rootNode);
             
             tcn.n = r;
-            if(note) {
-                tcn.tPos = tPos;
-            }
+            tcn.tPos = tPos;
             if(pos==undefined)
                 pos = window.currentPos || 0; 
             var nid = app.annot(sid.get(), text, JSON.stringify(tcn), window.entryKey||null, pos, tPos, type, color, note, bid||null);
 
-            wrapRange(range, el, rootNode, doc, nid)
+            wrapRange(range, el, rootNode, doc, nid, true)
         } catch (e) { log(e) }
     }
 
     window.MakeMark=annot;
     window.MakeRange=makeRange;
     window.WrapRange=wrapRange;
+    window.NidsInRange=getNidsInRange;
+    window.PatchNote=patchNote;
 //})();
