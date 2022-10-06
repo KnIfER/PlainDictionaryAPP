@@ -1,0 +1,26 @@
+{
+	,"host": "https://cn.bing.com"
+	,"index": "/translator/"
+	,"keyPattern": "*"
+	,"searchJs": "var succ = 0;
+function debug(e){console.log('fatal youdao', e)};
+try {
+	debug('searchJs');
+	var ta=document.getElementById('tta_input_ta');
+	if (ta) {
+		ta.value = '%s';
+		ta.dispatchEvent(new Event('input', {
+			bubbles: true
+		}));
+		setTimeout(function(){
+			ta.dispatchEvent(new KeyboardEvent('keydown',{'keyCode':13,'which':13}))
+		}, 200);
+		succ = 1;
+		//window._tweakedHXCL = false; setTimeout(window._tweakHXCL, 350);
+	}
+} catch (e) {
+	debug('fatal e='+e);
+}
+succ"
+	,"translator":"true"
+}

@@ -137,6 +137,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
@@ -697,8 +698,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			View view = getCurrentFocus();
 			if(view != null) {
 				if (view.getId()==R.id.webviewmy) {
-					wv = ((WebViewmy)getCurrentFocus());
-					if (wv!=null && wv.bIsActionMenuShown) doCheck = opt.getUseBackKeyClearWebViewFocus();
+					wv = ((WebViewmy)view);
+					if (wv!=null && (wv.bIsActionMenuShown||ViewUtils.isVisibleV2(wv.weblistHandler.toolsBtn)))
+						doCheck = opt.getUseBackKeyClearWebViewFocus();
 				}
 				else if (view instanceof TextView) {
 					TextView tv = ((TextView) view);
@@ -711,8 +713,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(doCheck) {
 			wv.clearFocus();
-			if(wv.bIsActionMenuShown) {
+			if (wv.bIsActionMenuShown) {
 				wv.evaluateJavascript("getSelection().collapseToStart()", null);
+			} else {
+				wv.weblistHandler.initFanyiFor_JHH(false, false);
 			}
 			return true;
 		}
@@ -1301,6 +1305,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					, "isSmall="+GlobalOptions.isSmall
 			);
 		}
+		bottomBarSz.sz = (int)mResource.getDimension(R.dimen.barSzBot);
 	}
 
 	public void onAudioPause() {
@@ -2450,8 +2455,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.AssetTag + "李白全集.mdx"
 			,"/ASSET2/谷歌翻译.web"
 			,"/ASSET2/维基词典.web"
-			,"/ASSET2/彩云小译.web"
 			,"/ASSET2/应用社区.web"
+			,"/ASSET2/百度翻译.web"
+			,"/ASSET2/彩云小译.web"
+			,"/ASSET2/必应翻译.web"
+			,"/ASSET2/有道翻译.web"
 	};
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
@@ -2854,7 +2862,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public int md_find(BookPresenter book) {
 			// todo opt with binary search  ( book.placeHolder.lineNumer -> CosyChair -> index )
-			return Arrays.asList(lazyMan.CosyChair).indexOf(md.indexOf(book));
+			try {
+				Integer idx = map().get(book.getDictionaryName());
+				if (idx != null) {
+					return idx;
+				}
+				//return Arrays.asList(lazyMan.CosyChair).indexOf(lazyMan.placeHolders.get(md.indexOf(book)));
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return -1;
+		}
+		
+		public int md_findOrAdd(BookPresenter book) {
+			int ret = -1;
+			try {
+				Integer idx = map().get(book.getDictionaryName());
+				if (idx != null) {
+					ret = idx;
+				}
+				//return Arrays.asList(lazyMan.CosyChair).indexOf(lazyMan.placeHolders.get(md.indexOf(book)));
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			if (ret == -1) {
+				addBook(book, book.placeHolder);
+				map().put(book.getDictionaryName(), md_size - 1);
+			}
+			return ret;
 		}
 		
 		@NonNull public final BookPresenter getBookById(long bid) {
@@ -3276,9 +3311,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if((!AutoBrowsePaused || bRequestingAutoReading) && !opt.getTTSBackgroundPlay()){
 			stopAutoReadProcess();
 		}
-		if(ViewUtils.mNestedScrollingChildHelper!=null){
-			ViewUtils.mNestedScrollingChildHelper.setCurrentView(null);
-		}
+		ViewUtils.sNestScrollHelper.setCurrentView(null);
 	}
 
 	@Override
@@ -3351,6 +3384,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	protected int actionBarSize;
+	
+	final AppBarLayout.BarSz  bottomBarSz = new AppBarLayout.BarSz();
 	
 	@Override
 	protected ViewGroup onShowSnack(ViewGroup parentView) {
@@ -11533,4 +11568,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ta.recycle();
 		return draw;
 	}
+	
+	AppBarLayout.ScrollingViewBehavior mScrollBehaviour;
+	
+	public AppBarLayout.ScrollingViewBehavior getScrollBehaviour(boolean init) {
+		AppBarLayout.ScrollingViewBehavior ret = mScrollBehaviour;
+		if (ret == null) {
+			ret = new AppBarLayout.ScrollingViewBehavior();
+			ret.strech = PDICMainAppOptions.strechImmersiveMode();
+		}
+		if (init) {
+			ret.strech = PDICMainAppOptions.strechImmersiveMode();
+		}
+		return ret;
+	}
+	
+	
 }

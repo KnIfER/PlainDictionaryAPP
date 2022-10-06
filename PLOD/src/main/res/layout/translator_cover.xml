@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="@dimen/_65_"
+	android:layout_height="@dimen/_65_"
+	tools:background="#000"
+	>
+
+
+	<ImageView
+		android:id="@+id/image"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:textColor="#fff"
+		android:gravity="center"
+		android:src="@drawable/cover"
+		style="@style/schTools1"
+		/>
+
+	<TextView
+		android:id="@+id/text"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:textSize="22dp"
+		android:gravity="center"
+		android:text="文"
+		android:paddingStart="3.5dp"
+		android:paddingBottom="1dp"
+		android:textColor="#fff"
+		android:shadowColor="#2196f3"
+		android:shadowDx="3.5"
+		android:shadowDy="3.5"
+		android:shadowRadius="2"
+		/>
+
+
+</FrameLayout>

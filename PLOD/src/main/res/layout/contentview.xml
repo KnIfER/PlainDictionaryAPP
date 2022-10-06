@@ -222,7 +222,6 @@
 				android:text="词典名称"
 				android:textSize="18sp"
 				android:maxLines="1"
-				android:paddingBottom="2dp"
 				/>
 			<TextView
 				android:id="@+id/dictName"
@@ -234,7 +233,6 @@
 				android:text="词典名称"
 				android:textSize="18sp"
 				android:maxLines="1"
-				android:paddingBottom="2dp"
 				/>
 
 			<android.widget.ImageView
@@ -256,7 +254,6 @@
 				tools:visibility="visible"
 				tools:alpha="0.9"
 				/>
-
 
 			<ImageView
 				android:id="@+id/nxt"
@@ -297,7 +294,7 @@
 				android:layout_height="30dp"
 				android:orientation="horizontal"
 				android:layout_gravity="bottom|right"
-				android:layout_marginBottom="10dp"
+				android:layout_marginBottom="5dp"
 				android:layout_marginRight="15dp"
 				android:divider="@drawable/divider3"
 				android:showDividers="middle"

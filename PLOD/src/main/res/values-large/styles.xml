@@ -35,4 +35,8 @@
 		<item name="android:paddingRight">19dp</item>
 	</style>
 
+	<style name="schTools1" parent="schTools">
+		<item name="android:paddingBottom">8dp</item>
+	</style>
+
 </resources>

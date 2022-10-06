@@ -2632,6 +2632,18 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=6, shift=1) public static boolean tapEditAnteNote() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=6, shift=1) public static void tapEditAnteNote(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=7, shift=1) public static boolean strechImmersiveMode() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static void strechImmersiveMode(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=8, shift=1) public static boolean ImmersiveForContentsOnly() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=8, shift=1) public static void ImmersiveForContentsOnly(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=9) public static boolean resetImmersiveScrollOnEnter() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=9) public static void resetImmersiveScrollOnEnter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=10, shift=1) public static boolean resetImmersiveScrollOnExit() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=10, shift=1) public static void resetImmersiveScrollOnExit(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	
 	///////
 	///////

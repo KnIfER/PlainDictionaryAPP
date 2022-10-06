@@ -7,9 +7,10 @@ import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.ClipData;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.text.Editable;
@@ -28,6 +29,7 @@ import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -38,9 +40,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
+import com.jess.ui.TwoWayAdapterView;
+import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.db.SearchUI;
@@ -54,6 +59,8 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
+import com.knziha.plod.widgets.AdvancedNestScrollView;
+import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -64,6 +71,8 @@ import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
+
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,6 +133,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public SeekBar entrySeek;
 	
 	private boolean bottomNavWeb;
+	/** txtBt 悬浮小按钮 floatBtn */
 	public View toolsBtn;
 	/** 须在render、前后导航时经由{@link #setStar}更新 */
 	public String displaying;
@@ -1133,6 +1143,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if (mWebView==null || (bDataOnly?PDICMainAppOptions.tapSchShowToolsBtn():PDICMainAppOptions.wvShowToolsBtn())) {
 			toolsBtn.setTag(mWebView);
 			ViewUtils.setVisible(toolsBtn, mWebView!=null);
+			initFanyiFor_JHH(mWebView!=null && true, false);
 		}
 	}
 	
@@ -2088,6 +2099,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return url;
 	}
 	
+	/** collect for 笔记对话框 -> 当前页面. */
 	public String collectExpUrl() {
 		ViewGroup vg = getViewGroup();
 		StringBuilder sb = new StringBuilder();
@@ -2105,5 +2117,176 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		}
 		return sb.toString();
+	}
+	
+	ArrayList<BookPresenter> translators = new ArrayList<>();
+	TwoWayGridView txtMenuGrid;
+	
+	/** initialize translator btns for my beauty. */
+	public void initFanyiFor_JHH(boolean show, boolean animate) {
+		if (txtMenuGrid == null) {
+			txtMenuGrid = new TwoWayGridView(a);
+			txtMenuGrid.setHorizontalSpacing(0);
+			txtMenuGrid.setVerticalSpacing(0);
+			txtMenuGrid.setHorizontalScroll(true);
+			txtMenuGrid.setStretchMode(GridView.NO_STRETCH);
+			//txtMenuGrid.setScrollbarFadingEnabled(false); // todo check why crash
+			txtMenuGrid.setSelector(a.mResource.getDrawable(R.drawable.listviewselector0));
+			//txtMenuGrid.setBackground(null);
+			OnTouchListener touchYou = new OnTouchListener() {
+				float distance(float x, float y) {
+					return (float)Math.sqrt(x*x + y*y);
+				}
+				float orgX, orgY;
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					int actionMasked = event.getActionMasked();
+					if (actionMasked==MotionEvent.ACTION_DOWN) {
+						orgX = event.getX();
+						orgY = event.getY();
+						mBar.isDragging = true;
+						CMN.debug("click down");
+					}
+					else if (actionMasked==MotionEvent.ACTION_UP||actionMasked==MotionEvent.ACTION_CANCEL) {
+						mBar.isDragging = false;
+						CMN.debug("click up");
+					}
+					else if (v==toolsBtn && actionMasked==MotionEvent.ACTION_MOVE) {
+						float x = event.getX();
+						float y = event.getY();
+						if (distance(x-orgX, y-orgY)>v.getWidth()) {
+							CMN.debug("123");
+							
+						}
+					}
+					return false;
+				}
+			};
+			toolsBtn.setOnTouchListener(touchYou);
+			txtMenuGrid.setOnTouchListener(touchYou);
+		}
+		if(bDataOnly)
+			return;
+		if (show) {
+			if (translators.size() == 0) {
+				try {
+					translators.add(a.new_book(a.defDicts[4], a));
+					translators.add(a.new_book(a.defDicts[5], a));
+					translators.add(a.new_book(a.defDicts[6], a));
+					translators.add(a.new_book(a.defDicts[7], a));
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
+			if (txtMenuGrid.getAdapter()==null) {
+				txtMenuGrid.setAdapter(new BaseAdapter() {
+					class MenuItemViewHolder {
+						public final TextView tv;
+						public MenuItemViewHolder(View convertView) {
+							tv = convertView.findViewById(R.id.text);
+						}
+					}
+					@Override
+					public int getCount() {
+						return translators.size();
+					}
+					@Override
+					public Object getItem(int position) {
+						return null;
+					}
+					@Override
+					public long getItemId(int position) {
+						return 0;
+					}
+					@Override
+					public View getView(int position, View convertView, ViewGroup parent) {
+						BookPresenter book = translators.get(position);
+						if (false) {
+//					if(convertView==null) {
+//						convertView = new View(a);
+//						TwoWayAbsListView.LayoutParams lp = new TwoWayAbsListView.LayoutParams((int) (1.5 * GlobalOptions.density), menu_width);
+//						convertView.setLayoutParams(lp);
+//						convertView.setBackground(new SearchToolsMenu.TopThumb(0x9fffffff, (int) (8*GlobalOptions.density)));
+//					}
+						} else {
+							MenuItemViewHolder holder;
+							if(convertView==null) {
+								convertView = a.getLayoutInflater().inflate(R.layout.translator_cover, parent, false);
+								convertView.setTag(holder=new MenuItemViewHolder(convertView));
+							} else {
+								holder = (MenuItemViewHolder) convertView.getTag();
+							}
+							//convertView.getLayoutParams().width = id==0?1:menu_width;
+							holder.tv.setText(""+Character.toUpperCase(book.getDictionaryName().charAt(0)));
+							//holder.tv.setTextColor(a.AppBlack);
+							int did = R.drawable.ic_view_comfy_2_black_24dp;
+						}
+						return convertView;
+					}
+				});
+				txtMenuGrid.setOnItemClickListener((parent, view, position, id) -> {
+					BookPresenter book = translators.get(position);
+					WebViewmy wv = (WebViewmy) toolsBtn.getTag();
+					if (wv != null) {
+						wv.evaluateJavascript("getSelection().toString()", value -> {
+							if (value.length() > 2) {
+								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+								if (value.length() > 0) {
+									a.popupWord(value, book, wv.frameAt, wv);
+								}
+							}
+						});
+					}
+				});
+			}
+			if (txtMenuGrid.getParent() == null) {
+				VU.addViewToParent(txtMenuGrid, (ViewGroup) toolsBtn.getParent(), toolsBtn);
+				FrameLayout.LayoutParams lp = VU.newFrameLayoutParams((FrameLayout.LayoutParams) toolsBtn.getLayoutParams());
+				txtMenuGrid.setLayoutParams(lp);
+				lp.width = -2;
+				lp.rightMargin += toolsBtn.getLayoutParams().width;
+				lp.gravity = Gravity.RIGHT | Gravity.BOTTOM;
+				txtMenuGrid.setAlpha(0);
+				txtMenuGrid.setTranslationX(GlobalOptions.density*10);
+				txtMenuGrid.animate().setDuration(100).setListener(new AnimatorListenerAdapter() {
+					@Override
+					public void onAnimationEnd(Animator animation) {
+						if(txtMenuGrid.getAlpha()==0)
+							VU.setVisible(txtMenuGrid, false);
+					}
+				});
+			}
+			VU.setVisible(txtMenuGrid, show);
+		}
+		if (show || txtMenuGrid.getAlpha() > 0 && txtMenuGrid.getParent() != null) {
+			float tx = show ? 0 : GlobalOptions.density * 10;
+			if (animate) {
+				txtMenuGrid.animate()
+						.alpha(show ? 1 : 0)
+						.translationX(tx)
+				;
+			} else {
+				txtMenuGrid.setAlpha(show ? 1 : 0);
+				txtMenuGrid.setTranslationX(tx);
+			}
+		}
+	}
+	
+	@Override
+	public void setNestedScrollingEnabled(boolean enabled) {
+		if (this == a.weblistHandler) {
+			((AdvancedNestScrollView)WHP).setNestedScrollingEnabled(enabled);
+			if (dictView != null) {
+				((AdvancedNestScrollWebView)dictView).setNestedScrollingEnabled(enabled);
+			}
+			if (mMergedFrame != null) {
+				((AdvancedNestScrollWebView)mMergedFrame).setNestedScrollingEnabled(enabled);
+			}
+			for(BookPresenter book:frames) {
+				if (book.mWebView != null) {
+					((AdvancedNestScrollWebView)book.mWebView).setNestedScrollingEnabled(enabled);
+				}
+			}
+		}
 	}
 }

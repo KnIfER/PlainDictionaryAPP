@@ -20,6 +20,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
 
@@ -28,6 +29,7 @@ import androidx.core.view.NestedScrollingChildHelper;
  */
 public class AdvancedNestScrollListview extends ListViewmy implements NestedScrollingChild {
 	boolean mNestedScrollEnabled;
+	boolean bNestedScroll;
 
 	private NestedScrollingChildHelper mChildHelper;
 
@@ -44,19 +46,18 @@ public class AdvancedNestScrollListview extends ListViewmy implements NestedScro
 		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 		//mChildHelper = new NestedScrollingChildHelper(null);
 	}
-	
-	public void ensureNewNestedScrollHelper() {
-		if (mChildHelper== ViewUtils.getNestedScrollingChildHelper()) {
-			mChildHelper = new NestedScrollingChildHelper(this);
-		}
-	}
 
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent event) {
 		if(mNestedScrollEnabled) {
-			mChildHelper.onTouchEvent(this, event);
-			super.dispatchTouchEvent(event);
-			return true;
+			if (event.getActionMasked()==MotionEvent.ACTION_DOWN) {
+				bNestedScroll = event.getX() < getWidth() - GlobalOptions.density * 10; // escape fastscroll
+			}
+			if (bNestedScroll) {
+				mChildHelper.onTouchEvent(this, event);
+				super.dispatchTouchEvent(event);
+				return true;
+			}
 		}
 		return super.dispatchTouchEvent(event);
 	}

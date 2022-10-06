@@ -13,7 +13,6 @@ import com.google.android.material.appbar.AppBarLayout;
  */
 
 public class BottomNavigationBehavior extends CoordinatorLayout.Behavior<View> {
-//
 //    private ObjectAnimator outAnimator, inAnimator;
 //
 //    public BottomNavigationBehavior(Context context, AttributeSet attrs) {
@@ -47,6 +46,8 @@ public class BottomNavigationBehavior extends CoordinatorLayout.Behavior<View> {
 //        }
 //    }
 
+	public BottomNavigationBehavior() {
+	}
 
 	public BottomNavigationBehavior(Context context, AttributeSet attrs) {
 		super(context, attrs);

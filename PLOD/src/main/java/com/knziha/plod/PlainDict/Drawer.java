@@ -100,7 +100,7 @@ public class Drawer extends Fragment implements
 	AlertDialog d;
 
 	String[] hints;
-	private AdvancedNestScrollListview mDrawerList;
+	private ListView mDrawerList;
 	View mDrawerListLayout;
 	MyAdapter myAdapter;
 
@@ -140,8 +140,6 @@ public class Drawer extends Fragment implements
 			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnClickListener(this);
 			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
 			mDrawerList = mDrawerListLayout.findViewById(R.id.left_drawer);
-			mDrawerList.ensureNewNestedScrollHelper();
-			mDrawerList.setNestedScrollingEnabled(true);
 			
 			int[] basicArr;
 			if (GlobalOptions.isLarge) {
@@ -253,7 +251,7 @@ public class Drawer extends Fragment implements
 				if (a.UIData.appbar.getTop()==0) {
 					pad = a.toolbar.getHeight()+a.bottombar.getHeight();
 				}
-				mDrawerList.setNestedScrollingEnabled(pad==0);
+				//mDrawerList.setNestedScrollingEnabled(pad==0);
 			}
 			if (mDrawerListLayout.getPaddingBottom()!=pad) {
 				mDrawerListLayout.setPadding(0, 0, 0, pad);

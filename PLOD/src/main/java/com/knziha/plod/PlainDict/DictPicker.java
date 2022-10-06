@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.knziha.plod.PlainUI.PlainAppPanel;
+import com.knziha.plod.PlainUI.PlainDialog;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -154,6 +155,13 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			if (type==1) {
 				ViewUtils.setVisible(bottombar, false);
 			}
+			mBackPrevention = () -> {
+				if (ViewUtils.isVisibleV2(Searchbar)) {
+					ViewUtils.setVisible(Searchbar, false);
+					return true;
+				}
+				return false;
+			};
 		}
 	}
 	

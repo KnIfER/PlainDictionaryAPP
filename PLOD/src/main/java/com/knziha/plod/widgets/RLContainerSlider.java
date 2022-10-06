@@ -507,19 +507,19 @@ public class RLContainerSlider extends FrameLayout{
 							//	twiceDetected = false;
 							//}
 							//todo touch slope when WebContext==null
+							int theta = 50;
 							if (WebContext==null
 									|| WebContext.AlwaysCheckRange==0
-									|| (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > 100 || dx < -100))
+									|| (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > GlobalOptions.density*theta || dx < -GlobalOptions.density*theta))
 									|| (WebContext.AlwaysCheckRange==1||!bZoomOut)
-										&& (dx > 100 && WebContext.getScrollX()==0
-												|| dx < -100 && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)) {
+										&& (dx > GlobalOptions.density*theta && WebContext.getScrollX()==0
+												|| dx < -GlobalOptions.density*theta && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)) {
 								dragInitDx = dx;
 								float dy = lastY - OrgY;
 								if (dy == 0) dy = 0.000001f;
 								dx = dx / dy;
 								if (dx > 1.988 || dx <= -1.988) {//3.3
 									dragged = true;
-									//CMN.Log("start dragging...");
 								}
 							}
 						}

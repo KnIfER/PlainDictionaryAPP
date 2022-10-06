@@ -30,7 +30,6 @@ import androidx.core.view.ViewCompat;
  */
 public class AdvancedNestScrollLinerView extends LinearLayout implements NestedScrollingChild {
 	public boolean mNestedScrollEnabled;
-
 	private NestedScrollingChildHelper mChildHelper;
 	
 	public boolean fromCombined;
@@ -45,7 +44,7 @@ public class AdvancedNestScrollLinerView extends LinearLayout implements NestedS
 
 	public AdvancedNestScrollLinerView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
+		mChildHelper = ViewUtils.sNestScrollHelper;
 		setNestedScrollingEnabled(true);
 	}
 	

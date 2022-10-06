@@ -940,10 +940,10 @@ function debug(e){console.log(e)};
 				public boolean onTouch(View v, MotionEvent event) {
 					if (event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 						//CMN.Log("down!!!");
-						if (mWebView.AlwaysCheckRange!=0) {
-							mWebView.AlwaysCheckRange=0;
-							//mWebView.weblistHandler.pageSlider.bZoomOut=true;
-						}
+//						if (mWebView.AlwaysCheckRange!=0) {
+//							mWebView.AlwaysCheckRange=0;
+//							//mWebView.weblistHandler.pageSlider.bZoomOut=true;
+//						}
 					}
 					if (event.getActionMasked()==MotionEvent.ACTION_UP) {
 						//CMN.Log("up!!!");
@@ -4605,15 +4605,8 @@ function debug(e){console.log(e)};
 		if(isWebx)
 			a.registerWebx(this);
 	}
-
-	public void setNestedScrollingEnabled(boolean enabled) {
-		if(mWebView!=null){
-			((AdvancedNestScrollWebView)mWebView).setNestedScrollingEnabled(enabled);
-		}
-	}
 	
-// My life shouldn't waste on these android stuffs.
-// MLSN
+	// store
 	
 //	String externalstorage = "content://com.android.externalstorage.documents/document/primary%3A";
 //

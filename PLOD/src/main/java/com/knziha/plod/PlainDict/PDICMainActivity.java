@@ -175,7 +175,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	private MyHandler mHandle;
 	public AsyncTaskWrapper<String, Object, String> mAsyncTask;
-	private LinearLayout weblist;
+	private LinearLayout webline;
 	
 	public ActivityMainBinding UIData;
 	HeightProvider heightProvider;
@@ -2677,26 +2677,22 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	/** 切换主界面沉浸式 */
 	public void setNestedScrollingEnabled(boolean bImmersive) {
-		if(systemIntialized) {
-			for (BookPresenter mdTmp:md) {
-				if(mdTmp!=null)
-					mdTmp.setNestedScrollingEnabled(bImmersive);
-			}
-		}
-		((AdvancedNestScrollView)weblistHandler.WHP).setNestedScrollingEnabled(bImmersive);
-		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(bImmersive);
-		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(bImmersive);
-		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(bImmersive);
-		((AdvancedNestScrollListview)mlv2).setNestedScrollingEnabled(bImmersive);
+		boolean v1 = bImmersive;// && !PDICMainAppOptions.ImmersiveForContentsOnly();
+		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(v1);
+		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(v1);
+		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(v1);
+		((AdvancedNestScrollListview)mlv2).setNestedScrollingEnabled(v1);
+		weblistHandler.setNestedScrollingEnabled(bImmersive);
+		UIData.appbar.resetStretchViews();
 		if(!bImmersive) {
-			if(weblist==null){
-				weblist = new LinearLayout(this);
-				weblist.setOrientation(LinearLayout.VERTICAL);
+			if(webline==null){
+				webline = new LinearLayout(this);
+				webline.setOrientation(LinearLayout.VERTICAL);
 			}
-			bottombar.setTranslationY(0);
-			contentUIData.bottombar2.setTranslationY(0);
+//			bottombar.setTranslationY(0);
+//			contentUIData.bottombar2.setTranslationY(0);
 		}
-		ViewGroup contentHolder = bImmersive ? UIData.webcoord : weblist;
+		ViewGroup contentHolder = bImmersive ? UIData.webcoord : webline;
 		ViewGroup sp = (ViewGroup) UIData.drawerLayout.getParent();
 		if(sp!=contentHolder) {
 			if(sp!=null) {
@@ -2709,12 +2705,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			contentHolder.addView(UIData.appbar, 0);
 			contentHolder.addView(UIData.drawerLayout, 1);
 			if(bImmersive) {
-				((CoordinatorLayout.LayoutParams)UIData.drawerLayout.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(getBaseContext(), null));
+				((CoordinatorLayout.LayoutParams)UIData.drawerLayout.getLayoutParams()).setBehavior(getScrollBehaviour(true));
 			}
+		}
+		if(bImmersive) {
+			UIData.appbar.addStretchView(UIData.main, bottomBarSz, 1);
+			UIData.appbar.addStretchView(bottombar, bottomBarSz, 2);
 		}
 
 		contentHolder = bImmersive ? UIData.webcoord : UIData.main;
 		sp = (ViewGroup) bottombar.getParent();
+		
+		//((AppBarLayout.LayoutParams) UIData.toolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+		
 		if(sp!=contentHolder) {
 			//333
 //			FrameLayout w0p = (FrameLayout) UIData.browserWidget0.getParent();
@@ -2724,7 +2727,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				contentHolder.addView(bottombar, 2);
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams());
 				lp.gravity=Gravity.BOTTOM;
-				((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(getBaseContext(), null));
+				//((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams()).setBehavior(PDICMainAppOptions.strechImmersiveMode()?null:new BottomNavigationBehavior());
 //				w0plp.bottomMargin=(int) (80*GlobalOptions.density);
 //				w0plp.height=w0plp.width;
 			} else {
@@ -2754,7 +2757,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ViewGroup contentHolder = bImmersive ? UIData.webcoord : root;
 		mDrawerToggle.onDrawerOpened(UIData.drawerLayout);
 		boolean fastPreview = this.fastPreview;
-		
 		boolean b1=ViewUtils.removeIfParentBeOrNotBe(contentview, contentHolder,false);
 		if(b1 || contentviewDetachType==0 && contentview.getVisibility()!=View.VISIBLE) {
 			if(mayDelay) return mayDelay;
@@ -2767,7 +2769,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					@Override
 					public void onAnimationEnd(Animation animation) {
 						if(isContentViewAttached()) {
-							UIData.viewpagerPH.setVisibility(View.INVISIBLE);
+							UIData.main.setVisibility(View.INVISIBLE);
 							if(!fastPreview) {
 								bottombar.setVisibility(View.INVISIBLE);
 							}
@@ -2778,7 +2780,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				contentview.setAnimation(animation);
 			}
 			else {
-				UIData.viewpagerPH.setVisibility(View.INVISIBLE);
+				UIData.main.setVisibility(View.INVISIBLE);
 				if(!fastPreview) {
 					bottombar.setVisibility(View.INVISIBLE);
 				}
@@ -2790,7 +2792,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 					CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)contentview.getLayoutParams());
 					lp.gravity=Gravity.BOTTOM;
-					lp.setBehavior(new AppBarLayout.ScrollingViewBehavior(getBaseContext(), null));
+					lp.setBehavior(getScrollBehaviour(true));
+					UIData.appbar.addStretchView(contentview, bottomBarSz, 1);
+					UIData.appbar.addStretchView(weblistHandler.contentUIData.bottombar2, bottomBarSz, 2);
 					contentHolder.addView(contentview, 2);
 				}
 				else {
@@ -2806,6 +2810,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(!fastPreview || !bImmersive) {
 			PlaceContentBottombar(bImmersive);
 		}
+		if(bImmersive) {
+			if(PDICMainAppOptions.resetImmersiveScrollOnEnter())
+				ResetIMOffset();
+			else if (b1)
+				getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, anyView(0), UIData.appbar);
+		}
 		
 		return delayedAttaching=false;
 	}
@@ -2819,8 +2829,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(bImmersive) {
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams) bottombar2.getLayoutParams());
 				lp.gravity = Gravity.BOTTOM;
-				lp.setBehavior(new BottomNavigationBehavior(getBaseContext(), null));
-				bottombar2.setTranslationY(bottombar.getTranslationY());
+				if (PDICMainAppOptions.strechImmersiveMode()) {
+					// BottomStrechBehavior
+					lp.setBehavior(null);
+				} else {
+					lp.setBehavior(new BottomNavigationBehavior());
+					bottombar2.getLayoutParams().height = bottomBarSz.sz;
+				}
 			}
 		}
 	}
@@ -2840,7 +2855,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			AttachContentView();
 //		} else {
 			boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
-			UIData.viewpagerPH.setVisibility(View.VISIBLE);
+			UIData.main.setVisibility(View.VISIBLE);
 			bottombar.setVisibility(View.VISIBLE);
 
 			//xxroot.removeView(contentview);
@@ -2851,11 +2866,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			if(bImmersive) {
 				ViewUtils.removeView(contentUIData.bottombar2);
+				getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, anyView(0), UIData.appbar);
 			}
 			ViewUtils.removeView(PhotoPagerHolder);
 			contentUIData.webcontentlister.canClickThrough=false;
 //		}
-		if(bImmersive) {
+		if(bImmersive && PDICMainAppOptions.resetImmersiveScrollOnExit()) {
 			ResetIMOffset();
 		}
 		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
@@ -2877,7 +2893,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private void ResetIMOffset() {
 		AppBarLayout barappla = (AppBarLayout) UIData.appbar;
 		if(barappla.getTop()<0) {
-			//CMN.Log("重置了");
+			CMN.debug("重置了");
+			barappla.resetStretchViews();
 			barappla.resetAppBarLayoutOffset();
 			barappla.requestLayout();
 		}

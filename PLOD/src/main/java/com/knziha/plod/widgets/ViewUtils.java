@@ -192,14 +192,6 @@ public class ViewUtils extends VU {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, c.getResources().getDisplayMetrics());
     }
 	
-	public static NestedScrollingChildHelper mNestedScrollingChildHelper;
- 
-	public static NestedScrollingChildHelper getNestedScrollingChildHelper() {
-		if(mNestedScrollingChildHelper==null)
-			mNestedScrollingChildHelper=new NestedScrollingChildHelper(null);
-		return mNestedScrollingChildHelper;
-	}
-	
 	public static Paint getRectPaint() {
 		if(mRectPaint==null) {
 			mRectPaint = new Paint();
@@ -863,9 +855,12 @@ public class ViewUtils extends VU {
 		return sNoScrollListener;
 	}
 	
+	public static NestedScrollingChildHelper getNestedScrollingChildHelper() {
+		return sNestScrollHelper;
+	}
+	
 	public void Destory(){
-		mNestedScrollingChildHelper.Destory();
-		mNestedScrollingChildHelper = null;
+		sNestScrollHelper.Destory();
 		mRectPaint = null;
 	}
 	

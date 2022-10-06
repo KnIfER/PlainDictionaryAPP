@@ -1,0 +1,21 @@
+{
+	,"host": "http://m.youdao.com"
+	,"index": "/translate"
+	,"keyPattern": "*"
+	,"searchJs": "var succ = 0;
+function debug(e){console.log('fatal youdao', e)};
+try {
+	debug('searchJs');
+	var ta=document.getElementById('inputText');
+	if (ta) {
+		ta.value = '%s';
+		document.getElementsByClassName('blue-btn')[0].click();
+		succ = 1;
+		//window._tweakedHXCL = false; setTimeout(window._tweakHXCL, 350);
+	}
+} catch (e) {
+	debug('fatal e='+e);
+}
+succ"
+	,"translator":"true"
+}

@@ -1,0 +1,28 @@
+{
+	,"host": "https://fanyi.baidu.com"
+	,"index": ""
+	,"style": ".topnav.topnav-new{top:0}.new-header,.new-header-inner{height:45px!important}"
+	,"search": "/?aldtype=16047#auto/zh/"
+	,"keyPattern": "*"
+	,"searchJs": "var succ = 0;
+function debug(e){console.log(e)};
+try {
+	debug('searchJs');
+	var ta=document.getElementById('j-textarea');
+	if (ta) {
+		ta.value = '%s';
+		ta.dispatchEvent(new Event('input', {
+			bubbles: true
+		}));
+		setTimeout(function(){
+			ta.dispatchEvent(new KeyboardEvent('keydown',{'keyCode':13,'which':13}))
+		}, 200);
+		succ = 1;
+		//window._tweakedHXCL = false; setTimeout(window._tweakHXCL, 350);
+	}
+} catch (e) {
+	debug('fatal e='+e);
+}
+succ"
+	,"translator":"true"
+}

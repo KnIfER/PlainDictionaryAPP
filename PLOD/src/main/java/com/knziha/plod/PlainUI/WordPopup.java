@@ -90,6 +90,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public BookPresenter.AppHandler popuphandler;
 	public ImageView popIvBack;
 	public ViewGroup popupContentView;
+	private AppBarLayout appbar;
 	public ViewGroup toolbar;
 	protected ViewGroup pottombar;
 	protected CircleCheckBox popupChecker;
@@ -113,8 +114,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private final Runnable setAby = () -> setTranslator(sching, currentPos);
 	private final Runnable setAby1 = () -> entryTitle.setText(displaying);
 	private resultRecorderCombined rec;
+	/** 0=单本搜索; 1=联合搜索，合并页面; 2=联合搜索，屏风模式。 */
 	private int schMode;
 	private ImageView modeBtn;
+	private AtomicBoolean singleTask = new AtomicBoolean(true);
+	private AtomicInteger singleTaskVer = new AtomicInteger(0);
 	
 	DictPicker dictPicker;
 	public MainActivityUIBase.LoadManager loadManager;
@@ -123,6 +127,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public SearchbarTools etTools;
 	private boolean requestAudio;
 	public boolean tapped;
+	
+	LinearSplitView splitView;
+	AppBarLayout.BarSz barSz = new AppBarLayout.BarSz();
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -554,10 +561,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					.inflate(R.layout.float_contentview_basic, a.root, false);
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			toolbar = (ViewGroup) popupContentView.getChildAt(0);
-			LinearSplitView split = (LinearSplitView) popupContentView.getChildAt(1);
-			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) split.getChildAt(0);
+			splitView = (LinearSplitView) popupContentView.getChildAt(1);
+			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
-			dictPicker = new DictPicker(a, split, splitter, -1);
+			dictPicker = new DictPicker(a, splitView, splitter, -1);
 			dictPicker.loadManager = this.loadManager;
 			dictPicker.autoScroll = true;
 			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
@@ -695,8 +702,15 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		entryTitle.setText(popupKey);
 		
 		//SearchOne(task, taskVer, taskVersion);
-		
-		startTask(TASK_POP_SCH);
+		boolean singleThread = false;
+		if (schMode==0 && PDICMainAppOptions.getClickSearchMode()==2 || popupForceId!=null) {
+			singleThread = true;
+		}
+		if (singleThread) {
+			PerformSearch(TASK_POP_SCH, singleTask, 0, singleTaskVer);
+		} else {
+			startTask(TASK_POP_SCH);
+		}
 	}
 	
 	public void startTask(int type) {
@@ -721,6 +735,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		boolean b1 = popupContentView == null;
 		isNewHolder = isNewHolder || b1;
 		View cv = (View) weblistHandler.pageSlider.getParent();
+		if (appbar != null) {
+			appbar.resetStretchViews();
+		}
 		if (b1 || popupContentView != cv.getParent()) {
 			//ViewUtils.removeView(popupToolbar);
 			//ViewUtils.removeView(PopupPageSlider);
@@ -733,18 +750,24 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				popupContentView = (popupCrdCloth != null && popupCrdCloth.get() != null) ? popupCrdCloth.get()
 						: (popupCrdCloth = new WeakReference<>((ViewGroup) a.getLayoutInflater()
 						.inflate(R.layout.float_contentview_coord, a.root, false))).get();
-				ViewGroup appbar = (ViewGroup) popupContentView.findViewById(R.id.appbar);
+				appbar = popupContentView.findViewById(R.id.appbar);
 				ViewUtils.addViewToParent(toolbar, appbar);
 				ViewUtils.addViewToParent(cv, popupContentView);
 				ViewUtils.addViewToParent(pottombar, popupContentView);
 				((CoordinatorLayout.LayoutParams) pottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
-				((CoordinatorLayout.LayoutParams) pottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(popupContentView.getContext(), null));
+				((CoordinatorLayout.LayoutParams) pottombar.getLayoutParams()).setBehavior(/*PDICMainAppOptions.strechImmersiveMode()?null:*/new BottomNavigationBehavior());
 				CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) cv.getLayoutParams();
-				lp.setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
+				AppBarLayout.ScrollingViewBehavior beh = a.getScrollBehaviour(false);
+				lp.setBehavior(beh);
 				lp.height = CoordinatorLayout.LayoutParams.MATCH_PARENT;
 				lp.topMargin = 0;
 				lp.bottomMargin = 0;
 				((AppBarLayout.LayoutParams) toolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP);
+				barSz.sz = pottombar.getLayoutParams().height;
+				if (beh.strech) {
+					//appbar.addStretchView(pottombar, barSz, false);
+					appbar.addStretchView(splitView, barSz, 1);
+				}
 			} else {
 				popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
 						: (popupCmnCloth = new WeakReference<>((ViewGroup) a.getLayoutInflater()
@@ -758,6 +781,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				((FrameLayout.LayoutParams) cv.getLayoutParams()).topMargin = (int) (45*GlobalOptions.density);
 				((FrameLayout.LayoutParams) cv.getLayoutParams()).bottomMargin = (int) (30*GlobalOptions.density);
 				((FrameLayout.LayoutParams) pottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
+				appbar = null;
 			}
 			mWebView.rl = popupContentView;
 			popupContentView.setTag(mWebView);
@@ -944,7 +968,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	RBTree_additive _treeBuilder = new RBTree_additive();
 	
 	@AnyThread
-	private void SearchMultiple(AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
+	private void SearchMultiple(@NonNull AtomicBoolean task, int taskVer, @NonNull AtomicInteger taskVersion) {
 		_treeBuilder.clear();
 		int paragraphWords = 9;
 		String searchText = popupKey;
@@ -980,38 +1004,38 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	@AnyThread
-	private void SearchOne(AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
+	private void SearchOne(@NonNull AtomicBoolean task, int taskVer, @NonNull AtomicInteger taskVersion) {
 		int idx = -1, cc = 0;
 		resetPreviewIdx();
 		//CMN.debug("SearchOne::", popupKey);
 		if (popupKey != null) {
 			String keykey;
-			int size = loadManager.md_size;
-			CCD_ID = upstrIdx = Math.min(upstrIdx, size -1);
-			if(popupForceId!=null) {
-				CCD = popupForceId;
-				CCD_ID = loadManager.md_find(popupForceId);
-				if(CCD_ID<0) {
-					CCD_ID = size;
-					loadManager.md.add(popupForceId); // todo check???
-				}
+			BookPresenter bookForce = popupForceId;
+			if (bookForce != null) {
+				CCD = bookForce;
+				CCD_ID = loadManager.md_findOrAdd(bookForce);
+				popupForceId = null;
+			} else {
+				CCD_ID = upstrIdx = Math.min(upstrIdx, loadManager.md_size -1);
 			}
-			//轮询开始
+			final int size = loadManager.md_size;
+			CMN.debug("轮询开始::", CCD, CCD_ID, loadManager.md_get(CCD_ID));
 			BookPresenter webx = null;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
-			int SearchMode = PDICMainAppOptions.getClickSearchMode();
-			//CMN.debug("SearchMode", SearchMode);
+			final int SearchMode = PDICMainAppOptions.getClickSearchMode();
 			boolean bForceJump = false;
 			BookPresenter CCD = this.CCD;
-			if (SearchMode == 2) {/* 仅搜索当前词典 */
+			/* 仅搜索当前词典 */
+			if (SearchMode == 2 || bookForce !=null) {
 				CCD = loadManager.md_get(CCD_ID);
 				if (CCD != a.EmptyBook) {
 					if(CCD.getIsWebx()){
 						webx = CCD;
-						if (!webx.getWebx().takeWord(popupKey)) {
-							webx = null;
-						}
-					} else  {
+						//if (!webx.getWebx().takeWord(popupKey)) {
+						//	webx = null;
+						//}
+					}
+					else  {
 						idx = CCD.bookImpl.lookUp(popupKey, true);
 						if (idx < -1 && use_morph) {
 							keykey = a.ReRouteKey(popupKey, true);
@@ -1022,7 +1046,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			else {
 				boolean proceed = true;
-				if (SearchMode == 1) {/* 仅搜索指定点译词典 */
+				/* 仅搜索指定点译词典 */
+				if (SearchMode == 1) {
 					a.bHasDedicatedSeachGroup=false;
 					BookPresenter firstAttemp = null;
 					FindCSD:
@@ -1133,8 +1158,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				//CCD = webx;
 			}
 			
-			//CMN.Log(CCD, "应用轮询结果", webx, idx);
-			if(idx>=0 && CCD != a.EmptyBook  && task.get() && taskVer == taskVersion.get()) {
+			CMN.debug(CCD, "应用轮询结果", webx, idx, "SearchMode="+SearchMode);
+			if(idx >= 0 && CCD != a.EmptyBook && task.get() && taskVer == taskVersion.get()) {
 				if(bForceJump && SearchMode==1)
 					mWebView.setTag(R.id.js_no_match, false);
 				currentPos = idx;
@@ -1222,7 +1247,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
 			mergedUrl.append("_");
 			IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
-			if (CCD==popupForceId && invoker!=null && invoker.toTag!=null) {
+			if (invoker!=null && invoker.toTag!=null
+					// &&  CCD==popupForceId
+					&& CCD==invoker.presenter
+					&& currentPos==invoker.currentPos
+			) {
 				mergedUrl.append("#").append(invoker.toTag);
 				invoker.toTag = null;
 			}
@@ -1233,7 +1262,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
-		//CMN.debug("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
+		CMN.debug("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;

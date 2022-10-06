@@ -20,6 +20,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.PlainUI.PlainDialog;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -61,7 +62,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean bAutoRefresh = false;
 	protected boolean hasDelegatePicker;
 	public PopupWindow pop;
-	public Dialog dialog;
+	public PlainDialog dialog;
 	protected DialogInterface.OnDismissListener dialogDismissListener;
 	protected int mPaddingLeft=10;
 	protected int mPaddingRight=10;

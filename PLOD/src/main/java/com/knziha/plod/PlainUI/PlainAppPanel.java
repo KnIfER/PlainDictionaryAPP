@@ -33,7 +33,7 @@ public class PlainAppPanel extends SettingsPanel {
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
 	protected int MainAppBackground;
-	
+	protected PlainDialog.BackPrevention mBackPrevention;
 	
 	public PlainAppPanel() {
 		super(null, null, null, null, null);
@@ -93,7 +93,8 @@ public class PlainAppPanel extends SettingsPanel {
 	
 	protected void showDialog() {
 		if (dialog==null) {
-			dialog = new Dialog(a);
+			dialog = new PlainDialog(a);
+			dialog.mBackPrevention = mBackPrevention;
 			dialogDismissListener = dialog -> dismissImmediate();
 			dialog.setOnDismissListener(dialogDismissListener);
 			if(settingsLayoutHolder==null) {

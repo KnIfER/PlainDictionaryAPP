@@ -16,6 +16,7 @@ import android.widget.ScrollView;
 import androidx.core.view.ViewCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
 import java.util.Timer;
@@ -66,8 +67,9 @@ public class DragScrollBar extends RelativeLayout{
 		mProgress=val;
 		//ViewCompat.setY(handleThumb, 1.f*val/mMax*getHeight());
 		int newTop = topByProgress(mProgress);
-		handleThumb.setTop(newTop);
-		handleThumb.setBottom(newTop+desiredHeight);
+		handleThumb.setTranslationY(newTop);
+//		handleThumb.setTop(newTop);
+//		handleThumb.setBottom(newTop+desiredHeight);
 		//handleThumb.postInvalidate();
 	}
 	
@@ -79,8 +81,9 @@ public class DragScrollBar extends RelativeLayout{
 	
 	Runnable ppaby = ()->{
 		int newTop = topByProgress(mProgress);
-		handleThumb.setTop(newTop);
-		handleThumb.setBottom(newTop+desiredHeight);
+		handleThumb.setTranslationY(newTop);
+//		handleThumb.setTop(newTop);
+//		handleThumb.setBottom(newTop+desiredHeight);
 		handleThumb.postInvalidate();
 	};
 
@@ -329,8 +332,9 @@ public class DragScrollBar extends RelativeLayout{
 						int progress = (int) Math.max(0, Math.min(mProgress + dy*mMax/max, mMax));
 						int newTop = topByProgress(progress);
 						//CMN.Log("ACTION_MOVE::", e.getRawY(), dy, progress, newTop);
-						handleThumb.setTop(newTop);
-						handleThumb.setBottom(newTop+desiredHeight);
+						handleThumb.setTranslationY(newTop);
+//						handleThumb.setTop(newTop);
+//						handleThumb.setBottom(newTop+desiredHeight);
 						//handleThumb.postInvalidate();
 						if(progress!=mProgress) {
 							mProgress = progress;

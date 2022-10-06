@@ -1036,7 +1036,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public String getSearchUrl() {
-		return search!=null?host+search:host;
+		return search!=null?host+search:(host+index);
 	}
 	
 	public String getRandx() { //todo opt
@@ -1519,7 +1519,7 @@ public class PlainWeb extends DictionaryAdapter {
 			if(searchKey!=null) {
 				if (searchKey.startsWith("http")) // 简单处理
 					url = searchKey;
-				else if (search != null) {
+				else if (search != null || searchJs != null) {
 					key = searchKey;
 					// 清空搜索词
 					bookPresenter.SetSearchKey(null);

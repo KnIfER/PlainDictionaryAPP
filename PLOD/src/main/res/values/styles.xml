@@ -479,6 +479,10 @@
 		<item name="android:paddingRight">12dp</item>
 	</style>
 
+	<style name="schTools1" parent="schTools">
+		<item name="android:paddingBottom">2dp</item>
+	</style>
+
 	<style name="multiwindow_titlebtn">
 		<item name="android:layout_width">@dimen/_38_</item>
 		<item name="android:layout_height">match_parent</item>
