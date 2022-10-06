@@ -2411,7 +2411,7 @@ function debug(e){console.log(e)};
 //		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
 //		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
 		htmlBuilder.append("window.bid=").append(getId()).append(";");
-		htmlBuilder.append("window.shzh=").append(mWebView.weblistHandler.tapSch?1:0).append(";");
+		htmlBuilder.append("window.shzh=").append((mWebView.weblistHandler.tapSch?1:0)|mWebView.weblistHandler.tapSel).append(";");
 		htmlBuilder.append("window.frameAt=").append(mWebView.frameAt).append(";");
 		htmlBuilder.append("window.entryKey='").append(mWebView.word).append("';");
 		htmlBuilder.append("window.currentPos=").append(mWebView.currentPos).append(";");
@@ -2445,6 +2445,7 @@ function debug(e){console.log(e)};
 	public static int MakePageFlag(WebViewListHandler wlh, PDICMainAppOptions opt) {
 		final int ret =
 				(wlh.tapSch?1:0)
+				| wlh.tapSel
 				| 8
 				| ( (PDICMainAppOptions.pageSchUseRegex()?0x10:0)
 				|   (PDICMainAppOptions.pageSchCaseSensitive()?0x20:0)

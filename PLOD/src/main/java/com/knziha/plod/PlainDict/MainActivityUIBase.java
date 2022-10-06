@@ -6930,30 +6930,49 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.translate:{
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
-				if(dd==null) {
+				//if(dd==null)
+				{
+					ViewGroup cv = (ViewGroup) getLayoutInflater().inflate(R.layout.translator_dlg, root, false);
 					dd = new AlertDialog.Builder(this)
-						.setSingleChoiceLayout(R.layout.singlechoice_plain)
-						.setSingleChoiceItems(new String[]{
-								"使用谷歌翻译"
-								, "使用彩云小译"
-								, "关闭"
-						}, 0, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								Object tag = ((AlertDialog) dialog).tag;
-								WebViewListHandler weblistHandler;
-								if (tag instanceof WordPopup) {
-									weblistHandler = ((WordPopup)tag).weblistHandler;
-								}
-								else {
-									weblistHandler = (WebViewListHandler) ((MenuBuilder)tag).tag;
-								}
-								if(weblistHandler!=null)
-									doTranslation(weblistHandler, which, dialog);
-							}
-						})
-						//.setSingleChoiceItems(strIds, 0, null)
+						.setView(cv)
+//						.setSingleChoiceLayout(R.layout.singlechoice_plain)
+//						.setSingleChoiceItems(new String[]{
+//								"使用谷歌翻译"
+//								, "使用彩云小译"
+//								, "关闭"
+//						}, 0, new DialogInterface.OnClickListener() {
+//							@Override
+//							public void onClick(DialogInterface dialog, int which) {
+//								Object tag = ((AlertDialog) dialog).tag;
+//								WebViewListHandler weblistHandler;
+//								if (tag instanceof WordPopup) {
+//									weblistHandler = ((WordPopup)tag).weblistHandler;
+//								}
+//								else {
+//									weblistHandler = (WebViewListHandler) ((MenuBuilder)tag).tag;
+//								}
+//								if(weblistHandler!=null)
+//									doTranslation(weblistHandler, which, dialog);
+//							}
+//						})
 						.setTitle("翻译当前页面").create();
+					cv.setTag(dd);
+					ViewUtils.setOnClickListenersOneDepth(cv, new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							AlertDialog dialog = (AlertDialog) cv.getTag();
+							Object tag = dialog.tag;
+							WebViewListHandler weblistHandler;
+							if (tag instanceof WordPopup) {
+								weblistHandler = ((WordPopup)tag).weblistHandler;
+							}
+							else {
+								weblistHandler = (WebViewListHandler) ((MenuBuilder)tag).tag;
+							}
+							if(weblistHandler!=null)
+								doTranslation(weblistHandler, v.getId(), dialog);
+						}
+					}, 999, null);
 					tagHolder.tag = null;
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
@@ -7693,34 +7712,35 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	};
 	
-	void doTranslation(WebViewListHandler weblistHandler, int which, DialogInterface dialog) {
+	void doTranslation(WebViewListHandler weblistHandler, int id, DialogInterface dialog) {
 		WebViewmy mWebView = weblistHandler.getWebContext();
-		final int szTranslators = 2;
 		CMN.debug("doTranslation::", mWebView, weblistHandler.bMergingFrames);
 		if(mWebView!=null) {
 			boolean off;
-			if(which==szTranslators) {
+			if (id==R.id.close) {
 				off = true;
-				which = mWebView.translating;
-				if(which==-1) which = new Random().nextInt(szTranslators);
 				mWebView.translating = -1;
-			} else {
+			} else if(id==R.id.gTrans) {
 				off = false;
-				mWebView.translating = which;
+				mWebView.translating = 1;
+			} else {
+				weblistHandler.updateTapSel(id==R.id.tapSelZi?2
+						:id==R.id.tapSelDuan?4
+						:0);
+				if(dialog!=null) dialog.dismiss();
+				return;
 			}
-			if(which<=szTranslators) {
-				try {
-					BookPresenter gTrans = new_book(defDicts[which==0?1:3], this);
-					PlainWeb webx = gTrans.getWebx();
-					if(webx.getHasModifiers())
-					{
-						weblistHandler.moders.remove(webx);
-						weblistHandler.moders.add(webx);
-					}
-					mWebView.evaluateJavascript(webx.getPageTranslator(off), null);
-					if(dialog!=null) dialog.dismiss();
-				} catch (Exception e) { CMN.debug(e); }
-			}
+			try {
+				BookPresenter gTrans = new_book(defDicts[1], this);
+				PlainWeb webx = gTrans.getWebx();
+				if(webx.getHasModifiers())
+				{
+					weblistHandler.moders.remove(webx);
+					weblistHandler.moders.add(webx);
+				}
+				mWebView.evaluateJavascript(webx.getPageTranslator(off), null);
+				if(dialog!=null) dialog.dismiss();
+			} catch (Exception e) { CMN.debug(e); }
 		}
 	}
 	
@@ -7769,7 +7789,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if(wlh.isViewSingle())
 				invoker.ApplyPadding(mWebView);
-			if (false && mWebView.translating>=0) {
+			if (PDICMainAppOptions.quickTranslatorV1() && mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
 			}
 			if(delayedAttaching && mWebView.presenter==currentDictionary) { // todo same replace (mWebView.SelfIdx==adapter_idx, ->)

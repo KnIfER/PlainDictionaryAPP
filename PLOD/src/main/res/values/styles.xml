@@ -527,6 +527,25 @@
 		<item name="android:gravity">center_vertical</item>
 	</style>
 
+	<style name="singlechoice_plain_theme">
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
+		<item name="android:textAppearance">?android:attr/textAppearanceListItemSmall</item>
+		<item name="android:textColor">?android:attr/textColorAlertDialogListItem</item>
+		<item name="android:gravity">center_vertical</item>
+		<item name="android:paddingLeft">16dip</item>
+		<item name="android:paddingRight">7dip</item>
+		<item name="android:ellipsize">marquee</item>
+		<item name="android:checkMark">?android:attr/listChoiceIndicatorSingle</item>
+	</style>
+
+
+	<style name="singlechoice_plain_theme1" parent="singlechoice_plain_theme">
+		<item name="android:background">?android:attr/listChoiceBackgroundIndicator</item>
+		<item name="android:clickable">true</item>
+	</style>
+
 </resources>
 
 

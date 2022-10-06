@@ -122,6 +122,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public WebViewmy scrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
+	public int tapSel;
 	
 	public View browserWidget8;
 	public View browserWidget10;
@@ -1242,6 +1243,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				"window.shzh|=1;if(!window.tpshc)app.loadJs(sid.get(), 'tapSch.js')"
 				:"window.shzh&=~1");
 		return tapSch;
+	}
+	
+	public void updateTapSel(int value) {
+		if (tapSel != value) {
+			tapSel = value;
+			shezhi &= ~6;
+			shezhi |= value;
+			String eval = "window.shzh&=~6";
+			if (value>0) {
+				eval += ";window.shzh|="+value+";if(!window.tpshc)app.loadJs(sid.get(), 'tapSch.js')";
+			}
+			evalJsAtAllFrames(eval);
+		}
 	}
 	
 	private void evalJsAtAllFrames(String exp) {
