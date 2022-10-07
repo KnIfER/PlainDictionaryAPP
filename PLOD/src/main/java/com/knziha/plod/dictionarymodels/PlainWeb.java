@@ -4,7 +4,6 @@ import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
-import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 import static com.knziha.plod.plaindict.MdictServerMobile.*;
 import static com.knziha.plod.widgets.Tls12SocketFactory.enableTls12OnPreLollipop;
 import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
@@ -1601,7 +1600,8 @@ public class PlainWeb extends DictionaryAdapter {
 //		if (bookPresenter!=null) {
 			StringBuilder sb = AcquireStringBuffer(8196)
 					.append("window.shzh=app.rcsp(sid.get());");
-			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
+			if(GlobalOptions.isDark)
+				sb.append(bookPresenter.a.opt.DarkModeIncantation(bookPresenter.a));
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.mWebView)
 				sb.append(MainActivityUIBase.ce_on).append(";");
 			if(dopt!=null){
@@ -1963,7 +1963,7 @@ public class PlainWeb extends DictionaryAdapter {
 //			////view.evaluateJavascript(jsCode, null);
 //		}
 		//CMN.Log("onPageStarted\n\nonPageStarted -- ", url);CMN.rt();CMN.stst_add=0;
-		if(GlobalOptions.isDark) mWebView.evaluateJavascript(DarkModeIncantation, null);
+		if(GlobalOptions.isDark) mWebView.evaluateJavascript(bookPresenter.a.opt.DarkModeIncantation(bookPresenter.a), null);
 		if (onstart != null) mWebView.evaluateJavascript(onstart, null);
 	}
 
@@ -1984,10 +1984,11 @@ public class PlainWeb extends DictionaryAdapter {
 			progressProceed.start();
 		}
 		if(GlobalOptions.isDark && newProgress>5) {
+			bookPresenter.a.opt.DarkModeIncantation(bookPresenter.a);
 			if (Build.VERSION.SDK_INT>=21) { //todo webview版本 23 未测试
 				mWebView.evaluateJavascript("document._pdkn||app.loadJs(sid.get(), 'dk.js')", null);
 			} else {
-				mWebView.evaluateJavascript(DarkModeIncantation, null);
+				mWebView.evaluateJavascript(bookPresenter.a.opt.mDarkModeJs, null);
 			}
 		}
 		if(newProgress>89) {

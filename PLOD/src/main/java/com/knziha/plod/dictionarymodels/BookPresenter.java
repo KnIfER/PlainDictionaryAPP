@@ -123,7 +123,6 @@ import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
-import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
 
 import io.noties.markwon.Markwon;
@@ -1961,7 +1960,7 @@ function debug(e){console.log(e)};
 		a.guaranteeBackground(globalPageBackground);
 		int bg = (getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT||mWebView.weblistHandler.bDataOnly)?myWebColor:Color.TRANSPARENT;
 		if(bg==0&&mWebView.weblistHandler.bShowingInPopup) bg = a.AppWhite;
-		mWebView.setBackgroundColor(bg);
+		mWebView.setBackgroundColor(Color.TRANSPARENT);
 		/* check and set colors for toolbar title Background*/
 		if(mWebView==this.mWebView){
 			mWebView.titleBar.fromCombined = mWebView.fromCombined==1;
@@ -2353,9 +2352,10 @@ function debug(e){console.log(e)};
 			@Override
 			public void onReceiveValue(String value) {
 				if (dark ^ "1".equals(value)) {
+					a.opt.DarkModeIncantation(a);
 					tintBackground(webview);
 					if (dark) {
-						webview.evaluateJavascript(DarkModeIncantation, null);
+						webview.evaluateJavascript(a.opt.mDarkModeJs, null);
 					} else {
 						webview.evaluateJavascript(GetById+".remove()", null);
 					}

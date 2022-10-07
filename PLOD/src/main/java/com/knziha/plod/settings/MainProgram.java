@@ -65,6 +65,7 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 		
 		findPreference("dev").setOnPreferenceClickListener(this);
 		findPreference("sspec").setOnPreferenceClickListener(this);
+		findPreference("night").setOnPreferenceClickListener(this);
 		findPreference("vspec").setOnPreferenceClickListener(this);
 		findPreference("multi").setOnPreferenceClickListener(this);
 		findPreference("backup").setOnPreferenceChangeListener(this);
@@ -79,6 +80,9 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 			break;
 			case "sspec":
 				fragmentId=SchOpt.id;
+			break;
+			case "night":
+				fragmentId=NightMode.id;
 			break;
 			case "vspec":
 				fragmentId=Misc.id;

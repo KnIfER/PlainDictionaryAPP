@@ -17,6 +17,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.animation.AnimationUtils;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 
 
@@ -85,7 +86,7 @@ public class PageSlide extends TextView {
 				} else {
 					fdv = null;
 				}
-				dv.setAlpha(0.15f);
+				if(!GlobalOptions.isDark || PDICMainAppOptions.nighAvoidTurnPicFlicker()) dv.setAlpha(0.15f);
 				dv.animate()
 					.alpha(1)
 					.setInterpolator(AnimationUtils.DECELERATE_INTERPOLATOR)
@@ -124,6 +125,7 @@ public class PageSlide extends TextView {
 			}
 			srcX = getTranslationX();
 			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
+			if(GlobalOptions.isDark && PDICMainAppOptions.nighAvoidTurnPicFlicker()) TargetX = 0;
 			prevd = decided;
 			decided = 0;
 			hdl.obtainMessage(3344,dragTm+1,0,this).sendToTarget();

@@ -38,6 +38,15 @@
 			android:defaultValue="false"
 			android:key="keep_screen"
 			android:title="@string/keep_screen_on" />
+		<Preference
+			android:key="night"
+			android:persistent="false"
+			android:title="夜间模式"
+			app:isPreferenceVisible="true"
+			android:icon="@drawable/ic_baseline_nightmode_24"
+			android:tint="#000"
+			android:clickable="true"
+			/>
 	</PreferenceCategory>
 
 

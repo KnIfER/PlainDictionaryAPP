@@ -19,4 +19,46 @@
 			android:defaultValue="false"
 			android:title="跟随系统"/>
 	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_2"
+		android:title="内容页"  >
+		<com.knziha.filepicker.settings.IntPreference
+			android:defaultValue="100"
+			android:key="dkR"
+			android:persistent="true"
+			android:title="webkit反色滤镜比率："
+			suffix=" %"
+			app:inlineSummary="true"
+			app:hasCheck="true"
+			/>
+		<com.knziha.filepicker.settings.IntPreference
+			android:defaultValue="100"
+			android:key="dkD"
+			android:persistent="true"
+			android:title="调节亮度："
+			suffix=" %"
+			app:inlineSummary="true"
+			app:hasCheck="true"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="dkB"
+			android:title="背景色"
+			android:summary="根据内核版本不同，应显示为反转后的颜色，但也有可能显示原色。"
+			android:defaultValue="#FFFFFFFF"
+			app:hasCheck="true"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="dkF"
+			android:title="字体颜色"
+			android:summary=""
+			android:defaultValue="#FF000000"
+			app:hasCheck="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="img"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="保持图片原色"/>
+	</PreferenceCategory>
 </PreferenceScreen>

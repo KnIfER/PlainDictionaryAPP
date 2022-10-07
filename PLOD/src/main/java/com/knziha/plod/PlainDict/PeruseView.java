@@ -1091,7 +1091,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
 		handle2.getBackground().setColorFilter(f_b, PorterDuff.Mode.LIGHTEN);
 
-		mWebView.evaluateJavascript(isDark? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
+		mWebView.evaluateJavascript(isDark? opt.DarkModeIncantation(a): MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		bottombar.setBackgroundColor(filteredColor);
 		weblistHandler.checkUI();

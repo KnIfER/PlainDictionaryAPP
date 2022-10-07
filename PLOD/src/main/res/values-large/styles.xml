@@ -30,13 +30,20 @@
 
 	<style name="schTools">
 		<item name="android:paddingBottom">30dp</item>
-		<item name="android:paddingTop">8dp</item>
+		<item name="android:paddingTop">2dp</item>
 		<item name="android:paddingLeft"> 19dp</item>
 		<item name="android:paddingRight">19dp</item>
 	</style>
 
 	<style name="schTools1" parent="schTools">
-		<item name="android:paddingBottom">8dp</item>
+		<item name="android:paddingBottom">2dp</item>
 	</style>
 
+	<style name="singlechoice_plain_theme1" parent="singlechoice_plain_theme">
+		<item name="android:background">?android:attr/listChoiceBackgroundIndicator</item>
+		<item name="android:clickable">true</item>
+		<item name="android:textSize">23sp</item>
+		<item name="android:paddingTop">20dp</item>
+		<item name="android:paddingBottom">20dp</item>
+	</style>
 </resources>

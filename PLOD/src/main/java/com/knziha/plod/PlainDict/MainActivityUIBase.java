@@ -1388,7 +1388,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (mdTmp!=null) {
 							WebViewmy wv = mdTmp.mWebView;
 							if(wv!=null) {
-								wv.evaluateJavascript(isDark ? DarkModeIncantation : DeDarkModeIncantation, null);
+								wv.evaluateJavascript(isDark ? opt.DarkModeIncantation(this) : DeDarkModeIncantation, null);
 								mdTmp.tintBackground(wv);
 							}
 						}
@@ -6930,7 +6930,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.translate:{
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
-				//if(dd==null)
+				if(dd==null || dd.isDark!=GlobalOptions.isDark)
 				{
 					ViewGroup cv = (ViewGroup) getLayoutInflater().inflate(R.layout.translator_dlg, root, false);
 					dd = new AlertDialog.Builder(this)
@@ -6957,7 +6957,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //						})
 						.setTitle("翻译当前页面").create();
 					cv.setTag(dd);
-					ViewUtils.setOnClickListenersOneDepth(cv, new OnClickListener() {
+					OnClickListener click = new OnClickListener() {
 						@Override
 						public void onClick(View v) {
 							AlertDialog dialog = (AlertDialog) cv.getTag();
@@ -6972,7 +6972,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(weblistHandler!=null)
 								doTranslation(weblistHandler, v.getId(), dialog);
 						}
-					}, 999, null);
+					};
+					//ViewUtils.setOnClickListenersOneDepth(cv, click, 999, null);
+					View v = cv;
+					while((v=ViewUtils.getNextView(v))!=null) {
+						if (v instanceof TextView) {
+							if(GlobalOptions.isDark)
+								((TextView) v).setTextColor(AppBlack);
+							v.setOnClickListener(click);
+						}
+					}
 					tagHolder.tag = null;
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
@@ -7652,11 +7661,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			
 			if(GlobalOptions.isDark && newProgress>5) {
-				if (Build.VERSION.SDK_INT>=21) { //todo webview版本 23 未测试
-					mWebView.evaluateJavascript("document._pdkn||app.loadJs(sid.get(), 'dk.js')", null);
-				} else {
-					mWebView.evaluateJavascript(DarkModeIncantation, null);
-				}
+				opt.DarkModeIncantation(MainActivityUIBase.this);
+//				if (Build.VERSION.SDK_INT>=21) { //todo webview版本 23 未测试
+//					mWebView.evaluateJavascript("document._pdkn||app.loadJs(sid.get(), 'dk.js')", null);
+//				} else {
+					mWebView.evaluateJavascript(opt.mDarkModeJs, null);
+//				}
 			}
 			
 			if (newProgress>=90) {
@@ -9086,34 +9096,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 }
 	 </style>
 	 */
-	@Metaline
-	public final static String DarkModeIncantation_l = "DARK";
-
-	/**
-	 var css = 'html {-webkit-filter: invert(100%);\
-					 -moz-filter: invert(100%);\
-					 -o-filter: invert(100%);\
-					 -ms-filter: invert(100%);background:#ffffff}\
-				 ', d=document,
-	 head = d.getElementsByTagName('head')[0],
-	 sty = d.createElement('style');
-	 sty.id = "_PDict_Darken";
-	 if(!d.getElementById(sty.id))
-	 {
-		 sty.class = "_PDict";
-		 sty.type = 'text/css';
-	 	 sty.innerText = css;
-//		 if (sty.styleSheet){
-//		 	style.styleSheet.cssText = css;
-//		 } else {
-//		 	sty.appendChild(d.createTextNode(css));
-//		 }
-		 head.appendChild(sty);
-	 }
-	 if(d.body){d.body.style.background='#00000000';d._pdkn=1}
-	 */
-	@Metaline
-	public final static String DarkModeIncantation ="DARK";
+	//@Metaline
+	public final static String DarkModeIncantation_l = "";
 	
 	/**
 	 (function(key){
@@ -10152,13 +10136,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ada.main_list.mMaxHeight = (rH>=2*pad)?(int) (rH - root.getPaddingTop() - pad):0;
 	}
 	
-	private static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);
-	private static final ConcurrentHashMap<String, String> CommonAssetsStr = new ConcurrentHashMap<>(10);
+	static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);
+	static final ConcurrentHashMap<String, String> CommonAssetsStr = new ConcurrentHashMap<>(10);
 	private mdict  pkgWebx, pkgMdbR;
 	static {
 		//CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
 		//CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
-		CommonAssets.put("dk.js", DarkModeIncantation.getBytes());
 		CommonAssets.put("imgLoader.js", BookPresenter.imgLoader.getBytes());
 		//CommonAssetsStr.put("tapSch.js", BookPresenter.tapTranslateLoader);
 	}

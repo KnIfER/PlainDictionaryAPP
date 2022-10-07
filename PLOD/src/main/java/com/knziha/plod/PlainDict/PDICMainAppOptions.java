@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -135,7 +136,74 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public String lastMdPlanName;
 	public boolean auto_seach_on_switch=true;
 	protected boolean bShouldUseExternalBrowserApp=true;
-
+	
+	public static class NightModeConfig{
+		public int InvertFilter;
+		public int PageColor;
+		public int FontColor;
+	}
+	
+	/**}', d=document,
+	 head = d.getElementsByTagName('head')[0],
+	 sty = d.createElement('style');
+	 sty.id = "_PDict_Darken";
+	 if(!d.getElementById(sty.id))
+	 {
+		 sty.class = "_PDict";
+		 sty.type = 'text/css';
+	 	 sty.innerText = css;
+		 head.appendChild(sty);
+	 }
+	 if(d.body)d._pdkn=1
+	 */
+	@Metaline
+	public final static String sDarkModeIncantation ="DARK";
+	
+	public String mDarkModeJs = "";
+	int mDarkModeJsVer = -1;
+	public static int darkModeJsVer;
+	
+	public String DarkModeIncantation(MainActivityUIBase a) {
+		if (mDarkModeJsVer!=darkModeJsVer)
+		{
+			StringBuilder sb = new StringBuilder(128);
+			sb.append("var css='html{");
+			int initLen = sb.length();
+			if (nightUseInvertFilter()) {
+				sb.append("-webkit-filter:invert(")
+						.append(defaultReader.getInt("dkR", 100))
+						.append("%)");
+			}
+			if (nightDimAll()) {
+				if(sb.length()==initLen)
+					sb.append("-webkit-filter:");
+				sb.append(" brightness(")
+						.append(defaultReader.getInt("dkD", 100))
+						.append("%)");
+			}
+			if(sb.length()>initLen) sb.append(";");
+			if (nightUsePageColor()) {
+				sb.append("background:#")
+						.append(SU.toHexRGB(defaultReader.getInt("dkB", Build.VERSION.SDK_INT<=23?0xFF333333:0xFFFFFFFF)))
+						.append(";");
+			}
+			if (nightUseFontColor()) {
+				sb.append("color:#")
+						.append(SU.toHexRGB(defaultReader.getInt("dkF", 0xFF000000)))
+						.append(";");
+			}
+			if (nightUseInvertFilter() && nightPreserveImg()) {
+				int already = nightUseInvertFilter() ? defaultReader.getInt("dkR", 100) : 0;
+				sb.append("}img{-webkit-filter:invert(").append(Math.max(0, already-20)).append("%)");
+			}
+			mDarkModeJs = sb.append(sDarkModeIncantation).toString();
+			CMN.debug("mDarkModeJs::", mDarkModeJs);
+			a.CommonAssets.put("dk.js", mDarkModeJs.getBytes());
+			mDarkModeJsVer=darkModeJsVer;
+		}
+		return mDarkModeJs;
+	}
+	
 	public int annotColor(int k, int val, boolean set) {
 		String key = null;
 		int ret = 0, def=0;
@@ -2647,6 +2715,23 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=11) public static boolean quickTranslatorV1() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=11) public static void quickTranslatorV1(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=12, shift=1) public static boolean nightUseInvertFilter() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, shift=1) public static void nightUseInvertFilter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=13, shift=1) public static boolean nightUsePageColor() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13, shift=1) public static void nightUsePageColor(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=14) public static boolean nightUseFontColor() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=14) public static void nightUseFontColor(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=15) public static boolean nightPreserveImg() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=15) public static void nightPreserveImg(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=16) public static boolean nightDimAll() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=16) public static void nightDimAll(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=17) public static boolean nighAvoidTurnPicFlicker() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=17) public static void nighAvoidTurnPicFlicker(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	///////
 	///////

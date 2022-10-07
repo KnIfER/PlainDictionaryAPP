@@ -10,6 +10,7 @@ import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.IBinder;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
@@ -167,13 +168,16 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	@Override
 	public void refresh() {
-		//if (MainColorStamp!=a.MainAppBackground)
+		if (MainColorStamp!=a.MainAppBackground)
 		{
 			if(GlobalOptions.isDark) {
-				dialogLayout.getBackground().setColorFilter(a.AppWhite, PorterDuff.Mode.SRC_IN);
+				//dialogLayout.getBackground().setColorFilter(a.AppWhite, PorterDuff.Mode.SRC_IN);
+				if(Build.VERSION.SDK_INT<=23)dialogLayout.setBackgroundColor(Color.BLACK);
+				else dialogLayout.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 				pdictBtm.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
 			} else {
-				dialogLayout.getBackground().setColorFilter(null);
+				if(Build.VERSION.SDK_INT<=23)dialogLayout.setBackgroundResource(R.drawable.popup_background3);
+				else dialogLayout.getBackground().setColorFilter(null);
 				pdictBtm.getBackground().setColorFilter(null);
 			}
 			MainColorStamp = a.MainAppBackground;

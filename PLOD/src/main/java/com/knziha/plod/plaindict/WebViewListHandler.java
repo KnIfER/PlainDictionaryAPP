@@ -231,6 +231,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//WHP.setBackground(null);
 		// CMN.debug("shzh::ini::rcsp::", tapSch, BookPresenter.MakePageFlag(this, opt));
 		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
+		tapSel = opt.getInt("tapSel", 0);
 		shezhi = BookPresenter.MakePageFlag(this, opt);
 	}
 	
@@ -1247,6 +1248,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void updateTapSel(int value) {
 		if (tapSel != value) {
+			opt.putInt("tapSel", value);
 			tapSel = value;
 			shezhi &= ~6;
 			shezhi |= value;
