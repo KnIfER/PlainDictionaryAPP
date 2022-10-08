@@ -13,6 +13,7 @@ import com.knziha.plod.plaindict.R;
 public class TextMenuView extends TextView {
 	public Drawable leftDrawable;
 	public boolean activated;
+	public boolean showAtRight;
 	
 	public TextMenuView(Context context) {
 		super(context);
@@ -32,12 +33,20 @@ public class TextMenuView extends TextView {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		if (leftDrawable!=null && activated) {
-			int mPaddingLeft = getPaddingLeft();
-			int drawableSz = leftDrawable.getIntrinsicWidth();
-			int left = (int) ((mPaddingLeft-drawableSz)*0.55);
-			int top = (int) ((getMeasuredHeight()-drawableSz)*0.55);
-			leftDrawable.setBounds(left, top, left+drawableSz, top+drawableSz);
-			leftDrawable.draw(canvas);
+			if (showAtRight) {
+				int drawableSz = leftDrawable.getIntrinsicWidth();
+				int left = getMeasuredWidth() - getPaddingRight() - (int) ((drawableSz)*0.75);
+				int top = (int) ((getMeasuredHeight()-drawableSz)*0.55);
+				leftDrawable.setBounds(left, top, left+drawableSz, top+drawableSz);
+				leftDrawable.draw(canvas);
+			} else {
+				int mPaddingLeft = getPaddingLeft();
+				int drawableSz = leftDrawable.getIntrinsicWidth();
+				int left = (int) ((mPaddingLeft-drawableSz)*0.55);
+				int top = (int) ((getMeasuredHeight()-drawableSz)*0.55);
+				leftDrawable.setBounds(left, top, left+drawableSz, top+drawableSz);
+				leftDrawable.draw(canvas);
+			}
 		}
 	}
 	

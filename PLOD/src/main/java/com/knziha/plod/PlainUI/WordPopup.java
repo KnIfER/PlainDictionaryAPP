@@ -145,7 +145,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void refresh() {
-		if(mWebView != null){
+		if(mWebView != null)
+		{
+			if (appbar != null) {
+				appbar.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
+			}
 			if(GlobalOptions.isDark){
 				popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 				pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
@@ -228,16 +232,19 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						try {
 							if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
 								startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
+								break;
 							}
 							else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
 								weblistHandler.bMergingFrames = 1;
 								weblistHandler.prvnxtFrame(id==R.id.popNxtDict);
+								break;
 							}
 						} catch (Exception e) {
 							CMN.debug(e);
 						}
 					}
 				}
+				startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
 			} break;
 			//返回
 			case R.id.popIvBack:{
@@ -313,13 +320,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				dictPicker.toggle();
 			} break;
 			case R.id.gTrans:{
-				CMN.debug("R.id.gTrans::!!!");
-				MenuItemImpl mSTd = a.getMenuSTd(R.id.translate);
-				mSTd.isLongClicked = false;
-				a.onMenuItemClick(mSTd);
+				a.onMenuItemClick(a.anyMenu(R.id.translate, weblistHandler));
 				weblistHandler.bMergingFrames=1;
-				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(mSTd.tag);
-				if(dd!=null) dd.tag = this;
 			} break;
 			case R.id.max:{
 				moveView.togMax();
@@ -586,6 +588,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			popupChecker = pottombar.findViewById(R.id.popChecker);
 			popupChecker.setChecked(PDICMainAppOptions.getPinTapTranslator());
 			entryTitle = toolbar.findViewById(R.id.popupText1);
+			if (Build.VERSION.SDK_INT < 27) {
+				entryTitle.setPadding(0, 0, 0, 0);
+			}
 			webview.pBc = new PhotoBrowsingContext();
 			//webview.pBc.setDoubleTapZoomPage(true);
 			//webview.pBc.setDoubleTapAlignment(4);
@@ -627,7 +632,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				pottombar.getChildAt(i).setOnTouchListener(moveView);
 			}
 			
-			weblist.toolsBtn = toolbar.findViewById(R.id.tools);
+			if (false) {
+				weblist.toolsBtn = toolbar.findViewById(R.id.tools);
+			}
+			weblist.toolsBtn = pageSlider.findViewById(R.id.tools);
 			weblist.toolsBtn.setTag(webview);
 			weblist.toolsBtn.setOnClickListener(weblist);
 			weblist.toolsBtn.setOnLongClickListener(weblist);
@@ -778,8 +786,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				toolbar.setTranslationY(0);
 				cv.setTranslationY(0);
 				pottombar.setTranslationY(0);
-				((FrameLayout.LayoutParams) cv.getLayoutParams()).topMargin = (int) (45*GlobalOptions.density);
-				((FrameLayout.LayoutParams) cv.getLayoutParams()).bottomMargin = (int) (30*GlobalOptions.density);
+				((FrameLayout.LayoutParams) cv.getLayoutParams()).topMargin = (int) a.mResource.getDimension(R.dimen._45_);
+				((FrameLayout.LayoutParams) cv.getLayoutParams()).bottomMargin = (int) a.mResource.getDimension(R.dimen._35_);
 				((FrameLayout.LayoutParams) pottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 				appbar = null;
 			}
@@ -792,12 +800,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		try {
 			ViewUtils.addViewToParent(splitter, popupContentView);
 		} catch (Exception e) {
-			CMN.Log(e);
-		}
-		try {
-			ViewUtils.addViewToParent(splitter, popupContentView);
-		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 		}
 		
 		if (isNewHolder) {
@@ -1309,6 +1312,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 	}
 	
+	// sync from naved webview
 	public void valid(BookPresenter ccd, long pos) {
 		int id=CMN.id(ccd);
 		if (texts[0]!=id) {

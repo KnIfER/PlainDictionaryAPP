@@ -546,6 +546,23 @@
 		<item name="android:clickable">true</item>
 	</style>
 
+	<style name="textmenu_btn">
+		<item name="android:layout_width">58dp</item>
+		<item name="android:layout_height">58dp</item>
+		<item name="android:background">@drawable/item_selector_circle1</item>
+		<item name="android:clickable">true</item>
+		<item name="android:paddingTop">15dp</item>
+		<item name="android:paddingBottom">15dp</item>
+		<item name="android:paddingLeft">12dp</item>
+		<item name="android:paddingRight">18dp</item>
+		<item name="android:tint">#2196f3</item>
+		<item name="android:layout_gravity">bottom|right</item>
+		<item name="android:layout_marginBottom">40dp</item>
+		<item name="android:layout_marginRight">34.5dp</item>
+		<item name="android:visibility">gone</item>
+		<item name="android:src">@drawable/tools_toolbar</item>
+	</style>
+
 </resources>
 
 

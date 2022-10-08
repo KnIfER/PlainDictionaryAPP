@@ -46,7 +46,9 @@ public class PlainAppPanel extends SettingsPanel {
 //		if (showType==0 && settingsLayout!=null) {
 //			ViewUtils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);
 //		}
-		MainColorStamp = a.MainAppBackground;
+		if (init) {
+			MainColorStamp = a.MainAppBackground;
+		}
 	}
 	
 	@Override

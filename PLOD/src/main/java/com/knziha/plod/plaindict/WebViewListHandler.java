@@ -104,6 +104,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public ScrollViewmy WHP;
 	public PDICMainAppOptions opt;
 	ViewGroup webholder;
+	ViewGroup webSingleholder;
 	/** displaying id of batchSearch */
 	public long did;
 	public additiveMyCpr1 jointResult;
@@ -152,8 +153,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		this.contentUIData = contentUIData;
 		this.WHP = contentUIData.WHP;
 		this.webholder = contentUIData.webholder;
+		this.webSingleholder = contentUIData.webSingleholder;
 		this.src = src;
-		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
+		hDataSinglePage.webviewHolder = webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
 		if(WHP.getScrollViewListener()==null) {
 			/** 这里绑定自己到底栏，以获取上下文 see{@link MainActivityUIBase#showScrollSet} */
@@ -279,11 +281,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public ViewGroup getViewGroup() {
-		return mViewMode==WEB_LIST_MULTI?webholder:contentUIData.webSingleholder;
+		return mViewMode==WEB_LIST_MULTI?webholder:webSingleholder;
 	}
 	
 	public ViewGroup getDragView() {
-		return bDataOnly?dictView:mViewMode==WEB_LIST_MULTI?WHP:contentUIData.webSingleholder;
+		return bDataOnly?dictView:mViewMode==WEB_LIST_MULTI?WHP:webSingleholder;
 	}
 	
 	public View getChildAt(int frameAt) {
@@ -305,7 +307,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	@Override
 	public void addView(View child, int index) {
-		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:contentUIData.webholder).addView(child, index);
+		(mViewMode==WEB_VIEW_SINGLE?webSingleholder:contentUIData.webholder).addView(child, index);
 	}
 	
 	public void removeAllViews() {
@@ -314,17 +316,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 //		} catch (RuntimeException e) {
 //			CMN.debug("removeAllViews::", e);
 //		}
-		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:contentUIData.webholder).removeAllViews();
+		(mViewMode==WEB_VIEW_SINGLE?webSingleholder:contentUIData.webholder).removeAllViews();
 	}
 	
 	@Override
 	public void setVisibility(int visibility) {
-		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:WHP).setVisibility(visibility);
+		(mViewMode==WEB_VIEW_SINGLE?webSingleholder:WHP).setVisibility(visibility);
 	}
 	
 	@Override
 	public int getVisibility() {
-		return (mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:WHP).getVisibility();
+		return (mViewMode==WEB_VIEW_SINGLE?webSingleholder:WHP).getVisibility();
 	}
 	
 	@Override
@@ -563,7 +565,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			else {
 				WebViewmy mMergedFrame = getMergedFrame();
-				ViewUtils.addViewToParent(mMergedFrame.rl, contentUIData.webSingleholder);
+				ViewUtils.addViewToParent(mMergedFrame.rl, webSingleholder);
 				mMergedBook.toolbar.setVisibility(mergeWebHolder==1?View.GONE:View.VISIBLE);
 //				contentUIData.navBtns.setVisibility(View.GONE);
 //				if(webHolderSwapHide) {
@@ -980,7 +982,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground)) {
 			//if(widget12.getTag(R.id.image)==null)
-			contentUIData.webSingleholder.setBackgroundColor(a.MainPageBackground);
+			webSingleholder.setBackgroundColor(a.MainPageBackground);
 			//contentUIData.webholder.setBackgroundColor(a.MainPageBackground);
 			contentUIData.WHP.setBackgroundColor(a.MainPageBackground);
 		}
@@ -1066,7 +1068,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public boolean isWeviewInUse(ViewGroup someView) {
 		ViewParent sp = someView.getParent();
 		if(sp==null) return false;
-		if(ViewUtils.isVisibleV2(contentUIData.webSingleholder) && sp==contentUIData.webSingleholder) {
+		if(ViewUtils.isVisibleV2(webSingleholder) && sp==webSingleholder) {
 			return true;
 		}
 		if(ViewUtils.isVisibleV2(contentUIData.WHP) && ViewUtils.isVisibleV2(contentUIData.webholder) && sp==contentUIData.webholder) {
@@ -1261,11 +1263,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	private void evalJsAtAllFrames(String exp) {
-		evalJsAtAllFrames_internal(contentUIData.webSingleholder, exp);
-		evalJsAtAllFrames_internal(webholder, exp);
-//		if(peruseView !=null && peruseView.mWebView!=null){
-//			peruseView.mWebView.evaluateJavascript(exp,null);
-//		}
+		if (bDataOnly) {
+			getMergedFrame().evaluateJavascript(exp, null);
+		} else {
+			evalJsAtAllFrames_internal(webSingleholder, exp);
+			evalJsAtAllFrames_internal(webholder, exp);
+		}
 	}
 	
 	private void evalJsAtAllFrames_internal(ViewGroup vg, String exp) {
@@ -1355,13 +1358,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	* <br> multiple dict - hDataMultiple**/
 	public HighlightVagranter getHData() {
 		if(isMergingFrames()) {
-			hDataMergedPage.webviewHolder = contentUIData.webSingleholder;
+			hDataMergedPage.webviewHolder = webSingleholder;
 			return hDataMergedPage;
 		}
 		if(isViewSingle()) {
 			if(dictView==null) CMN.Log("ERROR_getHData!");
 			HighlightVagranter data = dictView == null ? getMergedFrame().hDataPage : dictView.hDataPage;
-			data.webviewHolder = contentUIData.webSingleholder;
+			data.webviewHolder = webSingleholder;
 			return data;
 		} else {
 			hDataMultiple.webviewHolder = contentUIData.webholder;
@@ -1904,6 +1907,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				: scrollFocus;
 	}
 	
+	public final WebViewmy getWebContextNonNull() {
+		WebViewmy ret = getWebContext();
+		return ret==null?a.weblistHandler.getMergedFrame():ret;
+	}
+	
 	public final boolean bottomNavWeb() {
 		return bottomNavWeb && pageSlider.page.decided==0;
 	}
@@ -1961,7 +1969,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			dictView = mWebView;
 			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, frame, mWebView, displaying);
 			if (!bDataOnly) {
-				ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
+				ViewUtils.addViewToParentUnique(mWebView.rl, webSingleholder);
 			}
 			setScrollFocus(mWebView, frame);
 			pageSlider.setWebview(mWebView, null);
@@ -1973,7 +1981,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void savePagePos() {
 		if (isViewSingle()) {
-			View child = contentUIData.webSingleholder.getChildAt(0);
+			View child = webSingleholder.getChildAt(0);
 			if (child!=null) {
 				WebViewmy mWebView = child.findViewById(R.id.webviewmy);
 				BookPresenter prev = mWebView.presenter;

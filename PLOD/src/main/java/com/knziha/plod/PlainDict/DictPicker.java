@@ -208,6 +208,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			LinearLayout dialogLayout = this.dialogLayout;
 			LinearSplitView splitView = this.splitView;
 			if(pin ^ dialogLayout.getParent()==splitView) {
+				MainColorStamp = 0; //todo opt
 				//TextViewmy rcntSchList = settingsLayout.findViewById(R.id.rcntSchList);
 				//ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) rcntSchList.getLayoutParams();
 				if (pin) {

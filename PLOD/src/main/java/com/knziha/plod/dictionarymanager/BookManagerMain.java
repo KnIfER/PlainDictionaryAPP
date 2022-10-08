@@ -64,6 +64,8 @@ import java.util.List;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener {
+	public static int lastViewPos;
+	public static int lastViewTop;
 	HashSet<PlaceHolder> Selection = new HashSet<>();
 	BookManager aaa;
 	private boolean bDictTweakerOnceShowed;
@@ -606,6 +608,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			mDslv.setOnItemLongClickListener(this);
 			setListAdapter();
 			refreshSize();
+			mDslv.setSelectionFromTop(lastViewPos, lastViewTop);
 		}
 	}
 	

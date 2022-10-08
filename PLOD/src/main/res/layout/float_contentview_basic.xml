@@ -15,7 +15,7 @@
 
 	<LinearLayout
 		android:layout_width="match_parent"
-		android:layout_height="45dp"
+		android:layout_height="@dimen/_45_"
 		android:orientation="horizontal"
 		>
 		<ImageView
@@ -33,9 +33,9 @@
 			android:layout_weight="1"
 			android:gravity="center_vertical"
 			android:paddingTop="5dp"
+			android:paddingBottom="5dp"
 			tools:text="androidx.appcompat.widget.AppCompatTextViewandroidx.appcompat.widget.AppCompatTextView"
 			android:textSize="25sp"
-			android:paddingBottom="5dp"
 			android:autoSizeMinTextSize="10dp"
 			android:autoSizeTextType="uniform"
 			android:autoSizeMaxTextSize="25sp"
@@ -46,7 +46,7 @@
 			/>
 
 		<ImageView
-			android:id="@+id/tools"
+			android:id="@+id/tools1"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/tools_toolbar"
@@ -118,8 +118,8 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="horizontal"
-		android:layout_marginTop="45dp"
-		android:layout_marginBottom="30dp"
+		android:layout_marginTop="@dimen/_45_"
+		android:layout_marginBottom="@dimen/_35_"
 		>
 		<com.knziha.plod.widgets.RLContainerSlider
 			android:id="@+id/PageSlider"
@@ -193,6 +193,14 @@
 				android:clickable="true"
 				android:layout_marginLeft="5dp"
 				android:visibility="gone"
+				/>
+
+			<android.widget.ImageView
+				android:id="@+id/tools"
+				tools:visibility="visible"
+				tools:alpha="0.9"
+				style="@style/textmenu_btn"
+				android:layout_marginBottom="20dp"
 				/>
 
 			<com.knziha.plod.widgets.DragScrollBar

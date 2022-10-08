@@ -17,7 +17,7 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
 		>
-		<TextView
+		<com.knziha.plod.widgets.TextMenuView
 			android:id="@+id/tapSelZi"
 			style="@style/singlechoice_plain_theme1"
 			android:text="单词点选"
@@ -25,7 +25,7 @@
 			android:layout_weight="1"
 			/>
 
-		<TextView
+		<com.knziha.plod.widgets.TextMenuView
 			android:id="@+id/tapSelDuan"
 			style="@style/singlechoice_plain_theme1"
 			android:text="段落点选"
@@ -42,9 +42,26 @@
 			/>
 	</LinearLayout>
 
-	<TextView
-		android:id="@+id/close"
-		style="@style/singlechoice_plain_theme1"
-		android:text="关闭翻译"
-		/>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		>
+		<com.knziha.plod.widgets.TextMenuView
+			android:id="@+id/tapSch"
+			style="@style/singlechoice_plain_theme1"
+			android:text="点击翻译"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			/>
+
+		<TextView
+			android:id="@+id/close"
+			style="@style/singlechoice_plain_theme1"
+			android:text="关闭翻译"
+			android:layout_width="0dp"
+			android:layout_weight="2"
+			/>
+	</LinearLayout>
+
 </LinearLayout>

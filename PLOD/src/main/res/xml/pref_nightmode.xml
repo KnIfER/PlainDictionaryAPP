@@ -44,7 +44,7 @@
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="dkB"
 			android:title="背景色"
-			android:summary="根据内核版本不同，应显示为反转后的颜色，但也有可能显示原色。"
+			android:summary="理应显示为反转后的颜色，但根据内核版本不同，也有可能显示原色。"
 			android:defaultValue="#FFFFFFFF"
 			app:hasCheck="true"
 			/>

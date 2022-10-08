@@ -204,10 +204,19 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				return;
 			}
 		}
-
+		
 		if(f1.mDslv!=null) {
-			f1.mDslv.noDraw=true;
-			f1.refreshDicts(f1.mDslv.bUnfinished=false);
+//			f1.mDslv.noDraw=true;
+//			f1.refreshDicts(f1.mDslv.bUnfinished=false);
+			View child = f1.mDslv.getChildAt(f1.mDslv.getHeaderViewsCount());
+			if (child!=null) {
+				BookManagerMain.ViewHolder vh = (BookManagerMain.ViewHolder) child.getTag();
+				if (vh != null) {
+					f1.lastViewPos = vh.position;
+					f1.lastViewTop = child.getTop();
+				}
+			}
+			
 		}
 
 		checkAll();
@@ -225,7 +234,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			if (isInitialModule && !initialModuleChanged) {
 				CMN.debug("一成不变");
 			} else {
-				CMN.debug("变化了", (result&0x1)!=0, isInitialModule);
+				CMN.debug("变化了", (result&0x1)!=0, "isInitialModule="+isInitialModule);
 				intent.putExtra("changed", true);
 				intent.putExtra("identical", identical);
 				intent.putExtra("moduleChanged", initialModuleSwitched);

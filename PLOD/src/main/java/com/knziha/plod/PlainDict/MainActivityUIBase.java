@@ -220,6 +220,7 @@ import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
+import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -274,7 +275,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -639,6 +639,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private Runnable mOpenImgRunnable;
 	private Drawable mActiveDrawable;
 	private Drawable mRatingDrawable;
+	private Drawable mTickDrawable;
 	private int CurrentDictInfoIdx;
 	private int StarLevelStamp;
 	private static HashMap<String, String> CrossFireHeaders = new HashMap<>();
@@ -3114,10 +3115,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public void addBook(BookPresenter book, PlaceHolder placeHolder) {
-			lazyMan.placeHolders.add(placeHolder);
 			if (book!=null) {
+				if (placeHolder==null) {
+					placeHolder = new PlaceHolder(book.getPath());
+				}
 				book.placeHolder=placeHolder;
 			}
+			lazyMan.placeHolders.add(placeHolder);
 			md.add(book);
 			lazyMan.newChair();
 			md_size=lazyMan.chairCount;
@@ -3636,10 +3640,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public Drawable getRatingDrawable() {
 		if(mRatingDrawable==null) {
-			mRatingDrawable=getResources().getDrawable(R.drawable.star_ic_grey);
+			mRatingDrawable=mResource.getDrawable(R.drawable.star_ic_grey);
 			mRatingDrawable.setAlpha(128);
 		}
 		return mRatingDrawable;
+	}
+	
+	public Drawable getTickDrawable() {
+		if(mTickDrawable==null) {
+			mTickDrawable=mResource.getDrawable(R.drawable.ic_yes_blue);
+			mTickDrawable.setAlpha(128);
+		}
+		return mTickDrawable;
 	}
 	
 	public void showAboutDictDialogAt(int id) {
@@ -6810,6 +6822,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return EmptyView;
 	}
 	
+	public MenuItemImpl anyMenu(int id, WebViewListHandler weblist) {
+		MenuBuilder builder = new MenuBuilder(this);
+		builder.tag = weblist;
+		return new MenuItemImpl(builder,0,id,0,0,"",0);
+	}
+	
 	/** see {@link #getMenuGridRootViewForPanel} */
 	private View findWebList(View v) {
 		View btm = null;
@@ -6935,55 +6953,39 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ViewGroup cv = (ViewGroup) getLayoutInflater().inflate(R.layout.translator_dlg, root, false);
 					dd = new AlertDialog.Builder(this)
 						.setView(cv)
-//						.setSingleChoiceLayout(R.layout.singlechoice_plain)
-//						.setSingleChoiceItems(new String[]{
-//								"使用谷歌翻译"
-//								, "使用彩云小译"
-//								, "关闭"
-//						}, 0, new DialogInterface.OnClickListener() {
-//							@Override
-//							public void onClick(DialogInterface dialog, int which) {
-//								Object tag = ((AlertDialog) dialog).tag;
-//								WebViewListHandler weblistHandler;
-//								if (tag instanceof WordPopup) {
-//									weblistHandler = ((WordPopup)tag).weblistHandler;
-//								}
-//								else {
-//									weblistHandler = (WebViewListHandler) ((MenuBuilder)tag).tag;
-//								}
-//								if(weblistHandler!=null)
-//									doTranslation(weblistHandler, which, dialog);
-//							}
-//						})
 						.setTitle("翻译当前页面").create();
 					cv.setTag(dd);
 					OnClickListener click = new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							AlertDialog dialog = (AlertDialog) cv.getTag();
-							Object tag = dialog.tag;
-							WebViewListHandler weblistHandler;
-							if (tag instanceof WordPopup) {
-								weblistHandler = ((WordPopup)tag).weblistHandler;
-							}
-							else {
-								weblistHandler = (WebViewListHandler) ((MenuBuilder)tag).tag;
-							}
-							if(weblistHandler!=null)
-								doTranslation(weblistHandler, v.getId(), dialog);
+							if(weblist!=null)
+								doTranslation(weblist, v.getId(), (AlertDialog) cv.getTag());
 						}
 					};
 					//ViewUtils.setOnClickListenersOneDepth(cv, click, 999, null);
 					View v = cv;
+					View[] tickers = new View[4];
+					int tc=0;
 					while((v=ViewUtils.getNextView(v))!=null) {
 						if (v instanceof TextView) {
 							if(GlobalOptions.isDark)
 								((TextView) v).setTextColor(AppBlack);
 							v.setOnClickListener(click);
 						}
+						if (v instanceof TextMenuView) {
+							((TextMenuView) v).leftDrawable = getTickDrawable();
+							((TextMenuView) v).showAtRight = true;
+							tickers[tc++] = v;
+						}
 					}
 					tagHolder.tag = null;
+					tagHolder.tag1 = tickers;
 				}
+				View[] tickers = (View[]) tagHolder.tag1;
+				//tickers[0].setActivated(weblist.getWebContextNonNull().translating>0);
+				tickers[0].setActivated(weblist.tapSel==2);
+				tickers[1].setActivated(weblist.tapSel==4);
+				tickers[2].setActivated(weblist.tapSch);
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
 			case R.id.fetchWord: {
@@ -7724,7 +7726,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	void doTranslation(WebViewListHandler weblistHandler, int id, DialogInterface dialog) {
 		WebViewmy mWebView = weblistHandler.getWebContext();
-		CMN.debug("doTranslation::", mWebView, weblistHandler.bMergingFrames);
+		CMN.debug("doTranslation::", weblistHandler.bMergingFrames, weblistHandler, mWebView);
 		if(mWebView!=null) {
 			boolean off;
 			if (id==R.id.close) {
@@ -7733,6 +7735,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else if(id==R.id.gTrans) {
 				off = false;
 				mWebView.translating = 1;
+			} else if(id==R.id.tapSch) {
+				weblistHandler.togTapSch();
+				if(dialog!=null) dialog.dismiss();
+				return;
 			} else {
 				weblistHandler.updateTapSel(id==R.id.tapSelZi?2
 						:id==R.id.tapSelDuan?4
