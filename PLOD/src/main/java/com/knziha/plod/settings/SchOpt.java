@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
@@ -17,12 +16,12 @@ public class SchOpt extends PlainSettingsFragment implements Preference.OnPrefer
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = R.xml.searchpreferences;
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "enable_regex1", PDICMainAppOptions.getUseRegex1(), null, null);
-		init_switch_preference(this, "enable_regex2", PDICMainAppOptions.getUseRegex2(), null, null);
+		init_switch_preference(this, "enable_regex1", PDICMainAppOptions.getUseRegex1(), null, null, null);
+		init_switch_preference(this, "enable_regex2", PDICMainAppOptions.getUseRegex2(), null, null, null);
 		//init_switch_preference(this, "joni_head", PDICMainAppOptions.getRegexAutoAddHead(), null, null);
-		init_switch_preference(this, "joni_case", PDICMainAppOptions.getJoniCaseSensitive(), null, null);
-		init_switch_preference(this, "use_wildcard1", PDICMainAppOptions.getAdvSearchUseWildcard(), null, null);
-		init_switch_preference(this, "use_morph", PDICMainAppOptions.getSearchUseMorphology(), null, null);
+		init_switch_preference(this, "joni_case", PDICMainAppOptions.getJoniCaseSensitive(), null, null, null);
+		init_switch_preference(this, "use_wildcard1", PDICMainAppOptions.getAdvSearchUseWildcard(), null, null, null);
+		init_switch_preference(this, "use_morph", PDICMainAppOptions.getSearchUseMorphology(), null, null, null);
 		findPreference("vspec").setOnPreferenceClickListener(this);
 	}
 

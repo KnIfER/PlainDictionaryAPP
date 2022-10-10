@@ -110,7 +110,6 @@ import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
 import com.knziha.plod.settings.SchOpt;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
-import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
@@ -2595,7 +2594,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						d.dismiss();
 						d = null;
 					}
-					showChooseSetDialog();
+					showChooseSetDialog(null);
 				}
 			} break;
 			case R.drawable.book_bundle2:{

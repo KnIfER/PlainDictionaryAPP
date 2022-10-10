@@ -6,7 +6,6 @@ import android.provider.Settings;
 
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -19,15 +18,15 @@ public class History extends PlainSettingsFragment implements Preference.OnPrefe
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = R.xml.pref_history;
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "rc_no", PDICMainAppOptions.storeNothing(), null, null);
-		init_switch_preference(this, "rc_click", PDICMainAppOptions.storeClick(), null, null);
+		init_switch_preference(this, "rc_no", PDICMainAppOptions.storeNothing(), null, null, null);
+		init_switch_preference(this, "rc_click", PDICMainAppOptions.storeClick(), null, null, null);
 		//init_switch_preference(this, "rc_query", PDICMainAppOptions.getHistoryStrategy1(), null, null);
 		//init_switch_preference(this, "rc_net", PDICMainAppOptions.getHistoryStrategy2(), null, null);
 		//init_switch_preference(this, "rc_float_pop", PDICMainAppOptions.getHistoryStrategy7(), null, null);
-		init_number_info_preference(this, "rc_turn", PDICMainAppOptions.storePageTurn(), R.array.record_slide_info, null);
+		init_number_info_preference(this, "rc_turn", PDICMainAppOptions.storePageTurn(), R.array.record_slide_info, null, null);
 		
-		init_switch_preference(this, "3rd", PDICMainAppOptions.storeAppId(), null, null);
-		init_switch_preference(this, "cache", PDICMainAppOptions.storeIcon(), null, null);
+		init_switch_preference(this, "3rd", PDICMainAppOptions.storeAppId(), null, null, null);
+		init_switch_preference(this, "cache", PDICMainAppOptions.storeIcon(), null, null, null);
 		
 		findPreference("permit").setOnPreferenceClickListener(this);
 	}

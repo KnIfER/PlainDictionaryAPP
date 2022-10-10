@@ -1,16 +1,13 @@
 package com.knziha.plod.settings;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MultiShareActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -28,7 +25,7 @@ public class ServerPreference extends PlainSettingsFragment implements Preferenc
 		findPreference("mdccsp").setOnPreferenceClickListener(this);
 		
 		//init_number_info_preference(this, "share_target", PDICMainAppOptions.getSendToShareTarget(), null, null);
-		init_number_info_preference(this, "send_to", PDICMainAppOptions.getSendToAppTarget(), 0, null);
+		init_number_info_preference(this, "send_to", PDICMainAppOptions.getSendToAppTarget(), 0, null, null);
 		
 		Preference item;
 		item = findPreference("keep");

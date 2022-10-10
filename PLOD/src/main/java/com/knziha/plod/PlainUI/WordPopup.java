@@ -120,7 +120,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private AtomicBoolean singleTask = new AtomicBoolean(true);
 	private AtomicInteger singleTaskVer = new AtomicInteger(0);
 	
-	DictPicker dictPicker;
+	public /*final*/ DictPicker dictPicker;
 	public MainActivityUIBase.LoadManager loadManager;
 	ViewGroup splitter;
 	private final Runnable clrSelAby = () -> invoker.evaluateJavascript("window.getSelection().collapseToStart()", null);
@@ -283,10 +283,45 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					lm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 						@Override
 						public int getSpanSize(int position) {
-							return position==0?2:1;
+							return 1;
 						}
 					});
-					rv.setAdapter(new TwoColumnAdapter(previewEntryData).setMaxLines(2));
+					TwoColumnAdapter ada = new TwoColumnAdapter(previewEntryData);
+					ada.setMaxLines(2);
+					ada.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+						@Override
+						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+							AlertDialog dialog = (AlertDialog)ViewUtils.getWeakRefObj(v.getTag());
+							if(dialog!=null)
+								dialog.dismiss();
+							if (position==0) { // 收藏词条
+								a.keepWordAsFavorite(mWebView.word, weblistHandler);
+							}
+							else if (position==1) { // 切换分组
+								dictPicker.onClick(a.anyView(R.id.bubble));
+							}
+							else {
+								int base = previewMidPos-1;
+								if (previewPageIdx == 0) {
+									if (position % 2 != 0) {
+										if (position == 3) { // 编辑搜索词
+										} else if (position == 5) { // 翻阅模式
+										} else { // 切换上一词典
+											onClick(a.anyView(R.id.popLstDict));
+										}
+										return;
+									}
+									base = base + (position-2)/2;
+								} else {
+									if (previewPageIdx < 0) base+=previewPageIdx*6;
+									else base+=3+(previewPageIdx-1)*6;
+									base = base + (position-2)/2 + (position%2==0?0:3);
+								}
+								loadEntry(base-currentPos);
+							}
+						}
+					});
+					rv.setAdapter(ada);
 					rv.setOverScrollMode(View.OVER_SCROLL_NEVER);
 					rv.setPadding(0, (int) (GlobalOptions.density*8),0,0);
 					dd = new AlertDialog.Builder(a)
@@ -313,7 +348,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				}
 				dd.show();
 				dd.getWindow().setDimAmount(0);
-				dd.getWindow().findViewById(android.R.id.content).setAlpha(0.2f);
 				refillPreviewEntries(dd, true);
 			} break;
 			case R.id.popupText2:{
@@ -466,38 +500,38 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	final private void resetPreviewIdx() {
 		previewPageIdx = 0;
 		isPreviewDirty = true;
+		previewMidPos = currentPos;
 	}
 	
 	private void refillPreviewEntries(AlertDialog dialog, boolean delay) {
 		if(isPreviewDirty)
 		{
-			int base = currentPos -1;
+			int base = previewMidPos - 1;
 			RecyclerView rv = (RecyclerView) dialog.tag;
 			if(previewPageIdx==0) {
-				previewEntryData[1] = CCD.bookImpl.getEntryAt(base);
-				previewEntryData[2] = "编辑搜索词";
-				previewEntryData[3] = CCD.bookImpl.getEntryAt(base+1);
-				previewEntryData[4] = "翻阅模式";
-				previewEntryData[5] = CCD.bookImpl.getEntryAt(base+2);
-				previewEntryData[6] = "切换上一词典";
+				previewEntryData[2] = CCD.bookImpl.getEntryAt(base);
+				previewEntryData[3] = "编辑搜索词";
+				previewEntryData[4] = CCD.bookImpl.getEntryAt(base+1);
+				previewEntryData[5] = "翻阅模式";
+				previewEntryData[6] = CCD.bookImpl.getEntryAt(base+2);
+				previewEntryData[7] = "切换上一词典";
 			} else {
 				if(previewPageIdx<0) base+=previewPageIdx*6;
-				else base= currentPos +3+(previewPageIdx-1)*6;
-				previewEntryData[1] = CCD.bookImpl.getEntryAt(base);
-				previewEntryData[2] = CCD.bookImpl.getEntryAt(base+3);
-				previewEntryData[3] = CCD.bookImpl.getEntryAt(base+1);
-				previewEntryData[4] = CCD.bookImpl.getEntryAt(base+4);
-				previewEntryData[5] = CCD.bookImpl.getEntryAt(base+2);
-				previewEntryData[6] = CCD.bookImpl.getEntryAt(base+5);
+				else base+=3+(previewPageIdx-1)*6;
+				for (int i = 0; i < 6; i++) {
+					previewEntryData[2+i] = CCD.bookImpl.getEntryAt(base + i/2 + (i%2==0?0:3));
+				}
 			}
 			rv.getAdapter().postDataSetChanged(rv, delay?180:10);
 			((TextView)dialog.findViewById(android.R.id.button3)).setText("重置"+(previewPageIdx==0?"":" ("+previewPageIdx+")"));
 		}
 	}
 	
+	int previewMidPos;
 	int previewPageIdx;
 	String[] previewEntryData = new String[]{
 			"收藏当前词条"
+			, "切换词典分组"
 			, "编辑搜索词"
 			, "joy"
 			, "切换上一词典"
@@ -539,7 +573,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public void setTranslator(BookPresenter ccd, int pos) {
 		if (CCD!=ccd) {
 			CCD=ccd;
-			currentPos = pos;
+			previewMidPos = currentPos = pos;
 			if(pos<0) pos=-1-pos;
 			displaying=ccd.bookImpl.getEntryAt(pos);
 			entryTitle.setText(displaying);
@@ -549,7 +583,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			dictPicker.dataChanged();
 			dictPicker.scrollThis();
 		} else if(currentPos!=pos) {
-			currentPos = pos;
+			previewMidPos = currentPos = pos;
 			if(pos<0) pos=-1-pos;
 			displaying=ccd.bookImpl.getEntryAt(pos);
 			entryTitle.setText(displaying);
@@ -567,6 +601,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, splitView, splitter, -1);
+			dictPicker.wordPopup = this;
 			dictPicker.loadManager = this.loadManager;
 			dictPicker.autoScroll = true;
 			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
@@ -962,7 +997,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 //				}
 				this.CCD_ID=CCD_ID;
 				sching=CCD;
-				currentPos = idx;
+				previewMidPos = currentPos = idx;
 				harvest(); //下一个！
 			}
 		}
@@ -1010,19 +1045,20 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private void SearchOne(@NonNull AtomicBoolean task, int taskVer, @NonNull AtomicInteger taskVersion) {
 		int idx = -1, cc = 0;
 		resetPreviewIdx();
+		final MainActivityUIBase.LoadManager loadMan = this.loadManager;
 		//CMN.debug("SearchOne::", popupKey);
 		if (popupKey != null) {
 			String keykey;
 			BookPresenter bookForce = popupForceId;
 			if (bookForce != null) {
 				CCD = bookForce;
-				CCD_ID = loadManager.md_findOrAdd(bookForce);
+				CCD_ID = loadMan.md_findOrAdd(bookForce);
 				popupForceId = null;
 			} else {
-				CCD_ID = upstrIdx = Math.min(upstrIdx, loadManager.md_size -1);
+				CCD_ID = upstrIdx = Math.min(upstrIdx, loadMan.md_size -1);
 			}
-			final int size = loadManager.md_size;
-			CMN.debug("轮询开始::", CCD, CCD_ID, loadManager.md_get(CCD_ID));
+			final int size = loadMan.md_size;
+			CMN.debug("轮询开始::", CCD, CCD_ID, loadMan.md_get(CCD_ID));
 			BookPresenter webx = null;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 			final int SearchMode = PDICMainAppOptions.getClickSearchMode();
@@ -1030,7 +1066,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			BookPresenter CCD = this.CCD;
 			/* 仅搜索当前词典 */
 			if (SearchMode == 2 || bookForce !=null) {
-				CCD = loadManager.md_get(CCD_ID);
+				CCD = loadMan.md_get(CCD_ID);
 				if (CCD != a.EmptyBook) {
 					if(CCD.getIsWebx()){
 						webx = CCD;
@@ -1060,8 +1096,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						for (int i = 0; i < size; i++) {
 							mdTmp = null;
 							CSID = (i + CCD_ID) % size;
-							if (PDICMainAppOptions.getTmpIsClicker(loadManager.getPlaceFlagAt(CSID))) {
-								mdTmp = loadManager.md_get(CSID);
+							if (PDICMainAppOptions.getTmpIsClicker(loadMan.getPlaceFlagAt(CSID))) {
+								mdTmp = loadMan.md_get(CSID);
 							}
 							if (mdTmp != null) {
 								if (!bForceJump && firstAttemp == null)
@@ -1118,7 +1154,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						if (cc > size)
 							break;
 						CCD_ID = CCD_ID % size;
-						CCD = loadManager.md_get(CCD_ID);
+						CCD = loadMan.md_get(CCD_ID);
 						if(CCD.getIsWebx()){
 							webx = CCD;
 							if (PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated()
@@ -1165,7 +1201,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if(idx >= 0 && CCD != a.EmptyBook && task.get() && taskVer == taskVersion.get()) {
 				if(bForceJump && SearchMode==1)
 					mWebView.setTag(R.id.js_no_match, false);
-				currentPos = idx;
+				previewMidPos = currentPos = idx;
 				this.rec = null;
 				sching = CCD;
 				harvest(); //single!
@@ -1233,27 +1269,26 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	private void loadEntry(int d) {
-		if (d!=0) {
-			currentPos=Math.max(0, Math.min(currentPos+d, (int) CCD.bookImpl.getNumberEntries()));
-		}
-		mWebView.currentPos = currentPos;
+		if (d!=0)  currentPos=Math.max(0, Math.min(currentPos+d, (int) CCD.bookImpl.getNumberEntries()));
+		int pos = currentPos;
+		mWebView.currentPos = pos;
 		mWebView.presenter = CCD;
 		if (CCD.getIsWebx()) { //todo 合并逻辑
-			if (currentPos==0) {
+			if (pos==0) {
 				CCD.SetSearchKey(popupKey);
 			}
-			CCD.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, currentPos);
+			CCD.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, pos);
 		} else {
 			weblistHandler.bMergingFrames = 1;
 			StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
 			mergedUrl.append("d");
 			IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
 			mergedUrl.append("_");
-			IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
+			IU.NumberToText_SIXTWO_LE(pos, mergedUrl);
 			if (invoker!=null && invoker.toTag!=null
 					// &&  CCD==popupForceId
 					&& CCD==invoker.presenter
-					&& currentPos==invoker.currentPos
+					&& pos==invoker.currentPos
 			) {
 				mergedUrl.append("#").append(invoker.toTag);
 				invoker.toTag = null;
@@ -1261,7 +1296,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			mWebView.loadUrl(mergedUrl.toString());
 		}
 		weblistHandler.resetScrollbar(mWebView, false, false);
-		setDisplaying(mWebView.word=CCD.getBookEntryAt(currentPos));
+		setDisplaying(mWebView.word=CCD.getBookEntryAt(pos));
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {

@@ -8,7 +8,6 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -25,10 +24,10 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 		mPreferenceId = R.xml.pref_main;
 		super.onCreate(savedInstanceState);
 		
-		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null);
-		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null).setVisible(false);
+		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null, null);
+		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null, null).setVisible(false);
 		
-		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
+		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null, null);
 		
 		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
@@ -47,18 +46,18 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 			}
 		});
 		
-		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
-		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
-		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null);
-		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null);
-		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null);
+		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null, null);
+		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null, null);
+		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null, null);
+		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null, null);
+		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null, null);
 		//init_number_info_preference(this, "paste_target", PDICMainAppOptions.getPasteTarget(), R.array.paste_target_info, null);
 		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
-		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
-		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
-		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
+		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null, null);
+		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null, null);
+		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null, null);
 		
-		init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null);
+		init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null, null);
 
 
 		findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);

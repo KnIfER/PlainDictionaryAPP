@@ -314,6 +314,9 @@ public class ViewUtils extends VU {
 	
 	/* 将对话框置顶 */
 	public static void ensureTopmost(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+		if (VU.suppressNxtDialogReorder) {
+			return;
+		}
 		if (dialog!=null) {
 			if (!isTopmost(dialog, a)) {
 				dialog.setOnDismissListener(null);

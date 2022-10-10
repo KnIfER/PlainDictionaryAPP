@@ -3,11 +3,8 @@ package com.knziha.plod.settings;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -24,24 +21,24 @@ public class Misc extends PlainSettingsFragment implements Preference.OnPreferen
 		
 		//findPreference("cat_1").setVisible(false);
 
-		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.schPageNavAudioKey(), null, null);
-		init_switch_preference(this, "ps_hide_key", PDICMainAppOptions.schPageNavHideKeyboard(), null, null);
-		init_switch_preference(this, "ps_yicha", !PDICMainAppOptions.schPageShowHints(), null, null);
+		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.schPageNavAudioKey(), null, null, null);
+		init_switch_preference(this, "ps_hide_key", PDICMainAppOptions.schPageNavHideKeyboard(), null, null, null);
+		init_switch_preference(this, "ps_yicha", !PDICMainAppOptions.schPageShowHints(), null, null, null);
 //		init_switch_preference(this, "ps_border", PDICMainAppOptions.getInPageSearchHighlightBorder(), null, null);
-		init_switch_preference(this, "ap_full", PDICMainAppOptions.schPageAfterFullSch(), null, null);
-		init_switch_preference(this, "ap_click", PDICMainAppOptions.schPageAfterClick(), null, null);
-		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
-		init_switch_preference(this, "hint_mod", PDICMainAppOptions.getHintSearchMode(), null, null);
-		init_switch_preference(this, "hint_res", PDICMainAppOptions.getNotifyComboRes(), null, null);
-		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null);
-		init_switch_preference(this, "magny", PDICMainAppOptions.getEtSearchNoMagnifier(), null, null);
-		init_switch_preference(this, "magny2", PDICMainAppOptions.getHackDisableMagnifier(), null, null);
+		init_switch_preference(this, "ap_full", PDICMainAppOptions.schPageAfterFullSch(), null, null, null);
+		init_switch_preference(this, "ap_click", PDICMainAppOptions.schPageAfterClick(), null, null, null);
+		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null, null);
+		init_switch_preference(this, "hint_mod", PDICMainAppOptions.getHintSearchMode(), null, null, null);
+		init_switch_preference(this, "hint_res", PDICMainAppOptions.getNotifyComboRes(), null, null, null);
+		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null, null);
+		init_switch_preference(this, "magny", PDICMainAppOptions.getEtSearchNoMagnifier(), null, null, null);
+		init_switch_preference(this, "magny2", PDICMainAppOptions.getHackDisableMagnifier(), null, null, null);
 		
-		init_switch_preference(this, "menuBelow", !PDICMainAppOptions.menuOverlapAnchor(), null, null);
+		init_switch_preference(this, "menuBelow", !PDICMainAppOptions.menuOverlapAnchor(), null, null, null);
 		
 		
-		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null);
-		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null);
+		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null, null);
+		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null, null);
 
 	}
 	

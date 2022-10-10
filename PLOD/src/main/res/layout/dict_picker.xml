@@ -127,6 +127,7 @@
 					android:padding="5dp"
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
+					android:layout_marginRight="5dp"
 					/>
 				<com.knziha.plod.widgets.CheckableImageView
 					android:id="@+id/autoBtn"
@@ -139,6 +140,7 @@
 					android:padding="5dp"
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
+					android:layout_marginRight="5dp"
 					/>
 				<ImageView
 					android:id="@+id/bundle"
@@ -149,7 +151,6 @@
 					android:padding="-1dp"
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
-					android:alpha="0.2"
 					/>
 			</LinearLayout>
 		</HorizontalScrollView>

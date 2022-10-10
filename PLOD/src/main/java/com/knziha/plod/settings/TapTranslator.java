@@ -3,13 +3,16 @@ package com.knziha.plod.settings;
 import android.os.Bundle;
 
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceScreen;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
+
+import java.util.ArrayList;
 
 public class TapTranslator extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_tapsch;
@@ -20,40 +23,105 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = id;
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "immersive", PDICMainAppOptions.getImmersiveClickSearch(), null, null);
+		
+		
+		ArrayList<Preference> preferences = new ArrayList<>(64);
+		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
+		if(screen!=null){
+			preferences.add(screen);
+			for (int i = 0; i < preferences.size(); i++) {
+				Preference p = preferences.get(i);
+				if (p instanceof PreferenceGroup) {
+					preferences.addAll(((PreferenceGroup)p).getPreferences());
+				} else {
+					String key = p.getKey();
+					switch (key) {
+						case "immersive":
+							init_switch_preference(this, "immersive", PDICMainAppOptions.getImmersiveClickSearch(), null, null, p);
+							break;
+						case "top_resize":
+							init_switch_preference(this, "top_resize", PDICMainAppOptions.getImmersiveClickSearch(), null, null, p);
+							break;
+						case "double_resize":
+							init_switch_preference(this, "double_resize", PDICMainAppOptions.getDoubleClickMaximizeClickSearch(), null, null, p);
+							break;
+						case "use_morph":
+							init_switch_preference(this, "use_morph", PDICMainAppOptions.getClickSearchUseMorphology(), null, null, p);
+							break;
+						case "mode_cs":
+							//init_switch_preference(this, "multi_cs", PDICMainAppOptions.getMultipleClickSearch(), null, p);
+							init_number_info_preference(this, "mode_cs", PDICMainAppOptions.getClickSearchMode(), R.array.click_search_mode_info, null, p);
+							break;
+						case "pin_upstream":
+							//init_switch_preference(this, "skip_nom", PDICMainAppOptions.getSkipClickSearch(), null, p);
+							init_switch_preference(this, "pin_upstream", PDICMainAppOptions.getPinClickSearch(), null, null, p);
+							break;
+						case "reset_pos":
+							init_switch_preference(this, "reset_pos", PDICMainAppOptions.getResetPosClickSearch(), null, null, p);
+							break;
+						case "reset_max":
+							init_switch_preference(this, "reset_max", PDICMainAppOptions.getResetMaxClickSearch(), null, null, p);
+							break;
+						case "switch_nav":
+							//init_switch_preference(this, "switch_top", PDICMainAppOptions.getSwichClickSearchDictOnTop(), null, p);
+							//init_switch_preference(this, "switch_bottom", PDICMainAppOptions.getSwichClickSearchDictOnBottom(), null, p);
+							init_switch_preference(this, "switch_nav", PDICMainAppOptions.getSwichClickSearchDictOnNav(), null, null, p);
+							break;
+						case "delay_diss":
+							init_switch_preference(this, "delay_diss", PDICMainAppOptions.getClickSearchDismissDelay(), null, null, p);
+							break;
+						case "click_tts":
+							init_switch_preference(this, "click_tts", PDICMainAppOptions.tapSchAutoReadEntry(), null, null, p);
+							break;
+						case "click_tts1":
+							init_switch_preference(this, "click_tts1", PDICMainAppOptions.tapSchPageAutoReadEntry(), null, null, p);
+							break;
+						case "skip_webx":
+							init_switch_preference(this, "skip_webx", PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated(), null, null, p);
+							break;
+						case "exempt_translator":
+							init_switch_preference(this, "exempt_translator", PDICMainAppOptions.getTapTreatTranslatorAsDedicated(), null, null, p);
+							break;
+						case "tz":
+							init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null, p);
+							break;
+						case "turn":
+							init_switch_preference(this, "turn", PDICMainAppOptions.turnPageTapSch(), null, null, p);
+							break;
+						case "tools":
+							init_switch_preference(this, "tools", PDICMainAppOptions.tapSchShowToolsBtn(), null, null, p);
+							break;
+						case "prvnxt":
+							init_switch_preference(this, "prvnxt", PDICMainAppOptions.showPrvNxtBtnSmallTapSch(), null, null, p);
+							break;
+						case "seek":
+							init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbarTapSch(), null, null, p);
+							break;
+						case "seekF":
+							init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarTapSchFolding(), null, null, p);
+							break;
+						case "bar":
+						case "tz1":
+							p.setOnPreferenceClickListener(this);
+							break;
+						case "difSet":
+							init_switch_preference(this, "difSet", PDICMainAppOptions.wordPopupAllowDifferentSet(), null, null, p);
+							break;
+						case "remSet":
+							init_switch_preference(this, "remSet", PDICMainAppOptions.wordPopupRemDifferenSet(), null, null, p);
+							break;
+					}
+					p.setOnPreferenceChangeListener(this);
+				}
+			}
+		}
+		
 
-		init_switch_preference(this, "top_resize", PDICMainAppOptions.getTopSnapMaximizeClickSearch(), null, null);
-		init_switch_preference(this, "double_resize", PDICMainAppOptions.getDoubleClickMaximizeClickSearch(), null, null);
-		//init_switch_preference(this, "multi_cs", PDICMainAppOptions.getMultipleClickSearch(), null, null);
-		init_switch_preference(this, "use_morph", PDICMainAppOptions.getClickSearchUseMorphology(), null, null);
-		init_number_info_preference(this, "mode_cs", PDICMainAppOptions.getClickSearchMode(), R.array.click_search_mode_info, null);
-		init_switch_preference(this, "pin_upstream", PDICMainAppOptions.getPinClickSearch(), null, null);
-		//init_switch_preference(this, "skip_nom", PDICMainAppOptions.getSkipClickSearch(), null, null);
-		init_switch_preference(this, "reset_pos", PDICMainAppOptions.getResetPosClickSearch(), null, null);
-		init_switch_preference(this, "reset_max", PDICMainAppOptions.getResetMaxClickSearch(), null, null);
-		//init_switch_preference(this, "switch_top", PDICMainAppOptions.getSwichClickSearchDictOnTop(), null, null);
-		//init_switch_preference(this, "switch_bottom", PDICMainAppOptions.getSwichClickSearchDictOnBottom(), null, null);
-		init_switch_preference(this, "switch_nav", PDICMainAppOptions.getSwichClickSearchDictOnNav(), null, null);
-		init_switch_preference(this, "delay_diss", PDICMainAppOptions.getClickSearchDismissDelay(), null, null);
-		init_switch_preference(this, "click_tts", PDICMainAppOptions.tapSchAutoReadEntry(), null, null);
-		init_switch_preference(this, "click_tts1", PDICMainAppOptions.tapSchPageAutoReadEntry(), null, null);
 		
-		init_switch_preference(this, "skip_webx", PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated(), null, null);
-		init_switch_preference(this, "exempt_translator", PDICMainAppOptions.getTapTreatTranslatorAsDedicated(), null, null);
 		
-		findPreference("bar").setOnPreferenceClickListener(this);
-		findPreference("tz1").setOnPreferenceClickListener(this);
 		
-		init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null);
-		init_switch_preference(this, "turn", PDICMainAppOptions.turnPageTapSch(), null, null);
-		findPreference("tz1").setOnPreferenceClickListener(this);
-		
-		init_switch_preference(this, "tools", PDICMainAppOptions.tapSchShowToolsBtn(), null, null);
 		
 		//init_switch_preference(this, "fold", PDICMainAppOptions.foldingScreenTapSch(), null, null);
-		init_switch_preference(this, "prvnxt", PDICMainAppOptions.showPrvNxtBtnSmallTapSch(), null, null);
-		init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbarTapSch(), null, null);
-		init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarTapSchFolding(), null, null);
 	}
 
 	@Override
@@ -156,6 +224,12 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 			case "seekF":
 				PDICMainAppOptions.showEntrySeekbarTapSchFolding((Boolean) newValue);
 				SearchUI.btmV++;
+			break;
+			case "difSet":
+				PDICMainAppOptions.wordPopupAllowDifferentSet((Boolean) newValue);
+			break;
+			case "remSet":
+				PDICMainAppOptions.wordPopupRemDifferenSet((Boolean) newValue);
 			break;
 		}
 		return true;

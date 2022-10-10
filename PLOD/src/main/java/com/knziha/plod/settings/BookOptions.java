@@ -72,7 +72,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			}
 		}
 		
-		Preference pref = init_switch_preference(this, key, val, null, null);
+		Preference pref = init_switch_preference(this, key, val, null, null, null);
 		
 		if(pref instanceof ColorPickerPreference)
 			MainProgram.setColorPreferenceTitle(pref, val);
@@ -92,7 +92,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				break;
 			}
 		}
-		Preference pref = init_switch_preference(this, key, val, null, null);
+		Preference pref = init_switch_preference(this, key, val, null, null, null);
 		pref.getExtras().putInt("flagPos", position);
 		if(def)pref.getExtras().putBoolean("def", def);
 		if(multiple) {
@@ -110,7 +110,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			}
 		}
 		
-		Preference pref = init_number_info_preference(this, key, val, infoArr, null);
+		Preference pref = init_number_info_preference(this, key, val, infoArr, null, null);
 		pref.getExtras().putInt("flagPos", position);
 		pref.getExtras().putInt("mask", mask);
 		

@@ -51,8 +51,8 @@
     <string name="warn_exit">Click again to exit!</string>
     
 
-    <string name="relaunch">Relaunch to take effect!</string>
-    <string name="addd">Add Mdx Dictionary</string>
+    <string name="relaunch">Relaunch The Application Required!</string>
+    <string name="addd">Open Mdx Dictionary</string>
     <string name="nothingR">Nothing recorded</string>
     <string name="bookmarkH">Bookmark History</string>
     <string name="clearsucc">Done！</string>

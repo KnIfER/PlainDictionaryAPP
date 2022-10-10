@@ -33,6 +33,7 @@ import org.nanohttpd.protocols.http.ServerRunnable;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ public class AgentApplication extends Application {
 	ArrayList<MyPair<String, Long>> AppDatabasesV2 = new ArrayList<>();
 	/** 退出全部实例时仍然保留 */
 	HashMap<String, MyIntPair> databaseConext = new HashMap<>();
+	public final static WeakReference<MainActivityUIBase>[] activities = new WeakReference[3];
 	/** 退出全部实例时关闭、清理 */
 	LexicalDBHelper historyCon;
 	
@@ -200,6 +202,11 @@ public class AgentApplication extends Application {
 	@Override
 	protected void attachBaseContext(Context base) {
 		super.attachBaseContext(base);
+		for (int i = 0; i < 3; i++) {
+			if (activities[i] == null) {
+				activities[i] = ViewUtils.DummyRef;
+			}
+		}
 		if (SDK_INT<=20) {
 //			androidx.multidex.MultiDex.install(this);
 			com.bytedance.boost_multidex.BoostMultiDex.install(base);

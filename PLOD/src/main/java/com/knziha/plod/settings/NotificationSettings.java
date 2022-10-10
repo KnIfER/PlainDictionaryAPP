@@ -1,15 +1,12 @@
 package com.knziha.plod.settings;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.AU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -23,15 +20,15 @@ public class NotificationSettings extends PlainSettingsFragment implements Prefe
 		mPreferenceId = R.xml.pref_notification;
 		
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "always", PDICMainAppOptions.getNotificationEnabled(), null, null);
-		init_switch_preference(this, "server", PDICMainAppOptions.getAutoEnableNotification(), null, null);
-		init_switch_preference(this, "music", PDICMainAppOptions.getForceDaemonMusic(), null, null);
-		init_switch_preference(this, "wifi", PDICMainAppOptions.getForceDaemonWifi(), null, null);
-		init_switch_preference(this, "daemon", PDICMainAppOptions.getAutoDaemonMW(), null, null);
-		init_switch_preference(this, "exit", PDICMainAppOptions.getAutoClearNotificationOnExit(), null, null);
-		init_switch_preference(this, "close", PDICMainAppOptions.getShowNotificationExitBtn(), null, null);
-		init_switch_preference(this, "subtitle", PDICMainAppOptions.getShowNotificationSubtitle(), null, null);
-		init_switch_preference(this, "options", PDICMainAppOptions.getShowNotificationSettings(), null, null);
+		init_switch_preference(this, "always", PDICMainAppOptions.getNotificationEnabled(), null, null, null);
+		init_switch_preference(this, "server", PDICMainAppOptions.getAutoEnableNotification(), null, null, null);
+		init_switch_preference(this, "music", PDICMainAppOptions.getForceDaemonMusic(), null, null, null);
+		init_switch_preference(this, "wifi", PDICMainAppOptions.getForceDaemonWifi(), null, null, null);
+		init_switch_preference(this, "daemon", PDICMainAppOptions.getAutoDaemonMW(), null, null, null);
+		init_switch_preference(this, "exit", PDICMainAppOptions.getAutoClearNotificationOnExit(), null, null, null);
+		init_switch_preference(this, "close", PDICMainAppOptions.getShowNotificationExitBtn(), null, null, null);
+		init_switch_preference(this, "subtitle", PDICMainAppOptions.getShowNotificationSubtitle(), null, null, null);
+		init_switch_preference(this, "options", PDICMainAppOptions.getShowNotificationSettings(), null, null, null);
 		//init_switch_preference(this, "swipe", PDICMainAppOptions.getNotificationSwipeble(), null, null);
 		
 		findPreference("batUsage").setOnPreferenceClickListener(this);

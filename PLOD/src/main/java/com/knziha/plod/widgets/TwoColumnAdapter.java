@@ -80,10 +80,12 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 			vh.title.setMaxLines(mMaxLines);
 		}
 		vh.itemView.setOnClickListener(v -> {
-			if (listener != null) listener.onItemClick(null, v, 0, v.getId());
+			if (listener != null)
+				listener.onItemClick(null, v, ((ViewHolder)v.getTag()).position, v.getId());
 		});
 		vh.itemView.setOnLongClickListener(v -> {
-			if(longlistener!=null) return longlistener.onItemLongClick(null, v, 0, v.getId());
+			if(longlistener!=null)
+				return longlistener.onItemLongClick(null, v, ((ViewHolder)v.getTag()).position, v.getId());
 			return false;
 		});
 		return vh;

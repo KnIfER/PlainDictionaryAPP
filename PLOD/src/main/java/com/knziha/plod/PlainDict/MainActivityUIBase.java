@@ -113,6 +113,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -175,6 +176,7 @@ import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
@@ -254,7 +256,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -1289,6 +1291,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		super.onCreate(savedInstanceState);
 		ViewGroup tmp =  new ScrollViewmy(this);
 		if(shunt) return;
+		AgentApplication.activities[thisActType.ordinal()] = new WeakReference<>(this);
 		wordPopup.opt = opt;
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
@@ -2622,6 +2625,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (dictPicker.loadManager==null) {
 				dictPicker.loadManager = this;
 			}
+			this.EmptyBook = MainActivityUIBase.this.EmptyBook;
 		}
 		
 		private LoadManager(LoadManager other) {
@@ -2888,7 +2892,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (ret == -1) {
 				addBook(book, book.placeHolder);
-				map().put(book.getDictionaryName(), md_size - 1);
+				map().put(book.getDictionaryName(), ret = md_size - 1);
 			}
 			return ret;
 		}
@@ -3360,6 +3364,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				for(DeckListAdapter.DeckListData dI: DBrowserDatas){
 					if(dI!=null) dI.close();
 				}
+				AgentApplication.activities[thisActType.ordinal()].clear();
 			}
 			if(CMN.instanceCount<0) CMN.instanceCount=0;
 			if (floatBtn!=null) {
@@ -4610,13 +4615,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case R.string.favor_sel: {
 							// to impl
 							if (bFromTextView) {
-								if (CurrentSelected.length() > 0 && prepareFavoriteCon().insert(MainActivityUIBase.this, CurrentSelected, -1, null) > 0)
-									showT(CurrentSelected + " 已收藏");
+								if (CurrentSelected.length() > 0)
+									keepWordAsFavorite(CurrentSelected, null);
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										if (prepareFavoriteCon().insert(MainActivityUIBase.this, StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), -1, mWebView.weblistHandler) > 0)
-											showT(word + " 已收藏");
+										keepWordAsFavorite(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView.weblistHandler);
 									}
 								});
 							}
@@ -7280,136 +7284,145 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			weblistHandler.togSchPage();
 		}
 	}
-
-	public void showChooseSetDialog() {//切换分组
+	
+	LoadManager loadingMan;
+	WordPopup loadingWordPopup;
+	
+	/** 0=main  1=wordPopup */
+	public /*static*/ void showChooseSetDialog(WordPopup wordPopup) {//切换分组
+		loadingMan = this.loadManager;
+		if ((loadingWordPopup = wordPopup) != null) {
+			loadingMan = wordPopup.loadManager;
+		}
 		AlertDialog dTmp = setchooser.get();
 		Bag bag;
 		if(dTmp==null) {
-			SecordTime = SecordPime = 0;
-			CMN.debug("重建对话框……");
 			ArrayList<String> scanInList = new ArrayList<>();
 			bag = new Bag(opt.getTwoColumnSetView());
-			{
-				DialogInterface.OnClickListener listener = (dialog, pos) -> {
-					if(pos==-1) {
-						opt.setTwoColumnSetView(bag.val=!bag.val);
-						((BaseAdapter)bag.tag).notifyDataSetChanged();
-						setchooser.get().getListView().setSelection(bag.val?lazyLoadManager().lastCheckedPos/2:lazyLoadManager().lastCheckedPos);
+			DialogInterface.OnClickListener click = (dialog, pos) -> {
+				final LazyLoadManager lazyMan = loadingMan.lazyMan;
+				if(pos==-1) {
+					opt.setTwoColumnSetView(bag.val=!bag.val);
+					((BaseAdapter)bag.tag).notifyDataSetChanged();
+					((AlertDialog)dialog).getListView().setSelection(bag.val? lazyMan.lastCheckedPos/2: lazyMan.lastCheckedPos);
+				}
+				else try {
+					lazyMan.lastCheckedPos = pos;
+					//todo 123
+					String setName = scanInList.get(pos);
+					File file = opt.fileToSet(null, setName);
+					if (file.exists()) {
 					}
-					else try {
-						lazyLoadManager().lastCheckedPos = pos;
-//						loadManager.currentFilter.clear();
-//						for (BookPresenter mdTmp : md) {
-//							if(mdTmp!=null)
-//								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
-//						}
-//						for (BookPresenter mdTmp : loadManager.currentFilter) {
-//							if(mdTmp!=null)
-//								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
-//						}
-						//todo 123
-						String setName = scanInList.get(pos);
-						File newf = opt.fileToSet(null, setName);
-						boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
-						loadManager.LoadLazySlots(newf, lazyLoad, setName);
-						loadManager.buildUpDictionaryList(lazyLoad, mdict_cache);
-						//todo 延时清空 X
-						//mdict_cache.clear();
-						//分组切换
+					//mdict_cache.clear(); //todo 延时清空 X
+					if (loadingWordPopup!=null && loadingWordPopup.loadManager==this.loadManager) {
+						loadingWordPopup.dictPicker.loadManager =
+						loadingMan = loadingWordPopup.loadManager = new LoadManager(wordPopup.dictPicker);
+					}
+					final DictPicker dictPicker = loadingMan.dictPicker;
+					boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
+					loadingMan.LoadLazySlots(file, lazyLoad, setName);
+					loadingMan.buildUpDictionaryList(lazyLoad, mdict_cache);
+					String plan = null;
+					if (loadingWordPopup != null) {
+						if (PDICMainAppOptions.wordPopupRemDifferenSet()) {
+							plan = "WordPlanName";
+						}
 						opt.putLastPlanName(LastPlanName, setName);
-						if (dictPicker.adapter_idx<0) {
+						dictPicker.dataChanged();
+						VU.suppressNxtDialogReorder = true;
+						loadingWordPopup.popupWord(null, loadingWordPopup.popupKey, null, 0);
+						VU.suppressNxtDialogReorder = false;
+					} else {
+						plan = LastPlanName;
+						if (dictPicker.adapter_idx < 0) {
 							switch_Dict(0, true, false, null);
-						} else if(loadManager.md_getAt(dictPicker.adapterIdx())!=currentDictionary){
+						} else if (loadingMan.md_getAt(dictPicker.adapterIdx()) != currentDictionary) {
 							switch_Dict(dictPicker.adapter_idx, true, false, null);
 						}
-						dialog.dismiss();
 						invalidAllLists();
-						//show(R.string.loadsucc);
-						showTopSnack(null, R.string.loadsucc, -1, -1, Gravity.CENTER, 0);
-						if(thisActType==ActType.PlainDict && opt.getCacheCurrentGroup()) {
-							// todo 干掉缓冲组
-							File def1 = new File(getExternalFilesDir(null), "default.txt");
-							if(def1.length()>0) {
-								FileOutputStream fout = new FileOutputStream(def1);
-								fout.flush();
-								fout.close();
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						showT(e.getLocalizedMessage());
 					}
-				};
-				dTmp = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
-						.setTitle(R.string.loadconfig)
-						.setTitleBtn(R.drawable.ic_two_column, listener)
-						.setSingleChoiceItems(ArrayUtils.EMPTY_STRING_ARRAY, -1, null) //new String[]{}
-						.setAdapter((BaseAdapter) (bag.tag=new BaseAdapter() {
-								@Override public int getCount() { return bag.val?(int)Math.ceil(scanInList.size()/2.f):scanInList.size(); }
-								@Override public Object getItem(int position) { return null; }
-								@Override public long getItemId(int position) { return 0; }
-								@Override public int getViewTypeCount() { return 2; }
-								@Override public int getItemViewType(int position) {
-									return bag.val?1:0;
+					opt.putLastPlanName(plan, setName);
+					dialog.dismiss();
+					//show(R.string.loadsucc);
+					showTopSnack(null, R.string.loadsucc, -1, -1, Gravity.CENTER, 0);
+				} catch (Exception e) {
+					CMN.debug(e);
+					showT(e.getLocalizedMessage());
+				}
+			};
+			dTmp = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
+					.setTitle(R.string.loadconfig)
+					.setTitleBtn(R.drawable.ic_two_column, click)
+					.setSingleChoiceItems(ArrayUtils.EMPTY_STRING_ARRAY, -1, null) //new String[]{}
+					.setAdapter((BaseAdapter) (bag.tag=new BaseAdapter() {
+							@Override public int getCount() { return bag.val?(int)Math.ceil(scanInList.size()/2.f):scanInList.size(); }
+							@Override public Object getItem(int position) { return null; }
+							@Override public long getItemId(int position) { return 0; }
+							@Override public int getViewTypeCount() { return 2; }
+							@Override public int getItemViewType(int position) {
+								return bag.val?1:0;
+							}
+							final View.OnClickListener twoColumnLis = new OnClickListener() {
+								public void onClick(View v) {
+									ViewGroup sp=(ViewGroup)v.getParent();
+									click.onClick(setchooser.get(), IU.parsint(sp.getTag(), 0)*2+sp.indexOfChild(v));
 								}
-								final View.OnClickListener twoColumnLis = new OnClickListener() {
-									public void onClick(View v) {
-										ViewGroup sp=(ViewGroup)v.getParent();
-										listener.onClick(setchooser.get(), IU.parsint(sp.getTag(), 0)*2+sp.indexOfChild(v));
-									}
-								};
-								@NonNull @Override
-								public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-									if(bag.val) {
-										ViewGroup ret;
-										if(convertView!=null){
-											ret = (ViewGroup) convertView;
-										} else {
-											ret = (ViewGroup) getLayoutInflater().inflate(R.layout.singlechoice_two_column, parent, false);
-										}
-										for (int i = 2; i < ret.getChildCount(); i++) {
-											FlowCheckedTextView mFlowTextView = (FlowCheckedTextView) ret.getChildAt(i);
-											FlowTextView tv = mFlowTextView.mFlowTextView;
-											if(tv.fixedTailTrimCount!=4)
-											{
-												tv.fixedTailTrimCount=4;
-												ret.getChildAt(i-2).setOnClickListener(twoColumnLis);
-											}
-											tv.setTextColor(AppBlack);
-											int pos = position*2+i-2;
-											String item=pos<scanInList.size()?scanInList.get(pos):"";
-											tv.setText(item);
-//											((FlowCheckedTextView)ret.getChildAt(i)).setActivated(false);
-											mFlowTextView.setChecked(TextUtils.equals(item, lazyLoadManager().lastLoadedModule));
-										}
-										ret.setActivated(false);
-										ret.postInvalidateOnAnimation();
-										ret.setTag(position);
-										convertView = ret;
+							};
+							@NonNull @Override
+							public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+								final LazyLoadManager lazyMan = loadingMan.lazyMan;
+								if(bag.val) {
+									ViewGroup ret;
+									if(convertView!=null){
+										ret = (ViewGroup) convertView;
 									} else {
-										FlowCheckedTextView ret;
-										if(convertView!=null){
-											ret = (FlowCheckedTextView) convertView;
-										} else {
-											ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
-											ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
-											ret.mFlowTextView.fixedTailTrimCount=4;
-										}
-										FlowTextView tv = ret.mFlowTextView;
-										tv.setTextColor(AppBlack);
-										String item=position<scanInList.size()?scanInList.get(position):"";
-										tv.setText(item);
-										ret.setChecked(TextUtils.equals(item, lazyLoadManager().lastLoadedModule));
-										convertView = ret;
+										ret = (ViewGroup) getLayoutInflater().inflate(R.layout.singlechoice_two_column, parent, false);
 									}
-									return convertView;
+									for (int i = 2; i < ret.getChildCount(); i++) {
+										FlowCheckedTextView mFlowTextView = (FlowCheckedTextView) ret.getChildAt(i);
+										FlowTextView tv = mFlowTextView.mFlowTextView;
+										if(tv.fixedTailTrimCount!=4)
+										{
+											tv.fixedTailTrimCount=4;
+											ret.getChildAt(i-2).setOnClickListener(twoColumnLis);
+										}
+										tv.setTextColor(AppBlack);
+										int pos = position*2+i-2;
+										String item=pos<scanInList.size()?scanInList.get(pos):"";
+										tv.setText(item);
+										mFlowTextView.setChecked(TextUtils.equals(item, lazyMan.lastLoadedModule));
+									}
+									ret.setActivated(false);
+									ret.postInvalidateOnAnimation();
+									ret.setTag(position);
+									convertView = ret;
+								} else {
+									FlowCheckedTextView ret;
+									if(convertView!=null){
+										ret = (FlowCheckedTextView) convertView;
+									} else {
+										ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
+										ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
+										ret.mFlowTextView.fixedTailTrimCount=4;
+									}
+									FlowTextView tv = ret.mFlowTextView;
+									tv.setTextColor(AppBlack);
+									String item=position<scanInList.size()?scanInList.get(position):"";
+									tv.setText(item);
+									ret.setChecked(TextUtils.equals(item, lazyMan.lastLoadedModule));
+									convertView = ret;
 								}
-							})
-						, listener)
-						.create();
-				//dTmp.mAlert.wikiBtn.getDrawable().setColorFilter(0xFF5f5f5f, PorterDuff.Mode.SRC_IN);
-				//dTmp.mAlert.wikiBtn.setBackgroundResource(R.drawable.surrtrip1);
-			}
+								return convertView;
+							}
+						})
+					, click)
+					.create();
+			//dTmp.mAlert.wikiBtn.getDrawable().setColorFilter(0xFF5f5f5f, PorterDuff.Mode.SRC_IN);
+			//dTmp.mAlert.wikiBtn.setBackgroundResource(R.drawable.surrtrip1);
+			setchooser = new WeakReference<>(dTmp);
+			dTmp.tag = bag;
+			SecordTime = SecordPime = 0;
+			CMN.debug("重建对话框……");
 			
 			ListView dlv = dTmp.getListView();
 			dTmp.show();
@@ -7417,17 +7430,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			Window window = dTmp.getWindow();
 			window.setDimAmount(0);
-			
 			dlv.setTag(scanInList);
-			setchooser = new WeakReference<>(dTmp);
-			dTmp.tag = bag;
 		}
 		else {
-//			if(dTmp.getWindow().getAttributes().type!=mDialogType){
-//				setchooser.clear();
-//				dTmp.dismiss();
-//				return;
-//			}
 			bag = (Bag)dTmp.tag;
 			if(ViewUtils.DGShowing(dTmp)){
 				return;
@@ -7492,10 +7497,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CMN.debug("扫描分组……", scanInList.size(), def.getParentFile().lastModified());
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
-			if(lastCheckedPos>=0) {
-				dTmp.getListView().setSelection(bag.val?lastCheckedPos/2:lastCheckedPos);
-				lazyLoadManager().lastCheckedPos = lastCheckedPos;
-			}
+//			if(lastCheckedPos>=0) {
+//				dTmp.getListView().setSelection(bag.val?lastCheckedPos/2:lastCheckedPos);
+//				lazyMan.lastCheckedPos = lastCheckedPos;
+//			}
 		}
 		
 		dTmp.show();
@@ -8373,6 +8378,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							merge = true;
 							/*mWebView.presenter = */invoker = mWebView.weblistHandler.getMergedBook();
 						}
+						if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+							try {
+								if (".pdf".regionMatches(true, 0, url, url.length()-4, 4)) {
+									File file = new File(URLDecoder.decode(url.substring(url.indexOf("/", schemaIdx + 10))));
+									CMN.debug("file::", file);
+									if (file.exists()) {
+										return new WebResourceResponse("*/*", "utf8", new AutoCloseInputStream(new FileInputStream(file)));
+									}
+									return emptyResponse;
+								}
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+						}
 						key = url.substring(slashIdx);
 					}
 					else {
@@ -8683,6 +8702,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				case ".css":
 					mime = "text/css";
 				break;
+				case ".svg":
+					mime = "image/svg+xml";
+				break;
 			}
 			String parms=null;
 			int parmIdx = key.indexOf("?");
@@ -8776,7 +8798,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mime="";
 				return new WebResourceResponse(mime,"UTF-8",restmp);
 			}
-			catch (IOException e) {
+			catch (Exception e) {
 				CMN.debug(e);
 				return super.shouldInterceptRequest(view, url);
 			}
@@ -11592,5 +11614,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
+	
+	public void keepWordAsFavorite(String word, WebViewListHandler weblistHandler) {
+		if (prepareFavoriteCon().insert(MainActivityUIBase.this, word, -1, weblistHandler) > 0)
+			showT(word + " 已收藏");
+	}
 	
 }

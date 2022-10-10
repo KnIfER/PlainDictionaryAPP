@@ -242,4 +242,24 @@
 			android:title="选择文本后显示工具按钮"
 			/>
 	</PreferenceCategory>
+	<PreferenceCategory
+		android:key="cat"
+		android:title="加载分组"
+		app:icon="@drawable/tools_toolbar"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="difSet"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="允许加载与主界面不同的分组 *"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="remSet"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="记忆加载的分组以便下次打开"
+			/>
+	</PreferenceCategory>
 </PreferenceScreen>

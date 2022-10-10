@@ -3,7 +3,6 @@ package com.knziha.plod.plaindict;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -844,7 +843,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			} break;
             case R.id.toolbar_action3:{//切换分组
 				if(isLongClicked) break;
-				showChooseSetDialog();
+				showChooseSetDialog(null);
 			} break;
             case R.id.toolbar_action4:
 				if(isLongClicked) break;

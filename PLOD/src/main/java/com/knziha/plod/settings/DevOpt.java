@@ -17,7 +17,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.AU;
 import com.knziha.plod.plaindict.CrashHandler;
@@ -62,7 +61,7 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 		nym.put("uk", "ua");
 		
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale), null);
+		init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale), null, null);
 		
 		findPreference("app_settings").setOnPreferenceClickListener(this);
 		findPreference("system_dev").setOnPreferenceClickListener(this);
@@ -73,22 +72,22 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 		findPreference("clear_cache4").setOnPreferenceClickListener(this);
 		findPreference("log").setOnPreferenceClickListener(this);
 		findPreference("log2").setOnPreferenceClickListener(this);
-		init_switch_preference(this, "root", PDICMainAppOptions.getRoot(), null, null).setVisible(false);
-		init_switch_preference(this, "lazyLoad", PDICMainAppOptions.getLazyLoadDicts(), null, null);
-		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null);
-		init_switch_preference(this, "keep_hide", PDICMainAppOptions.getAllowHiddenRecords(), null, null);
-		init_switch_preference(this, "sounds_first", PDICMainAppOptions.getUseSoundsPlaybackFirst(), null, null);
-		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null);
-		init_switch_preference(this, "tts_reader", PDICMainAppOptions.getUseTTSToReadEntry(), null, null);
-		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null);
-		init_switch_preference(this, "notify", PDICMainAppOptions.getNotificationEnabled(), null, null);
+		init_switch_preference(this, "root", PDICMainAppOptions.getRoot(), null, null, null).setVisible(false);
+		init_switch_preference(this, "lazyLoad", PDICMainAppOptions.getLazyLoadDicts(), null, null, null);
+		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null, null);
+		init_switch_preference(this, "keep_hide", PDICMainAppOptions.getAllowHiddenRecords(), null, null, null);
+		init_switch_preference(this, "sounds_first", PDICMainAppOptions.getUseSoundsPlaybackFirst(), null, null, null);
+		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null, null);
+		init_switch_preference(this, "tts_reader", PDICMainAppOptions.getUseTTSToReadEntry(), null, null, null);
+		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null, null);
+		init_switch_preference(this, "notify", PDICMainAppOptions.getNotificationEnabled(), null, null, null);
 		
-		init_switch_preference(this, "plugCss", PDICMainAppOptions.getAllowPlugCss(), null, null);
-		init_switch_preference(this, "plugRes", PDICMainAppOptions.getAllowPlugRes(), null, null);
-		init_switch_preference(this, "plugResNone", PDICMainAppOptions.getAllowPlugResNone(), null, null);
-		init_switch_preference(this, "plugResSame", PDICMainAppOptions.getAllowPlugResSame(), null, null);
+		init_switch_preference(this, "plugCss", PDICMainAppOptions.getAllowPlugCss(), null, null, null);
+		init_switch_preference(this, "plugRes", PDICMainAppOptions.getAllowPlugRes(), null, null, null);
+		init_switch_preference(this, "plugResNone", PDICMainAppOptions.getAllowPlugResNone(), null, null, null);
+		init_switch_preference(this, "plugResSame", PDICMainAppOptions.getAllowPlugResSame(), null, null, null);
 		
-		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
+		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null, null);
 		findPreference("dbv2_up").setOnPreferenceClickListener(this);
 		findPreference("pm").setOnPreferenceClickListener(this);
 	}

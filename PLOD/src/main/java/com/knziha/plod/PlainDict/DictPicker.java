@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PlainDialog;
+import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -74,6 +75,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private LinearSplitView splitView;
 	private ViewGroup splitter;
 	private int type;
+	
+	public WordPopup wordPopup;
 	
 	Toolbar Searchbar;
 	private EditText etSearchDict;
@@ -152,6 +155,10 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			autoBtn = bottombar.findViewById(R.id.autoBtn);
 			autoBtn.setChecked(opt.autoSchPDict());
 			autoBtn.getDrawable().setAlpha(opt.autoSchPDict()?255:100);
+			
+			if (type==-1) {
+				ViewUtils.setVisible(autoBtn, false);
+			}
 			
 			if (type==1) {
 				ViewUtils.setVisible(bottombar, false);
@@ -532,6 +539,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					a.showTopSnack("自动搜索√");
 				else
 					a.fadeSnack();
+			} break;
+			case R.id.bundle:{
+				a.showChooseSetDialog(PDICMainAppOptions.wordPopupAllowDifferentSet()?wordPopup:null);
 			} break;
 			case R.id.schBook:
 				if (Searchbar == null) {

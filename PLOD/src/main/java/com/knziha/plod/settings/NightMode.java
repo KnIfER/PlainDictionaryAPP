@@ -39,7 +39,7 @@ public class NightMode extends PlainSettingsFragment {
 					String key = p.getKey();
 					switch (key) {
 						case "sys":
-							init_switch_preference(this, key, PDICMainAppOptions.darkSystem(), null, null)
+							init_switch_preference(this, key, PDICMainAppOptions.darkSystem(), null, null, p)
 									.setEnabled(Build.VERSION.SDK_INT>=29);
 						break;
 						case "dkB":

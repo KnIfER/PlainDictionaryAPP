@@ -2230,7 +2230,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=16) public boolean getAlwaysShowScrollRect() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16) public void setAlwaysShowScrollRect(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=17, debug=0) public boolean getCacheCurrentGroup() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Deprecated @Metaline(flagPos=17, debug=0) public boolean getCacheCurrentGroup() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Deprecated @Metaline(flagPos=17, debug=0) public void setCacheCurrentGroup(boolean value) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=18, debug=0) public boolean getAutoBuildIndex() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
@@ -2732,6 +2733,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=17) public static boolean nighAvoidTurnPicFlicker() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=17) public static void nighAvoidTurnPicFlicker(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=18, shift=1) public static boolean wordPopupAllowDifferentSet() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=18, shift=1) public static void wordPopupAllowDifferentSet(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=19) public static boolean wordPopupRemDifferenSet() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=19) public static void wordPopupRemDifferenSet(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	///////
 	///////

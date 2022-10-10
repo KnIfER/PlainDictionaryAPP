@@ -72,6 +72,7 @@ public class VersionUtils {
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);
 		opt.setPeruseBottombarOnBottom(true);
+		opt.setCacheCurrentGroup(false);
 
 //		opt.setPageTurn1(true);
 //		opt.setPageTurn2(true);

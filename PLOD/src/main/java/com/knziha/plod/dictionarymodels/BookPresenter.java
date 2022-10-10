@@ -122,6 +122,7 @@ import static com.knziha.plod.dictionary.mdBase.fullpageString;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
 import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
 
@@ -310,52 +311,6 @@ public class BookPresenter
 	 */
 	@Metaline()
 	public final static byte[] markJsLoader=SU.EmptyBytes;
-
-	/**
-	 	<script class="_PDict">
-			window.addEventListener('click',wrappedClickFunc);
-			function wrappedClickFunc(e){
-				if(e.srcElement!=document.documentElement && e.srcElement.nodeName!='INPUT' && !curr.noword){
-					var s = window.getSelection();
-					if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
-						s.modify('extend', 'forward', 'word'); // first attempt
-						var an=s.anchorNode;
-
-						if(s.baseNode != document.body) {// immunize blank area
-							var text=s.toString(); // for word made up of just one character
-							if(text.length>0){
-								var range = s.getRangeAt(0);
-
-								s.collapseToStart();
-								s.modify('extend', 'forward', 'lineboundary');
-
-								if(s.toString().length>=text.length){
-									s.empty();
-									s.addRange(range);
-
-									s.modify('move', 'backward', 'word'); // now could noway be next line
-									s.modify('extend', 'forward', 'word');
-
-									if(s.getRangeAt(0).endContainer===range.endContainer&&s.getRangeAt(0).endOffset===range.endOffset){
-										// for word made up of just multiple character
-										text=s.toString();
-									}
-
-									console.log(text); // final output
-									if(app)app.popupWord(sid.get(), text, e.clientX, e.clientY, frameAt);
-								}
-							}
-						}
-						s.empty();
-					}
-				}
-				return false;
-			}
-	 	</script>
-	 */
-	@Metaline
-	public final static String SimplestInjection="SUBPAGE";
-
 	/**
 	 var styleObj= document.styleSheets[0].cssRules[3].style;
 	 styleObj.setProperty("border", "1px solid #FF0000");
@@ -2074,7 +2029,6 @@ function debug(e){console.log(e)};
 		}
 		if(mWebView.getVisibility()!=View.VISIBLE)
 			mWebView.setVisibility(View.VISIBLE);
-
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
 	
@@ -2181,7 +2135,7 @@ function debug(e){console.log(e)};
 							|| mWebView.getUrl()==null) {
 						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
-						CMN.debug("htmlCode::", htmlCode, GetSearchKey());
+						///CMN.debug("htmlCode::", htmlCode, GetSearchKey());
 						if (htmlCode!=null && (
 								htmlCode.startsWith("http")
 								|| htmlCode.startsWith("file")
@@ -2294,7 +2248,7 @@ function debug(e){console.log(e)};
 						htmlBuilder.append(htmlCode, 0, headidx + 6);
 					}
 					AddPlodStructure(mWebView, htmlBuilder, mIsolateImages);
-					htmlBuilder.append(getSimplestInjection());
+					//htmlBuilder.append(getSimplestInjection());
 					if (b1) {
 						htmlBuilder.append("</head>");
 						htmlBuilder.append(htmlCode);
@@ -2434,12 +2388,6 @@ function debug(e){console.log(e)};
 				htmlBuilder.append(htmlHeadEndTag)
 						.append(records)
 						.append(htmlEnd).toString(), null, "UTF-8", null);
-	}
-
-	String getSimplestInjection() {
-		if (bookImpl instanceof DictionaryAdapter)
-			return ((DictionaryAdapter) bookImpl).getSimplestInjection();
-		return SimplestInjection;
 	}
 
 	public static int MakePageFlag(WebViewListHandler wlh, PDICMainAppOptions opt) {
@@ -4154,6 +4102,8 @@ function debug(e){console.log(e)};
 	}
 	
 	public int getFontSize() {
+		if(mType==PLAIN_TYPE_PDF)
+			return 100;
 		if(getUseInternalFS())
 			return internalScaleLevel>0?internalScaleLevel:(internalScaleLevel=def_fontsize);
 		return def_fontsize;

@@ -150,12 +150,12 @@ public class Drawer extends Fragment implements
 						, R.string.bookmarkH
 						, R.string.lastmarks
 						, 0
+						, R.string.settings
+						, 0
 						, R.string.addd
 						, R.string.pick_main
 						, R.string.manager
 						, R.string.switch_favor
-						, 0
-						, R.string.settings
 						, 0
 						, R.string.about
 						, 0
@@ -163,7 +163,7 @@ public class Drawer extends Fragment implements
 						, 0
 						, R.string.clip_board
 				};
-				basicArrLen = basicArr.length-8;
+				basicArrLen = basicArr.length-6;
 				FooterView.setVisibility(View.GONE);
 			}
 			else {
