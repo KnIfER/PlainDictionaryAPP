@@ -302,10 +302,6 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		return false;
 	}
 	
-	public String getSimplestInjection() {
-		return BookPresenter.SimplestInjection;
-	}
-	
 	public String getLexicalEntryAt(int position) {
 		return null;
 	}

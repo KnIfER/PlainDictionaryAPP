@@ -267,11 +267,6 @@ public class PlainText extends DictionaryAdapter {
 //	}
 
 	@Override
-	public String getSimplestInjection() {
-		return BookPresenter.js;
-	}
-
-	@Override
 	public String getEntryAt(long position) {
 		return Long.toString(position);
 	}
