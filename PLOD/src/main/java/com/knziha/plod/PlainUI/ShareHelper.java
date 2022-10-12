@@ -21,11 +21,13 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.MultiplexLongClicker;
+import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -78,11 +80,11 @@ public class ShareHelper {
 		if(page == 1) pos += 3;
 		switch (pos) {
 			case 1: return "百度搜索";
-			case 2: return "谷歌翻译";
+			case 2: return "必应翻译";
 			case 3: return "必应搜索";
 			case 4: return "colordict";
 			case 5: return "文本处理";
-			case 6: return "分享";
+			case 6: return "百科搜索";
 		}
 		return null;
 	}
@@ -108,15 +110,24 @@ public class ShareHelper {
 	}
 	
 	public void initDefaultSharePattern(JSONObject json, final int pos) {
-		//CMN.debug("initDefaultSharePattern::", pos);
+		CMN.debug("initDefaultSharePattern::", pos);
 		int id = pos - 7;
 		if(id==0) id++;
 		if (page == 1) {
 			id += 3;
-			if(pos==8) id=6;
+			if(pos==8) id=0;
 		}
 		try {
 			switch (id){
+				//case R.string.send_dot:
+				case 0:
+					if(!json.has("k1")) json.put("k1", Intent.EXTRA_TEXT);
+					if(!json.has("v1")) json.put("v1", "%s");
+					if(!json.has("k2")) json.put("k2", "_chooser");
+					if(!json.has("v2")) json.put("v2", "c/q");
+					if(!json.has("t")) json.put("t", "text/plain");
+					if(!json.has("a")) json.put("a", Intent.ACTION_SEND);
+					break;
 				/* 分享#2 */
 				case 2:
 				/* 分享#1 */
@@ -124,7 +135,7 @@ public class ShareHelper {
 					if(!json.has("k1")) json.put("k1", "_data");
 					if(!json.has("v1")) {
 						json.put("n", getDefaultShareName(pos));
-						json.put("v1", id==2?"https://translate.google.cn/#view=home&op=translate&sl=auto&tl=zh-CN&text=%s":"https://www.baidu.com/s?wd=%s");
+						json.put("v1", id==2?"https://cn.bing.com/translator?ref=TThis&text=%s&from=auto&to=zh-Hans":"https://www.baidu.com/s?wd=%s");
 					}
 					if(!json.has("k2")) json.put("k2", "_chooser");
 					if(!json.has("v2")) json.put("v2", id==2?"c/q":"/");
@@ -139,14 +150,16 @@ public class ShareHelper {
 					if(!json.has("k2")) json.put("k2", "_chooser");
 					if(!json.has("v2")) json.put("v2", "/");
 					break;
-				//case R.string.send_dot:
 				case 6:
-					if(!json.has("k1")) json.put("k1", Intent.EXTRA_TEXT);
-					if(!json.has("v1")) json.put("v1", "%s");
+					if(!json.has("k1")) json.put("k1", "_data");
+					if(!json.has("v1")) {
+						json.put("n", getDefaultShareName(pos));
+						json.put("v1", "https://www.baidu.com/s?wd=%s 百科");
+						//json.put("v1", "https://www.sogou.com/sogou?query=%s");
+						//json.put("v1", "https://baike.sogou.com/m/fullLemma?key=%s");
+					}
 					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "c/q");
-					if(!json.has("t")) json.put("t", "text/plain");
-					if(!json.has("a")) json.put("a", Intent.ACTION_SEND);
+					if(!json.has("v2")) json.put("v2", "/");
 					break;
 				case 4:
 					if(!json.has("a")) {
@@ -180,13 +193,14 @@ public class ShareHelper {
 	
 	public JSONObject packoutNeoJson(ArrayList<String> data) throws JSONException {
 		JSONObject neo = new JSONObject();
-		neo.put("p", data.get(0));
-		neo.put("m", data.get(1));
-		neo.put("a", data.get(2));
-		neo.put("t", data.get(3));
-		for (int i = 4; i+1 < data.size(); i+=2) {
+		neo.put("n", data.get(0));
+		neo.put("p", data.get(1));
+		neo.put("m", data.get(2));
+		neo.put("a", data.get(3));
+		neo.put("t", data.get(4));
+		for (int i = 5; i+1 < data.size(); i+=2) {
 			if(data.get(i)!=null){
-				String val = Integer.toString((i-4)/2+1);
+				String val = Integer.toString((i-5)/2+1);
 				neo.put("k"+val, data.get(i));
 				neo.put("v"+val, data.get(i+1));
 			}
@@ -198,6 +212,10 @@ public class ShareHelper {
 		OUT:
 		try {
 			/* 只能多不能少 */
+			boolean b0;
+			if((b0 = original.has("n")) && !neo.has("n"))
+				break OUT;
+			if(b0) b0 = neo.getString("n").equals(original.getString("n"));
 			boolean b1;
 			if((b1 = original.has("p")) && !neo.has("p"))
 				break OUT;
@@ -235,6 +253,7 @@ public class ShareHelper {
 				b5 = neo.getString(key).equals(original.getString(key));
 				if(b5) duplicatedKeys.add(key);
 			}
+			if(b0) neo.remove("n");
 			if(b1) neo.remove("p");
 			if(b2) neo.remove("m");
 			if(b3) neo.remove("a");
@@ -245,7 +264,7 @@ public class ShareHelper {
 			if(neo.length()>0){
 				neo.put("b", 1);
 			}
-			//CMN.debug("好哎！！！",neo.toString());
+			CMN.debug("好哎！！！",neo.toString());
 		} catch (Exception e) {
 			CMN.debug(e);
 			return true;
@@ -413,6 +432,7 @@ public class ShareHelper {
 											initDefaultSharePattern(json, pos);
 											serializeSharePattern(json, data);
 											csa.notifyDataSetChanged();
+											itemChanged(pos);
 										})
 										.create();
 								d1.show();
@@ -426,6 +446,7 @@ public class ShareHelper {
 								}
 								a.opt.putDimensionalSharePatternByIndex(savidForPos(pos), neo);
 								a.showT("保存成功！");
+								itemChanged(pos);
 								dTmp.dismiss();
 							}
 							catch (Exception e) {
@@ -454,6 +475,17 @@ public class ShareHelper {
 			dTmp.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(mClicker);
 		}
 		return false;
+	}
+	
+	private void itemChanged(int pos) {
+		try {
+			pages.get(page)[pos] = readTargetName(page, pos);
+			TwoColumnAdapter listAdapter = a.getVtk().twoColumnAda;
+			if (listAdapter != null)
+				listAdapter.notifyItemChanged(pos);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
 	public void HandleShareIntent(ArrayList<String> data) {
@@ -616,16 +648,8 @@ public class ShareHelper {
 			title = itemView.findViewById(R.id.text1);
 			deletText = itemView.findViewById(R.id.ivDeleteText);
 			title.addTextChangedListener(tw = new TextWatcher(){
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-				
-				}
-				
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-				
-				}
-				
+				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+				@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
 				@Override
 				public void afterTextChanged(Editable s) {
 					String text = s.toString().trim();

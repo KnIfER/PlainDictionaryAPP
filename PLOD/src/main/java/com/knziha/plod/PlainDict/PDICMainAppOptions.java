@@ -322,7 +322,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		tmpEdit().putString(key, val);
 		mModified.put(key, val);
 		dirty = true;
-		defaultReader.edit().putString(key, val).apply();
 		return this;
 	}
 

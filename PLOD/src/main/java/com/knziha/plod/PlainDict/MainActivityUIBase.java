@@ -4127,7 +4127,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean bLastFromWebView;
 		ViewGroup bottomView;
 		RecyclerView twoColumnView;
-		TwoColumnAdapter twoColumnAda;
+		public TwoColumnAdapter twoColumnAda;
 		boolean lastInDark;
 		protected ObjectAnimator objectAnimator;
 		int lastBookMarkPosition;
@@ -4135,7 +4135,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onClick(View v) {
 			int id = v==null?0:v.getId();
-			CMN.debug("onClick:", id, v);
 			if(id!=0)
 			switch(id) {
 				case R.id.iv_switch: {
@@ -4643,7 +4642,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						break;
 						case R.string.send_dot: {
-							CMN.debug("R.string.send_dot!!)", isLongClicked);
 							if (position == 8) {
 								if (isLongClicked) {
 									shareUrlOrText();
@@ -4914,7 +4912,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					public int scrollVerticallyBy (int dy, RecyclerView.Recycler recycler, RecyclerView.State state ) {
 						int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
 						if(dy!=scrollRange && flip==0 && scrollRange==0) {
-							if (!twoColumnAda.isData(shareHelper.arraySelUtils[3])) {
+							if (!twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
 								//CMN.debug("scrollVerticallyBy::", dy, scrollRange);
 								if (Math.abs(dy-scrollRange)>GlobalOptions.density*27) {
 									flip = dy < 0 ? -1 : 1; // 上下滑动翻页
