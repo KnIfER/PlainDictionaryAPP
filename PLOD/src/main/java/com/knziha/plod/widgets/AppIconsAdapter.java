@@ -63,6 +63,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	/** true:sharing url */
 	private boolean shareLink;
 	private int shareWhat;
+	private int headBtnSz = 1;
 	//private String text;
 	
 	public AppIconsAdapter(Toastable_Activity a) {
@@ -87,30 +88,33 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 		shareDialog.tag = this;
         itemClicker = v1 -> {
 			ViewHolder vh = (ViewHolder) v1.getTag();
-			int pos = vh.getLayoutPosition()-1;
-			if (pos <= -1) { // 选择分享方式
-				AlertDialog dlg = new AlertDialog.Builder(shareDialog.getContext())
-						.setTitle("选择要分享的内容：")
-						.setSingleChoiceItems(shareTargetsInfo, shareWhat, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								PDICMainAppOptions.shareTextOrUrl(which);
-								dialog.dismiss();
-								((MainActivityUIBase) a).shareUrlOrText();
-							}
-						})
-						//.setWikiText("", null)
-						.create();
-				ViewUtils.ensureWindowType(dlg, (MainActivityUIBase) a, null);
-				dlg.getWindow().setDimAmount(0.2f);
-				dlg.show();
+			int pos = vh.getLayoutPosition()-headBtnSz;
+			if (pos < 0) { // 选择分享方式
+				if (shareWhat < shareTargetsInfo.length) {
+					AlertDialog dlg = new AlertDialog.Builder(shareDialog.getContext())
+							.setTitle("选择要分享的内容：")
+							.setSingleChoiceItems(shareTargetsInfo, shareWhat, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									PDICMainAppOptions.shareTextOrUrl(which);
+									dialog.dismiss();
+									((MainActivityUIBase) a).shareUrlOrText();
+								}
+							})
+							//.setWikiText("", null)
+							.create();
+					ViewUtils.ensureWindowType(dlg, (MainActivityUIBase) a, null);
+					dlg.getWindow().setDimAmount(0.2f);
+					dlg.show();
+				}
 			}
 			else { // 分享…
 				AppInfoBean appBean = list.get(pos);
 				Intent shareIntent = new Intent(appBean.intent);
 				shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
 				shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				if (shareLink && shareIntent.getDataString().contains("localhost")) { // 开启服务器
+				if (shareLink && shareIntent.getData()!=null && shareIntent.getDataString().contains("localhost")) {
+					// 开启服务器
 					MainActivityUIBase act = (MainActivityUIBase) a;
 					if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
 						((PDICMainActivity)act).startServer(true);
@@ -152,25 +156,31 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
     }
 
     /** 获取应用列表 */
-    public void pullAvailableApps(Toastable_Activity a, String url, String text, int shareWhat) {
+    public void pullAvailableApps(Toastable_Activity a, Intent intent, String url, String text, int shareWhat) {
 		list.clear();
-		shareLink=text==null;
-		this.shareWhat=shareWhat;
-		Intent intent;
-        if(shareLink) {
-            intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-			//this.text = url;
-        } else {
-			if(shareWhat==1) {
-				intent=new Intent(Intent.ACTION_WEB_SEARCH);
-				intent.putExtra(SearchManager.QUERY, text);
+		if(intent==null) {
+			shareLink=text==null;
+			this.shareWhat=shareWhat;
+			if(shareLink) {
+				intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+				//this.text = url;
 			} else {
-				intent=new Intent(Intent.ACTION_SEND);
-				intent.putExtra(Intent.EXTRA_TEXT, text);
-				intent.setType("text/plain");
+				if(shareWhat==1) {
+					intent=new Intent(Intent.ACTION_WEB_SEARCH);
+					intent.putExtra(SearchManager.QUERY, text);
+				} else {
+					intent=new Intent(Intent.ACTION_SEND);
+					intent.putExtra(Intent.EXTRA_TEXT, text);
+					intent.setType("text/plain");
+				}
+				//this.text = text;
 			}
-			//this.text = text;
-        }
+			headBtnSz = 1;
+		} else {
+			shareLink=false;
+			headBtnSz = 0;
+			shareTargetsInfo1[this.shareWhat=4] = text;
+		}
         pm = a.getPackageManager();
         ResolveResolvedQuery(intent);
         if(shareLink) {
@@ -216,7 +226,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	
 	@Override
 	public int getItemViewType(int position) {
-		return position<=0?1:0;
+		return position<headBtnSz?1:0;
 	}
 	
 	String[] shareTargets = new String[]{
@@ -238,16 +248,17 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 			,"搜索单词："
 			,"分享网址："
 			,"分享网址："
+			,null
 	};
 	
 	@Override
     public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 		DescriptiveImageView iv = holder.textImageView;
-		if (position == 0) { // 选择分享内容
+		if (position < headBtnSz) { // 选择分享内容
 			((TextView)iv.getTag()).setText(shareTargets[shareWhat]);
 		}
 		else {
-			position--;
+			position-=headBtnSz;
 			holder.position = position;
 			AppInfoBean app = list.get(position);
 	
@@ -284,7 +295,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return list.size()+1;
+        return list.size()+headBtnSz;
     }
 	
 	public static class ViewHolder extends RecyclerView.ViewHolder {

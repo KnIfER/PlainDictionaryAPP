@@ -8,6 +8,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentValues;
@@ -63,7 +64,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
-import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -218,7 +218,6 @@ import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.ListViewmy;
-import com.knziha.plod.widgets.MultiplexLongClicker;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
@@ -240,8 +239,6 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
@@ -257,7 +254,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -1097,7 +1093,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	*  {p:程序包名 m:活动名称 a:举措名称 t:MIME类型 k1:字段1键名 v1:字段1键值…}x8
 	*  7 8 9 10   11 12 13 14
 	* */
-	public void handleIntentShare(String conent, ArrayList<String> data) {
+	public void handleIntentShare(String text, ArrayList<String> data) {
 		try {
 			String action  = data.get(3);
 			if(action==null) action = Intent.ACTION_VIEW;
@@ -1118,17 +1114,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			boolean bQueryChooser = false;
 			boolean setFlags = false;
 			int mFlags = 0;
-			String val;
+			String key;
+			int intentFalgs = 0;
 			for (int i = 5; i < data.size()-1; i+=2) {
-				val = data.get(i);
-				if(val!=null){
-					String content = data.get(i+1);
-					content = content==null?conent:content.replace("%s", conent);
-					if(val.equals("_data")){
-						intent.setData(Uri.parse(content));
+				key = data.get(i);
+				if(key!=null){
+					String val = data.get(i+1);
+					if (val == null) {
+						val = text;
+					} else  {
+						val = val.replace("%s", text);
 					}
-					else if(val.equals("_chooser")){
-						String[] arr = content.split("/");
+					if(key.equals("_data")){
+						intent.setData(Uri.parse(val));
+					}
+					else if(key.equals("_chooser")){
+						String[] arr = val.split("/");
 						for(String arrI:arr){
 							if(arrI.length()==1){
 								switch (Character.toLowerCase(arrI.charAt(0))){
@@ -1145,8 +1146,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 					}
-					else if(val.equals("_flags")){
-						String[] arr = content.split("/");
+					else if(key.equals("_flags")){
+						String[] arr = val.split("/");
 						for(String arrI:arr){
 							switch (arrI){
 								case "0":
@@ -1170,8 +1171,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 					}
+					else if(key.equals("_share")){
+						intentFalgs |= 1<<10;
+						//intent.putExtra(Intent.EXTRA_TEXT, text);
+						if (val.equals("send")) {
+							intent.setAction(Intent.ACTION_SEND);
+							intent.putExtra(Intent.EXTRA_TEXT, text);
+							intent.setType("text/plain");
+						} else if (val.equals("search")) {
+							intent.setAction(Intent.ACTION_WEB_SEARCH);
+							intent.putExtra(SearchManager.QUERY, text);
+						}
+					}
 					else {
-						intent.putExtra(val, content);
+						intent.putExtra(key, val);
 					}
 				}
 			}
@@ -1182,7 +1195,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				intent.addFlags(mFlags);
 			}
 
-			int intentFalgs = 0;
 			if(bCreateChooser) intentFalgs|=1;
 			if(bQueryChooser) intentFalgs|=1<<1;
 			if(bMatchDefault) intentFalgs|=1<<2;
@@ -1226,10 +1238,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	private void handleStartIntent(Intent intent, int intentFalgs) {
-		//CMN.debug("vs::handleStartIntent::", intent, intent.getData());
+		CMN.debug("vs::handleStartIntent::", intent, intent.getData(), intent.getExtras(), Integer.toBinaryString(intentFalgs));
 		if(intent.hasExtra(Intent.EXTRA_HTML_TEXT)&&!intent.hasExtra(Intent.EXTRA_TEXT)){
 			intent.putExtra(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_HTML_TEXT));
 			intent.removeExtra(Intent.EXTRA_HTML_TEXT);
+		}
+		if((intentFalgs&(1<<10))!=0) {
+			String title = shareHelper.getShareTitle();
+			shareUrlOrText(null, title, 0, intent);
+			return;
 		}
 		if((intentFalgs&0x1)!=0) {
 			if((intentFalgs&0x2)!=0) {
@@ -4329,6 +4346,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		public boolean onItemClick(AdapterView<?> parent, @Nullable View view, int position, long strId, boolean isLongClicked, boolean isUserClick) {
 			if(position<0) return true;
+			shareHelper.lastClickedPos = shareHelper.pageSz*shareHelper.page + position;
 			int dissmisstype=0;
 			try {
 				if (strId != 0) {
@@ -4643,10 +4661,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						break;
 						case R.string.send_dot: {
 							if (position == 8) {
-								if (isLongClicked) {
-									shareUrlOrText();
-									return true;
-								}
+//								if (isLongClicked) {
+//								} else {
+//									mWebView.evaluateJavascript("getSelection().toString()", value -> {
+//										String newKey = "";
+//										if (value.length() > 2) {
+//											value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+//											if (value.length() > 0) {
+//												newKey = value;
+//											}
+//										}
+//										shareUrlOrText(null, newKey, 0);
+//									});
+//									return true;
+//								}
 							}
 							if (shareHelper.execVersatileShare(isLongClicked, position)) {
 								return true;
@@ -6163,7 +6191,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				shareWhat = 1;
 			}
 			if (shareWhat>1) {
-				shareUrlOrText(weblist.getShareUrl(shareWhat>3), null, shareWhat);
+				shareUrlOrText(weblist.getShareUrl(shareWhat>3), null, shareWhat, null);
 			} else {
 				WebViewmy wv = null;
 				View view = getCurrentFocus();
@@ -6177,7 +6205,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							String text = tv.getText().toString();
 							int st = tv.getSelectionStart(), ed=tv.getSelectionEnd();
 							try {
-								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareWhat);
+								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareWhat, null);
 								return;
 							} catch (Exception e) { }
 						}
@@ -6202,20 +6230,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									newKey = value;
 								}
 							}
-							shareUrlOrText(null, newKey, fineShare);
+							shareUrlOrText(null, newKey, fineShare, null);
 						});
 					} else {
-						shareUrlOrText(null, wv.weblistHandler.displaying, shareWhat);
+						shareUrlOrText(null, wv.weblistHandler.displaying, shareWhat, null);
 					}
 				}
 			}
 		}
 	}
 	
-	public void shareUrlOrText(String url, String text, int shareWhat) {
+	public void shareUrlOrText(String url, String text, int shareWhat, Intent intent) {
 		//CMN.Log("menu_icon6menu_icon6");
 		//CMN.rt("分享链接……");
-		if (url!=null || text!=null) {
+		if (url!=null || text!=null || intent!=null) {
 			int id = WeakReferenceHelper.share_dialog;
 			BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
 			AppIconsAdapter shareAdapter;
@@ -6229,7 +6257,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (url==null) {
 				//url = currentWebView.getUrl();
 			}
-			shareAdapter.pullAvailableApps(this, url, text, shareWhat);
+			shareAdapter.pullAvailableApps(this, intent, url, text, shareWhat);
 			//shareAdapter.pullAvailableApps(this, null, "happy");
 			//CMN.pt("拉取耗时：");
 		}

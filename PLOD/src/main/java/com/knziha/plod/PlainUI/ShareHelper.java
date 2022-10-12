@@ -21,7 +21,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -39,11 +38,12 @@ import java.util.ArrayList;
 public class ShareHelper {
 	final MainActivityUIBase a;
 	public int page;
-	private  final int pageSz = 11;
-	private static int ver;
+	public final int pageSz = 11;
+	private static int ver = 0;
 	private final SparseIntArray mVers = new SparseIntArray();
 	private final SparseArray<String[]> pages = new SparseArray<>();
 	public final String[][] arraySelUtils = new String[3][];
+	public int lastClickedPos;
 	
 	public ShareHelper(MainActivityUIBase a) {
 		this.a = a;
@@ -56,6 +56,7 @@ public class ShareHelper {
 		}
 		if (page <= 1) {
 			arr[7] = readTargetName(page, 7);
+			arr[8] = readTargetName(page, 8);
 			arr[9] = readTargetName(page, 9);
 			arr[10] = readTargetName(page, 10);
 		} else {
@@ -67,24 +68,30 @@ public class ShareHelper {
 	}
 	
 	/** 小爷聊发爪哇狂，费点内存又何妨！ */
-	private String getTargetName(String savid) {
+	private String getTargetName(String savid) throws JSONException {
 		String text = a.opt.getString(savid, null);
 		if(text==null) return CMN.AssetTag;
-		com.alibaba.fastjson.JSONObject data = com.alibaba.fastjson.JSONObject.parseObject(text);
-		return data.getString("n");
+		JSONObject data = new JSONObject(text);
+		try {
+			text = data.getString("n");
+		} catch (JSONException ignored) {
+			text = null;
+		}
+		return text==null&&(data.has("b")||data.length()==0)?CMN.AssetTag:text;
 	}
 	
 	public String getDefaultShareName(int pos) {
 		pos -= 7;
-		if(pos==0) pos++;
-		if(page == 1) pos += 3;
+		if(page == 1) pos += 4;
 		switch (pos) {
-			case 1: return "百度搜索";
+			case 0: return "百度搜索";
+			case 1: return "分享…";
 			case 2: return "必应翻译";
 			case 3: return "必应搜索";
 			case 4: return "colordict";
-			case 5: return "文本处理";
-			case 6: return "百科搜索";
+			case 5: return "搜索…";
+			case 6: return "文本处理";
+			case 7: return "百科搜索";
 		}
 		return null;
 	}
@@ -99,9 +106,8 @@ public class ShareHelper {
 			CMN.debug(e);
 		}
 		if (pageNum <= 1) {
-			int pos = lstPos - 7;
-			if(pos>0) pos--;
-			if(pageNum==1) pos+= 3;
+			int pos = lstPos - 7 + 1;
+			if(pageNum==1) pos+= 4;
 			return a.mResource.getString(R.string.share) + "#" + pos;
 		} else {
 			// ...
@@ -112,70 +118,55 @@ public class ShareHelper {
 	public void initDefaultSharePattern(JSONObject json, final int pos) {
 		CMN.debug("initDefaultSharePattern::", pos);
 		int id = pos - 7;
-		if(id==0) id++;
 		if (page == 1) {
-			id += 3;
-			if(pos==8) id=0;
+			id += 4;
 		}
 		try {
+			if(!json.has("n"))
+				json.put("n", getDefaultShareName(pos));
 			switch (id){
 				//case R.string.send_dot:
-				case 0:
-					if(!json.has("k1")) json.put("k1", Intent.EXTRA_TEXT);
-					if(!json.has("v1")) json.put("v1", "%s");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "c/q");
-					if(!json.has("t")) json.put("t", "text/plain");
-					if(!json.has("a")) json.put("a", Intent.ACTION_SEND);
-					break;
-				/* 分享#2 */
-				case 2:
-				/* 分享#1 */
 				case 1:
-					if(!json.has("k1")) json.put("k1", "_data");
-					if(!json.has("v1")) {
-						json.put("n", getDefaultShareName(pos));
-						json.put("v1", id==2?"https://cn.bing.com/translator?ref=TThis&text=%s&from=auto&to=zh-Hans":"https://www.baidu.com/s?wd=%s");
-					}
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", id==2?"c/q":"/");
+				case 5:
+//					if(!json.has("k1")) json.put("k1", Intent.EXTRA_TEXT);
+//					if(!json.has("v1")) json.put("v1", "%s");
+//					if(!json.has("k2")) json.put("k2", "_chooser");
+//					if(!json.has("v2")) json.put("v2", "c/q");
+//					if(!json.has("t")) json.put("t", "text/plain");
+//					if(!json.has("a")) json.put("a", Intent.ACTION_SEND);
+					if(!json.has("k1")) json.put("k1", "_share");
+					if(!json.has("v1")) json.put("v1", id==1?"send":"search");
 					break;
-				/* 分享#3 */
+				case 0:
+				case 2:
 				case 3:
+				case 7:
 					if(!json.has("k1")) {
-						json.put("n", getDefaultShareName(pos));
 						json.put("k1", "_data");
 					}
-					if(!json.has("v1")) json.put("v1", "https://cn.bing.com/search?q=%s");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "/");
-					break;
-				case 6:
-					if(!json.has("k1")) json.put("k1", "_data");
 					if(!json.has("v1")) {
-						json.put("n", getDefaultShareName(pos));
-						json.put("v1", "https://www.baidu.com/s?wd=%s 百科");
-						//json.put("v1", "https://www.sogou.com/sogou?query=%s");
-						//json.put("v1", "https://baike.sogou.com/m/fullLemma?key=%s");
+						if(id==7) {
+							json.put("v1", "https://www.baidu.com/s?wd=%s 百科");
+							//json.put("v1", "https://www.sogou.com/sogou?query=%s");
+							//json.put("v1", "https://baike.sogou.com/m/fullLemma?key=%s");
+						}
+						json.put("v1", id==0?"https://www.baidu.com/s?wd=%s"
+								:id==2?"https://cn.bing.com/translator?ref=TThis&text=%s&from=auto&to=zh-Hans"
+								:"https://cn.bing.com/search?q=%s"
+								);
 					}
 					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "/");
+					if(!json.has("v2")) json.put("v2", "c/q");
 					break;
 				case 4:
-					if(!json.has("a")) {
-						json.put("n", getDefaultShareName(pos));
-						json.put("a", a.mResource.getString(R.string.colordict));
-					}
+					if(!json.has("a")) json.put("a", a.mResource.getString(R.string.colordict));
 					if(!json.has("k1")) json.put("k1", MainActivityUIBase.EXTRA_QUERY);
 					if(!json.has("v1")) json.put("v1", "%s");
 					if(!json.has("k2")) json.put("k2", "_chooser");
 					if(!json.has("v2")) json.put("v2", "/");
 					break;
-				case 5:
-					if(!json.has("a")) {
-						json.put("n", getDefaultShareName(pos));
-						json.put("a", Intent.ACTION_PROCESS_TEXT);
-					}
+				case 6:
+					if(!json.has("a")) json.put("a", Intent.ACTION_PROCESS_TEXT);
 					if(!json.has("k1")) json.put("k1", Intent.EXTRA_PROCESS_TEXT);
 					if(!json.has("v1")) json.put("v1", "%s");
 					if(!json.has("t")) json.put("t", "text/plain");
@@ -313,7 +304,7 @@ public class ShareHelper {
 			, R.string.send_etsch
 			, R.string.fapp_name
 			, R.string.send_dot
-			, R.string.send_dot
+			, R.string.search_dot
 			, R.string.send_dot
 			, R.string.send_dot
 	};
@@ -327,7 +318,7 @@ public class ShareHelper {
 				final String[] arr = arraySelUtils[page] = new String[pageSz];
 				final int base = pageSz*page;
 				for (int i = 0; i < pageSz; i++) {
-					if (i < 7 || i == 8) {
+					if (i < 7) {
 						arr[i] = res.getString(defPageStrIds[base + i]);
 					} else {
 						arr[i] = readTargetName(page, i);
@@ -372,11 +363,7 @@ public class ShareHelper {
 	}
 	
 	public boolean execVersatileShare(boolean isLongClicked, final int pos) {
-		boolean b1 = page <= 1 && pos==8;
-		if (isLongClicked && b1) {
-			return true;
-		}
-		JSONObject json = b1?null:a.opt.getDimensionalSharePatternByIndex(savidForPos(pos));
+		JSONObject json = a.opt.getDimensionalSharePatternByIndex(savidForPos(pos));
 		boolean putDefault = json == null;
 		if (putDefault) {
 			json = new JSONObject();
@@ -433,6 +420,7 @@ public class ShareHelper {
 											serializeSharePattern(json, data);
 											csa.notifyDataSetChanged();
 											itemChanged(pos);
+											ver++;
 										})
 										.create();
 								d1.show();
@@ -447,6 +435,7 @@ public class ShareHelper {
 								a.opt.putDimensionalSharePatternByIndex(savidForPos(pos), neo);
 								a.showT("保存成功！");
 								itemChanged(pos);
+								ver++;
 								dTmp.dismiss();
 							}
 							catch (Exception e) {
@@ -658,6 +647,15 @@ public class ShareHelper {
 			});
 			
 			deletText.setOnClickListener(onc);
+		}
+	}
+	
+	public String getShareTitle() {
+		try {
+			return pages.get(lastClickedPos/pageSz)[lastClickedPos%pageSz];
+		} catch (Exception e) {
+			CMN.debug(e);
+			return null;
 		}
 	}
 }
