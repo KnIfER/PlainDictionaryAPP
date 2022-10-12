@@ -204,17 +204,11 @@
 	<string name="annote">高亮笔记 🖌</string>
 	<string name="underline">下划线标注</string>
 	<string name="deunderline">下划线笔记</string>
-	<string name="share_1">分享#1</string>
-	<string name="share_2">分享#2</string>
-	<string name="share_3">分享#3</string>>
 	<string name="send_inpage">发送到页内搜索</string>
 	<string name="tts">TTS 播放</string>
 	<string name="pop_sch">点译查询</string>
 	<string name="peruse_sch">翻阅查询</string>
 	<string name="send_etsch">发送到搜索框</string>
-	<string name="share_4">分享#4</string>
-	<string name="share_5">分享#5</string>
-	<string name="share_6">分享#6</string>
 	<string name="annotL">笔记列表 ✏</string>
 	<string name="clip_board">剪贴板</string>
 	<string name="noti_set">通知栏设置</string>
@@ -228,5 +222,6 @@
 	<string name="st_time">时间排序，由新到旧</string>
 	<string name="lnk_note">链接到已有笔记…</string>
 	<string name="edit_yy_note">修改已选笔记</string>
+	<string name="share_name">定制名称</string>
 	>
 </resources>

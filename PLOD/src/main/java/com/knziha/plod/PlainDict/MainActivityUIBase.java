@@ -63,6 +63,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
+import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -170,6 +171,7 @@ import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.SettingsSearcher;
+import com.knziha.plod.PlainUI.ShareHelper;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.LexicalDBHelper;
@@ -209,7 +211,6 @@ import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AppIconsAdapter;
-import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.FlowCheckedTextView;
@@ -1096,18 +1097,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	*  {p:程序包名 m:活动名称 a:举措名称 t:MIME类型 k1:字段1键名 v1:字段1键值…}x8
 	*  7 8 9 10   11 12 13 14
 	* */
-	void handleIntentShare(String conent, ArrayList<String> data) {
+	public void handleIntentShare(String conent, ArrayList<String> data) {
 		try {
-			String action  = data.get(2);
+			String action  = data.get(3);
 			if(action==null) action = Intent.ACTION_VIEW;
 			Intent intent = new Intent(action);
-			if(data.get(0)!=null && data.get(1)!=null)//optional
-				intent.setClassName(data.get(0), data.get(1));
-			else if(data.get(0)!=null)//optional
-				intent.setPackage(data.get(0));
+			if(data.get(1)!=null && data.get(2)!=null)//optional
+				intent.setClassName(data.get(1), data.get(2));
+			else if(data.get(1)!=null)//optional
+				intent.setPackage(data.get(1));
 
 			//intent.setAction(action);
-			String mime = data.get(3);
+			String mime = data.get(4);
 			if(mime!=null)
 				intent.setType(mime);
 			intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -1118,7 +1119,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			boolean setFlags = false;
 			int mFlags = 0;
 			String val;
-			for (int i = 4; i < data.size()-1; i+=2) {
+			for (int i = 5; i < data.size()-1; i+=2) {
 				val = data.get(i);
 				if(val!=null){
 					String content = data.get(i+1);
@@ -1225,6 +1226,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	private void handleStartIntent(Intent intent, int intentFalgs) {
+		//CMN.debug("vs::handleStartIntent::", intent, intent.getData());
 		if(intent.hasExtra(Intent.EXTRA_HTML_TEXT)&&!intent.hasExtra(Intent.EXTRA_TEXT)){
 			intent.putExtra(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_HTML_TEXT));
 			intent.removeExtra(Intent.EXTRA_HTML_TEXT);
@@ -4056,7 +4058,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public final class VerseKit implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		BookPresenter invoker;
-		WebViewmy mWebView;
+		public WebViewmy mWebView;
 		TextView mTextView;
 		MdxDBHelper con;
 		AlertDialog d;
@@ -4064,7 +4066,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ImageView tools_lock;
 		ImageView iv_settings;
 		ImageView iv_color;
-		String CurrentSelected="";
+		public String CurrentSelected="";
 		boolean bNeedStopScrollEffect;
 		public boolean bNeedClearTextSelection;
 		private int last_switch_cl_id;
@@ -4082,45 +4084,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				,R.string.dict_opt
 				,R.string.f_scale_up
 				,R.string.f_scale_down
-			};
-			arraySelUtils = new int[]{
-				R.string.favor_sel
-				,R.string.select_all
-				,R.string.hi_color
-				,R.string.highlight
-				,R.string.annote
-				,R.string.underline
-				,R.string.deunderline
-				,R.string.share_1
-				,R.string.send_dot
-				,R.string.share_2
-				,R.string.share_3
-			};
-			arraySelUtils2 = new int[]{
-				R.string.favor_sel
-				,R.string.send_inpage
-				,R.string.tts
-				,R.string.pop_sch
-				,R.string.peruse_sch
-				,R.string.send_etsch
-				,R.string.fapp_name
-				,R.string.share_4
-				,R.string.send_dot
-				,R.string.share_5
-				,R.string.share_6
-			};
-			arrayTextUtils = new int[]{
-				R.string.favor_sel
-				,R.string.send_inpage
-				,R.string.tts
-				,R.string.pop_sch
-				,R.string.peruse_sch
-				,R.string.send_etsch
-				,R.string.fapp_name
-				,R.string.share_1
-				,R.string.send_dot
-				,R.string.share_2
-				,R.string.share_3
 			};
 			lastInDark = GlobalOptions.isDark;
 		}
@@ -4158,11 +4121,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//boolean bResposibleForCon=false;
 		//boolean doCloseOnDiss=true;
 		int[] arrayTweakDict;
-		public int[] arraySelUtils;
-		public int[] arraySelUtils2;
-		int[] arrayTextUtils;
+		String[] arrayTextUtilsTmp;
 		public boolean bFromWebView;
-		boolean bFromTextView;
+		public boolean bFromTextView;
 		boolean bLastFromWebView;
 		ViewGroup bottomView;
 		RecyclerView twoColumnView;
@@ -4170,26 +4131,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean lastInDark;
 		protected ObjectAnimator objectAnimator;
 		int lastBookMarkPosition;
-		/** @param v widget view. Or null to detect webview selection; none null to trust webview selection. */
+		/** @param v widget view. Or null to detect webview selection; nonnull to trust webview selection; anyview to abandon webview selection. */
 		@Override
 		public void onClick(View v) {
-			int id;
-			if(v!=null)
-			switch(id=v.getId()) {
-				case R.id.iv_switch:{
-					if(bFromWebView){
-						boolean val = opt.setToTextShare(!opt.getToTextShare());
-						iv_switch.setColorFilter(getResources().getColor(val?R.color.DeapDanger:R.color.ThinHeaderBlue), PorterDuff.Mode.SRC_IN);
-						if(twoColumnAda!=null){
-							twoColumnAda.setItems(val? arraySelUtils2 : arraySelUtils);
-						}
-					} else {
-						boolean val = opt.setToTextShare2(!opt.getToTextShare2());
-						iv_switch.setColorFilter(getResources().getColor(val?R.color.colorAccent:R.color.ThinAccent), PorterDuff.Mode.SRC_IN);
-						if(twoColumnAda!=null){
-							twoColumnAda.setItems(val? arrayTextUtils : arraySelUtils2);
-						}
-					}
+			int id = v==null?0:v.getId();
+			CMN.debug("onClick:", id, v);
+			if(id!=0)
+			switch(id) {
+				case R.id.iv_switch: {
+					shareHelper.page = shareHelper.page==0?1:0;
+					tintSwitchBtn();
 				} return;
 				case R.id.color:{
 					String msg;
@@ -4331,9 +4282,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (v != null || mWebView!=null) {
 				if (v != null || mWebView.bIsActionMenuShown) {
-					bFromWebView = true;
+					bFromWebView = v==null || id!=0;
 					build_further_dialog();
-				} else if (v == null) {
+				}
+				else if (v == null) {
 					mWebView.evaluateJavascript("getSelection().isCollapsed", new ValueCallback<String>() {
 						@Override
 						public void onReceiveValue(String value) {
@@ -4346,6 +4298,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				bFromWebView = false;
 				build_further_dialog();
 			}
+		}
+		
+		private void tintSwitchBtn() {
+			final boolean val = shareHelper.page==1;
+			if(bFromWebView){
+				iv_switch.setColorFilter(mResource.getColor(val?R.color.DeapDanger:R.color.ThinHeaderBlue), PorterDuff.Mode.SRC_IN);
+			} else {
+				iv_switch.setColorFilter(mResource.getColor(val?R.color.colorAccent:R.color.ThinAccent), PorterDuff.Mode.SRC_IN);
+			}
+			if(twoColumnAda!=null)
+				twoColumnAda.setItems(shareHelper.getPageItems(this));
 		}
 		
 		private boolean hasText() {
@@ -4365,24 +4328,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			onItemClick(parent, view, position, id, false, true);
 		}
 
-		public boolean onItemClick(AdapterView<?> parent, @Nullable View view, int position, long id, boolean isLongClicked, boolean isUserClick) {
+		public boolean onItemClick(AdapterView<?> parent, @Nullable View view, int position, long strId, boolean isLongClicked, boolean isUserClick) {
 			if(position<0) return true;
 			int dissmisstype=0;
 			try {
-				//if(isLongClicked) CMN.Log("长按开始……");
-				if(!hasText()) {
+				if (strId != 0) {
 					WebViewmy tkWebv = mWebView;
-					if(tkWebv==null) tkWebv=invoker.mWebView;
-					if(tkWebv==null) {
+					if (tkWebv == null) tkWebv = invoker.mWebView;
+					if (tkWebv == null) {
 						showT("错误!!! 网页找不到了");
 						return true;
 					}
-					switch ((int) id) {
+					switch ((int)strId) {
 						/* 书签 */
 						case R.string.bmAdd: {
 							if (isLongClicked) return false;
 							if (getUsingDataV2()) {
-								invoker.toggleBookMark(tkWebv, new OnClickListener(){
+								invoker.toggleBookMark(tkWebv, new OnClickListener() {
 									@Override
 									public void onClick(View v) {
 										statHasBookmark();
@@ -4394,17 +4356,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (mBookMarkAdapter != null) { // todo why
 								mBookMarkAdapter.clear();
 							}
-						} break;
+						}
+						break;
 						/* 书签列表 */
 						case R.string.bookmarkL: {
 							if (isLongClicked) return false;
 							//stst = System.currentTimeMillis();
 							//ArrayList<Integer> result = new ArrayList<>();
-
+							
 							//Cursor cr;
 							//cr = con.getDB().rawQuery("select * from t1 ", null);
 							//SparseArray<String> DataRecord = new SparseArray<>();
-
+							
 							//cr = con.getDB().query("t1", null,null,null,null,null,"path");
 							//while(cr.moveToNext()){
 							//	result.add(0,cr.getInt(0));
@@ -4420,21 +4383,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							builder.setNeutralButton(R.string.delete, null);
 							AlertDialog d = builder.show();
 							ListView list = d.getListView();
-							list.setAdapter(getUsingDataV2()?getBookMarkAdapterV2(lastInDark, invoker):getBookMarkAdapter(lastInDark, invoker, con));
+							list.setAdapter(getUsingDataV2() ? getBookMarkAdapterV2(lastInDark, invoker) : getBookMarkAdapter(lastInDark, invoker, con));
 							//d.getListView().setFastScrollEnabled(true);
-
+							
 							//tofo
 							if (lastBookMarkPosition != -1) list.setSelection(lastBookMarkPosition);
 							
 							list.setOnItemClickListener((parent1, view1, position1, id1) -> {
 								if (prepareHistoryCon().testDBV2) {
 									BookmarkAdapter.BookmarkDatabaseReader reader = (BookmarkAdapter.BookmarkDatabaseReader) mBookMarkAdapter.getItem(position1);
-									if (reader!=null) {
+									if (reader != null) {
 										WebViewmy webview = this.mWebView;
 										if (invoker.getIsWebx()) {
 											String url = reader.entryName;
 											if (url.startsWith("/")) {
-												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
+												url = ((PlainWeb) webview.presenter.bookImpl).getHost() + url;
 											}
 											webview.loadUrl(url);
 										} else {
@@ -4442,7 +4405,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											int pos = reader.position;
 											if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
 												int tmp_pos = book.lookUp(reader.entryName);
-												if (tmp_pos>=0) {
+												if (tmp_pos >= 0) {
 													pos = tmp_pos;
 												}
 											}
@@ -4467,7 +4430,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								lastBookMarkPosition = list.getFirstVisiblePosition();
 								mBookMarkAdapter.clear();
 							});
-						} break;
+						}
+						break;
 						/* 笔记列表 */
 						case R.string.annotL: {
 							if (isLongClicked) return false;
@@ -4476,8 +4440,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								break;
 							}
 							showBookNotes(2);
-							
-							
+
+
 //							ListView list = d.getListView();
 //							list.setAdapter(getAnnotationAdapter(lastInDark, invoker));
 //							//d.getListView().setFastScrollEnabled(true);
@@ -4515,18 +4479,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //
 //							list.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
 							//d.getListView().setTag(con);
-						} break;
+						}
+						break;
 						/* 词典设置 */
-						case R.string.dict_opt:{
+						case R.string.dict_opt: {
 							showBookPreferences(MainActivityUIBase.this, invoker);
-						} break;
+						}
+						break;
 						/* 文字缩放级别 */
 						case R.string.f_scale_up:
 						case R.string.f_scale_down: {
-							boolean inter = invoker.getUseInternalFS() && 1!=tkWebv.weblistHandler.bMergingFrames;
+							boolean inter = invoker.getUseInternalFS() && 1 != tkWebv.weblistHandler.bMergingFrames;
 							if (isLongClicked) {
 								int targetLevel = invoker.getFontSize();
-								if (id==R.string.f_scale_up) {
+								if (strId == R.string.f_scale_up) {
 									if (targetLevel < BookPresenter.optimal100) {
 										tkWebv.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
 									} else if (targetLevel < 500) {
@@ -4556,7 +4522,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return true;
 							} else {
 								int targetLevel = inter ? tkWebv.getSettings().getTextZoom() : BookPresenter.def_fontsize;
-								if (id==R.string.f_scale_up) targetLevel += 10;
+								if (strId == R.string.f_scale_up) targetLevel += 10;
 								else targetLevel -= 10;
 								targetLevel = targetLevel > 500 ? 500 : targetLevel;
 								targetLevel = targetLevel < 10 ? 10 : targetLevel;
@@ -4569,48 +4535,51 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									showT("(" + getResources().getString(R.string.GL) + ") " + (targetLevel) + "%", 0);//全局
 								}
 							}
-						} break;
+						}
+						break;
 					}
 				}
 				else {
-					if (bPicking!=0) {
-						if (bPicking==1 ^ isLongClicked) {
-							// to pick
-							int idx = ArrayUtils.indexOf(arraySelUtils, (int) id);
-							if(idx==-1) {
-								idx = ArrayUtils.indexOf(arraySelUtils2, (int) id);
-								if(idx==-1) idx = 0;
-								else {
-									showTopSnack(arraySelUtils2[idx]);
-									idx+=arraySelUtils.length;
-								}
-							} else {
-								showTopSnack(arraySelUtils[idx]);
-							}
-							PDICMainAppOptions.toolsQuickAction(idx);
-							d.dismiss();
-							return true;
-						}
-						// to use ...
-						isLongClicked = false;
-					}
-					if ((id&0xffff0000)==0) {
-						if (id<arraySelUtils.length) {
-							id = arraySelUtils[(int) id];
-						}
-						else {
-							id -= arraySelUtils.length;
-							if (id<arraySelUtils2.length) {
-								id = arraySelUtils2[(int) id];
-							}
-						}
-					}
+					final int id = shareHelper.page <= 1 ? ShareHelper.defPageStrIds[position] : 0;
+//					if (bPicking != 0) {
+//						if (bPicking == 1 ^ isLongClicked) {
+//							// to pick
+//							int idx = ArrayUtils.indexOf(arraySelUtils, (int) id);
+//							if (idx == -1) {
+//								idx = ArrayUtils.indexOf(arraySelUtils2, (int) id);
+//								if (idx == -1) idx = 0;
+//								else {
+//									showTopSnack(arraySelUtils2[idx]);
+//									idx += arraySelUtils.length;
+//								}
+//							} else {
+//								showTopSnack(arraySelUtils[idx]);
+//							}
+//							PDICMainAppOptions.toolsQuickAction(idx);
+//							d.dismiss();
+//							return true;
+//						}
+//						// to use ...
+//						isLongClicked = false;
+//					} //todo 110
+
+//					if ((id&0xffff0000)==0) {
+//						if (id<arraySelUtils.length) {
+//							id = arraySelUtils[(int) id];
+//						}
+//						else {
+//							id -= arraySelUtils.length;
+//							if (id<arraySelUtils2.length) {
+//								id = arraySelUtils2[(int) id];
+//							}
+//						}
+//					} //todo 110
 					PreferredToolId = (int) id;
-					if(thisActType==ActType.MultiShare && opt.getRememberVSPanelGo()
+					if (thisActType == ActType.MultiShare && opt.getRememberVSPanelGo()
 							&& isUserClick && !isLongClicked) {
 						opt.putLastVSGoNumber(PreferredToolId);
 					}
-					switch (PreferredToolId) {//xx
+					switch ((int) id) {//xx
 						/* 收藏 */
 						case R.string.favor_sel: {
 							// to impl
@@ -4624,10 +4593,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							if(thisActType==ActType.MultiShare) {
+							if (thisActType == ActType.MultiShare) {
 								checkMultiVSTGO();
 							}
-						} break;
+						}
+						break;
 						/* 全选 */
 						case R.string.select_all: {
 							if (isLongClicked) {
@@ -4640,12 +4610,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
 							}
-						} break;
+						}
+						break;
 						/* 颜色 */
 						case R.string.hi_color:
 							break;
 						/* 高亮 */
-						case R.string.highlight: { Annot(mWebView, 0, null); } break;
+						case R.string.highlight: {
+							Annot(mWebView, 0, null);
+						}
+						break;
 						/* 高亮笔记 */
 						case R.string.annote: {
 							//todo check webview
@@ -4655,26 +4629,32 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									annotText(mWebView, 0, "1".equals(value));
 								}
 							});
-						} break;
+						}
+						break;
 						/* 下划线 */
-						case R.string.underline:  { Annot(mWebView, 1, null); } break;
+						case R.string.underline: {
+							Annot(mWebView, 1, null);
+						}
+						break;
 						/* 清除下划线 */
 						case R.string.deunderline: {
 							//mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
 							annotText(mWebView, 1, false);
-						} break;
-						case R.string.send_dot:
-						case R.string.share_1:
-						case R.string.share_2:
-						case R.string.share_3:
-						case R.string.share_4:
-						case R.string.share_5:
-						case R.string.share_6:
-						{
-							if(execVersatileShare(isLongClicked, PreferredToolId)) {
+						}
+						break;
+						case R.string.send_dot: {
+							CMN.debug("R.string.send_dot!!)", isLongClicked);
+							if (position == 8) {
+								if (isLongClicked) {
+									shareUrlOrText();
+									return true;
+								}
+							}
+							if (shareHelper.execVersatileShare(isLongClicked, position)) {
 								return true;
 							}
-						} break;
+						}
+						break;
 						/* 页内搜索 */
 						case R.string.send_inpage: {
 							if (isLongClicked) return false;
@@ -4688,8 +4668,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							dissmisstype=1;
-						} break;
+							dissmisstype = 1;
+						}
+						break;
 						/* TTS */
 						case R.string.tts: {
 							if (isLongClicked) return false;
@@ -4703,14 +4684,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							if(thisActType==ActType.MultiShare) {
+							if (thisActType == ActType.MultiShare) {
 								checkMultiVSTGO();
 							}
-							dissmisstype=2;
-						} break;
+							dissmisstype = 2;
+						}
+						break;
 						/* 点译 */
 						case R.string.pop_sch: {
-							if(thisActType==ActType.MultiShare) {
+							if (thisActType == ActType.MultiShare) {
 								populateDictionaryList();
 							}
 							if (isLongClicked) return false;
@@ -4718,21 +4700,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (CurrentSelected.length() > 0) {
 									popupWord(CurrentSelected, null, -1, mWebView);
 								}
-								bNeedClearTextSelection=true;
+								bNeedClearTextSelection = true;
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									mWebView.simulateScrollEffect();
-									bNeedStopScrollEffect=true;
+									bNeedStopScrollEffect = true;
 									if (word.length() > 2) {
 										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt, mWebView);
 									}
 								});
 							}
-							dissmisstype=1;
-						} break;
+							dissmisstype = 1;
+						}
+						break;
 						/* 翻阅模式 */
 						case R.string.peruse_sch: {
-							if(thisActType==ActType.MultiShare) {
+							if (thisActType == ActType.MultiShare) {
 								populateDictionaryList();
 							}
 							if (isLongClicked) return false;
@@ -4746,12 +4729,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							dissmisstype=1;
-						} break;
+							dissmisstype = 1;
+						}
+						break;
 						/* 搜索框 */
 						case R.string.send_etsch: {
 							if (isLongClicked) return false;
-							if(thisActType==ActType.MultiShare) {
+							if (thisActType == ActType.MultiShare) {
 								AgentApplication app = (AgentApplication) getApplication();
 								if (app.floatApp != null && app.floatApp.isFloating()) {
 									app.floatApp.getFloatBtn().search(extraText, false);
@@ -4759,11 +4743,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									Intent newTask = new Intent(Intent.ACTION_MAIN);
 									newTask.putExtra(Intent.EXTRA_TEXT, extraText);
 									//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
-									newTask.setClass(getBaseContext(),PDICMainActivity.class);
-									newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+									newTask.setClass(getBaseContext(), PDICMainActivity.class);
+									newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 									startActivity(newTask);
 								}
-								dissmisstype=0;
+								dissmisstype = 0;
 								checkMultiVSTGO();
 							} else {
 								if (bFromTextView) {
@@ -4776,9 +4760,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									});
 								}
-								dissmisstype=1;
+								dissmisstype = 1;
 							}
-						} break;
+						}
+						break;
 						/* 浮动搜索 */
 						case R.string.fapp_name: {
 							if (isLongClicked) return false;
@@ -4792,8 +4777,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							dissmisstype=1;
-							if(thisActType==ActType.MultiShare) {
+							dissmisstype = 1;
+							if (thisActType == ActType.MultiShare) {
 								checkMultiVSTGO();
 							}
 						}
@@ -4835,168 +4820,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		
-		private int mapVShareToPostion(int id) {
-			switch (id) {
-				case R.string.share_1:
-					return 0;
-				case R.string.share_2:
-					return 2;
-				case R.string.share_3:
-					return 3;
-				case R.string.share_4:
-					return 11;
-				case R.string.share_5:
-					return 13;
-				case R.string.share_6:
-					return 14;
-				default:
-					return 1;
-			}
-		}
-		
-		boolean execVersatileShare(boolean isLongClicked, int id) {
-			if (isLongClicked && id==R.string.send_dot) {
-				return true;
-			}
-			int position = mapVShareToPostion(id);
-			JSONObject json = opt.getDimensionalSharePatternByIndex(position);
-			boolean putDefault = json == null;
-			if (putDefault) {
-				json = new JSONObject();
-			} else {
-				putDefault = json.has("b")||json.length()==0;
-			}
-			if (putDefault) {
-				putDefaultSharePattern(json, id);
-			}
-			/* 将 json 散列为数组。 */
-			ArrayList<String> data = new ArrayList<>(8);
-			serializeSharePattern(json, data);
-			if (!isLongClicked) {
-				HandleShareIntent(data);
-			}
-			/* 对话框定义多维分享 */
-			/* Customizable parts of MDCCSP ( from Share#0-Share#5 )*/
-			else {
-				Context context = MainActivityUIBase.this;
-				AlertController.RecycleListView customList = new AlertController.RecycleListView(context);
-				customList.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 3.8 * getResources().getDimension(R.dimen._50_));
-
-				CustomShareAdapter csa = new CustomShareAdapter(data);
-				customList.setAdapter(csa);
-				customList.setDivider(null);
-				
-				AlertDialog.Builder builder2 = new AlertDialog.Builder(context, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);
-				builder2.setTitle("制定分享目标");
-				builder2.setNeutralButton("添加字段", null);
-				builder2.setNegativeButton("测试", null);
-				builder2.setPositiveButton("保存", null);
-				
-				FrameLayout dv = new FrameLayout(context);
-				/* 键盘能够弹出 */
-				dv.addView(customList);
-				dv.addView(new EditText(context), new LinearLayout.LayoutParams(0, 0));
-				csa.nameWidth = (int) ((TextView) csa.getView(0, null, customList).findViewById(R.id.text2)).getPaint().measureText(getResources().getString(R.string.extra_key_value, 1001));
-				builder2.setView(dv);
-				
-				AlertDialog dTmp = builder2.show();
-				
-				OnClickListener mClicker = new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						boolean isLongClicked = v.getTag(R.id.long_clicked) != null;
-						switch (v.getId()) {
-							case android.R.id.button1://+
-								if (isLongClicked) {
-									android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(getLayoutInflater().getContext());
-									android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
-											.setPositiveButton(R.string.confirm, (dialog, which) -> {
-												opt.putDimensionalSharePatternByIndex(position, null);
-												JSONObject json = new JSONObject();
-												data.clear();
-												putDefaultSharePattern(json, id);
-												serializeSharePattern(json, data);
-												csa.notifyDataSetChanged();
-											})
-											.create();
-									d1.show();
-								}
-								else try {
-									JSONObject neo = packoutNeoJson(data);
-									JSONObject original = new JSONObject();
-									putDefaultSharePattern(original, id);
-									if (baseOnDefaultSharePattern(neo, original)) {
-										neo = packoutNeoJson(data);
-									}
-									opt.putDimensionalSharePatternByIndex(position, neo);
-									showT("保存成功！");
-									dTmp.dismiss();
-								}
-								catch (Exception e) {
-									CMN.debug(e);
-									showT("保存失败！" + e);
-								}
-								break;
-							case android.R.id.button2://-
-								if (isLongClicked) break;
-								HandleShareIntent(data);
-								break;
-							case android.R.id.button3://|
-								if (isLongClicked) break;
-								data.add(null);
-								data.add(null);
-								csa.notifyDataSetChanged();
-								break;
-						}
-					}
-				};
-				
-				Button btnTmp = dTmp.getButton(DialogInterface.BUTTON_POSITIVE);
-				btnTmp.setOnClickListener(mClicker);
-				btnTmp.setOnLongClickListener(new MultiplexLongClicker());
-				dTmp.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(mClicker);
-				dTmp.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(mClicker);
-			}
-			return false;
-		}
-		
-		void HandleShareIntent(ArrayList<String> data) {
-			if(bFromTextView){
-				handleIntentShare(CurrentSelected, data);
-				if(thisActType==ActType.MultiShare) {
-					checkMultiVSTGO();
-				}
-			} else {
-				if(data.contains(Intent.EXTRA_HTML_TEXT)){
-					if(data.contains(Intent.EXTRA_TEXT)){
-						mWebView.evaluateJavascript(WebViewmy.CollectWord, v -> {
-							if (v.length() > 2) {
-								v = StringEscapeUtils.unescapeJava(v.substring(1, v.length() - 1));
-								data.add(Intent.EXTRA_TEXT);
-								data.add(v);
-								FetchTextOrHtmlThen_handleIntentShare(data, true);
-							}
-						});
-					} else {
-						FetchTextOrHtmlThen_handleIntentShare(data, true);
-					}
-				} else {
-					FetchTextOrHtmlThen_handleIntentShare(data, false);
-				}
-			}
-		}
-
-		void FetchTextOrHtmlThen_handleIntentShare(ArrayList<String> data, boolean parseHtml) {
-			String FetchWord = parseHtml ? WebViewmy.CollectHtml : WebViewmy.CollectWord;
-			mWebView.evaluateJavascript(FetchWord, v -> {
-				if (v.length() > 2) {
-					v = StringEscapeUtils.unescapeJava(v.substring(1, v.length() - 1));
-					//CMN.Log("Fetched Page Part : ", v);
-					handleIntentShare(v, data);
-				}
-			});
-		}
-
 		protected void build_further_dialog(){
 			boolean needRecreate=bLastFromWebView!=hasText();
 			if(!bFromWebView && mWebView!=null) {
@@ -5060,12 +4883,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			ViewUtils.ensureWindowType(d, MainActivityUIBase.this, MainActivityUIBase.this);
 			
-			int switch_cl_id=bFromWebView?(opt.getToTextShare()?R.color.DeapDanger:R.color.ThinHeaderBlue)
-					:opt.getToTextShare2()?R.color.colorAccent:R.color.ThinAccent;
-			
-			if(switch_cl_id!=last_switch_cl_id) {
-				iv_switch.setColorFilter(mResource.getColor(last_switch_cl_id=switch_cl_id), PorterDuff.Mode.SRC_IN);
-			}
+//			int switch_cl_id=bFromWebView?(opt.getToTextShare()?R.color.DeapDanger:R.color.ThinHeaderBlue)
+//					:opt.getToTextShare2()?R.color.colorAccent:R.color.ThinAccent;
+//
+//			if(switch_cl_id!=last_switch_cl_id) {
+//				iv_switch.setColorFilter(mResource.getColor(last_switch_cl_id=switch_cl_id), PorterDuff.Mode.SRC_IN);
+//			} // todo 110
 
 			iv_switch.setVisibility(hasText()?View.VISIBLE:View.GONE);
 
@@ -5075,15 +4898,55 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			iv_color.setVisibility(targetVis);
 
 			dialogList = d.getListView();
-			boolean toText = bFromTextView || opt.getToTextShare();
-			int[] items = hasText()?
-					toText ? (bFromTextView && opt.getToTextShare2()? arrayTextUtils : arraySelUtils2) : arraySelUtils
-					:arrayTweakDict;
+//			boolean toText = bFromTextView || opt.getToTextShare();
+//			int[] items = hasText()?
+//					toText ? (bFromTextView && opt.getToTextShare2()? arrayTextUtils : arraySelUtils2) : arraySelUtils
+//					:arrayTweakDict;
+			//todo 110
 			if(twoColumnView==null) {
 				RecyclerView footRcyView = new RecyclerView(bottomView.getContext());
 				footRcyView.setClipToPadding(false);
 				GridLayoutManager lman;
-				footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 2));
+				footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 2) {
+					int flip;
+					boolean dragging;
+					@Override
+					public int scrollVerticallyBy (int dy, RecyclerView.Recycler recycler, RecyclerView.State state ) {
+						int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
+						if(dy!=scrollRange && flip==0 && scrollRange==0) {
+							if (!twoColumnAda.isData(shareHelper.arraySelUtils[3])) {
+								//CMN.debug("scrollVerticallyBy::", dy, scrollRange);
+								if (Math.abs(dy-scrollRange)>GlobalOptions.density*27) {
+									flip = dy < 0 ? -1 : 1; // 上下滑动翻页
+								}
+							}
+						}
+						return scrollRange;
+					}
+					@Override
+					public void onScrollStateChanged(int state) {
+						//CMN.debug("onScrollStateChanged::", state, flip);
+						if (state == RecyclerView.SCROLL_STATE_DRAGGING) {
+							if (!dragging) {
+								dragging = true;
+								flip = 0;
+							}
+						} else {
+							if(dragging)
+								dragging = false;
+							if (state == RecyclerView.SCROLL_STATE_IDLE) {
+								if (flip != 0) {
+									int np = shareHelper.page + flip;
+									if (np >= 0 && np <= 1) {
+										shareHelper.page = np;
+										tintSwitchBtn();
+									}
+									flip = 0;
+								}
+							}
+						}
+					}
+				});
 				lman.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 					@Override
 					public int getSpanSize(int position) {
@@ -5092,7 +4955,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						return 1;
 					}
 				});
-				TwoColumnAdapter RcyAda = new TwoColumnAdapter(items);
+				TwoColumnAdapter RcyAda = new TwoColumnAdapter(shareHelper.getPageItems(this));
 				RcyAda.setOnItemClickListener(this);
 				RcyAda.setOnItemLongClickListener(this);
 				footRcyView.setAdapter(RcyAda);
@@ -5105,8 +4968,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dialogList.addFooterView(twoColumnView);
 				dialogList.addFooterView(bottomView);
 			}
-			twoColumnAda.setItems(items);
-			
+			//twoColumnAda.page = toText?1:0;
+			if (hasText()) {
+				twoColumnAda.setItems(shareHelper.getPageItems(this));
+			} else {
+				twoColumnAda.setItems(arrayTweakDict);
+			}
 			
 			// 设置标题
 			if(!bFromTextView && invoker!=null) {
@@ -5183,7 +5050,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public void showDictTweaker(BookPresenter presenter, WebViewmy wv) {
 			setInvoker(presenter, wv, null, null);
-			onClick(null);
+			boolean title_bar_no_sel = true;
+			onClick(title_bar_no_sel?anyView(0):null);
 		}
 		
 		public AlertDialog getDialog() {
@@ -5298,7 +5166,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return thisActType==ActType.MultiShare ?opt.getPinVSDialog():opt.getPinDialog();
 	}
 	
-	private void checkMultiVSTGO() {
+	public void checkMultiVSTGO() {
 		CMN.debug("checkMultiVSTGO...", ((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled , opt.getVSPanelGOTransient());
 		if(((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled && !getPinVSDialog()) {
 			root.postDelayed(()->moveTaskToBack(false), 200);
@@ -5326,155 +5194,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(id>=0&&id<=5)
 		{
 			getVtk().setInvoker(null, null, null, text);
-			getVtk().execVersatileShare(false, VersatileShareSlots[id]);
+			shareHelper.execVersatileShare(false, VersatileShareSlots[id]);
 		}
 	}
 	
-	private JSONObject packoutNeoJson(ArrayList<String> data) throws JSONException {
-		JSONObject neo = new JSONObject();
-		neo.put("p", data.get(0));
-		neo.put("m", data.get(1));
-		neo.put("a", data.get(2));
-		neo.put("t", data.get(3));
-		for (int i = 4; i+1 < data.size(); i+=2) {
-			if(data.get(i)!=null){
-				String val = Integer.toString((i-4)/2+1);
-				neo.put("k"+val, data.get(i));
-				neo.put("v"+val, data.get(i+1));
-			}
-		}
-		return neo;
-	}
-
-	boolean baseOnDefaultSharePattern(JSONObject neo, JSONObject original) {
-		OUT:
-		try {
-			/* 只能多不能少 */
-			boolean b1;
-			if((b1 = original.has("p")) && !neo.has("p"))
-				break OUT;
-			if(b1) b1 = neo.getString("p").equals(original.getString("p"));
-			boolean b2;
-			if((b2 = original.has("m")) && !neo.has("m"))
-				break OUT;
-			if(b2) b2 = neo.getString("m").equals(original.getString("m"));
-			boolean b3;
-			if((b3 = original.has("a")) && !neo.has("a"))
-				break OUT;
-			if(b3) b3 = neo.getString("a").equals(original.getString("a"));
-			boolean b4;
-			if((b4 = original.has("t")) && !neo.has("t"))
-				break OUT;
-			if(b4) b4 = neo.getString("t").equals(original.getString("t"));
-			int cc=(original.length()-4);
-			ArrayList<String> duplicatedKeys = new  ArrayList<>(cc);
-			cc=0;
-			while (++cc>0){
-				boolean b5;
-				String key="k"+cc;
-				b5 = original.has(key);
-				if(!b5) break;
-				if(!neo.has(key))
-					break OUT;
-				b5 = neo.getString(key).equals(original.getString(key));
-				if(b5) duplicatedKeys.add(key);
-
-				key="v"+cc;
-				b5 = original.has(key);
-				if(!b5) continue;
-				if(!neo.has(key))
-					break OUT;
-				b5 = neo.getString(key).equals(original.getString(key));
-				if(b5) duplicatedKeys.add(key);
-			}
-			if(b1) neo.remove("p");
-			if(b2) neo.remove("m");
-			if(b3) neo.remove("a");
-			if(b4) neo.remove("t");
-			for(String dkI:duplicatedKeys){
-				neo.remove(dkI);
-			}
-			if(neo.length()>0){
-				neo.put("b", 1);
-			}
-			CMN.debug("好哎！！！",neo.toString());
-		} catch (Exception e) {
-			return true;
-		}
-		return false;
-	}
-
-	void serializeSharePattern(JSONObject json, ArrayList<String> data) {
-		for (int i = 0; i < 4; i++) data.add(null);
-		try {
-			if(json.has("p")) data.set(0, json.getString("p"));
-			if(json.has("m")) data.set(1, json.getString("m"));
-			if(json.has("a")) data.set(2, json.getString("a"));
-			if(json.has("t")) data.set(3, json.getString("t"));
-			int cc=0;
-			while (++cc>0){
-				String key="k"+cc;
-				if(!json.has(key)) break;
-				data.add(json.getString(key));
-				String vI = "v"+cc;
-				data.add(json.has(vI)?json.getString(vI):"%s");
-			}
-		} catch (JSONException e) {
-			CMN.debug(e);
-		}
-	}
-
-	void putDefaultSharePattern(JSONObject json, int id) {
-		try {
-			switch (id){
-				/* 分享#2 */
-				case R.string.share_2:
-				/* 分享#1 */
-				case R.string.share_1:
-					if(!json.has("k1")) json.put("k1", "_data");
-					if(!json.has("v1")) json.put("v1", id==R.string.share_2?"https://translate.google.cn/#view=home&op=translate&sl=auto&tl=zh-CN&text=%s":"https://www.baidu.com/s?wd=%s");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", id==R.string.share_2?"c/q":"/");
-				break;
-				/* 分享#3 */
-				case R.string.share_3:
-					if(!json.has("k1")) json.put("k1", "_data");
-					if(!json.has("v1")) json.put("v1", "https://cn.bing.com/search?q=%s");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "/");
-				break;
-				case R.string.send_dot:
-				case R.string.share_6:
-					if(!json.has("k1")) json.put("k1", Intent.EXTRA_TEXT);
-					if(!json.has("v1")) json.put("v1", "%s");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "c/q");
-					if(!json.has("t")) json.put("t", "text/plain");
-					if(!json.has("a")) json.put("a", Intent.ACTION_SEND);
-				break;
-				case R.string.share_4:
-					if(!json.has("a")) json.put("a", getResources().getString(R.string.colorfuldayswithbeautifulgirl));
-					if(!json.has("k1")) json.put("k1", EXTRA_QUERY);
-					if(!json.has("v1")) json.put("v1", "%s");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "/");
-				break;
-				case R.string.share_5:
-					if(!json.has("a")) json.put("a", Intent.ACTION_PROCESS_TEXT);
-					if(!json.has("k1")) json.put("k1", Intent.EXTRA_PROCESS_TEXT);
-					if(!json.has("v1")) json.put("v1", "%s");
-					if(!json.has("t")) json.put("t", "text/plain");
-					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", "/");
-				break;
-			}
-			if(!json.has("k3")) json.put("k3", "_flags");
-			if(!json.has("v3")) json.put("v3", "n");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	void hideKeyboard() {
 		View ht = getCurrentFocus();
 		if(ht==null) ht = main;
@@ -5488,6 +5211,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	boolean firstCreateUcc=true;
+	public final ShareHelper shareHelper = new ShareHelper(this);
 	public VerseKit ucc;
 	
 	public abstract void fix_full_screen(@Nullable View decorView);

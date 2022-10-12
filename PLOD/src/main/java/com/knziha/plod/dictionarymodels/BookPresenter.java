@@ -995,16 +995,19 @@ function debug(e){console.log(e)};
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.cover:
-				if(false){
+				CMN.debug("toolbar_cover onClick", isMergedBook());
+				if(false) {
 					showDictTweaker(mWebView, a, this);
 					break;
 				}
-				if (isMergedBook()) {
+				BookPresenter presenter = mWebView.presenter;
+				if (presenter.isMergedBook()) {
 					a.showDictTweaker(mWebView.weblistHandler);
 					break;
 				}
 				a.getVtk().setInvoker(this, mWebView, null, null);
-				a.getVtk().onClick(null);
+				boolean title_bar_no_sel = true;
+				a.getVtk().onClick(title_bar_no_sel?a.anyView(0):null);
 				break;
 			case R.id.undo:
 				if(v.getAlpha()==1)mWebView.evaluateJavascript("document.execCommand('Undo')", null);
@@ -1028,7 +1031,7 @@ function debug(e){console.log(e)};
 						mWebView.awaiting=false;
 						renderContentAt(-1, RENDERFLAG_NEW, -1, null, mWebView.currentRendring);
 					}
-				}//((View)rl.getParent()).getId()==R.id.webholder
+				}
 				else if(!mWebView.weblistHandler.isViewSingle()) {
 					mWebView.setVisibility(View.GONE);
 				}

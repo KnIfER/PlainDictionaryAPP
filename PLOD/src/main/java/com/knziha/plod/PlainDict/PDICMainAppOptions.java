@@ -1729,13 +1729,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public boolean getToTextShare() {
-		return (ThirdFlag & 0x20000000000000l) == 0x20000000000000l;
-	}
-	public boolean setToTextShare(boolean val) {
-		updateTFAt(0x20000000000000l,val);
-		return val;
-	}
+//	public boolean getToTextShare() {
+//		return (ThirdFlag & 0x20000000000000l) == 0x20000000000000l;
+//	}
+//	public boolean setToTextShare(boolean val) {
+//		updateTFAt(0x20000000000000l,val);
+//		return val;
+//	} /// 废弃
 
 	@Metaline(flagPos=54) public boolean schPageFye(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=54) public void schPageFye(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
@@ -1757,13 +1757,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public boolean getToTextShare2() {
-		return (ThirdFlag & 0x200000000000000l) == 0x200000000000000l;
-	}
-	public boolean setToTextShare2(boolean val) {
-		updateTFAt(0x200000000000000l,val);
-		return val;
-	}
+//	public boolean getToTextShare2() {
+//		return (ThirdFlag & 0x200000000000000l) == 0x200000000000000l;
+//	}
+//	public boolean setToTextShare2(boolean val) {
+//		updateTFAt(0x200000000000000l,val);
+//		return val;
+//	} // 废弃
 
 	public boolean getPrintPageSize() {
 		return (ThirdFlag & 0x400000000000000l) != 0x400000000000000l;
@@ -3097,8 +3097,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return xyt;
 	}
 
-	public JSONObject getDimensionalSharePatternByIndex(int position) {
-		String val = getString("dsp#"+position, null);
+	public JSONObject getDimensionalSharePatternByIndex(String savid) {
+		String val = getString(savid, null);
 		JSONObject ret = null;
 		if(val!=null) {
 			try {
@@ -3110,9 +3110,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return ret;
 	}
 
-	public void putDimensionalSharePatternByIndex(int position, JSONObject json) {
-		CMN.debug("保存", position);
-		putString("dsp#"+position, json==null||json.length()==0?null:json.toString());
+	public void putDimensionalSharePatternByIndex(String savid, JSONObject json) {
+		CMN.debug("保存", savid);
+		putString(savid, json==null||json.length()==0?null:json.toString());
 	}
 	
 	@SuppressLint("ClickableViewAccessibility")

@@ -294,7 +294,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				MainActivityUIBase.VerseKit tk = a.getVtk();
 				if (PDICMainAppOptions.toolsQuick()) { // hint
 					int action =  PDICMainAppOptions.toolsQuickAction();
-					a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);
+					//todo 110
+					//a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);
 				}
 			}
 			if (v!=null && _lstPrv !=null && v.getParent()==_lstPrv.linearLayout) {

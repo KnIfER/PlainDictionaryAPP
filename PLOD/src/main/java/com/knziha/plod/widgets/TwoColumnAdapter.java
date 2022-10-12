@@ -1,6 +1,7 @@
 package com.knziha.plod.widgets;
 
 import android.graphics.Color;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,9 +42,19 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 
 	public void setItems(int[] _data) {
 		if(data != _data || _data.length!=length){
-			data = _data;
+			this.data = _data;
+			this.dataStr = null;
 			length = _data.length;
 			//notifyItemRangeChanged(0, data.length);
+			notifyDataSetChanged();
+		}
+	}
+	
+	public void setItems(String[] data) {
+		if (data != null) {
+			this.dataStr = data;
+			this.data = null;
+			length = data.length;
 			notifyDataSetChanged();
 		}
 	}
@@ -99,6 +110,7 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 			vh.itemView.setId(data[position]);
 		} else {
 			vh.title.setText(dataStr[position]);
+			vh.itemView.setId(0);
 		}
 		vh.position = position;
 		vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
@@ -107,5 +119,12 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 	@Override
 	public int getItemCount() {
 		return length;
+	}
+	
+	public boolean isData(Object test) {
+		if (test != null) {
+			return test == data || test == dataStr;
+		}
+		return false;
 	}
 }
