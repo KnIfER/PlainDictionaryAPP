@@ -32,9 +32,7 @@
 		win.gotoid=function(){};
 		if(!win._init) {
 			win._init=1;
-			//win._NWP=[ge('result'),ge('result_EE'),ge('result_EC'),ge('result_CE')];
-			win._YWPC=['popover', '#defi1', '#defi2', '#defi3', '#defi4'];
-			win._YWPC.id=1;
+			win._WORDCON=['.popover', '#defi1', '#defi2', '#defi3', '#defi4'];
 			var lastPopWord = app.getSearchWord(sid.get());
 			document.addEventListener('click', function(e){
 				e=e.srcElement;

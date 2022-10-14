@@ -359,6 +359,7 @@ public class BookPresenter
 	public final static String preview_js="document.documentElement.outerHTML";
 	
 	protected String searchKey;
+	protected String lastSch;
 	protected Cursor PageCursor;
 	protected CachedDirectory InternalResourcePath;
 	protected boolean bNeedCheckSavePathName;
@@ -1093,12 +1094,12 @@ function debug(e){console.log(e)};
 		// nimp
 	}
 	
-	public final String GetSearchKey() {
-		return searchKey;
-	}
-	
 	public String GetAppSearchKey() {
 		return a.getSearchTerm();
+	}
+	
+	public final String GetSearchKey() {
+		return searchKey;
 	}
 	
 	public final void SetSearchKey(String key) {
@@ -2130,6 +2131,7 @@ function debug(e){console.log(e)};
 		try {
 			if(bookImpl.hasVirtualIndex())
 				try {
+					String lastSch = searchKey;
 					String validifier = getOfflineMode()&&getIsWebx()?null:bookImpl.getVirtualTextValidateJs(this, mWebView, position[0]);
 //					CMN.Log("validifier::", validifier, GetSearchKey(), mWebView.getTag());
 					if (validifier == null
@@ -2148,6 +2150,7 @@ function debug(e){console.log(e)};
 							htmlCode = null;
 						}
 					} else {
+						this.lastSch = lastSch;
 						mWebView.evaluateJavascript(validifier, new ValueCallback<String>() {
 							@Override
 							public void onReceiveValue(String value) {
@@ -2163,12 +2166,13 @@ function debug(e){console.log(e)};
 								}  else if("2".equals(value) && getIsWebx()) { // apply js modifier first, then do search
 									if (!"schVar".equals(mWebView.getTag())) {
 										mWebView.setTag("schVar");
-										SetSearchKey(GetAppSearchKey());
+										SetSearchKey(BookPresenter.this.lastSch);
 										renderContentAt_internal(mWebView, initialScale, fromCombined, mIsolateImages, 0);
 										mWebView.setTag(null);
 									}
 								} else {
 									mWebView.setTag("forceLoad");
+									SetSearchKey(BookPresenter.this.lastSch);
 									renderContentAt_internal(mWebView, initialScale, fromCombined, mIsolateImages, position);
 								}
 							}
@@ -2233,6 +2237,7 @@ function debug(e){console.log(e)};
 		mWebView.getSettings().setSupportZoom(!fromCombined);
 		mWebView.isloading = true;
 		if(htmlCode!=null) {
+			CMN.debug("render::startsWith fullpage=", htmlCode.startsWith(fullpageString));
 			if(loadUrl) {
 				//mWebView.presenter = mWebView.weblistHandler.getMergedBook();
 				mWebView.loadUrl(htmlCode);
@@ -2367,7 +2372,8 @@ function debug(e){console.log(e)};
 		htmlBuilder.append("<script class=\"_PDict\">");
 //		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
 //		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
-		htmlBuilder.append("window.bid=").append(getId()).append(";");
+		CMN.debug("view::bid=", getId(), IU.NumberToText_SIXTWO_LE(getId(), null));
+		htmlBuilder.append("window.bid='").append(idStr).append("';");
 		htmlBuilder.append("window.shzh=").append((mWebView.weblistHandler.tapSch?1:0)|mWebView.weblistHandler.tapSel).append(";");
 		htmlBuilder.append("window.frameAt=").append(mWebView.frameAt).append(";");
 		htmlBuilder.append("window.entryKey='").append(mWebView.word).append("';");
@@ -2377,7 +2383,7 @@ function debug(e){console.log(e)};
 		/** see {@link AppHandler#view} */
 		// 此处代码的加载略慢于图片资源
 		htmlBuilder.append("app.view(sid.get(),")
-				.append(getId())
+				.append("bid")
 				.append(",").append(mWebView.currentPos)
 				.append(",").append(hasFilesTag())
 				.append(");");
@@ -2888,11 +2894,11 @@ function debug(e){console.log(e)};
 		
 		@JavascriptInterface
         public String remark(int sid, int position) {
-			CMN.debug("annot:::remark::", position);
+			//CMN.debug("annot:::remark::", position);
 			if (presenter!=null) {
 				WebViewmy mWebView = findWebview(sid);
 				if (mWebView != null) {
-					CMN.debug("annot::restore::remark::", position, mWebView.presenter);
+					//CMN.debug("annot::restore::remark::", position, mWebView.presenter);
 					try {
 						if (presenter.a.getUsingDataV2()) {
 							PlainWeb webx = mWebView.presenter.getWebx();
@@ -2961,13 +2967,16 @@ function debug(e){console.log(e)};
         }
 		
 		@JavascriptInterface
-		public void view(int sid, long bid, long pos, boolean hasFiles) {
+		public void view(int sid, String bidStr, long pos, boolean hasFiles) {
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv!=null) {
-					//CMN.debug("view::", presenter, presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
-					boolean changed = presenter.getId()!=bid || wv.presenter!=presenter;
+					boolean changed = !presenter.idStr.equals(bidStr) || wv.presenter!=presenter;
 					if (changed) {
+						long bid = IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(bidStr, 1));
+						CMN.debug("view::", presenter, presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
+						CMN.debug("view::", wv.presenter, IU.NumberToText_SIXTWO_LE(wv.presenter.getId(), null)+"=?="+IU.NumberToText_SIXTWO_LE(bid, null));
+						CMN.debug("view::", wv.presenter, wv.presenter.getId()+"=?="+bid);
 						setBook(presenter.a.getBookByIdNoCreation(bid));
 						wv.setPresenter(presenter);
 						wv.changed = 1;
@@ -2980,7 +2989,7 @@ function debug(e){console.log(e)};
 						}
 					}
 					if (changed) {
-						//CMN.debug("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
+						CMN.debug("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
 					}
 					if (presenter.hasFilesTag() && !hasFiles) {
 						//wv.hasFilesTag = true;

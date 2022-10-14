@@ -44,7 +44,6 @@
 			android:minWidth="45dp"
 			android:background="@drawable/listviewselector0"
 			/>
-
 		<ImageView
 			android:id="@+id/tools1"
 			android:layout_width="45dp"
@@ -55,6 +54,16 @@
 			android:padding="7dp"
 			android:layout_marginEnd="1px"
 			android:visibility="gone"
+			/>
+		<ImageView
+			android:id="@+id/voice"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/voice_ic"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#8f8f8f"
+			android:padding="-2dp"
+			android:layout_marginEnd="1px"
 			/>
 		<com.knziha.plod.widgets.ActivatableImageView
 			android:id="@+id/popIvStar"
@@ -201,6 +210,7 @@
 				tools:alpha="0.9"
 				style="@style/textmenu_btn"
 				android:layout_marginBottom="20dp"
+				android:visibility="gone"
 				/>
 
 			<com.knziha.plod.widgets.DragScrollBar

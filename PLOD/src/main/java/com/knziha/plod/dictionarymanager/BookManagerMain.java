@@ -539,6 +539,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				rgb.insert(1, "ff");
 			rgb.setLength(7);
 			vh.title.setTextColor(Color.parseColor(rgb.toString()));
+			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
 			
 			int tmpFlag = getPlaceFlagAt(position);
 			

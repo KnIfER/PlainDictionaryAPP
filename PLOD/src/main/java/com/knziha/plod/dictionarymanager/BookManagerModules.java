@@ -150,7 +150,8 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				//((TextView)v.findViewById(R.id.text)).setText("✲"+((TextView)v.findViewById(R.id.text)).getText());
 			}else
 				vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-
+			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
+			
 			if(GlobalOptions.isDark) {
 				convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 			}

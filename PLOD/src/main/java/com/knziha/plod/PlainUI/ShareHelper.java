@@ -42,7 +42,7 @@ public class ShareHelper {
 	private static int ver = 0;
 	private final SparseIntArray mVers = new SparseIntArray();
 	private final SparseArray<String[]> pages = new SparseArray<>();
-	public final String[][] arraySelUtils = new String[3][];
+	private final String[][] arraySelUtils = new String[3][];
 	public int lastClickedPos;
 	
 	public ShareHelper(MainActivityUIBase a) {

@@ -188,11 +188,11 @@
 			}
 		}
         first.end = last;
-        debug('last=!!!!!!!!!!!!=',tcn.note,first,last);
+        log('last=!!!!!!!!!!!!=',tcn.note,first,last);
 		r.setStart(f[0], 0);
 		var a = f[f.length - 1];
 		r.setEnd(a, a.length);
-        ///debug('fatal web annot::wrapRange::', r);
+        ///log('fatal web annot::wrapRange::', r);
         if(tcn.note) { // 文本笔记
             var noteType=tcn.ntyp, note=tcn.note;
             //noteType=1;
@@ -216,7 +216,7 @@
                     sty.innerText = '._PDBP{position:relative}._PDBV::after{content:attr(data-tex)}._PDBX{position:absolute;left:95%;bottom:80%;}._PDB{border-radius: 16px;background:#abcdef;color:#fff;white-space:nowrap;padding:0px 8px;margin:0px;font-size:14px;}._PDBF>A{color:white}._PDBF{padding:2px 8px}';
                     sty.id = id;
                     sty.click = function(){
-                        debug('点击！！！');
+                        log('点击！！！');
                     }
                 }
                 if(el) {
@@ -280,7 +280,7 @@
                 clk = doc._pd_clks = [function(e) {
                     var t = e.target || e.srcElement; 
                     e.preventDefault(); e.stopPropagation();
-                    debug('  focus', t);
+                    log('  focus', t);
                     t = t.href+'';
                     t = doc._pd_foc = doc.getElementById(t.slice(t.indexOf('#')+1));
                     t.focus();
@@ -316,7 +316,7 @@
                             var len = ed - st;
                             if (len > 1) {
                               len = len >> 1;
-                              //debug('reduce', st, len, ed);
+                              //log('reduce', st, len, ed);
                               return p > (arr[st + len - 1].tPos||0)
                                         ? reduce(arr, p, st+len, ed)
                                         : reduce(arr, p, st, st+len);
@@ -326,7 +326,7 @@
                         }
                         var lst = rootNode._pd_ref.childNodes;
                         num = (reduce(lst, tcn.tPos, 0, lst.length))||0;
-                        debug('reduce=', tcn.note, num)
+                        log('reduce=', tcn.note, num)
                     }
                 }
                 var sup = craft('SUP');
@@ -375,12 +375,12 @@
             log('笔记=', d, last)
         }
         first.end = last;
-        debug('last=',tcn.note,first,last);
+        log('last=',tcn.note,first,last);
 	}
     function getNodeIndex(node) {
         var i = 0;
         while( (node = node.previousElementSibling) ) {
-            //debug(node);
+            //log(node);
             ++i;
         }
         return i;
@@ -470,13 +470,13 @@
                     break
                 }
                 if(t.nodeType == 3) {
-                    //debug('1::', t, t.parentNode, t.nodeType, t.length);
+                    //log('1::', t, t.parentNode, t.nodeType, t.length);
                     o += t.length;
                 }
             }
-            //debug('');
+            //log('');
             for (var t=rootNode; t; t = getNextNode(t)) {
-                //debug('2::', t, t.parentNode, t.nodeType, p, t.length);
+                //log('2::', t, t.parentNode, t.nodeType, p, t.length);
                 if (t == p) {
                     break
                 }
@@ -485,7 +485,7 @@
                 }
             }
         }
-        debug('storeTextPos', o);
+        log('storeTextPos', o);
         return o;
     }
     function skip(n) {
@@ -628,7 +628,7 @@
         var b = mw(c&0xff,a);
         var sty = t?"rgba("+r+","+g+","+b+"/"+t+")":"rgb("+r+","+g+","+b+")";
         n.style.backgroundColor = sty;
-        debug('sty='+sty);
+        log('sty='+sty);
         n._bgr = (t<<24) | (r<<16) | (g<<8) | (b);
     }
 
@@ -643,7 +643,7 @@
 
 	function getNidsInRange(det) {
         var rg=getSelection().getRangeAt(0);
-        debug("NidsInRange::", det, rg);
+        log("NidsInRange::", det, rg);
         if(det) {
             var el=rg.startContainer, e=rg.endContainer, p=el.parentNode;
             while(el) {
@@ -664,7 +664,7 @@
                 p = p.parentNode;
             }
             for (var c = 0, e; e = a[c++];) {
-                debug("\t\tgetNidsInRange::", e, e.nid);
+                log("\t\tgetNidsInRange::", e, e.nid);
                 if (e.nid!=undefined) {
                     if(!f[e.nid]) {
                         f[e.nid]=1;
@@ -697,11 +697,11 @@
         console.log('fatal patchNote::', nid, el, tcn);
         if(el) {
             var e = el.end, nds=[];
-            debug('patchNote::', nid, el, e);
+            log('patchNote::', nid, el, e);
             while(el) {
                 if(el.nid===nid) {
                     nds.push(el);
-                    //debug('should deWrap::', el);
+                    //log('should deWrap::', el);
                 }
                 if(el==e) break;
                 el = getNextNodeRaw(el);
@@ -719,7 +719,7 @@
             if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
             else if(nn.length!=2) return;
             var r = makeRange(n0, n1, rootNode, doc);
-            console.log('fatal debug annot::renewing::', tcn, r);
+            console.log('fatal log annot::renewing::', tcn, r);
             if(r) {
                 var el = annot(row, -1, 0, 0);
                 wrapRange(r, el, rootNode, doc, nid)

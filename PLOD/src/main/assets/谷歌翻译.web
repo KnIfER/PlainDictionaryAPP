@@ -24,7 +24,7 @@
 			debug('已修复字体！');
 		}
 		//debug('translator ...123');
-		win._YWPC=['Sp3AF'];
+		win._WORDCON=['.Sp3AF'];
 		if(!e) {
 			e=doc.createElement('IMG');
 			var ety=e;

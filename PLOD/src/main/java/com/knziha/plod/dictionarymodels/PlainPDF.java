@@ -6,8 +6,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MdictServer;
 
 import org.knziha.metaline.Metaline;
 
@@ -22,118 +24,6 @@ public class PlainPDF extends DictionaryAdapter {
 	mdictRes_asset _INTERNAL_PDFJS;
 	public String[] pdf_index;
 	boolean alphabetic;
-
-	/**
-	 <script>
-		window.addEventListener('click',wrappedClickFunc);
-	 	function wrappedClickFunc(e){
-			if(e.srcElement!=document.documentElement){
-				var s = window.getSelection();
-				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
-					s.modify('extend', 'forward', 'word'); // first attempt
-					//if(1) return;
-					var an=s.anchorNode;
-					//console.log(s.anchorNode); console.log(s);  console.log(s.getRangeAt(0)); console.log(s+'');
-					fixPdfForword(s);
-					if(s.baseNode != document.body) {// immunize blank area
-						var scer=s.getRangeAt(0);
-						if(scer.startOffset==0){
-							scer=scer.startContainer;
-							if(scer.nodeType==3){
-								scer=scer.parentNode;
-							}
-							if(scer.previousSibling==null){
-								console.log(e.clientX-scer.offsetLeft, e.clientY-scer.offsetTop);
-								if(Math.abs(e.clientX-scer.offsetLeft)>50||Math.abs(e.clientY-scer.offsetTop)>50){
-									s.empty();
-									scer=null;
-								}
-							}
-						}
-						if(scer){
-							scer=0;
-							var text=s.toString(); // for word made up of just one character
-							if(text.length>0){
-								var re=/[\u4e00-\u9fa5]/g;
-								tillNext=text;
-								if(re.test(text.trim())){
-									scer=1;
-								}else{
-									var range = s.getRangeAt(0);  // first attempt, forward range
-									//console.log(range);
-									var lb='lineboundary';
-									s.collapseToStart();
-									s.modify('extend', 'forward', lb);
-									tillNextLine=s.toString();
-									var eN='word';
-									var eB='word';
-									if(tillNextLine.trim()!="") {
-										s.collapseToStart();
-										s.modify('extend', 'backward', 'word');
-										tillNext=s.toString();
-										s.collapseToEnd();
-										s.modify('extend', 'backward', lb);
-										tillNextLine=s.toString();
-
-										// !!!  !!! sometime in the pdf
-										// a lot of tags till be wrongly treated as in one line.
-										if(tillNextLine.length<tillNext.length){
-											var code=tillNextLine.charAt(0);
-											if(code.toUpperCase()===code && code.toLowerCase!=code) eB=lb;
-										}
-
-										s.empty(); s.addRange(range);
-										s.collapseToStart();
-
-
-										s.modify('move', 'backward', eB);
-
-										s.modify('extend', 'forward', 'word');
-										tillNext=s.toString();
-										s.collapseToStart();
-										s.modify('extend', 'forward', lb);
-										tillNextLine=s.toString();
-
-										// !!!  !!! sometime in the pdf
-										// a lot of tags till be wrongly treated as in one line.
-										if(tillNextLine.length<tillNext.length){
-											var code=tillNext.charAt(tillNextLine.length);
-											if(code.toUpperCase()==code && code.toLowerCase()!=code) eN=lb;
-										}
-										s.collapseToStart();
-
-										s.modify('extend', 'forward', eN);
-
-										text=s.toString();
-										scer=1;
-									}
-								}
-								if(scer){
-									console.log(text); // final output
-								}
-							}
-						}
-					}
-					//s.empty();
-				}
-			}
-	 	}
-		function fixPdfForword(s){
-			var r = s.getRangeAt(0);
-			if(r.startContainer!=r.endContainer){
-				r.setEndAfter(r.startContainer);
-			}
-		}
-		function fixPdfBackword(s){
-			var r = s.getRangeAt(0);
-			if(r.startContainer!=r.endContainer){
-				r.setStartBefore(r.endContainer);
-			}
-		}
-	 </script>
-	 */
-	@Metaline
-	public final static String js="SUBPAGE";
 	
 	/**";</script><script src="pdfviewer.js"></script></head>*/
 	@Metaline
@@ -179,7 +69,7 @@ public class PlainPDF extends DictionaryAdapter {
 	//构造
 	public PlainPDF(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a);
-		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
+		//_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
 		_num_entries = 1;
 		
 		File path = new File(_a.getExternalFilesDir(".PDF_INDEX"), _Dictionary_fName);
@@ -209,11 +99,6 @@ public class PlainPDF extends DictionaryAdapter {
 
 	public void parseContent(WebView mWebView) {
 		mWebView.evaluateJavascript(parseCatalogue, null);
-	}
-
-	@Override
-	public String getSimplestInjection() {
-		return js;
 	}
 	
 	@Override
@@ -274,11 +159,30 @@ public class PlainPDF extends DictionaryAdapter {
 
 	@Override
 	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+		if (MdictServer.hasRemoteDebugServer) {
+			try {
+				MainActivityUIBase a = AgentApplication.activities[0].get();
+				String ret = a.fileToString("/ASSET/pdfjs/web/"+"index");
+				if (ret != null) return ret+f.getAbsolutePath()+tailing;
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
 		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8)+f.getAbsolutePath()+tailing;
 	}
 
 	@Override
 	public InputStream getResourceByKey(String key) {
+		CMN.debug("getResourceByKey::", key);
+		if (MdictServer.hasRemoteDebugServer) {
+			try {
+				MainActivityUIBase a = AgentApplication.activities[0].get();
+				InputStream ret = a.fileToStream(new File("/ASSET/pdfjs/web" + key.replace("\\", "/")));
+				if (ret != null) return ret;
+			} catch (Exception e) {
+				CMN.debug(key, e);
+			}
+		}
 		int id=_INTERNAL_PDFJS.lookUp(key);
 		if(id>=0) {
 			try {

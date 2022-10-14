@@ -4,7 +4,7 @@
 	,"style": ""
 	,"keyPattern": "*"
 	,"js": "
-		window._YWPC=['mine-tabar', 'container'];
+		window._WORDCON=['-.mine-tabar', '-.container'];
 	"
 	,"message":""
 	,"searchJs": "var succ = 0;

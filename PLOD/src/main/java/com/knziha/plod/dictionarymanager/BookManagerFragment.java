@@ -1,10 +1,14 @@
 package com.knziha.plod.dictionarymanager;
 
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
 import android.os.Bundle;
+
+import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.fragment.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;

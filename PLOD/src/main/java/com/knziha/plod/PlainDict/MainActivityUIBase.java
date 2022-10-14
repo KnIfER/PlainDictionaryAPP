@@ -4940,7 +4940,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					public int scrollVerticallyBy (int dy, RecyclerView.Recycler recycler, RecyclerView.State state ) {
 						int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
 						if(dy!=scrollRange && flip==0 && scrollRange==0) {
-							if (!twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
+							if (!twoColumnAda.isData(arrayTweakDict)) {
 								//CMN.debug("scrollVerticallyBy::", dy, scrollRange);
 								if (Math.abs(dy-scrollRange)>GlobalOptions.density*27) {
 									flip = dy < 0 ? -1 : 1; // 上下滑动翻页
@@ -4972,7 +4972,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 					}
-				});
+				}	);
 				lman.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 					@Override
 					public int getSpanSize(int position) {
@@ -6583,7 +6583,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	/** see {@link #getMenuGridRootViewForPanel} */
-	private View findWebList(View v) {
+	public View findWebList(View v) {
 		View btm = null;
 		btm = (View) v.getParent();
 		//CMN.Log("findWebList::", v.getParent(), ((View) v.getParent()).getTag());
@@ -7066,7 +7066,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					//mdict_cache.clear(); //todo 延时清空 X
 					if (loadingWordPopup!=null && loadingWordPopup.loadManager==this.loadManager) {
 						loadingWordPopup.dictPicker.loadManager =
-						loadingMan = loadingWordPopup.loadManager = new LoadManager(wordPopup.dictPicker);
+						loadingMan = loadingWordPopup.loadManager = new LoadManager(loadingWordPopup.dictPicker);
 					}
 					final DictPicker dictPicker = loadingMan.dictPicker;
 					boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
@@ -7091,7 +7091,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						invalidAllLists();
 					}
-					opt.putLastPlanName(plan, setName);
+					if (plan != null) {
+						opt.putLastPlanName(plan, setName);
+					}
 					dialog.dismiss();
 					//show(R.string.loadsucc);
 					showTopSnack(null, R.string.loadsucc, -1, -1, Gravity.CENTER, 0);

@@ -73,17 +73,28 @@ if(!window.tpshc){
             // don't bother with user selection
             return;
         }
-        if(w._NWP) {
-            var p=curr; while(p=p.parentElement)
-            if(_NWP.indexOf(p)>=0) curr=0;
-        }
-        if(curr && w._YWPC) {
-            var p=curr; o:while(p=p.parentElement){
-                for(var i=0,pc;pc=p.classList[i++];)
-                if(_YWPC.indexOf(pc)>=0) break o;
-                if(p.id && _YWPC.id && _YWPC.indexOf('#'+p.id)>=0) break;
+        // merge _NWP & _YWPC
+        if(w._WORDCON) {
+            var p=curr, stat=0, hasInc=0; 
+            while(p=p.parentElement) {
+                for(var i=0,q;q=_WORDCON[i++];) {
+                    var exc = q[0]==='-';
+                    if(exc) q = q.slice(1);
+                    else hasInc = 1;
+                    if(p.matches(q)) {
+                        if(exc) {
+                            stat = -1;
+                        } else {
+                            stat = 1;
+                        }
+                        break;
+                    }
+                }
             }
-            if(!p) curr=0;
+            if(stat<0)
+                curr=0;
+            if(hasInc && stat!=1)
+                curr=0;
         }
         if(curr) {
             var range = s.getRangeAt(0), rg, rc;

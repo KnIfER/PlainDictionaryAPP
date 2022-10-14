@@ -1718,7 +1718,7 @@
 					inf.entry = 0; //todo
 					inf.initHeight = 100;
 					inf.collapsed = false;
-					inf.waiting = opt.delay && i>opt.lazyLoadMin || inf.fold;//opt.focusMode==1 && currentFocus!=inf;
+					inf.waiting = opt.delay && opt.lazy && i>opt.lazyLoadMin || inf.fold;//opt.focusMode==1 && currentFocus!=inf;
 					if(opt.focusMode) {
 						var nf=!bStayExpandedFocus || currentFocus!=inf;
 						if(opt.fm2) {
@@ -1732,6 +1732,8 @@
 							} else if(manyfolds && i>=preN){
 								inf.initHeight=0;
 								foldFrame(inf);
+							} else { // opt.fm1
+								inf.waiting = false;
 							}
 						}
 					}
@@ -1777,9 +1779,8 @@
 				defP.style.display = 'unset';
 				if(opt.delay) {
 					dec=frames.length;
-					if(!opt.fm1 || preN<=0) {
+					if(!opt.fm1 || preN<=0)
 						startLazyLoadFrames(des||0);
-					}
 				}
 				tFrame(frames[0]);
 				initNav();
@@ -1832,6 +1833,7 @@
 			,frameSafe : true // 若自动更新了，禁止加载子页面时再次影响浏览器的前后导航历史
 
 			,safeFrame : false // 加载子页面时，禁止影响浏览器前后导航历史
+			,lazy : true
 
 			,init : function() {
 				var _=this;
@@ -1846,7 +1848,7 @@
 			,getExpandFirstN : function() {
 				var _=this;
 				return _.fm2 && _.expandFirst2? _.expandFirst2N:
-					!_.fm2 && _.expandFirst1? _.expandFirst1N : 0;
+					_.fm1 && _.expandFirst1? _.expandFirst1N : 0;
 			}
 			,getAutoScrollFocus : function() {
 				var _=this;
@@ -1887,7 +1889,7 @@
 			var currentHeight=Math.ceil(defP.scrollTop);
 			//debug('onWebListScroll st', firstVisFrame, lastVisFrame);
 			var reCalc;
-			if(!withinFrame(currentHeight, firstVisFrame) || (firstVisFrame!=lastVisFrame) && !withinFrame(currentHeight+defP.offsetHeight, lastVisFrame)) {
+			if(!withinFrame(currentHeight, firstVisFrame) || (firstVisFrame!=lastVisFrame) && lastVisFrame && !withinFrame(currentHeight+defP.offsetHeight, lastVisFrame)) {
 				firstVisFrame=lastVisFrame=midFrame=0;
 				var des=0;
 				for (var i=0,fx; fx=frames[i++];) {
@@ -1907,8 +1909,8 @@
 						else break;
 					}
 					if(firstVisFrame && des==0 && fx.waiting) {
-						//debug('nxt...', fx);
 						des=fx.frameAt;
+						//debug('nxt...', des, fx);
 					}
 					//...
 				}
@@ -2090,21 +2092,24 @@
 				var inf=frames[dex];
 				//debug('lazyLoading...', dex, inf, inf&&inf.waiting);
 				if(inf) {
-					if(opt.lazyLoadMax>0 && inf.title.offsetTop>=defP.scrollTop+opt.lazyLoadMax*defP.offsetHeight) {
-						expanding=false; // 暂停加载
-						return;
-					}
-					if(opt.lazyLoadMaxFramesEnabled>0 && inf.frameAt>=des+opt.lazyLoadMaxFrames) {
-						expanding=false; // 暂停加载
-						return;
-					}
-					if(opt.fm1 && inf.fold) {
-						expanding=false; // 停止加载
-						return;
-					}
-					if(!inf.waiting && inf.title.offsetTop>=defP.scrollTop+5*defP.offsetHeight) {
-						expanding=false; // 停止加载
-						return;
+					if(opt.lazy) {
+						if(opt.lazyLoadMax>0 && inf.title.offsetTop>=defP.scrollTop+opt.lazyLoadMax*defP.offsetHeight) {
+							expanding=false; // 暂停加载
+							return;
+						}
+						if(opt.lazyLoadMaxFramesEnabled>0 && inf.frameAt>=des+opt.lazyLoadMaxFrames) {
+							expanding=false; // 暂停加载
+							return;
+						}
+						if(opt.fm1 && inf.fold) {
+							expanding=false; // 停止加载
+							return;
+						}
+
+						if(!inf.waiting && inf.title.offsetTop>=defP.scrollTop+5*defP.offsetHeight) {
+							expanding=false; // 停止加载
+							return;
+						}
 					}
 					checkFrame(inf);
 					delayExpandTimed();
@@ -2129,7 +2134,7 @@
 					if(opt.fm2) {
 						if(e.collapsed)
 							h=e.initHeight;
-					} else {
+					} else { // opt.fm1
 						return;
 					}
 				}
@@ -3571,7 +3576,7 @@
 						]
 					, [1, 'delay', ['延迟加载', '加载压力分散到一段时间中'], opt.delay
 						, [2, 'lazyLoadMin', ['条件','页面数大于：'], opt.lazyLoadMin]
-						, [1, 'lazy', ['懒加载', '超出屏幕一定范围后暂停加载，滚动时继续'], true
+						, [1, 'lazy', ['懒加载', '超出屏幕一定范围后暂停加载，滚动时继续'], opt.lazy
 							, [2|2<<10, ['lazyLoadMaxFrames', 'lazyLoadMaxFramesEnabled', opt.lazyLoadMaxFramesEnabled], ['条件1：','页面数大于：'], opt.lazyLoadMaxFrames]
 							, [2, 'lazyLoadMax', ['条件2：','页面位置超出数倍屏幕高度：'], opt.lazyLoadMax]
 							]

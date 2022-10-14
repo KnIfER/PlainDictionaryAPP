@@ -57,7 +57,7 @@ public class PageSlide extends TextView {
 	
 	public void handleMsg(Message msg) {
 		if(msg.arg1<dragTm) {
-			CMN.Log("not handling...");
+			CMN.debug("not handling...");
 			return;
 		}
 		
