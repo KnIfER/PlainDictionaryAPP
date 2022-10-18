@@ -1520,8 +1520,7 @@ public class PlainWeb extends DictionaryAdapter {
 					url = searchKey;
 				else if (search != null || searchJs != null) {
 					key = searchKey;
-					// 清空搜索词
-					bookPresenter.SetSearchKey(null);
+					bookPresenter.SetSearchKey(null); // 清空搜索词
 				}
 			}
 		} else {
@@ -1793,20 +1792,21 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	@Override
 	public int[] getPageUtils(boolean extra) {
-		return extra?new int[]{
-				R.string.bmAdd
-				,R.string.page_dakai
-				,R.string.page_del
-//				,R.string.page_fuzhi
-//				,R.string.page_baocun
-				,R.string.page_lianjie
-//				,R.string.peruse_mode
-		}:new int[]{
-				R.string.page_yuan
-				,R.string.refresh
-				,R.string.page_rukou
-				,R.string.page_nav
-				,R.string.page_ucc
+//		extra?new int[]{
+////	  ,R.string.page_del
+////	  ,R.string.page_fuzhi
+////	  ,R.string.page_baocun
+////	  ,R.string.peruse_mode
+//		}:
+		return new int[] {
+			R.layout.page_nav_util
+			,R.string.bmAdd
+			,R.string.page_fuzhi
+			,R.string.page_dakai
+			, R.string.refresh
+			,R.string.page_nav
+			,R.string.page_rukou
+			,R.string.page_ucc
 		};
 	}
 	
@@ -1950,8 +1950,7 @@ public class PlainWeb extends DictionaryAdapter {
 			progressProceed.cancel();
 		}
 		if(mWebView.titleBar!=null) {
-			mWebView.titleBar.getBackground().setLevel(1500);
-			((LayerDrawable)mWebView.titleBar.getBackground()).getDrawable(1).setAlpha(255);
+			mWebView.progressBar();
 		}
 		//onProgressChanged(mWebView, 5);
 		
@@ -1969,8 +1968,8 @@ public class PlainWeb extends DictionaryAdapter {
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {
 		//CMN.debug("onProgressChanged::webx", newProgress, mWebView.getProgress());
-		if(mWebView.titleBar!=null) {
-			Drawable d = mWebView.titleBar.getBackground();
+		if(mWebView.progressBar!=null) {
+			Drawable d = mWebView.progressBar.getBackground();
 			int start = d.getLevel();
 			int end = newProgress*100;
 			if(end<start) end=start+10;
@@ -2041,7 +2040,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {
 		//if(updateTitle) mWebView.toolbar_title.setText(mWebView.word=bookPresenter.currentDisplaying=mWebView.getTitle());
 		if(mWebView.titleBar!=null) {
-			Drawable d = ((LayerDrawable) mWebView.titleBar.getBackground()).getDrawable(1);
+			Drawable d = mWebView.progressBar.getBackground();
 			if(d.getAlpha()!=255) {
 				return;
 			}
