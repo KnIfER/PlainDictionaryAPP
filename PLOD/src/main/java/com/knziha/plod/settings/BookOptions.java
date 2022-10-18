@@ -1,15 +1,23 @@
 package com.knziha.plod.settings;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceViewHolder;
 import androidx.preference.SwitchPreference;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,11 +38,14 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.knziha.metaline.Metaline;
 
-/** 这个是后后来的词典设置界面，比较高大上。 */
+import java.util.ArrayList;
+
+/** 词典详细设置界面。 */
 public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener, Preference.OnGetViewListener {
 	public final static int id = R.xml.pref_book;
 	BookPresenter[] data;
@@ -62,7 +73,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		mScrollPos = pos;
 	}
 	
-	private void init_color(String key) {
+	private void init_color(String key, Preference pref) {
 		boolean multiple = false;
 		Object val = GetSetIntField(data[0], key, true, 0);
 		for (int i = 1; i < data.length; i++) {
@@ -72,7 +83,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			}
 		}
 		
-		Preference pref = init_switch_preference(this, key, val, null, null, null);
+		pref = init_switch_preference(this, key, val, null, null, pref);
 		
 		if(pref instanceof ColorPickerPreference)
 			MainProgram.setColorPreferenceTitle(pref, val);
@@ -82,7 +93,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		}
 	}
 	
-	private void init_switcher(String key, boolean def, int position) {
+	private void init_switcher(String key, boolean def, int position, Preference pref) {
 		boolean multiple = false;
 		long mask = 1L<<position;
 		boolean val = getBooleanFlagAt(data[0], mask, def);
@@ -92,7 +103,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				break;
 			}
 		}
-		Preference pref = init_switch_preference(this, key, val, null, null, null);
+		pref = init_switch_preference(this, key, val, null, null, pref);
 		pref.getExtras().putInt("flagPos", position);
 		if(def)pref.getExtras().putBoolean("def", def);
 		if(multiple) {
@@ -100,7 +111,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		}
 	}
 	
-	private void init_integer(String key, int position, int infoArr, int mask) {
+	private void init_integer(String key, int position, int infoArr, int mask, Preference pref) {
 		boolean multiple = false;
 		int val = getShortFlagAt(data[0], position, mask);
 		for (int i = 1; i < data.length; i++) {
@@ -110,7 +121,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			}
 		}
 		
-		Preference pref = init_number_info_preference(this, key, val, infoArr, null, null);
+		pref = init_number_info_preference(this, key, val, infoArr, null, pref);
 		pref.getExtras().putInt("flagPos", position);
 		pref.getExtras().putInt("mask", mask);
 		
@@ -222,71 +233,146 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		//CMN.Log("parseData::", data);
 		bNeedParseData = false;
 		//init_switcher("use_bgt", false, 9);
-		init_switcher("tz", false, 10);
-		init_switcher("auto_fold", false, 32);
-		
-		init_switcher("limit_chars", false, 28);
-		init_switcher("p_accept", false, 29);
-		
-		init_switcher("editable", false, 7);
-		init_switcher("editing", false, 8);
-		init_switcher("notxt", false, 11);
-		init_switcher("browse_img", true, 31);
-		
-		init_switcher("entry_golst", false, 36);
-		init_switcher("entry_pop", false, 37);
-		
-		init_switcher("tools", false, 25);
-		init_switcher("hikeys", true, 26);
-		init_switcher("offline", false, 27);
-		
-		init_switcher("hosts", true, 39);
-		
-		init_integer("pzoom", 15, R.array.pzoom_info, 3);
-		init_integer("pzoom_plc", 17, R.array.pzoom_mode_info, 3);
-		init_integer("tzby", 12, R.array.d_zoom_mode_info, 7); // getDoubleClickAlignment
-		
-		init_color("bgTitle");
-		init_color("fgTitle");
-		init_color("bgColor");
-		
-		init_color("min_chars");
-		init_color("max_chars");
-		init_color("p_words");
-		
-		init_color("tzlv");
-		init_color("tz_x");
-		
-		init_color("pzoomx");
-		init_color("imdz1");
-		init_color("imdz2");
-		init_switcher("dz12", false, 20);
-		
-		findPreference("reload").setOnPreferenceClickListener(this);
-		findPreference("dtm").setOnPreferenceChangeListener(this);
-		findPreference("dopt").setmOnGetViewListener(this);
-		
 		PlainWeb webx = data[0].getWebx();
-		findPreference("online").setVisible(webx != null);
-		if (webx != null) {
-			findPreference("hosts").setVisible(webx.hasField("hosts"));
-			try {
-				JSONObject dopt = webx.getDopt();
-				findPreference("dopt").setVisible(dopt!=null);
-				JSONArray sites = webx.getJSONArray("mirrors");
-				ListPreference mirrors = findPreference("mirrors");
-				mirrors.setVisible(sites!=null);
-				if (sites!=null) {
-					//mirrors.setOnPreferenceChangeListener(this);
-					init_integer("mirrors", 41, 0, 31);
-					CharSequence[] mirrorsArr = new CharSequence[sites.size()];
-					for (int i = 0; i < mirrorsArr.length; i++) {
-						mirrorsArr[i] = sites.getJSONArray(i).getString(1);
+		ArrayList<Preference> preferences = new ArrayList<>(64);
+		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
+		if(screen!=null){
+			preferences.add(screen);
+			for (int i = 0; i < preferences.size(); i++) {
+				Preference p = preferences.get(i);
+				if (p instanceof PreferenceGroup) {
+					preferences.addAll(((PreferenceGroup)p).getPreferences());
+				} else {
+					final String key = p.getKey();
+					switch (key) {
+						case "tz":
+							init_switcher("tz", false, 10, p);
+							break;
+						case "auto_fold":
+							init_switcher("auto_fold", false, 32, p);
+							break;
+						case "limit_chars":
+							init_switcher("limit_chars", false, 28, p);
+							break;
+						case "p_accept":
+							init_switcher("p_accept", false, 29, p);
+							break;
+						case "editable":
+							init_switcher("editable", false, 7, p);
+							break;
+						case "editing":
+							init_switcher("editing", false, 8, p);
+							break;
+						case "notxt":
+							init_switcher("notxt", false, 11, p);
+							break;
+						case "browse_img":
+							init_switcher("browse_img", true, 31, p);
+							break;
+						case "entry_golst":
+							init_switcher("entry_golst", false, 36, p);
+							break;
+						case "entry_pop":
+							init_switcher("entry_pop", false, 37, p);
+							break;
+						case "tools":
+							init_switcher("tools", false, 25, p);
+							break;
+						case "hikeys":
+							init_switcher("hikeys", true, 26, p);
+							break;
+						case "offline":
+							init_switcher("offline", false, 27, p);
+							break;
+						case "pzoom":
+							init_integer("pzoom", 15, R.array.pzoom_info, 3, p);
+							break;
+						case "pzoom_plc":
+							init_integer("pzoom_plc", 17, R.array.pzoom_mode_info, 3, p);
+							break;
+						case "tzby":
+							init_integer("tzby", 12, R.array.d_zoom_mode_info, 7, p); // getDoubleClickAlignment
+							break;
+						case "bgTitle":
+							init_color("bgTitle", p);
+							break;
+						case "fgTitle":
+							init_color("fgTitle", p);
+							break;
+						case "bgColor":
+							init_color("bgColor", p);
+							break;
+						case "min_chars":
+							init_color("min_chars", p);
+							break;
+						case "max_chars":
+							init_color("max_chars", p);
+							break;
+						case "p_words":
+							init_color("p_words", p);
+							break;
+						case "tzlv":
+							init_color("tzlv", p);
+							break;
+						case "tz_x":
+							init_color("tz_x", p);
+							break;
+						case "pzoomx":
+							init_color("pzoomx", p);
+							break;
+						case "imdz1":
+							init_color("imdz1", p);
+							break;
+						case "imdz2":
+							init_color("imdz2", p);
+							break;
+						case "dz12":
+							init_switcher("dz12", false, 20, p);
+							break;
+						case "GPL":
+							init_switcher(key, true, 47, p);
+							break;
+						case "GPR":
+							init_switcher(key, true, 48, p);
+							break;
+						case "reload":
+							p.setOnPreferenceClickListener(this);
+							break;
+						case "online":
+							p.setVisible(webx != null);
+							break;
+						case "hosts":
+							init_switcher("hosts", true, 39, p);
+							p.setVisible(webx != null && webx.hasField("hosts"));
+							break;
+						case "dopt":
+							p.setmOnGetViewListener(this);
+							p.setVisible(webx != null && webx.getDopt()!=null);
+							break;
+						case "mirrors":
+							p.getParent().setVisible(webx != null);
+							if (webx != null) {
+								try {
+									JSONArray sites = webx.getJSONArray(key);
+									ListPreference mirrors = (ListPreference) p;
+									mirrors.setVisible(sites!=null);
+									if (sites!=null) {
+										//mirrors.setOnPreferenceChangeListener(this);
+										init_integer("mirrors", 41, 0, 31, p);
+										CharSequence[] mirrorsArr = new CharSequence[sites.size()];
+										for (int j = 0; j < mirrorsArr.length; j++) {
+											mirrorsArr[j] = sites.getJSONArray(j).getString(1);
+										}
+										mirrors.setEntries(mirrorsArr);
+									}
+								} catch (Exception e) {
+									data[0].placeHolder.ErrorMsg = e.getLocalizedMessage();
+								}
+							}
+							break;
 					}
-					mirrors.setEntries(mirrorsArr);
+					p.setOnPreferenceChangeListener(this);
 				}
-			} catch (Exception e) {
-				data[0].placeHolder.ErrorMsg = e.getLocalizedMessage();
 			}
 		}
 	}
@@ -440,7 +526,6 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	}
 	
 	
-	
 	/**
 	 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
 	<meta charset="utf8">
@@ -469,35 +554,80 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	@Metaline
 	String webxSettings = "";
 	
+	FrameLayout mWebFrame;
 	WebViewmy mWebView;
 	@Override
 	public View getView(Preference preference) {
 		try {
 			if (preference.getKey().equals("dopt")) {
-				PlainWeb webx = data[0].getWebx();
-				if (mWebView==null || !TextUtils.equals(mWebView.toTag, CMN.idStr(data[0]))) {
-					mWebView = new WebViewmy(data[0].a);
-					mWebView.toTag = CMN.idStr(data[0]);
-					JSONObject dopt = webx.getDopt();
-					if (dopt!=null) {
-						mWebView.setWebChromeClient(data[0].a.myWebCClient);
-						mWebView.setWebViewClient(data[0].a.myWebClient);
-						mWebView.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
-						mWebView.addJavascriptInterface(data[0].getWebBridge(), "app");
-						mWebView.presenter = data[0];
-						mWebView.weblistHandler = data[0].a.weblistHandler;
-						String settings = webxSettings;
-						settings = settings.replace("%0", dopt.toString());
-						settings = settings.replace("%1", webx.getField("settingsArray"));
-						mWebView.loadDataWithBaseURL(data[0].mBaseUrl,settings, null, "UTF-8", null);
-						data[0].getWebBridge().mergeView = mWebView;
-					}
+				if (mWebView==null) {
+					final WebViewmy wv = mWebView = new WebViewmy(data[0].a);
+					wv.setBackgroundColor(Color.TRANSPARENT);
+					final BookPresenter datum = data[0];
+					wv.setWebChromeClient(datum.a.myWebCClient);
+					wv.setWebViewClient(datum.a.myWebClient);
+					wv.addJavascriptInterface(datum.getWebBridge(), "app");
+					wv.addJavascriptInterface(new Object(){
+						@JavascriptInterface
+						public void relay(int h) {
+							h = (int) ((h+15) * GlobalOptions.density);
+							if (wv.getLayoutParams().height != h) {
+								wv.getLayoutParams().height = h;
+								wv.post(wv::requestLayout);
+							}
+							CMN.debug("relay=", h);
+						}
+					}, "vu");
+					wv.setVerticalScrollBarEnabled(false);
+					mWebFrame = new FrameLayout(getActivity()) {
+						@Override
+						public void setPadding(int left, int top, int right, int bottom) {
+							super.setPadding(0,0,0,0);
+						}
+					};
+					mWebFrame.setBackground(data[0].a.getListChoiceBackground());
+					VU.addViewToParent(mWebView, mWebFrame);
+					//mWebView.setMinimumHeight((int) (10*GlobalOptions.density));
+					mWebFrame.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
 				}
-				return mWebView;
+				return mWebFrame;
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
 		return null;
+	}
+	
+	/**(function(){
+	 var dom = document.getElementById('host');
+	 new ResizeObserver((entries) => {
+	 	vu.relay(dom.scrollHeight)
+	  }).observe(dom);
+	 })()*/
+	@Metaline
+	private String relayHeight;
+	
+	@Override
+	public void bindView(PreferenceViewHolder pvh) {
+		if (pvh.itemView == mWebFrame) {
+			final BookPresenter datum = data[0];
+			final PlainWeb webx = datum.getWebx();
+			final WebViewmy wv = this.mWebView;
+			if (!TextUtils.equals(wv.toTag, CMN.idStr(datum))) {
+				wv.toTag = CMN.idStr(datum);
+				JSONObject dopt = webx.getDopt();
+				if (dopt!=null) {
+					wv.presenter = datum;
+					wv.weblistHandler = datum.a.weblistHandler;
+					String settings = webxSettings;
+					settings = settings.replace("%0", dopt.toString());
+					settings = settings.replace("%1", webx.getField("settingsArray"));
+					wv.loadDataWithBaseURL(datum.mBaseUrl,settings, null, "UTF-8", null);
+					datum.getWebBridge().mergeView = wv;
+					wv.postDelayed(() -> wv.evaluateJavascript(relayHeight, null), 500);
+				}
+			}
+			//mWebFrame.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
+		}
 	}
 }

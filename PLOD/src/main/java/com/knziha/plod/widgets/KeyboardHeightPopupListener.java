@@ -9,16 +9,13 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
-import com.knziha.plod.plaindict.CMN;
-
-//from someone's blog
-public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGlobalLayoutListener {
+public class KeyboardHeightPopupListener extends PopupWindow implements ViewTreeObserver.OnGlobalLayoutListener {
     private Activity mActivity;
     private View rootView;
     private HeightListener listener;
     private int heightMax; // 记录popup内容区的最大高度
 
-    public HeightProvider(Activity activity) {
+    public KeyboardHeightPopupListener(Activity activity) {
         super(activity);
         this.mActivity = activity;
 
@@ -39,7 +36,7 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
         setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
     }
 
-    public HeightProvider init() {
+    public KeyboardHeightPopupListener init() {
         if (!isShowing()) {
             final View view = mActivity.getWindow().getDecorView();
             // 延迟加载popupwindow，如果不加延迟就会报错
@@ -53,7 +50,7 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
         return this;
     }
 
-    public HeightProvider setHeightListener(HeightListener listener) {
+    public KeyboardHeightPopupListener setHeightListener(HeightListener listener) {
         this.listener = listener;
         return this;
     }

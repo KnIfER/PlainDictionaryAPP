@@ -16,8 +16,6 @@
 
 package com.knziha.plod.widgets;
 
-import static androidx.appcompat.app.GlobalOptions.realWidth;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
@@ -49,7 +47,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -92,7 +89,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.TextViewmy;
-import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -104,8 +100,6 @@ import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
@@ -123,7 +117,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -139,17 +132,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Scanner;
-import java.util.StringTokenizer;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static androidx.appcompat.app.GlobalOptions.realWidth;
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
-import static com.knziha.plod.plaindict.CMN.debug;
-import static com.knziha.plod.plaindict.MdictServerMobile.*;
+import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
+import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
 
 public class ViewUtils extends VU {
 	public static final CharSequence WAIT = "WAIT";
@@ -860,6 +853,18 @@ public class ViewUtils extends VU {
 	
 	public static NestedScrollingChildHelper getNestedScrollingChildHelper() {
 		return sNestScrollHelper;
+	}
+	
+	// 背景色不反色
+	public static boolean isKindleDark() {
+		return Build.VERSION.SDK_INT<=22 && Build.VERSION.SDK_INT>19;
+	}
+	
+	public static long getFreeMemory(Context context) {
+		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+		ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+		am.getMemoryInfo(mi);
+		return mi.threshold;
 	}
 	
 	public void Destory(){
@@ -1890,5 +1895,17 @@ public class ViewUtils extends VU {
 			CMN.debug(e);
 		}
 		return cv;
+	}
+	
+	public static void makeFullscreenWnd(Window window) {
+		window.setDimAmount(0);
+		WindowManager.LayoutParams layoutParams = window.getAttributes();
+		layoutParams.width = MATCH_PARENT;
+		layoutParams.height = MATCH_PARENT;
+		layoutParams.horizontalMargin = 0;
+		layoutParams.verticalMargin = 0;
+		window.setAttributes(layoutParams);
+		window.getDecorView().setBackground(null);
+		window.getDecorView().setPadding(0,0,0,0);
 	}
 }

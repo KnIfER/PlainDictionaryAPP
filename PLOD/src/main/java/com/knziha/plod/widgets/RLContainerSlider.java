@@ -66,7 +66,10 @@ public class RLContainerSlider extends FrameLayout{
 
 	int first_touch_id=-1;
 
-	private float lastX,lastY,OrgX,OrgY;
+	public float lastX;
+	public float lastY;
+	private float OrgX;
+	private float OrgY;
 	boolean dragged;
 	/** Slide to turn page enabled  */
 	public boolean slideTurn = false;

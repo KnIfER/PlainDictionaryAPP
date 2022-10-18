@@ -198,6 +198,35 @@
 			android:title="允许滑动翻页"
 			app:allowDividerBelow="true"
 			/>
+	</PreferenceCategory>
+
+
+	<PreferenceCategory
+		android:key="margin"
+		android:title="页边距"
+		app:icon="@drawable/ic_sort_path_desc"
+		android:tint="@color/colorHeaderBlue"
+		android:clickable="true"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<androidx.preference.EditTextPreference
+			android:key="GPL"
+			android:defaultValue="3%"
+			android:persistent="true"
+			android:title="左边距"
+			app:wiki="单位为像素或百分比，如：25px 或 6%。需要在词典设置中开启才生效（非在线词典默开启）"
+			app:hasCheck="true"
+			/>
+
+		<androidx.preference.EditTextPreference
+			android:key="GPR"
+			android:defaultValue="3%"
+			android:persistent="true"
+			android:title="右边距"
+			app:wiki="单位为像素或百分比，如：25px 或 6%。需要在词典设置中开启才生效（非在线词典默开启）"
+			app:hasCheck="true"
+			/>
 
 		<androidx.preference.EditTextPreference
 			android:key="GPP"
@@ -207,6 +236,7 @@
 			app:wiki="空白区域高度值。单位为像素或百分比，如：50px 或 50%。"
 			app:hasCheck="true"
 			/>
+
 	</PreferenceCategory>
 
 	<PreferenceCategory
@@ -285,4 +315,5 @@
 			app:inlineSummary="true"
 			/>
 	</PreferenceCategory>
+	<PreferenceCategory> </PreferenceCategory>
 </PreferenceScreen>

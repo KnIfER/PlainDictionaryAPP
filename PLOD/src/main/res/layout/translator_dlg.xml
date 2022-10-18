@@ -18,17 +18,17 @@
 		android:orientation="horizontal"
 		>
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/tapSelZi"
+			android:id="@+id/tapSelDuan"
 			style="@style/singlechoice_plain_theme1"
-			android:text="单词点选"
+			android:text="段落点选"
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			/>
 
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/tapSelDuan"
+			android:id="@+id/tapSelZi"
 			style="@style/singlechoice_plain_theme1"
-			android:text="段落点选"
+			android:text="单词点选"
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			/>

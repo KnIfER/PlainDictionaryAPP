@@ -136,4 +136,6 @@
 			android:defaultValue="@integer/COLOR_PRI"
 			/>
 	</PreferenceCategory>
+
+	<PreferenceCategory> </PreferenceCategory>
 </PreferenceScreen>

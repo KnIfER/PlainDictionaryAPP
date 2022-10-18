@@ -123,7 +123,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public WebViewmy scrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
-	public int tapSel;
+	public int tapSel;;
+	public boolean showNavor;
 	
 	public View browserWidget8;
 	public View browserWidget10;
@@ -1601,6 +1602,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					jumpHighlight(nxt?1:-1, true);
 				}
 			} break;
+			case R.id.nav_back:
+			case R.id.nav_forward:{
+				NavWeb(id==R.id.nav_back?-1:1);
+			} break;
 			/* 上下导航 */
 			case R.id.prv:
 			case R.id.nxt:
@@ -1629,6 +1634,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
+	// longclick
 	@Override
 	public boolean onLongClick(View v) {
 		if (v==toolsBtn) {
@@ -1643,6 +1649,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				a.getVtk().bPicking = 2;
 			}
 			return true;
+		}
+		switch (v.getId()) {
+			case R.id.nav_back:
+			case R.id.nav_forward:{
+				WebViewmy wv = getWebContext();
+				if (wv !=null) {
+					wv.presenter.showMoreToolsPopup(wv, v);
+				}
+			} return true;
 		}
 		return false;
 	}
@@ -1897,6 +1912,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			CMN.debug("NavWeb", wv.getUrl(), d, wv.canGoBack(), wv.canGoForward());
 			if (d>0) wv.goForward();
 			else wv.goBack();
+			// todo sync btn states
 		}
 	}
 	
@@ -2311,6 +2327,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					((AdvancedNestScrollWebView)book.mWebView).setNestedScrollingEnabled(enabled);
 				}
 			}
+		}
+	}
+	
+	public void togNavor() {
+		showNavor = !showNavor;
+		VU.setVisible(contentUIData.navigator, showNavor);
+		if (showNavor && contentUIData.navigator.getTag() == null) {
+			contentUIData.navigator.setTag(this);
+			VU.setOnClickListenersOneDepth(contentUIData.navigator, this, 999, null);
+			// todo move btns
 		}
 	}
 }

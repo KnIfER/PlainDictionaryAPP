@@ -262,4 +262,6 @@
 			android:title="记忆加载的分组以便下次打开"
 			/>
 	</PreferenceCategory>
+
+	<PreferenceCategory android:key="" android:title="" app:allowDividerAbove="true" app:allowDividerBelow="true" > </PreferenceCategory>
 </PreferenceScreen>

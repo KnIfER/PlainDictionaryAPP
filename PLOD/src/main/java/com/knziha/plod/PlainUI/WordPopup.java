@@ -348,7 +348,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 										if (position == 3) { // 编辑搜索词
 											a.showT("未实现");
 										} else if (position == 5) { // 工具…
-											a.showDictTweaker(weblistHandler);
+											MainActivityUIBase.VerseKit tk = a.getVtk();
+											tk.setInvoker(CCD, mWebView, null, String.valueOf(entryTitle.getText()));
+											tk.onClick(a.anyView(0));
 										} else { // 切换上一词典
 											onClick(a.anyView(R.id.popLstDict));
 										}
@@ -382,8 +384,18 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							previewPageIdx--;
 						} else if(id1 ==android.R.id.button3){
 							previewPageIdx=0; // 重置
-							previewMidPos = (int) mWebView.currentPos;
-							CCD = mWebView.presenter;
+							int dynamicPos = (int) mWebView.currentPos;
+							if (rec == null) {
+								if (mWebView.presenter != CCD && mWebView.presenter != a.EmptyBook) {
+									previewMidPos = dynamicPos;
+									setTranslator(mWebView.presenter, dynamicPos);
+								} else {
+									// 回不去啦
+									resetPreviewMidPos();
+								}
+							} else {
+								resetPreviewMidPos();
+							}
 						}
 						isPreviewDirty = true;
 						refillPreviewEntries(finalDd, false);
@@ -550,6 +562,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	private String previewEntryAt(int pos) {
 		if (rec == null) {
+			CMN.debug("CCD.bookImpl::", CCD, CCD.bookImpl);
 			if(pos<0||pos>=CCD.bookImpl.getNumberEntries())
 				return "";
 			return CCD.bookImpl.getEntryAt(pos);
@@ -569,7 +582,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				previewEntryData[2] = previewEntryAt(base);
 				previewEntryData[3] = "编辑搜索词";
 				previewEntryData[4] = previewEntryAt(base+1);
-				previewEntryData[5] = "翻阅模式";
+				previewEntryData[5] = "工具…";
 				previewEntryData[6] = previewEntryAt(base+2);
 				previewEntryData[7] = "切换上一词典";
 			} else {
@@ -653,7 +666,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	private void resetPreviewMidPos() {
-		previewMidPos = currentPos>=0?currentPos:-currentPos-1;
+		previewMidPos = currentPos>=0?currentPos:-currentPos-2;
 	}
 	
 	public void init() {
@@ -671,7 +684,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			dictPicker.loadManager = this.loadManager;
 			dictPicker.autoScroll = true;
 			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
-			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(1);;
+			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(1);
 			pageSlider.weblist = page.weblist = webview.weblistHandler = weblist;
 			weblist.scrollFocus = webview;
 			page.hdl = a.hdl;
@@ -1267,8 +1280,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				currentPos = idx;
 				this.rec = null;
 				this.CCD = CCD;
-				resetPreviewMidPos();
 			}
+			resetPreviewMidPos();
 			
 			
 			if (!PDICMainAppOptions.storeNothing()

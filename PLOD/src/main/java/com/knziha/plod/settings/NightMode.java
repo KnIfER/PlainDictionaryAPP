@@ -1,5 +1,6 @@
 package com.knziha.plod.settings;
 
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -15,10 +16,11 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 
-public class NightMode extends PlainSettingsFragment {
+public class NightMode extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_nightmode;
 	public final static int requestCode=id&0xFFFF;
 	
@@ -42,13 +44,8 @@ public class NightMode extends PlainSettingsFragment {
 							init_switch_preference(this, key, PDICMainAppOptions.darkSystem(), null, null, p)
 									.setEnabled(Build.VERSION.SDK_INT>=29);
 						break;
-						case "dkB":
-							if (Build.VERSION.SDK_INT<=23) {
-//								p.setPersistent(false);
-//								p.setDefaultValue(PreferenceManager.getDefaultSharedPreferences(getSettingActivity())
-//										.getInt(key, 0xFF333333));
-//								p.setPersistent(true);
-							}
+						case "revert":
+							p.setOnPreferenceClickListener(this);
 						break;
 					}
 					p.setOnPreferenceChangeListener(this);
@@ -88,6 +85,14 @@ public class NightMode extends PlainSettingsFragment {
 				if(bUsing==1) return PDICMainAppOptions.nightDimAll();
 				else if(bUsing!=0) PDICMainAppOptions.nightDimAll(bUsing==3);
 				break;
+			case "dkTR":
+				if(bUsing==1) return PDICMainAppOptions.nightImgUseInvertFilter();
+				else if(bUsing!=0) PDICMainAppOptions.nightImgUseInvertFilter(bUsing==3);
+				break;
+			case "dkTD":
+				if(bUsing==1) return PDICMainAppOptions.nightDimImg();
+				else if(bUsing!=0) PDICMainAppOptions.nightDimImg(bUsing==3);
+				break;
 			case "dkB":
 				if(bUsing==1) return PDICMainAppOptions.nightUsePageColor();
 				else if(bUsing!=0) PDICMainAppOptions.nightUsePageColor(bUsing==3);
@@ -98,5 +103,31 @@ public class NightMode extends PlainSettingsFragment {
 				break;
 		}
 		return true;
+	}
+	
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		if ("revert".equals(preference.getKey())) {
+			PDICMainAppOptions.darkModeJsVer++;
+			PDICMainAppOptions.nightUseInvertFilter(true);
+			PDICMainAppOptions.nightDimAll(false);
+			PDICMainAppOptions.nightImgUseInvertFilter(true);
+			PDICMainAppOptions.nightDimImg(true);
+			PDICMainAppOptions.nightUsePageColor(false);
+			PDICMainAppOptions.nightUseFontColor(false);
+			SharedPreferences.Editor ed = getSettingActivity().opt.tmpEdit();
+			ed.remove("dkR").remove("dkTR")
+					.remove("dkD").remove("dkTD")
+					.remove("dkB")
+					.remove("dkF")
+			;
+			if (ViewUtils.isKindleDark()) {
+				ed.putInt("dkB", 0xFF333333);
+				PDICMainAppOptions.nightUsePageColor(true);
+			}
+			getSettingActivity().showT("已重置");
+			return true;
+		}
+		return false;
 	}
 }

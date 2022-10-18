@@ -1,8 +1,9 @@
+(function(){
 if(!window.tpshc){
     if(window.shzh==undefined) {
         window.shzh=app.rcsp(sid.get());
     }
-    let debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%cTapSch","color:(#FFF);background:#00f;",a,b,c,d,e)}
+    var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%cTapSch","color:(#FFF);background:#00f;",t[0],t[1],t[2],t[3],t[4])}
     debug('popuping ini...shzh='+window.shzh);
     var tRange, tTime;
     // 0=word; 1=paragraph; 
@@ -223,3 +224,4 @@ if(!window.tpshc){
         w.popup=0;
     }
 })}
+})()

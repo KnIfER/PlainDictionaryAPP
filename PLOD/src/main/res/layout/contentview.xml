@@ -307,6 +307,43 @@
 					android:tint="#777"
 					/>
 			</LinearLayout>
+
+
+			<LinearLayout
+				android:id="@+id/navigator"
+				android:layout_width="wrap_content"
+				android:layout_height="35dp"
+				android:background="@drawable/frame_title_btn"
+				android:layout_gravity="bottom|start"
+				android:visibility="gone"
+				tools:visibility="visible"
+				android:layout_marginStart="10dp"
+				android:layout_marginBottom="5dp"
+				>
+				<ImageView
+					android:id="@+id/nav_back"
+					android:layout_width="35dp"
+					android:layout_height="match_parent"
+					android:layout_gravity="center_vertical"
+					android:src="@drawable/recess"
+					android:paddingTop="7dp"
+					android:paddingBottom="7dp"
+					android:background="?listChoiceBackgroundIndicator"
+					android:layout_marginRight="3dp"
+					android:longClickable="true"
+					/>
+				<ImageView
+					android:id="@+id/nav_forward"
+					android:layout_width="35dp"
+					android:layout_height="match_parent"
+					android:layout_gravity="center_vertical"
+					android:src="@drawable/forward"
+					android:paddingTop="7dp"
+					android:paddingBottom="7dp"
+					android:background="?listChoiceBackgroundIndicator"
+					android:longClickable="true"
+					/>
+			</LinearLayout>
 		</com.knziha.plod.widgets.RLContainerSlider>
 
 		<LinearLayout

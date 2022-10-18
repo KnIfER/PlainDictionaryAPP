@@ -206,7 +206,5 @@
 		app:wiki="需要存储卡的读写权限。备份至/sdcard/平典搜索_备份.json，不包括词典配置；恢复后需完全重启APP方可生效。"
 		/>
 
-	<PreferenceCategory android:key="cat_prog" android:title="" >
-	</PreferenceCategory>
-
+		<PreferenceCategory> </PreferenceCategory>
 </PreferenceScreen>

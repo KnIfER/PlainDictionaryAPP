@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
-	tools:context="com.knziha.plod.settings.TapTranslator"
+	tools:context="com.knziha.plod.settings.NightMode"
 	android:key="dark"
 	android:title="夜间模式设置"
 	>
@@ -33,7 +33,7 @@
 			app:hasCheck="true"
 			/>
 		<com.knziha.filepicker.settings.IntPreference
-			android:defaultValue="100"
+			android:defaultValue="80"
 			android:key="dkD"
 			android:persistent="true"
 			android:title="调节亮度："
@@ -51,14 +51,52 @@
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="dkF"
 			android:title="字体颜色"
-			android:summary=""
+			android:summary="同理"
 			android:defaultValue="#FF000000"
 			app:hasCheck="true"
 			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="img"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="保持图片原色"/>
 	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_2"
+		android:title="内容页图像"  >
+		<com.knziha.filepicker.settings.IntPreference
+			android:defaultValue="20"
+			android:key="dkTR"
+			android:persistent="true"
+			android:title="webkit反色滤镜比率："
+			suffix=" %"
+			app:inlineSummary="true"
+			app:hasCheck="true"
+			/>
+		<com.knziha.filepicker.settings.IntPreference
+			android:defaultValue="80"
+			android:key="dkTD"
+			android:persistent="true"
+			android:title="调节亮度："
+			suffix=" %"
+			app:inlineSummary="true"
+			app:hasCheck="true"
+			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="img"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="保持图片原色"-->
+<!--			/>-->
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_2"
+		android:title="配置"  >
+		<Preference
+			android:defaultValue="20"
+			android:key="revert"
+			android:persistent="true"
+			android:title="恢复黑暗模式配置"
+			android:summary="色调过于昏暗会加重近视，请谨慎使用！"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory> </PreferenceCategory>
 </PreferenceScreen>

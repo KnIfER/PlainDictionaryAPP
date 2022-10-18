@@ -90,6 +90,7 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 		}
 		if(mMaxLines>0) {
 			vh.title.setMaxLines(mMaxLines);
+			vh.title.setVerticalScrollBarEnabled(false);
 		}
 		vh.itemView.setOnClickListener(v -> {
 			if (listener != null)

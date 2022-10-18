@@ -927,12 +927,29 @@
 		function Initialize() {
 			//window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
 			//window.debug=function(...e){console.log('fatal web d::', e)};
-			window.debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
+			//window.debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
+			window.debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c Web ","color:#333!important;background:#0FF;",t[0],t[1],t[2],t[3],t[4])}
 			if(String.prototype.startsWith != 'function') {
 				loadJs("MdbR/KitPatch.js", doInitialize);
 			} else {
 				doInitialize();
 			}
+			// window.paddingLeft=document.body.style.paddingLeft; 
+			// Object.defineProperty(document.body.style, 'paddingLeft', {
+			// 	get: function () { return window.paddingLeft||'0px'; },
+			// 	set: function (v) { 
+			// 		window.paddingLeft=v; 
+			// 		for(var i=0,fx;fx=frames[i];i++) {
+			// 			if(fx.item) {
+			// 				var sty = fx.item.contentWindow;
+			// 				if(sty) sty = sty.document;
+			// 				if(sty) sty = sty.body;
+			// 				if(sty) sty = sty.style;
+			// 				if(sty) sty.paddingLeft = v;
+			// 			}
+			// 		}
+			// 	}
+			// });
 		}
 		
 		function doInitialize() {

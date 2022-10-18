@@ -827,13 +827,18 @@ public abstract class MdictServer extends NanoHTTPD {
 					.append(MdPage_fragment2);
 			presenter.plugCssWithSameFileName(MdPageBuilder);
 			MdPageBuilder.append("<script>if(window.app&&!frameElement)app.view(sid.get(),")
-					.append(presenter.getId())
+					.append("'").append(presenter.idStr).append("'")
 					.append(",").append(pos)
 					.append(",").append(0)
 					.append(");")
 					//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
 					.append("window.pos=").append(pos).append(";")
 					.append("</script>");
+			if (presenter.padLeft() || presenter.padRight()) {
+				MdPageBuilder.append("<style>body{");
+				presenter.ApplyPadding(MdPageBuilder);
+				MdPageBuilder.append("}</style>");
+			}
 			MdPageBuilder.append("</head>")
 					.append(record)
 					.append(MdPage_fragment3)
@@ -858,7 +863,7 @@ public abstract class MdictServer extends NanoHTTPD {
 						.append("d").append(IU.NumberToText_SIXTWO_LE(presenter.getId(), null))// "/base/d0"
 						.append(SimplestInjectionEnd)
 							.append("<script>if(window.app&&!frameElement)app.view(sid.get(),")
-							.append(presenter.getId())
+							.append("'").append(presenter.idStr).append("'")
 							.append(",").append(pos)
 							.append(",").append(0)
 							.append(");")

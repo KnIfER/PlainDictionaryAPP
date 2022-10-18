@@ -45,6 +45,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -102,11 +103,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public PhotoBrowsingContext pBc;
 	
 	public GradientDrawable toolbarBG;
-	public AdvancedNestScrollLinerView titleBar;
+	public AdvancedNestFrameView titleBar;
+	public View progressBar;
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
 	public FlowTextView toolbar_title;
-	public View recess;
-	public View forward;
 	public View rl;
 	public int AlwaysCheckRange;
 	public boolean forbidLoading;
@@ -444,10 +444,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public void FindBGInTitle(MainActivityUIBase a, ViewGroup toolbar_web) {
 		//toolbar_web.setBackground(toolbar_web.getBackground().mutate()); // not work, tint chaos
-		Drawable bg = a.titleDrawable();
-		toolbar_web.setBackground(bg);
-		toolbar_web.setPadding(0,0,0,0);
-		toolbarBG = (GradientDrawable) ((LayerDrawable)bg).getDrawable(0);
+		toolbarBG = (GradientDrawable) a.titleDrawable();
+		toolbar_web.setBackground(toolbarBG);
 	}
 	
 	//public GradientDrawable MutateBGInTitle() {
@@ -630,7 +628,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			setInitialScale(0);//opt.dm.density
 		}
 	}
-
 //	/**  reset overshot */
 //	public void calcScroll() {
 //		scrollTo(computeHorizontalScrollOffset(), computeVerticalScrollOffset());
@@ -1431,4 +1428,20 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			return scrollRect;
 		return null;
 	}
+	
+	public void progressBar() {
+		if (progressBar == null) {
+			View v = new View(titleBar.getContext());
+			v.setId(R.id.progress_bar);
+			v.setBackgroundResource(R.drawable.progressbar);
+			FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-1, (int) (4 * GlobalOptions.density));
+			lp.gravity = Gravity.BOTTOM;
+			v.setLayoutParams(lp);
+			titleBar.addView(v);
+			progressBar = v;
+		}
+		progressBar.getBackground().setLevel(1500);
+		VU.setVisible(progressBar, true);
+	}
+	
 }

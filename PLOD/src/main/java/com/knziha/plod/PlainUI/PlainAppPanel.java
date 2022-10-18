@@ -23,7 +23,7 @@ import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.ViewUtils;
 
-public class PlainAppPanel extends SettingsPanel {
+public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrevention{
 	protected MainActivityUIBase a;
 	protected boolean bShouldInterceptClickListener = true;
 	protected boolean showPopOnAppbar = true;
@@ -33,7 +33,6 @@ public class PlainAppPanel extends SettingsPanel {
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
 	protected int MainAppBackground;
-	protected PlainDialog.BackPrevention mBackPrevention;
 	
 	public PlainAppPanel() {
 		super(null, null, null, null, null);
@@ -76,7 +75,7 @@ public class PlainAppPanel extends SettingsPanel {
 			}
 		}
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-		a.embedPopInCoordinatorLayout(this, pop, bottomPadding, root);
+		a.embedPopInCoordinatorLayout(this, pop, true, root);
 	}
 	
 	public int getNavbarHeight() {
@@ -96,7 +95,7 @@ public class PlainAppPanel extends SettingsPanel {
 	protected void showDialog() {
 		if (dialog==null) {
 			dialog = new PlainDialog(a);
-			dialog.mBackPrevention = mBackPrevention;
+			dialog.mBackPrevention = this;
 			dialogDismissListener = dialog -> dismissImmediate();
 			dialog.setOnDismissListener(dialogDismissListener);
 			if(settingsLayoutHolder==null) {
@@ -122,15 +121,7 @@ public class PlainAppPanel extends SettingsPanel {
 		}
 		
 		Window window = dialog.getWindow();
-		window.setDimAmount(0);
-		WindowManager.LayoutParams layoutParams = window.getAttributes();
-		layoutParams.width = MATCH_PARENT;
-		layoutParams.height = MATCH_PARENT;
-		layoutParams.horizontalMargin = 0;
-		layoutParams.verticalMargin = 0;
-		window.setAttributes(layoutParams);
-		window.getDecorView().setBackground(null);
-		window.getDecorView().setPadding(0,0,0,0);
+		ViewUtils.makeFullscreenWnd(window);
 		
 		
 		Toastable_Activity.setStatusBarColor(window, a.MainAppBackground);
@@ -219,5 +210,34 @@ public class PlainAppPanel extends SettingsPanel {
 	
 	public void refreshSoftMode(int height) {
 	
+	}
+	
+	public void resize() {
+		if (isVisible()) {
+			if (lastShowType == 2) {
+				Window window = dialog.getWindow();
+				ViewUtils.makeFullscreenWnd(window);
+			}
+			else if (lastShowType == 1) {
+				a.embedPopInCoordinatorLayout(this, pop, false, a.root);
+			}
+			else if (lastShowType==0) {
+//				View v = settingsLayout.getChildAt(0);
+//				v.setPadding(0, 0, 0, mInnerBottomPadding = padding);
+				// setInnerBottomPadding
+			}
+		}
+	}
+	
+	@Override
+	public boolean onBackPressed() {
+		if (a.settingsPanel != this) {
+			int idx = a.settingsPanels.indexOf(this);
+			if (idx < a.settingsPanels.size()-1) {
+				a.onBackPressed();
+				return true;
+			}
+		}
+		return false;
 	}
 }

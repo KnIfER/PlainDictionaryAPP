@@ -36,6 +36,7 @@ import java.util.ArrayList;
 //for menu list
 public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener
 {
+	public final ViewGroup rootPanel;
 	MainActivityUIBase a;
 	private TextPaint menu_grid_painter;
 	ArrayList<String> menuList = new ArrayList<>();
@@ -85,6 +86,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		
 		this.a = a;
 		
+		this.rootPanel = rootPanel;
 		TwoWayGridView mainMenuLst = rootPanel.findViewById(R.id.schtools);
 		mainMenuLst.setHorizontalSpacing(0);
 		mainMenuLst.setVerticalSpacing(0);

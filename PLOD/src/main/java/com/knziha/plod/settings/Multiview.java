@@ -1,6 +1,7 @@
 package com.knziha.plod.settings;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.webkit.WebView;
@@ -8,6 +9,7 @@ import android.webkit.WebView;
 import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceScreen;
 
 import com.knziha.filepicker.settings.TwinkleSwitchPreference;
 import com.knziha.plod.db.SearchUI;
@@ -19,6 +21,8 @@ import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+
+import java.util.ArrayList;
 
 public class Multiview extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_multiview;
@@ -32,60 +36,110 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 		super.onCreate(savedInstanceState);
 		
 		multiMode = PDICMainAppOptions.multiViewMode();
+		int where = getActivity().getIntent().getIntExtra("where", 0);
+		String whStr = "cat"+where;
+		String whStr1 = where==2?"cat"+-1:null;
 		
-		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null, null);
-		findPreference("expand_top").setOnPreferenceChangeListener(this);
-		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null, null);
-		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null, null).setVisible(false);
-		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null, null);
-		init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null, null);
-		
-		init_switch_preference(this, "merge", multiMode==1, null, null, null);
-		findPreference("merge_min").setOnPreferenceChangeListener(this);
+		ArrayList<Preference> preferences = new ArrayList<>(64);
+		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
+		if(screen!=null) {
+			preferences.add(screen);
+			for (int i = 0; i < preferences.size(); i++) {
+				Preference p = preferences.get(i);
+				String key = p.getKey();
+				if (p instanceof PreferenceGroup) {
+					PreferenceGroup g = (PreferenceGroup)p;
+					preferences.addAll(g.getPreferences());
+					if (key != null) {
+						g.drawSideLine = key.equals(whStr) || key.equals(whStr1);
+					}
+				} else {
+					switch (key) {
+						case "sys":
+							init_switch_preference(this, key, PDICMainAppOptions.darkSystem(), null, null, p)
+									.setEnabled(Build.VERSION.SDK_INT>=29);
+							break;
+						case "expand_ao":
+							init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null, p);
+							break;
+						case "scranima":
+							init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null, p);
+							break;
+						case "scrautex":
+							init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null, p).setVisible(false);
+							break;
+						case "turbo_top":
+							init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null, p);
+							break;
+						case "neoS":
+							init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null, p);
+							break;
+						case "merge":
+							init_switch_preference(this, "merge", multiMode==1, null, null, p);
+							break;
+						case "tseyhu":
+							init_switch_preference(this, "tseyhu", PDICMainAppOptions.remMultiview(), null, null, p);
+							break;
+						case "1s":
+							init_switch_preference(this, "1s", PDICMainAppOptions.getLv2JointOneAsSingle(), null, null, p);
+							break;
+						case "share":
+							init_switch_preference(this, "share", PDICMainAppOptions.getUseSharedFrame(), null, null, p);
+							break;
+						case "exempt":
+							init_switch_preference(this, "exempt", PDICMainAppOptions.getMergeExemptWebx(), null, null, p);
+							break;
+						case "neo":
+							init_switch_preference(this, "neo", PDICMainAppOptions.popViewEntry(), null, null, p);
+							break;
+						case "debug":
+							init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null, p)
+									.setVisible(BuildConfig.isDebug);
+							break;
+						case "neo1":
+							init_switch_preference(this, "neo1", PDICMainAppOptions.popViewEntryOne(), null, null, p);
+							break;
+						case "tz":
+							init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomGlobal(), null, null, p);
+							break;
+						case "turn1":
+							init_switch_preference(this, "turn1", PDICMainAppOptions.slidePage1D(), null, null, p);
+							break;
+						case "turn2":
+							init_switch_preference(this, "turn2", PDICMainAppOptions.slidePageMD(), null, null, p);
+							break;
+						case "turn3":
+							init_switch_preference(this, "turn3", PDICMainAppOptions.slidePageMd(), null, null, p);
+							break;
+						case "turnF":
+							init_switch_preference(this, "turnF", PDICMainAppOptions.slidePageFd(), null, null, p);
+							break;
+						case "seek":
+							init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbar(), null, null, p);
+							break;
+						case "seekF":
+							init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarFolding(), null, null, p);
+							break;
+						case "tools":
+							init_switch_preference(this, "tools", PDICMainAppOptions.wvShowToolsBtn(), null, null, p);
+							break;
+						case "boosT":
+							init_switch_preference(this, "boosT", PDICMainAppOptions.toolsBoost(), null, null, p);
+							break;
+						case "toolsBtnLong":
+							init_number_info_preference(this, "toolsBtnLong", PDICMainAppOptions.toolsQuickLong(), 0, null, p);
+							break;
+						case "fold":
+							init_switch_preference(this, "fold", multiMode==2, null, null, p);
+							break;
+					}
+					p.setOnPreferenceChangeListener(this);
+				}
+			}
+		}
 		enableCat1();
 		
-		init_switch_preference(this, "tseyhu", PDICMainAppOptions.remMultiview(), null, null, null);
-		init_switch_preference(this, "1s", PDICMainAppOptions.getLv2JointOneAsSingle(), null, null, null);
-		init_switch_preference(this, "share", PDICMainAppOptions.getUseSharedFrame(), null, null, null);
-		init_switch_preference(this, "exempt", PDICMainAppOptions.getMergeExemptWebx(), null, null, null);
-		init_switch_preference(this, "neo", PDICMainAppOptions.popViewEntry(), null, null, null);
-		
-		init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null, null)
-				.setVisible(BuildConfig.isDebug);
-		
-		init_switch_preference(this, "neo1", PDICMainAppOptions.popViewEntryOne(), null, null, null);
-		
-		init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomGlobal(), null, null, null);
-		findPreference("tzby").setOnPreferenceChangeListener(this);
-		findPreference("tzlv").setOnPreferenceChangeListener(this);
-		findPreference("tz_x").setOnPreferenceChangeListener(this);
-		findPreference("dtm").setOnPreferenceChangeListener(this);
-		
-		init_switch_preference(this, "turn1", PDICMainAppOptions.slidePage1D(), null, null, null);
-		init_switch_preference(this, "turn2", PDICMainAppOptions.slidePageMD(), null, null, null);
-		init_switch_preference(this, "turn3", PDICMainAppOptions.slidePageMd(), null, null, null);
-		init_switch_preference(this, "turnF", PDICMainAppOptions.slidePageFd(), null, null, null);
-		
-		init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbar(), null, null, null);
-		init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarFolding(), null, null, null);
-		
-		init_switch_preference(this, "tools", PDICMainAppOptions.wvShowToolsBtn(), null, null, null);
-		init_switch_preference(this, "boosT", PDICMainAppOptions.toolsBoost(), null, null, null);
-		
-		init_number_info_preference(this, "toolsBtnLong", PDICMainAppOptions.toolsQuickLong(), 0, null, null);
-		
 		clrAccent = ColorUtils.blendARGB(0xff2b4381, Color.GRAY, 0.35f);
-		int where = getActivity().getIntent().getIntExtra("where", 0);
-		((PreferenceGroup) findPreference("cat"+where)).drawSideLine = true;
-		if(where==2)
-			((PreferenceGroup) findPreference("cat"+-1)).drawSideLine = true;
-		
-		
-		init_switch_preference(this, "fold", multiMode==2, null, null, null);
-		findPreference("merge_min").setOnPreferenceChangeListener(this);
-		
-		findPreference("GPP").setOnPreferenceChangeListener(this);
-		
 	}
 
 	@Override
@@ -103,21 +157,28 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			boolean b2=!b1&&(str.startsWith("use")&&(str.length()==3||str.endsWith("_not")));
 			//CMN.Log("onPreferenceChange::", b1, b2, str, key);
 			if (b1||b2) {
-				if(TextUtils.equals(key, "expand_top")) {
-					if(b1) return PDICMainAppOptions.getOnlyExpandTopPage();
-					PDICMainAppOptions.setOnlyExpandTopPage(str.length()==3);
-					return true;
-				}
-				else if(TextUtils.equals(key, "merge_min")) {
-					if(b1) return PDICMainAppOptions.mergeUrlMore();
-					PDICMainAppOptions.mergeUrlMore(str.length()==3);
-					enableCat1();
-					return true;
-				}
-				else if(TextUtils.equals(key, "GPP")) {
-					if(b1) return PDICMainAppOptions.padBottom();
-					PDICMainAppOptions.padBottom(str.length()==3);
-					return true;
+				switch (key) {
+					case "expand_top":
+						if (b1) return PDICMainAppOptions.getOnlyExpandTopPage();
+						PDICMainAppOptions.setOnlyExpandTopPage(str.length() == 3);
+						return true;
+					case "merge_min":
+						if (b1) return PDICMainAppOptions.mergeUrlMore();
+						PDICMainAppOptions.mergeUrlMore(str.length() == 3);
+						enableCat1();
+						return true;
+					case "GPP":
+						if (b1) return PDICMainAppOptions.padBottom();
+						PDICMainAppOptions.padBottom(str.length() == 3);
+						return true;
+					case "GPL":
+						if (b1) return PDICMainAppOptions.padLeft();
+						PDICMainAppOptions.padLeft(str.length() == 3);
+						return true;
+					case "GPR":
+						if (b1) return PDICMainAppOptions.padRight();
+						PDICMainAppOptions.padRight(str.length() == 3);
+						return true;
 				}
 			}
 		}
@@ -218,25 +279,12 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			case "toolsBtnLong":
 				PDICMainAppOptions.toolsQuickLong(IU.parsint(newValue, 0));
 			break;
-			case "GPP": {
-				try {
-					String text = ((String) newValue).trim();
-					int ed = text.length();
-					if (text.endsWith("%")) {
-						ed--;
-					} else if (text.endsWith("px")) {
-						ed -= 2;
-					} else {
-						throw new RuntimeException();
-					}
-					Float.parseFloat(text.substring(0, ed));
-					CMN.GlobalPagePadding = text;
-					return true;
-				} catch (RuntimeException e) {
-					((Toastable_Activity) getActivity()).showT("数值不正确！");
-					return false;
-				}
-			}
+			case "GPP":
+				return (CMN.GlobalPagePadding = parseMarginNumber(newValue))!=null;
+			case "GPL":
+				return (CMN.GlobalPagePaddingLeft = parseMarginNumber(newValue))!=null;
+			case "GPR":
+				return (CMN.GlobalPagePaddingRight = parseMarginNumber(newValue))!=null;
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {
 			SearchUI.tapZoomV++;
@@ -245,6 +293,25 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			}
 		}
 		return true;
+	}
+	
+	private String parseMarginNumber(Object newValue) {
+		try {
+			final String text = ((String) newValue).trim();
+			int ed = text.length();
+			if (text.endsWith("%")) {
+				ed--;
+			} else if (text.endsWith("px")) {
+				ed -= 2;
+			} else {
+				throw new RuntimeException();
+			}
+			Float.parseFloat(text.substring(0, ed));
+			return text;
+		} catch (RuntimeException e) {
+			((Toastable_Activity) getActivity()).showT("数值不正确！");
+			return null;
+		}
 	}
 	
 	private void enableCat1() {

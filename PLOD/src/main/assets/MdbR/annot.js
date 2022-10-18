@@ -1,6 +1,6 @@
-//(function(){ // based on rangy.js
+(function(){ // based on rangy.js
     var doc = document;
-    function log(...e) {console.log(e)}
+    var log = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%cANNOT","color:(#FFF);background:#FFAAAA;",t[0],t[1],t[2],t[3],t[4])}
 	function getNextNode(n, e) {
         var a = n.firstChild;
         if (a) {
@@ -777,4 +777,4 @@
     window.WrapRange=wrapRange;
     window.NidsInRange=getNidsInRange;
     window.PatchNote=patchNote;
-//})();
+})();

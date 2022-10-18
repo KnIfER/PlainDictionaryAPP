@@ -35,6 +35,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	private boolean bRecycle = false;
 	ArrayList<TextMenuView> tvArr = new ArrayList<>();
 	public int tag;
+	public Object tag1;
 	
 	public interface PopupMenuListener{
 		boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick);
@@ -83,7 +84,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 				TextMenuView tv;
 				if (bRecycle && menuPos<tvArr.size()) {
 					tv = tvArr.get(menuPos);
-					tv.setOnLongClickListener(null);
+					//tv.setOnLongClickListener(null); // ???
 					tv.setActivated(false);
 				} else {
 					tv = new TextMenuView(context);
@@ -92,6 +93,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 					tv.setSingleLine(true);
 					tv.setClickable(true);
 					tv.setOnClickListener(this);
+					tv.setOnLongClickListener(this);
 					tv.setBackground(ViewUtils.getThemeDrawable(context, R.attr.listChoiceBackgroundIndicator));
 					if (bRecycle) {
 						tvArr.add(tv);

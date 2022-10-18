@@ -42,7 +42,7 @@ public class ShareHelper {
 	private static int ver = 0;
 	private final SparseIntArray mVers = new SparseIntArray();
 	private final SparseArray<String[]> pages = new SparseArray<>();
-	private final String[][] arraySelUtils = new String[3][];
+	public final String[][] arraySelUtils = new String[3][];
 	public int lastClickedPos;
 	
 	public ShareHelper(MainActivityUIBase a) {
@@ -52,7 +52,7 @@ public class ShareHelper {
 	public void readTargetNames(int page) {
 		String[] arr = pages.get(page);
 		if (arr==null) {
-			pages.set(page, arr = new String[pageSz]);
+			pages.put(page, arr = new String[pageSz]);
 		}
 		if (page <= 1) {
 			arr[7] = readTargetName(page, 7);
@@ -328,7 +328,8 @@ public class ShareHelper {
 			if (vk == null) {
 				return null;
 			}
-			if (vk.bFromWebView) {
+			//CMN.debug("getPageItems", vk.bFromWebView, vk.bFromTextView);
+			if (!vk.bFromTextView) {
 				ret = arraySelUtils[page];
 			} else {
 				if (arraySelUtils[1] == null) {
@@ -340,13 +341,13 @@ public class ShareHelper {
 				if(ret == null) {
 					ret = arraySelUtils[2] = new String[pageSz];
 					System.arraycopy(arraySelUtils[1], 0, ret, 0, pageSz - 4);
-					System.arraycopy(arraySelUtils[page], 7, ret, 7, 4);
 				}
+				System.arraycopy(arraySelUtils[page], 7, ret, 7, 4);
 			}
 		} else {
 			// 加载更多多维分享……
 		}
-		pages.set(page, ret);
+		pages.put(page, ret);
 		if (mVers.get(page) != ver) {
 			readTargetNames(page);
 		}

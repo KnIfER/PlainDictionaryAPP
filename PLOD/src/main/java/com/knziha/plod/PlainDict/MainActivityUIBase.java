@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -76,8 +77,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
@@ -122,6 +125,7 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.NestedScrollingChildHelper;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -165,10 +169,12 @@ import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
+import com.knziha.plod.PlainUI.NewTitlebar;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
+import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.SettingsSearcher;
 import com.knziha.plod.PlainUI.ShareHelper;
@@ -210,6 +216,8 @@ import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
+import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
+import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.AppIconsAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.EditTextmy;
@@ -397,6 +405,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	//public HashMap<CharSequence,byte[]> mBookProjects;
 	//public HashSet<CharSequence> dirtyMap;
 	protected ImageView browser_widget1;
+	
+	public final NewTitlebar newTitlebar = new NewTitlebar(this);
+	public SearchToolsMenu schTools;
 	
 	public boolean drawerOpen;
 	public Drawer drawerFragment;
@@ -2424,7 +2435,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		TypedValue typedValue = new TypedValue();
 //		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
 		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
-		titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).mutate().getConstantState();
+		titleDrawableCS = mResource.getDrawable(R.drawable.titlebar).mutate().getConstantState();
 		
 		if(contentview==null) {
 			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
@@ -3229,6 +3240,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//CMN.Log("scrolling to: "+lalaY);
 					}
 				}
+				else  if (oldy!=y) {
+					// 使沉浸式滚动更自然，但滚动短页面，会有闪、跳现象。
+					AdvancedNestScrollWebView wv = (AdvancedNestScrollWebView) webview;
+					if (wv.isNestedScrollingEnabled()) {
+						NestedScrollingChildHelper helper = wv.mChildHelper;
+						if (helper.mSyncedYOffset!=helper.mNestedYOffset)
+						{
+							int d = helper.mNestedYOffset-helper.mSyncedYOffset;
+							int sgn = (int)Math.signum(d);
+							if (helper.touchSlop != 0) {
+								d = d-sgn*helper.touchSlop;
+								helper.touchSlop = 0;
+							}
+							if(Math.abs(d) > Math.abs(y - oldy)) {
+								d = sgn*Math.abs(y - oldy);
+								//helper.mSyncedYOffset=helper.mNestedYOffset - d;
+							} //else
+								helper.mSyncedYOffset = helper.mNestedYOffset;
+							webview.SafeScrollTo(x, y+d);
+						}
+					}
+				}
 				
 				DragScrollBar mBar=webview.weblistHandler.mBar;
 				float currentScale = webview.webScale;
@@ -3317,7 +3350,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return false;
 	}
-
+	
+	
+	protected final Runnable postOnConfigurationChanged = new Runnable() {
+		@Override
+		public void run() {
+			for (int i = 0; i < settingsPanels.size(); i++) {
+				settingsPanels.get(i).resize();
+			}
+		}
+	};
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -3411,7 +3454,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.putDefaultFontScale(BookPresenter.def_fontsize);
 	}
 
-	protected int actionBarSize;
+	public int actionBarSize;
+	public int barSzBot;
+	public float barSzRatio = 1;
 	
 	final AppBarLayout.BarSz  bottomBarSz = new AppBarLayout.BarSz();
 	
@@ -3470,8 +3515,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	void refreshContentBow(boolean bContentBow, int actionBarSize) {
-		if(bContentBow&&!PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
+	public void refreshContentBow(boolean bContentBow, int actionBarSize) {
+		if(bContentBow && !PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
 			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) contentview.getLayoutParams();
 			lp.setMargins(0,actionBarSize, 0, 0);
 			contentview.requestLayout();
@@ -4347,6 +4392,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public boolean onItemClick(AdapterView<?> parent, @Nullable View view, int position, long strId, boolean isLongClicked, boolean isUserClick) {
 			if(position<0) return true;
 			shareHelper.lastClickedPos = shareHelper.pageSz*shareHelper.page + position;
+			if (shareHelper.page == 0 && position<7 && twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
+				shareHelper.lastClickedPos = shareHelper.pageSz + position;
+			}
 			int dissmisstype=0;
 			try {
 				if (strId != 0) {
@@ -4557,7 +4605,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				else {
-					final int id = shareHelper.page <= 1 ? ShareHelper.defPageStrIds[position] : 0;
+					final int id = shareHelper.page <= 1 ? ShareHelper.defPageStrIds[shareHelper.lastClickedPos] : 0;
 //					if (bPicking != 0) {
 //						if (bPicking == 1 ^ isLongClicked) {
 //							// to pick
@@ -4659,7 +4707,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							annotText(mWebView, 1, false);
 						}
 						break;
-						case R.string.send_dot: {
+						case R.string.search_dot:
+						case R.string.send_dot:
+							{
 							if (position == 8) {
 //								if (isLongClicked) {
 //								} else {
@@ -6737,8 +6787,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				View[] tickers = (View[]) tagHolder.tag1;
 				//tickers[0].setActivated(weblist.getWebContextNonNull().translating>0);
-				tickers[0].setActivated(weblist.tapSel==2);
-				tickers[1].setActivated(weblist.tapSel==4);
+				tickers[0].setActivated((weblist.tapSel&0x4)!=0);
+				tickers[1].setActivated((weblist.tapSel&0x2)!=0);
 				tickers[2].setActivated(weblist.tapSch);
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
@@ -7560,8 +7610,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			BookPresenter invoker = mWebView.presenter, book=invoker;
 			
-			if(wlh.isViewSingle())
-				invoker.ApplyPadding(mWebView);
 			if (PDICMainAppOptions.quickTranslatorV1() && mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
 			}
@@ -7626,6 +7674,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					}
 //				}
 			}
+			
+			if(wlh.isViewSingle()) {
+				if (PDICMainAppOptions.padBottom())
+				{
+					if (CMN.GlobalPagePadding==null)
+						CMN.GlobalPagePadding = opt.getString("GPP", "50px");
+					mWebView.evaluateJavascript("document.body.style.paddingBottom='"+CMN.GlobalPagePadding+"'", null);
+				}
+			}
+			
 			if(invoker.getIsWebx())
 			{
 				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
@@ -10543,37 +10601,61 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void embedPopInCoordinatorLayout(PlainAppPanel panel, PopupWindow pop, int padbot, ViewGroup root) {
-		if(padbot!=0) {
-			if(panel.bottombar!=null) {
-				padbot = panel.bottombar.getHeight();
-			} else {
-				padbot = bottombar!=null?bottombar.getHeight():app_panel_bottombar_height;
-			}
-			panel.bottomPadding = padbot;
-			panel.settingsLayout.setPadding(0,0,0,0);
-		}
-		settingsPopup = pop;
+	public void embedPopInCoordinatorLayout(PlainAppPanel panel, PopupWindow pop, boolean show, ViewGroup root) {
+		if (show)
+			settingsPopup = pop;
 		pop.setWidth(dm.widthPixels);
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
-		if (root==null) {
-			root = this.root;
+		int h = 0, topY;
+		View bar = panel.bottombar;
+		if(bar==null) {
+			bar = bottombar!=null?bottombar:null;
 		}
-		root.getLocationInWindow(vLocation);
-		int topY = vLocation[1];
-		int h = root.getHeight();
-		pop.setWidth(-1);
-		pop.setHeight(h-padbot);
-		//CMN.debug("embedPopInCoordinatorLayout::", h-padbot, h, padbot, panel.bottombar);
-		if (pop.isShowing()) {
-			pop.update(0, topY, -1, h-padbot);
-		} else {
-			if (PeruseViewAttached()) {
-				root = peruseView.root;
+		View svp = null, parent = bar;
+		if (parent != null) {
+			while (true) {
+				if (parent.getFitsSystemWindows()) {
+					svp = parent;
+					break;
+				}
+				svp = parent;
+				ViewParent vp = parent.getParent();
+				if (vp instanceof View) {
+					parent = (View) vp;
+				} else {
+					break;
+				}
 			}
-			pop.showAtLocation(root, Gravity.TOP, 0, topY);
+			if(svp==null) {
+				if (PeruseViewAttached()) root = peruseView.root;
+				else if (root==null) root = this.root;
+				svp = root;
+			}
+			svp.getLocationInWindow(vLocation);
+			topY = vLocation[1] + svp.getPaddingTop();
+			bar.getLocationInWindow(vLocation);
+			h = vLocation[1];
+		} else {
+			root.getLocationInWindow(vLocation);
+			topY = vLocation[1];
+			h = root.getHeight() - app_panel_bottombar_height;
+		}
+
+//		CMN.Log("embedPopInCoordinatorLayout::", "svp="+svp);
+//		CMN.Log("embedPopInCoordinatorLayout::", "bar="+bar, bar==bottombar);
+//		CMN.Log("embedPopInCoordinatorLayout::", "topY="+topY, "pH="+svp.getHeight(), "padbot="+padbot);
+//		CMN.Log("embedPopInCoordinatorLayout::", "h="+h);
+		h -= topY;
+		
+		pop.setWidth(-1);
+		pop.setHeight(h);
+		if (pop.isShowing()) {
+			pop.update(0, topY, -1, h);
+		} else {
+			// PeruseViewAttached()? peruseView.root: this.root
+			pop.showAtLocation(svp, Gravity.TOP, 0, topY);
 		}
 	}
 	
@@ -11304,7 +11386,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(ActivedAdapter!=null) invoker = ActivedAdapter.getPresenter();
 		}
 		else if(weblist!=null) {
-			invoker = weblist.getWebContext().presenter;
+			invoker = weblist.getWebContext().presenter; // 111  x打开 空
 		}
 		if (invoker == null || invoker == EmptyBook) {
 			invoker = currentDictionary;
@@ -11372,4 +11454,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			showT(word + " 已收藏");
 	}
 	
+	public void copyText(String text) {
+		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+		if(cm!=null){
+			cm.setPrimaryClip(ClipData.newPlainText(null, text));
+			showT(text);
+		}
+	}
 }

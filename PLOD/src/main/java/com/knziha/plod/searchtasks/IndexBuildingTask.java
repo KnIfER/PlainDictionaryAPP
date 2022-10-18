@@ -4,6 +4,8 @@ import static com.knziha.plod.dictionary.mdBase.markerReg;
 
 import android.annotation.SuppressLint;
 
+import androidx.appcompat.view.VU;
+
 import com.knziha.plod.PlainUI.LuceneHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -15,6 +17,7 @@ import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
+import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -113,9 +116,11 @@ public class IndexBuildingTask extends AsyncTaskWrapper<LuceneHelper, Object, St
 			Directory index = FSDirectory.open(folder);
 			IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-			//config.setMaxBufferedDocs(-1);
 			//config.setUseCompoundFile(false);
 			config.setRAMBufferSizeMB(128);
+			if (ViewUtils.littleCat) {
+				config.setMaxBufferedDocs(1024);
+			}
 			IndexWriter writer = new IndexWriter(index, config);
 			final ConcurrentHashMap<Long, Object> keyBlockOnThreads = new ConcurrentHashMap<>();
 			for(int i=0;i<size;i++){

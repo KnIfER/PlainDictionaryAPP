@@ -163,13 +163,6 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			if (type==1) {
 				ViewUtils.setVisible(bottombar, false);
 			}
-			mBackPrevention = () -> {
-				if (ViewUtils.isVisibleV2(Searchbar)) {
-					ViewUtils.setVisible(Searchbar, false);
-					return true;
-				}
-				return false;
-			};
 		}
 	}
 	
@@ -809,5 +802,14 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		if(pinned()) {
 			mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount(), "payload");
 		}
+	}
+	
+	@Override
+	public boolean onBackPressed() {
+		if (ViewUtils.isVisibleV2(Searchbar)) {
+			ViewUtils.setVisible(Searchbar, false);
+			return true;
+		}
+		return super.onBackPressed();
 	}
 }

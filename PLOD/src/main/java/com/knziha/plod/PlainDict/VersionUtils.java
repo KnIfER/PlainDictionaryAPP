@@ -5,6 +5,7 @@ import android.os.Build;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.widgets.RomUtils;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class VersionUtils {
 	
@@ -46,33 +47,43 @@ public class VersionUtils {
 			opt.slidePageMd(true);
 			opt.setTurnPageEnabled(true);
 			opt.schPageNavAudioKey(false);
-			
+
 			opt.setUseBackKeyGoWebViewBack(false);
 			opt.setUseBackKeyGoWebViewBack1(false);
 			opt.tapSchPageAutoReadEntry(false);
-			
+
 			PDICMainAppOptions.pageSchWild(true);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
-			
+
 			PDICMainAppOptions.showPrvBtn(true);
 			PDICMainAppOptions.showNxtBtn(true);
 			PDICMainAppOptions.showNxtBtnSmall(false);
 			PDICMainAppOptions.showPrvBtnSmall(false);
-			
+
 			PDICMainAppOptions.bottomNavWeb1(false);
-			
+
 			PDICMainAppOptions.pinPDic(true);
 			PDICMainAppOptions.setShowPinPicBook(true);
 			PDICMainAppOptions.darkSystem(Build.VERSION.SDK_INT>=29 && !RomUtils.isMIUI());
 			PDICMainAppOptions.setEnableSuperImmersiveScrollMode(GlobalOptions.isSmall);
-			
+
 			PDICMainAppOptions.restoreLastSch(false); // 默认不恢复
 			PDICMainAppOptions.setAllowPlugResSame(false); // 默认允许加载
+			
+			PDICMainAppOptions.padLeft(!GlobalOptions.isSmall);
+			PDICMainAppOptions.padRight(!GlobalOptions.isSmall);
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);
 		opt.setPeruseBottombarOnBottom(true);
 		opt.setCacheCurrentGroup(false);
+		
+		if (ViewUtils.isKindleDark()) {
+			if(!opt.defaultReader.contains("dkB")) {
+				opt.tmpEdit().putInt("dkB", 0xFF333333);
+				PDICMainAppOptions.nightUsePageColor(true);
+			}
+		}
 
 //		opt.setPageTurn1(true);
 //		opt.setPageTurn2(true);

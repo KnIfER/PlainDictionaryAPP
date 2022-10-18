@@ -42,9 +42,7 @@
 			android:summary="FLoat background (colordict or text process)"
 			android:defaultValue="@integer/COLOR_PRI"
 			/>
-
-
 	</PreferenceCategory>
 
-
+	<PreferenceCategory> </PreferenceCategory>
 </PreferenceScreen>

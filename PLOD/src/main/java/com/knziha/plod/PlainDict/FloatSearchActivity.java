@@ -173,6 +173,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
     		mainfv.setLayoutParams(lpmy);
 		}
 		GlobalOptions.density = dm.density;
+		if(settingsPanel!=null)
+			root.postDelayed(postOnConfigurationChanged, 200);
     }
     
     @SuppressLint("ResourceType")

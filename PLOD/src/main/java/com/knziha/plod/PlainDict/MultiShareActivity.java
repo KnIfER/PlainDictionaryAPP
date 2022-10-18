@@ -5,16 +5,19 @@ import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_S
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.graphics.ColorUtils;
 
@@ -88,6 +91,16 @@ public class MultiShareActivity extends MainActivityUIBase {
 		AllMenusStamp = new ArrayList<>();
 		processIntent(getIntent());
 		systemIntialized=true;
+	}
+	
+	@Override
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		// Checks the orientation of the screen
+		GlobalOptions.density = dm.density;
+		if(settingsPanel!=null)
+			root.postDelayed(postOnConfigurationChanged, 200);
 	}
 	
 	

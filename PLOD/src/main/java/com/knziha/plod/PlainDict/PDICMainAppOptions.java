@@ -178,13 +178,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 				if(sb.length()==initLen)
 					sb.append("-webkit-filter:");
 				sb.append(" brightness(")
-						.append(defaultReader.getInt("dkD", 100))
+						.append(defaultReader.getInt("dkD", 80))
 						.append("%)");
 			}
 			if(sb.length()>initLen) sb.append(";");
 			if (nightUsePageColor()) {
 				sb.append("background:#")
-						.append(SU.toHexRGB(defaultReader.getInt("dkB", Build.VERSION.SDK_INT<=23?0xFF333333:0xFFFFFFFF)))
+						.append(SU.toHexRGB(defaultReader.getInt("dkB", ViewUtils.isKindleDark()?0xFF333333:0xFFFFFFFF)))
 						.append(";");
 			}
 			if (nightUseFontColor()) {
@@ -192,10 +192,31 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 						.append(SU.toHexRGB(defaultReader.getInt("dkF", 0xFF000000)))
 						.append(";");
 			}
-			if (nightUseInvertFilter() && nightPreserveImg()) {
-				int already = nightUseInvertFilter() ? defaultReader.getInt("dkR", 100) : 0;
-				sb.append("}img{-webkit-filter:invert(").append(Math.max(0, already-20)).append("%)");
+//			if (nightUseInvertFilter() && nightPreserveImg()) {
+//				int already = nightUseInvertFilter() ? defaultReader.getInt("dkR", 100) : 0;
+//				sb.append("}img{-webkit-filter:invert(").append(Math.max(0, already-20)).append("%)");
+//			}
+			initLen = sb.length();
+			if (nightImgUseInvertFilter()) {
+				int invertImg = defaultReader.getInt("dkTR", 20);
+				if (nightUseInvertFilter()) {
+					invertImg = defaultReader.getInt("dkR", 100) - invertImg;
+				}
+				sb.append("}img{");
+				sb.append("-webkit-filter:invert(")
+						.append(invertImg)
+						.append("%)");
 			}
+			if (nightDimImg()) {
+				if(sb.length()==initLen) {
+					sb.append("}img{");
+					sb.append("-webkit-filter:");
+				}
+				sb.append(" brightness(")
+						.append(defaultReader.getInt("dkTD", 80))
+						.append("%)");
+			}
+			
 			mDarkModeJs = sb.append(sDarkModeIncantation).toString();
 			CMN.debug("mDarkModeJs::", mDarkModeJs);
 			a.CommonAssets.put("dk.js", mDarkModeJs.getBytes());
@@ -311,7 +332,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	public String getString(String key, String defValue) {
 		if (mModified.size() > 0) {
-			Object ret = mModified.getOrDefault(key, key);
+			Object ret = null;
+			if (Build.VERSION.SDK_INT<=23) {
+				ret = mModified.containsKey(key)?mModified.get(key):key;
+			} else {
+				ret = mModified.getOrDefault(key, key);
+			}
 			if (ret != key) {
 				return (String) ret;
 			}
@@ -2718,8 +2744,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=12, shift=1) public static boolean nightUseInvertFilter() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=12, shift=1) public static void nightUseInvertFilter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=13, shift=1) public static boolean nightUsePageColor() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=13, shift=1) public static void nightUsePageColor(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13) public static boolean nightUsePageColor() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13) public static void nightUsePageColor(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=14) public static boolean nightUseFontColor() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=14) public static void nightUseFontColor(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
@@ -2738,6 +2764,19 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=19) public static boolean wordPopupRemDifferenSet() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=19) public static void wordPopupRemDifferenSet(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=20, shift=1) public static boolean padLeft(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=20, shift=1) public static void padLeft(boolean val){ EightFlag=EightFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=20, shift=1) public static boolean padRight(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=20, shift=1) public static void padRight(boolean val){ EightFlag=EightFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=21, shift=1) public static boolean nightImgUseInvertFilter() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=21, shift=1) public static void nightImgUseInvertFilter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=22, shift=1) public static boolean nightDimImg() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=22, shift=1) public static void nightDimImg(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	
 	///////
 	///////

@@ -28,7 +28,7 @@ public class SchOpt extends PlainSettingsFragment implements Preference.OnPrefer
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		Intent intent = new Intent();
-		intent.putExtra("realm", 8);
+		intent.putExtra("realm", Misc.id);
 		intent.setClass(getContext(), SettingsActivity.class);
 		startActivity(intent);
 		return false;

@@ -182,7 +182,7 @@ public class FlowTextView extends View {
 		}
 	}
 	
-	public CharSequence getText() {
+	public String getText() {
 		return mText;
 	}
 	

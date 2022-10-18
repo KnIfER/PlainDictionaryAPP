@@ -22,6 +22,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.APPSettingsActivity;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
 
@@ -73,7 +74,9 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
-		win.getDecorView().setBackgroundColor(GlobalOptions.isDark? Color.BLACK:0xFFf5f5f5);
+		win.getDecorView().setBackgroundColor(GlobalOptions.isDark?
+				ViewUtils.littleCat ?0xFF333333:Color.BLACK
+				:0xFFf5f5f5);
 		root=win.getDecorView().findViewById(android.R.id.content);
 		checkMargin(this);
 		MainBackground = opt.getMainBackground();

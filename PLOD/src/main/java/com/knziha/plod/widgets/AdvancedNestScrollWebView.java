@@ -32,8 +32,8 @@ import com.knziha.plod.plaindict.PDICMainActivity;
  */
 public class AdvancedNestScrollWebView extends WebViewmy implements NestedScrollingChild {
 	boolean mNestedScrollEnabled;
-
-	private final NestedScrollingChildHelper mChildHelper;
+	
+	public final NestedScrollingChildHelper mChildHelper;
 
 	public AdvancedNestScrollWebView(Context context) {
 		this(context, null);

@@ -165,4 +165,10 @@ public class MenuGrid extends PlainAppPanel {
 			menu_grid.requestLayout();
 		}
 	}
+	
+	@Override
+	public void resize() {
+		super.resize();
+		refreshMenuGridSize(false);
+	}
 }

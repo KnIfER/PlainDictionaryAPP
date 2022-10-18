@@ -24,23 +24,23 @@ apply plugin: 'com.android.application'
 android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
 
 android {
-//    tasks.whenTaskAdded { task ->
-//        if (task.name.contains("lint")
-////如果instant run不生效，把clean这行干掉
-//                ||task.name.equals("clean")
-//                //如果项目中有用到aidl则不可以舍弃这个任务
-//                ||task.name.contains("Aidl")
-////用不到测试的时候就可以先关闭
-//                ||task.name.contains("mockableAndroidJar")
-//               // ||task.name.contains("UnitTest")
-//                ||task.name.contains("AndroidTest")
-////用不到NDK和JNI的也关闭掉
-//                || task.name.contains("Ndk")
-//                || task.name.contains("Jni")
-//        ) {
-//            task.enabled = false
-//        }
-//    }
+    tasks.whenTaskAdded { task ->
+        if (task.name.contains("lint")
+//如果instant run不生效，把clean这行干掉
+                ||task.name.equals("clean")
+                //如果项目中有用到aidl则不可以舍弃这个任务
+                ||task.name.contains("Aidl")
+//用不到测试的时候就可以先关闭
+                ||task.name.contains("mockableAndroidJar")
+               // ||task.name.contains("UnitTest")
+                ||task.name.contains("AndroidTest")
+//用不到NDK和JNI的也关闭掉
+                || task.name.contains("Ndk")
+                || task.name.contains("Jni")
+        ) {
+            task.enabled = false
+        }
+    }
 
     lintOptions {
         //tasks.lint.enabled = false
@@ -246,4 +246,6 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.15.3'
 
    // implementation fileTree(dir: 'lib', include: ['*.jar'])
+
+
 }

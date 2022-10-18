@@ -45,6 +45,7 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -88,6 +89,7 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
+import com.knziha.plod.PlainUI.NewTitlebar;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
@@ -113,7 +115,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
-import com.knziha.plod.widgets.HeightProvider;
+import com.knziha.plod.widgets.KeyboardHeightPopupListener;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
@@ -177,7 +179,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private LinearLayout webline;
 	
 	public ActivityMainBinding UIData;
-	HeightProvider heightProvider;
+	KeyboardHeightPopupListener keyboardHeightPopupListener;
 	
 	/** 定制底栏一：<br/>
 	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
@@ -209,11 +211,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public AppUIProject bottombar_project;
 	private static int LauncherInstanceCount;
 	private EnchanterReceiver locationReceiver;
-	private int barSzBot;
-	private float barSzRatio;
 	private VirtualDisplay mDisplay;
 	private long lastResumeTime;
-	public SearchToolsMenu schTools;
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -234,6 +233,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			onSizeChanged();
 		}
 		if(mConfiguration.orientation!=newConfig.orientation) {
+			mConfiguration.setTo(newConfig);
 			if(root.getTag()!=null) {
 				MarginLayoutParams lp = (MarginLayoutParams) root.getLayoutParams();
 				int mT=DockerMarginT;
@@ -248,14 +248,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				lp.bottomMargin = DockerMarginB;
 				root.setLayoutParams(lp);
 			}
+			barSzRatio = newConfig.orientation==Configuration.ORIENTATION_LANDSCAPE
+				? 0.8f : 1;
 			actionBarSize = (int) getResources().getDimension(R.dimen.barSize);
-			//barSzRatio
-			bottombar.getLayoutParams().height=barSzBot;
 			
-			toolbar.getLayoutParams().height=actionBarSize;
-			UIData.appbar.getLayoutParams().height=actionBarSize;
-			UIData.appbar.requestLayout();
-			refreshContentBow(opt.isContentBow(), actionBarSize);
+			bottombar.getLayoutParams().height = (int) (barSzBot * barSzRatio);
+			
+			newTitlebar.resize();
 
 			if(d!=null) {
 				if(d instanceof WindowChangeHandler)
@@ -283,7 +282,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				drawerFragment.mDrawerListLayout.getLayoutParams().width = -1;
 			}
 		}
-		mConfiguration.setTo(newConfig);
+		else mConfiguration.setTo(newConfig);
 		if(Build.VERSION.SDK_INT>=29){
 			boolean systemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 			if (systemDark!=GlobalOptions.isSystemDark) {
@@ -299,30 +298,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		//CMN.Log("GlobalOptionsGlobalOptions", GlobalOptions.isDark, isDarkStamp);
 		GlobalOptions.density = dm.density;
-		if(settingsPanel!=null) {
+		if(settingsPanel!=null)
 			root.postDelayed(postOnConfigurationChanged, 200);
-		}
 	}
-	
-	Runnable postOnConfigurationChanged = new Runnable() {
-		@Override
-		public void run() {
-			if(settingsPopup!=null) {
-				//settingsPopup.dismiss();
-				embedPopInCoordinatorLayout(settingsPanel, settingsPopup, settingsPanel==null?0:settingsPanel.bottomPadding, root);
-			} else if(settingsPanel!=null){
-				int pad = UIData.bottombar.getHeight();
-				if (UIData.appbar.getTop()>=0) {
-					pad+=UIData.appbar.getHeight();
-				}
-				settingsPanel.setInnerBottomPadding(pad);
-			}
-			MenuGrid menuGrid = (MenuGrid) getReferencedObject(WeakReferenceHelper.menu_grid);
-			if(menuGrid!=null) {
-				menuGrid.refreshMenuGridSize(false);
-			}
-		}
-	};
 	
 	
 	private boolean isLocalesEqual(Configuration oldConfig, Configuration newConfig) {
@@ -1533,8 +1511,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					, 0.5f, -1, Gravity.CENTER, 0);
 		
 		
-		heightProvider = new HeightProvider(this);
-		heightProvider.init().setHeightListener(new HeightProvider.HeightListener() {
+		keyboardHeightPopupListener = new KeyboardHeightPopupListener(this);
+		keyboardHeightPopupListener.init().setHeightListener(new KeyboardHeightPopupListener.HeightListener() {
 			@Override
 			public void onHeightChanged(int height) {
 				//showT(""+height+settingsPanel);
@@ -1837,6 +1815,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//widget12.performLongClick();
 				
 				//toolbar.setPopupTheme(R.style.toolbarBaseTheme_dark);
+				
+				// newTitlebar.Activate(); - 横屏时合并主界面标题栏、搜索工具栏、词典标题栏。
+				
 			}, 350);
 			//showAppTweaker();
 			if(CMN.testFLoatSearch)
@@ -2216,7 +2197,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (floatApp!=null) {
 				floatApp.close();
 			}
-			heightProvider.dismiss();
+			keyboardHeightPopupListener.dismiss();
 		}
 		if(ServiceEnhancer.isRunning) {
 			if(PDICMainAppOptions.getAutoClearNotificationOnExit() || !PDICMainAppOptions.getNotificationEnabled()) {
@@ -2249,7 +2230,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			putter = opt.edit().putInt("BBS",contentUIData.webcontentlister.getPrimaryContentSize());
 		opt.checkModified(flags, true);
 	}
-
+	
 	@Override
 	protected void onPause() {
 		// CMN.debug("onPause");
@@ -3493,45 +3474,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			showT(msg);
 		}
 	}
-	
-	public void embedPopInCoordinatorLayout(PlainAppPanel panel, PopupWindow pop, int padbot, ViewGroup root) {
-		settingsPopup = pop;
-		pop.setWidth(dm.widthPixels);
-		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-		pop.setBackgroundDrawable(null);
-		int[] vLocation = new int[2];
-		if (root==null) root = this.root;
-		ViewGroup svp = root==this.root?(ViewGroup) UIData.drawerLayout.getParent():root;
-		svp.getLocationInWindow(vLocation);
-		int topY = vLocation[1];
-		//showT(UIData.webcoord.getHeight() +" = "+ UIData.bottombar.getHeight());
-		//CMN.Log("embedPopInCoordinatorLayout::padbot::", padbot, panel.bottomPadding);
-		if(padbot!=0) {
-			if(panel.bottombar!=null) {
-				padbot = panel.bottombar.getHeight();
-			} else {
-				padbot = bottombar!=null?bottombar.getHeight():app_panel_bottombar_height;
-			}
-			panel.bottomPadding = padbot;
-			//CMN.Log("padbot::", bottombar.getHeight(), app_panel_bottombar_height);
-		}
-		int h = svp.getHeight() - padbot;
-		//if (UIData.appbar.getTop()==0)
-		//{
-		//	int h1 = etSearch.getHeight();
-		//	topY += h1;
-		//	h -= h1;
-		//}
-		pop.setWidth(-1);
-		pop.setHeight(h);
-		if (pop.isShowing()) {
-			pop.update(0, topY, -1, h);
-		} else {
-			// PeruseViewAttached()? peruseView.root: this.root
-			pop.showAtLocation(root, Gravity.TOP, 0, topY);
-		}
-	}
-	
 	
 	public void toggleMultiwindow() {
 		if (floatApp==null) {

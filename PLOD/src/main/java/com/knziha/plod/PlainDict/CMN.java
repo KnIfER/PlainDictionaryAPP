@@ -40,6 +40,8 @@ public class CMN{
 	public static int FloatAppBackground = Color.GRAY;
 	public static int GlobalPageBackground = Color.WHITE;
 	public static String GlobalPagePadding;
+	public static String GlobalPagePaddingLeft;
+	public static String GlobalPagePaddingRight;
 	/** 0x1=main; 0x2=float */
 	public static int AppColorChangedFlag;
 	public static boolean touchThenSearch=true;
@@ -165,7 +167,7 @@ public class CMN{
 				if(CIS.length()>10) CIS = CIS.substring(0, 10);
 			}
 			CIS = CIS+CI;
-			Log(depth+CIS+" == "+Integer.toHexString(CI.getId())+"/"+CI.getBackground()+"\\"+CI.getTag()+(CI instanceof TextView?("@font"+((TextView)CI).getTextSize()):""));
+			Log(depth+CIS+" == "+Integer.toHexString(CI.getId())+"/"+CI.getBackground()+"\\"+CI.getTag()+(CI instanceof TextView?("@font"+((TextView)CI).getTextSize()):"")+("@fit="+v.getFitsSystemWindows()));
 			if(ViewGroup.class.isInstance(CI))
 				recurseLog(CI,depth_plus_1);
 		}

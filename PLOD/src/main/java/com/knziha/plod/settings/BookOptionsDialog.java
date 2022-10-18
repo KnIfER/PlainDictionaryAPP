@@ -41,33 +41,6 @@ public class BookOptionsDialog extends DialogFragment {
 	}
 	
 	@Override
-	public void onStart() {
-		super.onStart();
-		if (getDialog()!=null) {
-			Window win = getDialog().getWindow();
-			if (win!=null) {
-				win.setBackgroundDrawableResource(GlobalOptions.isDark? androidx.appcompat.R.drawable.popup_shadow_d: androidx.appcompat.R.drawable.popup_shadow_l);
-				win.getDecorView().setPadding(0, 0, 0, 0);
-				win.getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-					DisplayMetrics dm = getResources().getDisplayMetrics();
-					WindowManager.LayoutParams params = win.getAttributes();
-					int w = (int) (0.95*dm.widthPixels);
-					int h = (int) (0.95*dm.heightPixels);
-					if (h>w) {
-						h=(int) (0.8*h);
-						w = (int) (0.99*dm.widthPixels);
-					}
-					else w=(int) (0.85*w);
-					params.width = w;
-					params.height = h;
-					win.setAttributes(params);
-				});
-				win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-			}
-		}
-	}
-	
-	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setStyle(STYLE_NO_TITLE, 0);
@@ -95,6 +68,28 @@ public class BookOptionsDialog extends DialogFragment {
 		Dialog ret = super.onCreateDialog(savedInstanceState);
 		if (getActivity() instanceof MainActivityUIBase)
 			ViewUtils.ensureWindowType(ret, (MainActivityUIBase) getActivity(), this);
+		
+		Window win = ret.getWindow();
+		if (win!=null) {
+			win.setBackgroundDrawableResource(GlobalOptions.isDark? androidx.appcompat.R.drawable.popup_shadow_d: androidx.appcompat.R.drawable.popup_shadow_l);
+			win.getDecorView().setPadding(0, 0, 0, 0);
+			win.getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+				DisplayMetrics dm = getResources().getDisplayMetrics();
+				WindowManager.LayoutParams params = win.getAttributes();
+				int w = (int) (0.95*dm.widthPixels);
+				int h = (int) (0.95*dm.heightPixels);
+				if (h>w) {
+					h=(int) (0.8*h);
+					w = -1;
+				}
+				else w=(int) (0.85*w);
+				params.width = w;
+				params.height = h;
+				win.setAttributes(params);
+			});
+			win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+		}
+		
 		return ret;
 	}
 }
