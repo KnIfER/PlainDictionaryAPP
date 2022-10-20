@@ -223,5 +223,6 @@
 	<string name="lnk_note">链接到已有笔记…</string>
 	<string name="edit_yy_note">修改已选笔记</string>
 	<string name="share_name">定制名称</string>
+	<string name="page_save_img">下载图片</string>
 	>
 </resources>

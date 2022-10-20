@@ -148,7 +148,7 @@ public class RLContainerSlider extends FrameLayout{
 					fastTapZoom = true;
 					fastTapZoomInit = 0;
 				}
-				WebContext.evaluateJavascript("getSelection().empty()", null);
+				//WebContext.evaluateJavascript("getSelection().empty()", null);
 			}
 			twiceDetected = true;
 			lastZoomTime=System.currentTimeMillis();
@@ -157,7 +157,7 @@ public class RLContainerSlider extends FrameLayout{
 
 		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
 			//if(System.currentTimeMillis()-lastDownTime<=200) //事件老死
-			CMN.debug("onfling!!!");
+			//CMN.debug("onfling!!!");
 			if(slideTurn && bZoomOutCompletely)
 			{
 				if(e2.getPointerCount()>1

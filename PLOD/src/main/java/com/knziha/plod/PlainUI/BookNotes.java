@@ -12,6 +12,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
@@ -22,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -249,6 +251,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
 			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
 		}
+		ViewUtils.ensureTopmost(dialog, a, dialogDismissListener);
+		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
 	}
 	
 	public void checkBoundary() {
@@ -264,6 +268,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		}
 	}
 	
+	// click
 	@Override
 	public void onClick(View v) {
 		if (ViewUtils.getNthParentNonNull(v, 1)== bottomShelf) {
@@ -276,6 +281,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			return;
 		}
 		int sortBy = -1;
+		/**see {@link #getSortByPopupMenu}*/
 		switch (v.getId()) {
 			case R.string.st_time:
 				sortBy = 0;
@@ -291,26 +297,24 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			break;
 		}
 		if (sortBy >= 0) {
-			PopupMenuHelper ret = popupMenuRef.get();
-			if (ret!=null) {
-				ret.dismiss();
-				ret.tag=-1;
-			}
+			PopupMenuHelper ret = (PopupMenuHelper) ViewUtils.getViewHolderInParents(v, PopupMenuHelper.class);
+			ret.dismiss();
+			ret.tag=-1;
 			if(v instanceof ImageView)
 				sortBy++;
-			int i = viewPager.getCurrentItem();
-			if (i == 0) {
+			int k = viewPager.getCurrentItem();
+			if (k == 0) {
 				PDICMainAppOptions.annotDBSortBy(sortBy);
-			} else if(i==1){
+			} else if(k==1){
 				PDICMainAppOptions.annotDB1SortBy(sortBy);
 			} else {
 				PDICMainAppOptions.annotDB2SortBy(sortBy);
 			}
-			sortTypes[i] = sortBy;
-			RecyclerView lv = viewList[i];
+			sortTypes[k] = sortBy;
+			RecyclerView lv = viewList[k];
 			if (lv.getAdapter() != null) {
 				lv.suppressLayout(true);
-				AnnotAdapter adapter = getAnnotationAdapter(false, lv, i);
+				AnnotAdapter adapter = getAnnotationAdapter(false, lv, k);
 				/*变换排序规则*/adapter.rebuildCursor(a.prepareHistoryCon().getDB(), pressedV.get(), this, null);
 			}
 		}
@@ -445,6 +449,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				v.setId(texts[i]);
 				v.setOnClickListener(this);
 				ret.lv.addView(view);
+				view.setTag(ret);
 			}
 			popupMenuRef = new WeakReference<>(ret);
 		}
@@ -458,20 +463,27 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				else if (sortType > 3) rowAct = 3;
 				else if (sortType > 1) rowAct = 2;
 				else rowAct = 0;
-				CMN.debug("activate::", rowAct, ada.sortType(this));
+				CMN.debug("getSortByPopupMenu::activate::", rowAct, ada.sortType(this));
 				for (int i = 0; i < 4; i++) {
 					View view = ret.lv.getChildAt(i);
 					TextMenuView tv = (TextMenuView) ((ViewGroup) view).getChildAt(0);
+					ImageView v = (ImageView) ((ViewGroup) view).getChildAt(1);
 					if (i == 0) {
 						ViewUtils.setVisible(view, k != 1);
 					}
 					tv.activated = rowAct == i;
-					tv.setTextColor(rowAct != i || b1 ? a.AppBlack : Color.BLUE);
+					tv.setTextColor(rowAct == i && !b1 ? Color.BLUE : a.AppBlack);
+					v.setColorFilter(rowAct == i && !b1? Color.BLUE:0);
 					if (tv.getTag()==null) {
 						tv.setTag(tv.getText());
 					}
 					String text = (String) tv.getTag();
-					tv.setText(k==0?text:text.substring(text.indexOf("+")+1));
+					text = (k==0||k==2&&i==1)?text:text.substring(text.indexOf("+")+1);
+					if (rowAct == i && !b1) {
+						int length = text.length();
+						text = text.substring(0, length-3) + text.charAt(length-1) + text.charAt(length-2) + text.charAt(length-3);
+					}
+					tv.setText(text);
 				}
 				ret.tag = (sortType << 2) | k;
 			}
@@ -481,7 +493,15 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	
 	public void click(AnnotAdapter annotAdapter, View itemView, AnnotAdapter.VueHolder vh, boolean isLongClick) {
 		int pos = vh.getLayoutPosition();
-		AnnotAdapter.AnnotationReader reader = annotAdapter.dataAdapter.getReaderAt(pos);
+		AnnotAdapter.AnnotationReader reader = null;
+		try {
+			reader = annotAdapter.dataAdapter.getReaderAt(pos);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		if (reader == null) {
+			return;
+		}
 		pressedRowId = reader.row_id;
 		pressedV = new WeakReference<>(itemView);
 		if (isLongClick) {

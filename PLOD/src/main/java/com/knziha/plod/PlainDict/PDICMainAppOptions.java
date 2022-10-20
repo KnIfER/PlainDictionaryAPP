@@ -2768,14 +2768,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=20, shift=1) public static boolean padLeft(){ EightFlag=EightFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=20, shift=1) public static void padLeft(boolean val){ EightFlag=EightFlag; throw new RuntimeException(); }
 	
-	@Metaline(flagPos=20, shift=1) public static boolean padRight(){ EightFlag=EightFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=20, shift=1) public static void padRight(boolean val){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=21, shift=1) public static boolean padRight(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=21, shift=1) public static void padRight(boolean val){ EightFlag=EightFlag; throw new RuntimeException(); }
 	
-	@Metaline(flagPos=21, shift=1) public static boolean nightImgUseInvertFilter() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=21, shift=1) public static void nightImgUseInvertFilter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=22, shift=1) public static boolean nightImgUseInvertFilter() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=22, shift=1) public static void nightImgUseInvertFilter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=22, shift=1) public static boolean nightDimImg() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=22, shift=1) public static void nightDimImg(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23, shift=1) public static boolean nightDimImg() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23, shift=1) public static void nightDimImg(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
 	///////

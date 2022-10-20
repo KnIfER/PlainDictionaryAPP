@@ -1,6 +1,6 @@
 package com.knziha.plod.PlainUI;
 
-import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
 import android.database.Cursor;
@@ -231,6 +231,9 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			}
 			dbVer = LexicalDBHelper.annotDbVer;
 			RecyclerView lv = bookNotes.viewList[scope];
+			if (pageAsyncLoader == null) {
+				pageAsyncLoader = new ImageView(a);
+			}
 			{
 				int sortType = sortType(bookNotes);
 				this.sortType = sortType;
@@ -250,9 +253,6 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 				}
 				// 时间
 				else if (sortType <= 1) {
-					if (pageAsyncLoader == null) {
-						pageAsyncLoader = new ImageView(a);
-					}
 					saveListPosition(sortView);
 					PagingCursorAdapter<AnnotationReader> dataAdapter = new PagingCursorAdapter<>(database
 							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
@@ -261,7 +261,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					this.dataAdapter = dataAdapter;
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
-							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_CREATE_TIME, sortType==0, "entry,lex,pos,bid,annot");
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_EDIT_TIME, sortType==0, "entry,lex,pos,bid,annot");
 					long[] pos = savedPositions.get(getFragmentId());
 					long lastTm = 0, offset = 0;
 					if (pos != null) {
@@ -292,10 +292,8 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					dataAdapter.startPaging(lastTm, offset, 20, 15, this);
 					notifyDataSetChanged();
 				}
+				// 组合排序
 				else {
-					if (pageAsyncLoader == null) {
-						pageAsyncLoader = new ImageView(a);
-					}
 					saveListPosition(sortView);
 					MultiFieldPagingCursorAdapter<AnnotationMultiSortReader> dataAdapter = new MultiFieldPagingCursorAdapter(database
 							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
@@ -304,16 +302,16 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					this.dataAdapter = dataAdapter;
 					String[] sortBy;
 					if (sortType<=3) { // 词典页码段落
-						sortBy = new String[]{"bid", "pos", "tPos", FIELD_CREATE_TIME, "id"};
+						sortBy = new String[]{"bid", "pos", "tPos", FIELD_EDIT_TIME, "id"};
 					}  else if (sortType<=5) { // 词典页码时间
-						sortBy = new String[]{"bid", "pos", FIELD_CREATE_TIME, "id"};
+						sortBy = new String[]{"bid", "pos", FIELD_EDIT_TIME, "id"};
 					} else { // 词典时间
-						sortBy = new String[]{"bid", FIELD_CREATE_TIME};
+						sortBy = new String[]{"bid", FIELD_EDIT_TIME};
 					}
 					CMN.debug("sortBy::", sortBy);
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
-							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, sortType%2==0, "entry,lex,pos,bid,annot");
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, sortType%2!=0, "entry,lex,pos,bid,annot");
 					long[] sorts = null;
 					long[] pos = savedPositions.get(getFragmentId());
 					long offset = 0;
@@ -362,6 +360,56 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		}
 	}
 	
+	/** update timed page table by expurl */
+	private void updateByExpUrl(PagingCursorAdapter<AnnotationReader> dataAdapter, String value, long finalLastTm, long finalOffset) {
+		StringBuilder sb = new StringBuilder();
+		ArrayList<String> args = new ArrayList<>();
+		CMN.debug("updateByExpUrl:: exp=", value);
+		if(value==null) return;
+		this.expUrl = value;
+		try {
+			if (value.startsWith("\"")) {
+				value = value.substring(1, value.length()-1);
+			}
+			boolean encoded = value.startsWith("d") || value.startsWith("w");
+			String[] arr = value.split("-");
+			for (int i = 0; i < arr.length; i++) {
+				String[] dp = arr[i].split("_");
+				//CMN.debug("dp::", value, dp);
+				long bid = encoded?IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(dp[0], 1)):IU.parseLong(dp[0]);
+				long pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1]):IU.parseLong(dp[1]);
+				if(sb.length()>0)
+					sb.append(" or ");
+				sb.append("(");
+				if (dp.length > 2) {
+					sb.append("bid=? and (");
+					args.add(""+bid);
+					for (int j = 0; j < dp.length - 1; j++) {
+						if(j>0) sb.append(" or ");
+						sb.append("pos=?");
+						pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1+j]):IU.parseLong(dp[1+j]);
+						args.add(""+ pos1);
+					}
+					sb.append(")");
+				} else {
+					sb.append("bid=? and pos=?");
+					args.add(""+bid);
+					args.add(""+ pos1);
+				}
+				sb.append(")");
+			}
+			CMN.debug("updateByExpUrl:: sql=", sb, args);
+			dataAdapter.where(sb.toString(), args.toArray(new String[0]));
+			dataAdapter.startPaging(finalLastTm, finalOffset, 20, 15, AnnotAdapter.this);
+			notifyDataSetChanged();
+		} catch (Exception e) {
+			this.dataAdapter.close();
+			AnnotAdapter.this.dataAdapter = DummyReader;
+			CMN.debug(e);
+		}
+	}
+	
+	/** update multi-columned page table by expurl */
 	private void updateByExpUrl(MultiFieldPagingCursorAdapter<AnnotationMultiSortReader> dataAdapter, String value, long[] finalLastTm, long finalOffset) {
 		StringBuilder sb = new StringBuilder();
 		ArrayList<String> args = new ArrayList<>();
@@ -410,54 +458,6 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		}
 	}
 	
-	private void updateByExpUrl(PagingCursorAdapter<AnnotationReader> dataAdapter, String value, long finalLastTm, long finalOffset) {
-		StringBuilder sb = new StringBuilder();
-		ArrayList<String> args = new ArrayList<>();
-		CMN.debug("exp=::", value);
-		if(value==null) return;
-		this.expUrl = value;
-		try {
-			if (value.startsWith("\"")) {
-				value = value.substring(1, value.length()-1);
-			}
-			boolean encoded = value.startsWith("d") || value.startsWith("w");
-			String[] arr = value.split("-");
-			for (int i = 0; i < arr.length; i++) {
-				String[] dp = arr[i].split("_");
-				//CMN.debug("dp::", value, dp);
-				long bid = encoded?IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(dp[0], 1)):IU.parseLong(dp[0]);
-				long pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1]):IU.parseLong(dp[1]);
-				if(sb.length()>0)
-					sb.append(" or ");
-				sb.append("(");
-				if (dp.length > 2) {
-					sb.append("bid=? and (");
-					args.add(""+bid);
-					for (int j = 0; j < dp.length - 1; j++) {
-						if(j>0) sb.append(" or ");
-						sb.append("pos=?");
-						pos1 = encoded?IU.TextToNumber_SIXTWO_LE(dp[1+j]):IU.parseLong(dp[1+j]);
-						args.add(""+ pos1);
-					}
-					sb.append(")");
-				} else {
-					sb.append("bid=? and pos=?");
-					args.add(""+bid);
-					args.add(""+ pos1);
-				}
-				sb.append(")");
-			}
-			CMN.debug("exp=::", value, sb, args);
-			dataAdapter.where(sb.toString(), args.toArray(new String[0]));
-			dataAdapter.startPaging(finalLastTm, finalOffset, 20, 15, AnnotAdapter.this);
-			notifyDataSetChanged();
-		} catch (Exception e) {
-			dataAdapter.close();
-			AnnotAdapter.this.dataAdapter = DummyReader;
-			CMN.debug(e);
-		}
-	}
-	
 	/** type[act|ui|db], long[]{pos, view offset} */
 	public final static SparseArray<long[]> savedPositions = new SparseArray();
 	
@@ -477,7 +477,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 				AnnotationReader reader = (AnnotationReader) holder.tag;
 				//CMN.debug("saveListPosition::", holder.getLayoutPosition());
 				if (holder.getLayoutPosition() > 0 || !b1) {
-					Cursor cursor = notes.a.prepareHistoryCon().getDB().rawQuery("select bid,pos," + FIELD_CREATE_TIME + ",id,tPos from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1"
+					Cursor cursor = notes.a.prepareHistoryCon().getDB().rawQuery("select bid,pos," + FIELD_EDIT_TIME + ",id,tPos from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1"
 							, new String[]{"" + reader.row_id});
 					if (cursor.moveToNext()) {
 						long[] sorts = new long[7];
@@ -626,6 +626,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	
 	@Override
 	public void onLoaded(PagingAdapterInterface adapter) {
+		CMN.debug("onLoaded::", adapter);
 		BookNotes notes = bookNotesRef.get();
 		if (notes!=null) {
 			notes.viewList[scope].suppressLayout(false);

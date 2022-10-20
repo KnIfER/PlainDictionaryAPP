@@ -1791,26 +1791,6 @@ public class PlainWeb extends DictionaryAdapter {
 //	}
 	
 	@Override
-	public int[] getPageUtils(boolean extra) {
-//		extra?new int[]{
-////	  ,R.string.page_del
-////	  ,R.string.page_fuzhi
-////	  ,R.string.page_baocun
-////	  ,R.string.peruse_mode
-//		}:
-		return new int[] {
-			R.layout.page_nav_util
-			,R.string.bmAdd
-			,R.string.page_fuzhi
-			,R.string.page_dakai
-			, R.string.refresh
-			,R.string.page_nav
-			,R.string.page_rukou
-			,R.string.page_ucc
-		};
-	}
-	
-	@Override
 	public boolean handlePageUtils(BookPresenter presenter, WebViewmy mWebView, int pos) {
 		switch (pos) {
 			case R.string.page_yuan:

@@ -1153,8 +1153,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		lastX = event.getX();
-		lastY = event.getY();
+		if(event.getActionMasked()!=MotionEvent.ACTION_CANCEL) {
+			lastX = event.getX();
+			lastY = event.getY();
+		}
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			supressNxtClickTranslator = bIsActionMenuShown;
 			if(fromCombined==1) {

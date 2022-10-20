@@ -2291,10 +2291,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				txtMenuGrid.animate().setDuration(100).setListener(new AnimatorListenerAdapter() {
 					@Override
 					public void onAnimationEnd(Animator animation) {
-						if(txtMenuGrid.getAlpha()==0)
+						if(txtMenuGrid.getAlpha()!=1)
 							VU.setVisible(txtMenuGrid, false);
 					}
 				});
+				//txtMenuGrid.setTag();
+				
 			}
 			VU.setVisible(txtMenuGrid, show);
 		}
@@ -2304,8 +2306,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				txtMenuGrid.animate()
 						.alpha(show ? 1 : 0)
 						.translationX(tx)
+					//.setListener(null)
 				;
 			} else {
+				VU.setVisible(txtMenuGrid, show);
 				txtMenuGrid.setAlpha(show ? 1 : 0);
 				txtMenuGrid.setTranslationX(tx);
 			}

@@ -7,6 +7,7 @@
 	<com.knziha.plod.widgets.TextMenuView
 		android:id="@+id/text"
 		style="@style/MenuTextStyle1"
+		android:layout_marginEnd="5dp"
 		android:text="测试测试" />
 
 	<ImageView
@@ -15,11 +16,11 @@
 		android:layout_height="match_parent"
 		android:layout_gravity="end|center_vertical"
 		android:layout_marginEnd="2dp"
-		android:paddingStart="5dp"
-		android:paddingEnd="5dp"
+		android:paddingStart="7dp"
+		android:paddingEnd="3dp"
 		android:paddingTop="5dp"
 		android:paddingBottom="5dp"
-		android:src="@drawable/ic_baseline_360_24"
-		android:background="?listChoiceBackgroundIndicator"
+		android:src="@drawable/ic_baseline_360_reverse_24"
+		android:background="?actionBarItemBackground"
 		/>
 </FrameLayout>

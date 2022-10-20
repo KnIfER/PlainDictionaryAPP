@@ -1,6 +1,6 @@
 (function(){ // based on rangy.js
     var doc = document;
-    var log = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%cANNOT","color:(#FFF);background:#FFAAAA;",t[0],t[1],t[2],t[3],t[4])}
+    var log = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c ANNOT ","color:#000;background:#ffaaaa;",t[0],t[1],t[2],t[3],t[4])}
 	function getNextNode(n, e) {
         var a = n.firstChild;
         if (a) {
@@ -464,24 +464,26 @@
             p = p.parentNode;
         }
         // 获得原始非标注父节点
+        var debug = false;
         if(p) {
             for (var t=p; t; t = getNextNode(t)) {
                 if (t == n) {
                     break
                 }
                 if(t.nodeType == 3) {
-                    //log('1::', t, t.parentNode, t.nodeType, t.length);
+                    if(debug) log('1::', t, t.parentNode, t.nodeType, t.length);
                     o += t.length;
                 }
             }
-            //log('');
+            if(debug) log('');
             for (var t=rootNode; t; t = getNextNode(t)) {
-                //log('2::', t, t.parentNode, t.nodeType, p, t.length);
+                //if(debug)  log('2::', t);
                 if (t == p) {
                     break
                 }
-                if(t.nodeType == 3) {
+                if(t.nodeType == 3 && /\S/.test(t.nodeValue)) {
                     o += t.length;
+                    if(debug)  log('2::len=', t.length, o, t, "tex="+t.nodeValue);
                 }
             }
         }
@@ -761,14 +763,13 @@
             if(!rootNode) rootNode = doc.body;
             var tPos = storeTextPos(range.startContainer, range.startOffset, rootNode);
             var r = store(range, rootNode);
-            
+            log('tPos='+tPos)
             tcn.n = r;
             tcn.tPos = tPos;
             if(pos==undefined)
                 pos = window.currentPos || 0; 
-            var nid = app.annot(sid.get(), text, JSON.stringify(tcn), window.entryKey||null, pos, tPos, type, color, note, bid||null);
-
-            wrapRange(range, el, rootNode, doc, nid, true)
+            //var nid = app.annot(sid.get(), text, JSON.stringify(tcn), window.entryKey||null, pos, tPos, type, color, note, bid||null);
+            //wrapRange(range, el, rootNode, doc, nid, true)
         } catch (e) { log(e) }
     }
 

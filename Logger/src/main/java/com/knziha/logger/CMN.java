@@ -143,5 +143,5 @@ public class CMN {
 		return Thread.currentThread().getId();
 	}
 	
-	public final static ColorDrawable FuckGlideDrawable = new ColorDrawable();
+	public final static ColorDrawable EmptyGlideDrawable = new ColorDrawable();
 }

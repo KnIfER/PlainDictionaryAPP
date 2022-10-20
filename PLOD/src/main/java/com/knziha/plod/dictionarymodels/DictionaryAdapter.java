@@ -294,10 +294,6 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		dor.onThreadEd(parm);
 	}
 	
-	public int[] getPageUtils(boolean extra) {
-		return null;
-	}
-	
 	public boolean handlePageUtils(BookPresenter presenter, WebViewmy mWebView, int pos) {
 		return false;
 	}

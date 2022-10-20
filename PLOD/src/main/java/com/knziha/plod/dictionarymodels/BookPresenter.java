@@ -46,6 +46,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.PlainUI.PagePopupMenuHelper;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -132,7 +133,7 @@ import io.noties.markwon.Markwon;
  author:KnIfER
 */
 public class BookPresenter
-		implements ValueCallback<String>, OnClickListener, mngr_agent_manageable, View.OnLongClickListener, PopupMenuHelper.PopupMenuListener {
+		implements ValueCallback<String>, OnClickListener, mngr_agent_manageable, View.OnLongClickListener {
 	public UniversalDictionaryInterface bookImpl;
 	
 	public ArrayList<SearchResultBean>[] combining_search_tree2; // 收集词条名称
@@ -243,22 +244,13 @@ public class BookPresenter
 	@Metaline()
 	public final static String imgLoader =StringUtils.EMPTY;
 	
-	/**var w=window,d=document;
-		function selectTouchtarget(e){
-	 		var ret = selectTouchtarget_internal(e);
-			if(ret<=0||e==1) {
-				w._touchtarget_lck=!1;
-	 			w._touchtarget=null;
-			}
-	 		return ret;
-		}
-		function NoneSelectable(e){
+	/**(function(src){var w=window,d=document,sty,tt,t0,sty;
+		function NoneSel(e){
 	 		return getComputedStyle(e).userSelect=='none'
 	 	}
-		function selectTouchtarget_internal(e){
+		function selectInternal(e){
 			w._touchtarget_lck=!0;
-	 		var tt = w._touchtarget;
-	 		var t0 = tt;
+	 		tt = w._touchtarget; t0 = tt; sty=0;
 	 		if(tt){
 				var fc = 0;
 	 			tt.userSelect='text';
@@ -267,37 +259,50 @@ public class BookPresenter
 					if(tt==null||++fc>=9)return -3;
 	 				tt.userSelect='text';
 				}
-	 			if(NoneSelectable(tt)) {
-					var sty = d.createElement("style");
+	 			if(NoneSel(tt)) {
+					sty = d.createElement("style");
+	 				sty.id = "tmpSel";
 					sty.innerHTML = "*{user-select:text !important}";
 					d.head.appendChild(sty);
-					if(NoneSelectable(tt)) {
+					if(NoneSel(tt)) {
 						return -1;
 					}
 				}
 				if(fc>0) {
 					w._touchtarget=tt;
 				}
-	 			if(e==0)w._touchtarget_href = tt.getAttribute("href");
 	 			if(w.subw) w=w.subw;
 				var sel = w.getSelection();
 				var range = d.createRange();
 				range.selectNodeContents(t0);
-				sel.removeAllRanges();
+				sel.empty();
 				sel.addRange(range);
-	 			var ret = sel.toString().length;
-	 			if(e==0&&ret>0)tt.removeAttribute("href");
+	 			var ret = 0;
+	 			if(!sel.isCollapsed){
+	 				if(e==0) {
+						tt.tmpHref = tt.getAttribute("href");
+						tt.removeAttribute("href");
+				 	}
+	 				ret = 1;
+	 			}
 	 			return ret;
 	 		}
 	 		return -2;
 		}
-		function restoreTouchtarget(){
-	 		var tt = w._touchtarget;
-	 		if(tt){
-	 			tt.setAttribute("href", w._touchtarget_href);
-	 		}
+		function restore(){
+	 		if(tt && tt.tmpHref) tt.setAttribute("href", tt.tmpHref);
+	 		w._touchtarget=tt=0;
 	 		w._touchtarget_lck=!1;
+	 		if(sty) sty.reomve();
 		}
+		function selectTouchtarget(e){
+	 		var ret = selectInternal(e);
+			if(ret<=0||e==1) restore();
+	 		else setTimeout(restore, 300);
+	 		return ret;
+		}
+	 	return selectTouchtarget(src)
+	 })
 	 */
 	@Metaline()
 	public final static String touchTargetLoader=StringUtils.EMPTY;
@@ -999,43 +1004,22 @@ function debug(e){console.log(e)};
 		return false;
 	}
 	
-	public void showMoreToolsPopup(WebViewmy mWebView, View v) {
+	public PopupMenuHelper showPopupMenu(PagePopupMenuHelper.PageMenuType type, WebViewmy mWebView, View v) {
 		if (mWebView == null) {
+			initViewsHolder(a);
 			mWebView = this.mWebView;
 		}
-//				String url = currentDisplaying;
-//				if(v.getParent()!=toolbar){
-//					if(a.peruseView !=null){
-//						mWebView = a.peruseView.mWebView;
-//						url = a.peruseView.currentDisplaying();
-//					} else {
-//						return true;
-//					}
-//				}
-//				OptionListHandlerDyn olhd = new OptionListHandlerDyn(a, _mWebView, url);
-		int[] utils = null;
-		if (bookImpl instanceof DictionaryAdapter) {
-			utils = ((DictionaryAdapter) bookImpl).getPageUtils(false);
+		return a.pageMenuHelper.showPageMenu(type, mWebView, v);
+	}
+	
+	public void showMoreToolsPopup(WebViewmy mWebView, View v) {
+		PagePopupMenuHelper.PageMenuType type = PagePopupMenuHelper.PageMenuType.Nav_main;
+		if (getIsWebx()) {
+			type = PagePopupMenuHelper.PageMenuType.Nav_WEB;
 		}
-		if (utils==null) {
-			utils = new int[]{
-					R.layout.page_nav_util
-					, R.string.bmAdd
-					,R.string.page_fuzhi
-					,R.string.page_dakai
-					,R.string.refresh
-					,R.string.page_ucc
-			};
-		}
-		PopupMenuHelper popupMenu = a.getPopupMenu();
-		popupMenu.initLayout(utils, this);
-		int[] vLocationOnScreen = new int[2];
-		v.getLocationOnScreen(vLocationOnScreen);
-		int x=(int)mWebView.weblistHandler.pageSlider.lastX;
-		int y=(int)mWebView.weblistHandler.pageSlider.lastY;
-		popupMenu.show(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
-		ViewUtils.preventDefaultTouchEvent(v, x, y);
+		PopupMenuHelper popupMenu = showPopupMenu(type, mWebView, v);
 		
+		mWebView = (WebViewmy) popupMenu.tag1;
 		boolean b1=mWebView.canGoBack();
 		v = popupMenu.popRoot.findViewById(R.id.nav_back);
 		v.setEnabled(b1);
@@ -1044,136 +1028,56 @@ function debug(e){console.log(e)};
 		v = popupMenu.popRoot.findViewById(R.id.nav_forward);
 		v.setEnabled(b1);
 		v.setAlpha(b1?1:0.35f);
-		
-		popupMenu.tag1 = mWebView;
 	}
 	
-	@Override
-	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
-		WebViewmy mWebView = (WebViewmy) popupMenuHelper.tag1;
-		if(isLongClick) {
-			switch (v.getId()) {
-				case R.string.page_ucc:
-					a.getVtk().setInvoker(mWebView.presenter, mWebView, null, null);
-					boolean title_bar_no_sel = true;
-					a.getVtk().onClick(title_bar_no_sel?a.anyView(0):null);
-				return true;
-			}
-			return false;
+	
+	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
+		MainActivityUIBase a;
+		WebViewmy mWebView;
+		String url;
+		public OptionListHandler(MainActivityUIBase a, WebViewmy mWebView, String extra) {
+			this.a = a;
+			this.mWebView = mWebView;
+			this.url = extra;
 		}
-		popupMenuHelper.dismiss();
-		switch (v.getId()) {
-			/* 添加书签 */
-			case R.string.bmAdd:
-				mWebView.presenter.toggleBookMark(mWebView, null, true);
-			break;
-			case R.string.page_fuzhi:
-				a.copyText(mWebView.word);
-			break;
-			case R.string.page_dakai:
-			
-			break;
-			case R.string.refresh:
-				mWebView.reload();
-			break;
-			case R.string.page_source:
-				bViewSource=true;
-				renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
-			break;
-			/* 打开中枢 */
-			case R.string.page_ucc:{
-				mWebView.evaluateJavascript("window.getSelection().isCollapsed", new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String value) {
-						boolean hasSelectionNot = "true".equals(value);
-						if (hasSelectionNot) {
-							ucc.setInvoker(null, null, null, mWebView.word);
-							ucc.onClick(null);
-						} else {
-							try {
-								a.getVtk().setInvoker(mWebView.presenter, mWebView, null, null);
-								boolean title_bar_no_sel = false;
-								a.getVtk().onClick(title_bar_no_sel?a.anyView(0):null);
-							} catch (Exception e) { }
-						}
+		@Override
+		public void onClick(DialogInterface dialog, int pos) {
+			pos+=IU.parsint(((AlertDialog)dialog).getListView().getTag());
+			switch(pos) {
+				/* 复制链接 */
+				case 0:{
+					a.FuzhiText(url);
+				} break;
+				/* 复制链接文本 */
+				case 1:{
+					if(url!=null) {
+						mWebView.evaluateJavascript("window._touchtarget?window._touchtarget.innerText:''", new ValueCallback<String>() {
+							@Override
+							public void onReceiveValue(String value) {
+								a.copyText(StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1)));
+							}
+						});
 					}
-				});
-			} break;
-			case R.string.page_nav:
-			break;
-			case R.string.page_rukou:
-			break;
-			case R.id.nav_back:
-				mWebView.goBack();
-			break;
-			case R.id.nav_forward:
-				mWebView.goForward();
-			break;
-			case R.id.nav_pin:
-				mWebView.weblistHandler.togNavor();
-			break;
-//			/* 查看原网页 */
-//			case R.string.page_yuan:{
-//				editingState=false;
-//				try {
-//					renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
-//				} catch (Exception ignored) { }
-//				editingState=true;
-//			} break;
-//			/* 删除重载页面 */
-//			case R.string.page_del:
-//				if(mWebView.currentRendring!=null && mWebView.currentRendring.length>1){
-//					a.showT("错误：多重词条内容不可保存");
-//					break;
-//				}
-//			case 21: {
-//				String url = getSaveUrl(mWebView);
-//				if(a.getUsingDataV2()) {
-//					a.prepareHistoryCon().removePage(bookImpl.getBooKID(), url);
-//					if(mWebView.fromNet()) {
-//						mWebView.reload();
-//					} else {
-//						renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
-//					}
-//				}
-//				else {
-//					getCon(true).enssurePageTable();
-//					if(url!=null){
-//						con.removePage(url);
-//						if(PageCursor!=null) PageCursor.close();
-//						PageCursor = con.getPageCursor();
-//						a.notifyDictionaryDatabaseChanged(BookPresenter.this);
-//					}
-//					if(pos==1) {
-//						renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
-//					} else {
-//						mWebView.reload();
-//					}
-//				}
-//			} break;
-//			/* 保存网页源代码 */
-//			case R.string.page_baocun:{
-//				mWebView.evaluateJavascript(preview_js, v1 -> {
-//					v1 =StringEscapeUtils.unescapeJava(v1.substring(1, v1.length()-1));
-//					v1 =RemoveApplicationTags(v1);
-//					StringBuffer sb = opt.pathToMainFolder().append("downloads/").append(mWebView.word)
-//							.append(".");
-//					if(pos==10) {
-//						sb.append( StringUtils.join(mWebView.currentRendring, '|')).append(".");
-//					}
-//					int len = sb.length();
-//					int cc=0;
-//					sb.append("html");
-//					while(new File(sb.toString()).exists()) {
-//						sb.setLength(len);
-//						sb.append(IU.a2r(++cc)).append(".html");
-//					}
-//					BU.printFile(v1.getBytes(), sb.toString());
-//					a.showT(sb.append(" 已保存! "));
-//				});
-//			} break;
+				} break;
+			}
+			dialog.dismiss();
 		}
-		return false;
+		
+		@Override
+		public void onClick(@NonNull View widget) {
+			/* 打开链接 */
+			boolean webUrl = url.startsWith("http") || url.startsWith("https") || url.startsWith("ftp") || url.startsWith("file");
+			if(webUrl){
+				try {
+					Intent intent = new Intent();
+					intent.setData(Uri.parse(url));
+					intent.setAction(Intent.ACTION_VIEW);
+					a.startActivity(intent);
+				} catch (Exception ignored) {  }
+			} else {
+			
+			}
+		}
 	}
 	
 	//click
@@ -1234,19 +1138,18 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	static void SelectHtmlObject(MainActivityUIBase a, WebViewmy wv, int source) {
-		wv.evaluateJavascript(touchTargetLoader+"selectTouchtarget("+source+")", new ValueCallback<String>() {
+	public static void SelectHtmlObject(MainActivityUIBase a, WebViewmy wv, int source) {
+		wv.evaluateJavascript(touchTargetLoader+"("+source+")", new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
-				CMN.debug("selectTouchtarget", value);
 				int len = IU.parsint(value, 0);
 				boolean fakePopHandles = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
 				if(len>0) {
 					/* bring in action mode by a fake click on the programmatically  selected text. */
 					if(fakePopHandles) {
 						wv.forbidLoading=true;
-						wv.getSettings().setJavaScriptEnabled(false);
-						wv.getSettings().setJavaScriptEnabled(false);
+						//wv.getSettings().setJavaScriptEnabled(false);
+						//wv.getSettings().setJavaScriptEnabled(false);
 						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, wv.lastX, wv.lastY, 0);
 						wv.lastSuppressLnkTm = CMN.now();
 						wv.dispatchTouchEvent(te);
@@ -1258,15 +1161,15 @@ function debug(e){console.log(e)};
 				} else {
 					a.showT("选择失败");
 				}
-				if(fakePopHandles) {
-					wv.postDelayed(() -> {
-						wv.forbidLoading=false;
-						wv.getSettings().setJavaScriptEnabled(true);
-						wv.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
-					}, 300);
-				} else {
-					wv.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
-				}
+//				if(fakePopHandles) {
+//					wv.postDelayed(() -> {
+//						wv.forbidLoading=false;
+//						//wv.getSettings().setJavaScriptEnabled(true);
+//						//wv.evaluateJavascript("restoreTouchtarget()", null);
+//					}, 300);
+//				} else {
+//					//wv.evaluateJavascript("restoreTouchtarget()", null);
+//				}
 			}
 		});
 	}
@@ -1429,61 +1332,6 @@ function debug(e){console.log(e)};
 		return mType==PLAIN_TYPE_MDICT || mType== PLAIN_TYPE_DSL || mType== PLAIN_TYPE_TEXT;
 	}
 	
-	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
-		MainActivityUIBase a;
-		WebViewmy mWebView;
-		String url;
-		public OptionListHandler(MainActivityUIBase a, WebViewmy mWebView, String extra) {
-			this.a = a;
-			this.mWebView = mWebView;
-			this.url = extra;
-		}
-		
-		@Override
-		public void onClick(DialogInterface dialog, int pos) {
-			pos+=IU.parsint(((AlertDialog)dialog).getListView().getTag());
-			switch(pos) {
-				/* 复制链接 */
-				case 0:{
-					a.FuzhiText(url);
-				} break;
-				/* 复制链接文本 */
-				case 1:{
-					if(url!=null) {
-						mWebView.evaluateJavascript("window._touchtarget?window._touchtarget.innerText:''", new ValueCallback<String>() {
-							@Override
-							public void onReceiveValue(String value) {
-								a.copyText(StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1)));
-							}
-						});
-					}
-				} break;
-				/* 选择链接文本 */
-				case 2:{
-					if(url!=null) {
-						SelectHtmlObject(a, mWebView, 0);
-					}
-				} break;
-			}
-			dialog.dismiss();
-		}
-		
-		@Override
-		public void onClick(@NonNull View widget) {
-			/* 打开链接 */
-			boolean webUrl = url.startsWith("http") || url.startsWith("https") || url.startsWith("ftp") || url.startsWith("file");
-			if(webUrl){
-				try {
-					Intent intent = new Intent();
-					intent.setData(Uri.parse(url));
-					intent.setAction(Intent.ACTION_VIEW);
-					a.startActivity(intent);
-				} catch (Exception ignored) {  }
-			} else {
-			
-			}
-		}
-	}
 	
 	static class HtmlObjectHandler implements View.OnLongClickListener {
 		MainActivityUIBase a;
@@ -1492,94 +1340,36 @@ function debug(e){console.log(e)};
 		}
 		@Override
 		public boolean onLongClick(View v) {
-			WebViewmy _mWebView = (WebViewmy) v;
-			if(_mWebView.presenter.suppressingLongClick)
+			WebViewmy wv = (WebViewmy) v;
+			if(wv.presenter.suppressingLongClick)
 				return false;
-			if(_mWebView.weblistHandler.pageSlider.twiceDetected)
+			if(wv.weblistHandler.pageSlider.twiceDetected)
 				return true;
-			_mWebView.lastLongSX = _mWebView.getScrollX();
-			_mWebView.lastLongSY = _mWebView.getScrollY();
-			_mWebView.lastLongScale = _mWebView.webScale;
-			_mWebView.lastLongX = _mWebView.lastX;
-			_mWebView.lastLongY = _mWebView.lastY;
-			WebViewmy.HitTestResult result = _mWebView.getHitTestResult();
+			wv.lastLongSX = wv.getScrollX();
+			wv.lastLongSY = wv.getScrollY();
+			wv.lastLongScale = wv.webScale;
+			wv.lastLongX = wv.lastX;
+			wv.lastLongY = wv.lastY;
+			WebViewmy.HitTestResult result = wv.getHitTestResult();
 			if (null == result) return false;
 			int type = result.getType();
-			//CMN.Log("getHitTestResult", type, result.getExtra());
+			CMN.debug("getHitTestResult", type, result.getExtra());
+			a.pageMenuHelper.lnk_href = result.getExtra();
 			switch (type) {
 				/* 长按下载图片 */
 				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
 				case WebViewmy.HitTestResult.IMAGE_TYPE:{
+					wv.presenter.showPopupMenu(PagePopupMenuHelper.PageMenuType.LNK_IMG, wv, (View) wv.getParent());
+					if(true) return true;
 					String url = result.getExtra();
 					AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
 					builder3.setSingleChoiceItems(new String[] {}, 0,
 							(dialog, pos) -> {
 								switch(pos) {
 									case 0:{
-										new Thread(new Runnable() {
-											@Override
-											public void run() {
-												try {
-													URL requestURL = new URL(url);
-													File pathDownload = new File("/storage/emulated/0/download");
-													pathDownload.mkdirs();
-													if(pathDownload.isDirectory()) {
-														File path;
-														int idx = url.indexOf("?");
-														path=new File(pathDownload, new File(idx>0?url.substring(0, idx):url).getName());
-														String msg;
-														if(path.exists())
-															msg="文件已存在！";
-														else {
-															String error=null;
-															HttpURLConnection urlConnection;
-															InputStream is;
-															FileOutputStream fout = null;
-															try {
-																try {
-																	// nimp
-																	//SSLContext sslcontext = SSLContext.getInstance("TLS");
-																	//sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new java.security.SecureRandom());
-																	//HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
-																} catch (Exception ignored) { }
-																urlConnection = (HttpURLConnection) requestURL.openConnection();
-																urlConnection.setRequestMethod("GET");
-																urlConnection.setConnectTimeout(35000);
-																//urlConnection.setRequestProperty("Charset", "UTF-8");
-																//urlConnection.setRequestProperty("Connection", "Keep-Alive");
-																urlConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
-																urlConnection.connect();
-																is = urlConnection.getInputStream();
-																byte[] buffer = new byte[4096];
-																int len;
-																while ((len = is.read(buffer)) > 0) {
-																	if (fout == null)
-																		fout = new FileOutputStream(path);
-																	fout.write(buffer, 0, len);
-																}
-																fout.flush();
-																fout.close();
-																urlConnection.disconnect();
-																is.close();
-															} catch (Exception e) {
-																error = e.toString();
-															}
-															msg = error==null?"下载完成":("发生错误："+error);
-														}
-														if(msg!=null){
-															Looper.prepare();
-															a.showT(msg);
-															Looper.loop();
-														}
-													}
-												} catch (Exception e) {
-													e.printStackTrace();
-												}
-											}
-										}).start();
 									} break;
 									case 1:{
-										SelectHtmlObject(a, _mWebView, 1);
+										SelectHtmlObject(a, wv, 1);
 									} break;
 								}
 								dialog.dismiss();
@@ -1607,8 +1397,7 @@ function debug(e){console.log(e)};
 					
 					builder3.setTitle(ssb);
 					
-					String[] Menus = a.getResources().getStringArray(
-							R.array.config_images);
+					String[] Menus = null;
 					List<String> arrMenu = Arrays.asList(Menus);
 					AlertDialog dd = builder3.create();
 					dd.show();
@@ -1625,11 +1414,8 @@ function debug(e){console.log(e)};
 				return true;
 				/* 长按anchor */
 				case WebViewmy.HitTestResult.SRC_ANCHOR_TYPE:{
-					String url = result.getExtra();
-					OptionListHandler olh = new OptionListHandler(a, _mWebView, url);
-					buildStandardOptionListDialog(a, 0
-							, R.array.config_links
-							, null, olh, url, olh, 0);
+					a.pageMenuHelper.lnk_href = result.getExtra();
+					wv.presenter.showPopupMenu(PagePopupMenuHelper.PageMenuType.LNK, wv, (View) wv.getParent());
 				}
 				return true;
 			}
@@ -2442,6 +2228,8 @@ function debug(e){console.log(e)};
 		htmlBuilder.append("window.frameAt=").append(mWebView.frameAt).append(";");
 		htmlBuilder.append("window.entryKey='").append(mWebView.word).append("';");
 		htmlBuilder.append("window.currentPos=").append(mWebView.currentPos).append(";");
+		htmlBuilder.append("window._posid='"); IU.NumberToText_SIXTWO_LE(mWebView.currentPos, htmlBuilder);
+		htmlBuilder.append("';");
 		//htmlBuilder.append("hasFiles='").append(hasFilesTag()).append("';");
 		
 		/** see {@link AppHandler#view} */
@@ -2902,7 +2690,7 @@ function debug(e){console.log(e)};
 			//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
 			String[] where = new String[]{""+bid, ""+position};
 			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id, annot from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=? order by tPos", where);
-			CMN.debug("cursor::", position, cursor.getCount());
+			//CMN.debug("cursor::", position, cursor.getCount());
 //			cursor.moveToLast();
 //			while (cursor.moveToPrevious()) {
 			while (cursor.moveToNext()) {
@@ -2914,7 +2702,7 @@ function debug(e){console.log(e)};
 				}
 			}
 			cursor.close();
-			CMN.debug("remark=", sb);
+			//CMN.debug("remark=", sb);
 			return sb;
 		}
 		
@@ -2940,7 +2728,6 @@ function debug(e){console.log(e)};
 								if (nxt > idx) {
 									key.reset(idx, nxt);
 									long position = IU.TextToNumber_SIXTWO_LE(key);
-									CMN.Log("asdasdsaaA::", key, url.substring(idx, nxt));
 									int len = sb == null ? 0 : sb.length();
 									sb = getMarksByPos(sb, bid, position);
 									if (sb != null && sb.length() > len) {

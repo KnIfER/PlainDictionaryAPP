@@ -171,6 +171,7 @@ import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NewTitlebar;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
+import com.knziha.plod.PlainUI.PagePopupMenuHelper;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
@@ -287,6 +288,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.knziha.plod.PlainUI.PagePopupMenuHelper.PageMenuType.LNK_IMG;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionary.mdBase.markerReg;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
@@ -312,6 +314,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		OnClickListener,
 		OnMenuItemClickListener, OnDismissListener,
 		MenuItem.OnMenuItemClickListener,
+		PopupMenuHelper.PopupMenuListener,
 		OptionProcessor,
 		SettingsPanel.FlagAdapter {
 	
@@ -669,6 +672,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean awaiting;
 	Runnable postTask;
 	View EmptyView;
+	private boolean debugging_webx = false;
 	
 	public View favoriteBtn() {
 		return contentUIData.browserWidget8;
@@ -6662,6 +6666,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return dummyMenuImpl;
 	}
 	
+	// menu
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		int id = item.getItemId();
@@ -6826,6 +6831,146 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(closeMenu)
 			closeIfNoActionView(mmi);
 		return ret;
+	}
+	
+	public final PagePopupMenuHelper pageMenuHelper = new PagePopupMenuHelper(this);
+	// popupmenu
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		WebViewmy mWebView = (WebViewmy) popupMenuHelper.tag1;
+		BookPresenter book = mWebView.presenter;
+		if(isLongClick) {
+			switch (v.getId()) {
+				case R.string.page_ucc:
+					getVtk().setInvoker(book, mWebView, null, null);
+					boolean title_bar_no_sel = true;
+					getVtk().onClick(title_bar_no_sel?anyView(0):null);
+					return true;
+			}
+			return false;
+		}
+		popupMenuHelper.dismiss();
+		switch (v.getId()) {
+			/* 添加书签 */
+			case R.string.bmAdd:
+				mWebView.presenter.toggleBookMark(mWebView, null, true);
+				break;
+			case R.string.page_fuzhi:
+				copyText(mWebView.word);
+				break;
+			case R.string.page_dakai:
+				
+				break;
+			case R.string.refresh:
+				mWebView.reload();
+				break;
+			case R.string.page_source:
+				book.bViewSource=true;
+				book.renderContentAt(-1, book.RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+				break;
+			/* 打开中枢 */
+			case R.string.page_ucc:{
+				mWebView.evaluateJavascript("window.getSelection().isCollapsed", new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						boolean hasSelectionNot = "true".equals(value);
+						if (hasSelectionNot) {
+							getVtk().setInvoker(null, null, null, mWebView.word);
+							getVtk().onClick(null);
+						} else {
+							try {
+								getVtk().setInvoker(mWebView.presenter, mWebView, null, null);
+								boolean title_bar_no_sel = false;
+								getVtk().onClick(title_bar_no_sel?anyView(0):null);
+							} catch (Exception e) { }
+						}
+					}
+				});
+			} break;
+			case R.string.page_nav:
+				break;
+			case R.string.page_rukou:
+				break;
+			case R.id.nav_back:
+				mWebView.goBack();
+				break;
+			case R.id.nav_forward:
+				mWebView.goForward();
+				break;
+			case R.id.nav_pin:
+				mWebView.weblistHandler.togNavor();
+				break;
+			/* 选择链接文本 */
+			case R.string.page_sel: {
+				int type = pageMenuHelper.mType == LNK_IMG?1:0;
+				book.SelectHtmlObject(this, mWebView, type);
+			} break;
+			/* 下载图片 */
+			case R.string.page_save_img: {
+				pageMenuHelper.saveImage();
+			} break;
+//			/* 查看原网页 */
+//			case R.string.page_yuan:{
+//				editingState=false;
+//				try {
+//					renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+//				} catch (Exception ignored) { }
+//				editingState=true;
+//			} break;
+//			/* 删除重载页面 */
+//			case R.string.page_del:
+//				if(mWebView.currentRendring!=null && mWebView.currentRendring.length>1){
+//					a.showT("错误：多重词条内容不可保存");
+//					break;
+//				}
+//			case 21: {
+//				String url = getSaveUrl(mWebView);
+//				if(a.getUsingDataV2()) {
+//					a.prepareHistoryCon().removePage(bookImpl.getBooKID(), url);
+//					if(mWebView.fromNet()) {
+//						mWebView.reload();
+//					} else {
+//						renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+//					}
+//				}
+//				else {
+//					getCon(true).enssurePageTable();
+//					if(url!=null){
+//						con.removePage(url);
+//						if(PageCursor!=null) PageCursor.close();
+//						PageCursor = con.getPageCursor();
+//						a.notifyDictionaryDatabaseChanged(BookPresenter.this);
+//					}
+//					if(pos==1) {
+//						renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+//					} else {
+//						mWebView.reload();
+//					}
+//				}
+//			} break;
+//			/* 保存网页源代码 */
+//			case R.string.page_baocun:{
+//				mWebView.evaluateJavascript(preview_js, v1 -> {
+//					v1 =StringEscapeUtils.unescapeJava(v1.substring(1, v1.length()-1));
+//					v1 =RemoveApplicationTags(v1);
+//					StringBuffer sb = opt.pathToMainFolder().append("downloads/").append(mWebView.word)
+//							.append(".");
+//					if(pos==10) {
+//						sb.append( StringUtils.join(mWebView.currentRendring, '|')).append(".");
+//					}
+//					int len = sb.length();
+//					int cc=0;
+//					sb.append("html");
+//					while(new File(sb.toString()).exists()) {
+//						sb.setLength(len);
+//						sb.append(IU.a2r(++cc)).append(".html");
+//					}
+//					BU.printFile(v1.getBytes(), sb.toString());
+//					a.showT(sb.append(" 已保存! "));
+//				});
+//			} break;
+		}
+		return false;
 	}
 	
 	private void EnterPeruseModeByContent(boolean isLongClicked) {
@@ -8122,464 +8267,484 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return shouldInterceptRequestCompat(view, request.getUrl().toString(), keyset.get("Accept"), keyset.get("Referer"), keyset.get("Origin"), request);
 		}
 
-		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
-			//if(true) return null;
-			if(url.startsWith("data:")) return null;
-			
-			WebViewmy mWebView = (WebViewmy) view;
-			BookPresenter invoker = mWebView.presenter;
-			if(invoker==null) return null;
-			
-			WebViewListHandler wlh = mWebView.weblistHandler;
-			
-			String key=null;
-			int schemaIdx = url.indexOf(":");
-			WebResourceResponse fakedDomainResponse = null;
-			if(schemaIdx==-1){
-				if(url.startsWith("./"))
-					key=url.substring(1);
-			} else {
-				if(url.startsWith("file://")) {
-					// fix for images not loading when nav back/forward.
-					invoker.hasFilesTag(true);
-					invoker.isDirty = true;
+		@Override
+		public void onReceivedSslError(WebView view, final SslErrorHandler mHandler, SslError error) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this);
+			builder.setTitle("SSL Certificate Error");
+			builder.setMessage("code"+error.getPrimaryError()+"\ndo u want to continue anyway?");
+			builder.setPositiveButton(R.string.continue_, (dialog, which) -> mHandler.proceed());
+			builder.setNegativeButton(R.string.cancel, (dialog, which) -> mHandler.cancel());
+			builder.setOnKeyListener((dialog, keyCode, event) -> {
+				if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+					mHandler.cancel();
+					dialog.dismiss();
+					return true;
 				}
-				else if (url.startsWith("http")) {
-					if (wlh==randomPageHandler && url.endsWith("/randx")) { // for random page
-						BookPresenter webx = webxford.get(SubStringKey.new_hostKey(url)); //todo opt
-						if (webx!=null && webx.isWebx) {
-							return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(webx.getWebx().getRandx().getBytes()));
+				return false;
+			});
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}
+	};
+	
+	public WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
+		//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+		//if(true) return null;
+		if(url.startsWith("data:")) return null;
+		
+		WebViewmy mWebView = (WebViewmy) view;
+		BookPresenter invoker = mWebView.presenter;
+		if(invoker==null) return null;
+		
+		WebViewListHandler wlh = mWebView.weblistHandler;
+		
+		String key=null;
+		int schemaIdx = url.indexOf(":");
+		WebResourceResponse fakedDomainResponse = null;
+		if(schemaIdx==-1){
+			if(url.startsWith("./"))
+				key=url.substring(1);
+		} else {
+			if(url.startsWith("file://")) {
+				// fix for images not loading when nav back/forward.
+				invoker.hasFilesTag(true);
+				invoker.isDirty = true;
+			}
+			else if (url.startsWith("http")) {
+				if (wlh==randomPageHandler && url.endsWith("/randx")) { // for random page
+					BookPresenter webx = webxford.get(SubStringKey.new_hostKey(url)); //todo opt
+					if (webx!=null && webx.isWebx) {
+						return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(webx.getWebx().getRandx().getBytes()));
+					}
+				}
+				boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
+				boolean merge = invoker.isMergedBook() || mWebView.merge;
+				if (mdbr) {
+					int slashIdx = url.indexOf("/", schemaIdx+7);
+					if(slashIdx<0) slashIdx = url.length();
+					if (url.charAt(schemaIdx+8)=='d') {
+						// loaded with base url
+						if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 0, slashIdx-schemaIdx-9)) {
+							invoker = getBookById(IU.parseLong(url.substring(schemaIdx+9, slashIdx)));
+							//CMN.Log("view::changed::res::", invoker);
 						}
 					}
-					boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
-					boolean merge = invoker.isMergedBook() || mWebView.merge;
-					if (mdbr) {
-						int slashIdx = url.indexOf("/", schemaIdx+7);
-						if(slashIdx<0) slashIdx = url.length();
-						if (url.charAt(schemaIdx+8)=='d') {
-							// loaded with base url
-							if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 0, slashIdx-schemaIdx-9)) {
-								invoker = getBookById(IU.parseLong(url.substring(schemaIdx+9, slashIdx)));
-								//CMN.Log("view::changed::res::", invoker);
+					if (slashIdx==schemaIdx+7 || url.regionMatches(slashIdx+1, "MdbR", 0, 4)) {
+						try { // 内置资源
+							if (slashIdx == schemaIdx + 7) {
+								/** see{@link PlainWeb#loadJs} */
+								key = url.substring(schemaIdx + 8);
+							} else {
+								key=url.substring(slashIdx+1);
 							}
-						}
-						if (slashIdx==schemaIdx+7 || url.regionMatches(slashIdx+1, "MdbR", 0, 4)) {
-							try { // 内置资源
-								if (slashIdx == schemaIdx + 7) {
-									/** see{@link PlainWeb#loadJs} */
-									key = url.substring(schemaIdx + 8);
-								} else {
-									key=url.substring(slashIdx+1);
-								}
-								CMN.debug("[fetching internal res : ]", key);
-								String mime="*/*";
-								if(key.endsWith(".css")) mime = "text/css";
-								if(key.endsWith(".js")) mime = "text/js";
-								return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
-							} catch (Exception e) {
-								CMN.debug(e);
-							}
-						}
-						if (!merge && (url.regionMatches(schemaIdx+12, "content", 0, 7)
-								|| url.regionMatches(schemaIdx+12, "base", 0, 4)
-								|| url.regionMatches(schemaIdx+12, "merge", 0, 5)
-						)) {
-							merge = true;
-							/*mWebView.presenter = */invoker = mWebView.weblistHandler.getMergedBook();
-						}
-						if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
-							try {
-								if (".pdf".regionMatches(true, 0, url, url.length()-4, 4)) {
-									File file = new File(URLDecoder.decode(url.substring(url.indexOf("/", schemaIdx + 10))));
-									CMN.debug("file::", file);
-									if (file.exists()) {
-										return new WebResourceResponse("*/*", "utf8", new AutoCloseInputStream(new FileInputStream(file)));
-									}
-									return emptyResponse;
-								}
-							} catch (Exception e) {
-								CMN.debug(e);
-							}
-						}
-						key = url.substring(slashIdx);
-					}
-					else {
-						CMN.debug("wlh.moders::", wlh.moders);
-						for (PlainWeb book : wlh.moders) { // java.util.ConcurrentModificationException
-							WebResourceResponse resp = book.modifyRes(MainActivityUIBase.this, url, false);
-							if (resp != null) {
-								CMN.debug("修改了::http::", url);
-								return resp;
-							}
-							if (book.jinkeSheaths!=null&&book.jinkeSheaths.containsKey(SubStringKey.new_hostKey(url))) {
-								return (WebResourceResponse) book.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
-							}
+							CMN.debug("[fetching internal res : ]", key);
+							String mime="*/*";
+							if(key.endsWith(".css")) mime = "text/css";
+							if(key.endsWith(".js")) mime = "text/js";
+							return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
+						} catch (Exception e) {
+							CMN.debug(e);
 						}
 					}
-					if(merge) {
-						if(mdbr) {
-							CMN.debug("mdbr::", url);
-							try {
-								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
-								Response ret = getMdictServer().handle(req);
-								if(ret!=null) {
-									//CMN.debug("WebResourceResponse::", ret.getMimeType());
-									String mime = ret.getMimeType();
-									int idx=mime.indexOf(";");
-									if(idx>0) mime = mime.substring(0, idx);
-									return new WebResourceResponse(mime, "UTF-8", ret.getData());
-								}
-							} catch (Exception e) {
-								CMN.debug(url, e);
-							}
-						}
-						else {
-							try { //todo opt
-								if (mWebView.merge) {
-									for (BookPresenter wb:mWebView.webx_frames) {
-										PlainWeb webx = wb.getWebx();
-										if (webx.shouldUseClientResponse(url)) {
-											return (WebResourceResponse) webx.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
-										}
-										WebResourceResponse resp = webx.modifyRes(MainActivityUIBase.this, url, true);
-										if(resp!=null) { //todo opt
-											// requesting web data on merged page. or...
-											CMN.debug("修改了::on merged page::", url);
-											WebResourceResponse webResourceResponse;
-											return resp;
-										}
-									}
-									//if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
-									//	//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
-									//	if(server.webResHandler.shouldUseClientResponse(url)) {
-									//		return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
-									//	}
-									//}
-								}
-							} catch (Exception e) {
-								CMN.debug(url,"\n",e);
-							}
-						}
-						//return null;
+					if (!merge && (url.regionMatches(schemaIdx+12, "content", 0, 7)
+							|| url.regionMatches(schemaIdx+12, "base", 0, 4)
+							|| url.regionMatches(schemaIdx+12, "merge", 0, 5)
+					)) {
+						merge = true;
+						/*mWebView.presenter = */invoker = mWebView.weblistHandler.getMergedBook();
 					}
-					//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
-					if(invoker.getIsWebx()) {
-						PlainWeb webx = (PlainWeb) invoker.bookImpl;
-						if (webx.hasExcludedResV4 && Build.VERSION.SDK_INT<21) {
-							if (webx.shouldExcludedResV4(url)) {
-								//CMN.Log("排除::"+url);
+					if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+						try {
+							if (".pdf".regionMatches(true, 0, url, url.length()-4, 4)) {
+								File file = new File(URLDecoder.decode(url.substring(url.indexOf("/", schemaIdx + 10))));
+								CMN.debug("file::", file);
+								if (file.exists()) {
+									return new WebResourceResponse("*/*", "utf8", new AutoCloseInputStream(new FileInputStream(file)));
+								}
 								return emptyResponse;
 							}
+						} catch (Exception e) {
+							CMN.debug(e);
 						}
-						if(accept==null || accept.contains("text/html")) {
-							if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
-								boolean proceed = true;
-								String[] shWebsite = webx.cleanExtensions;
-								if(shWebsite!=null){
+					}
+					key = url.substring(slashIdx);
+				}
+				else {
+					if(debugging_webx)CMN.debug("wlh.moders::", wlh.moders);
+					for (PlainWeb book : wlh.moders) { // java.util.ConcurrentModificationException
+						WebResourceResponse resp = book.modifyRes(MainActivityUIBase.this, url, false);
+						if (resp != null) {
+							CMN.debug("修改了::http::", url);
+							return resp;
+						}
+						if (book.jinkeSheaths!=null&&book.jinkeSheaths.containsKey(SubStringKey.new_hostKey(url))) {
+							return (WebResourceResponse) book.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+						}
+					}
+				}
+				if(merge) {
+					if(mdbr) {
+						CMN.debug("mdbr::", url);
+						try {
+							HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+							Response ret = getMdictServer().handle(req);
+							if(ret!=null) {
+								//CMN.debug("WebResourceResponse::", ret.getMimeType());
+								String mime = ret.getMimeType();
+								int idx=mime.indexOf(";");
+								if(idx>0) mime = mime.substring(0, idx);
+								return new WebResourceResponse(mime, "UTF-8", ret.getData());
+							}
+						} catch (Exception e) {
+							CMN.debug(url, e);
+						}
+					}
+					else {
+						try { //todo opt
+							if (mWebView.merge) {
+								for (BookPresenter wb:mWebView.webx_frames) {
+									PlainWeb webx = wb.getWebx();
+									if (webx.shouldUseClientResponse(url)) {
+										return (WebResourceResponse) webx.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+									}
+									WebResourceResponse resp = webx.modifyRes(MainActivityUIBase.this, url, true);
+									if(resp!=null) { //todo opt
+										// requesting web data on merged page. or...
+										CMN.debug("修改了::on merged page::", url);
+										WebResourceResponse webResourceResponse;
+										return resp;
+									}
+								}
+								//if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
+								//	//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
+								//	if(server.webResHandler.shouldUseClientResponse(url)) {
+								//		return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+								//	}
+								//}
+							}
+						} catch (Exception e) {
+							CMN.debug(url,"\n",e);
+						}
+					}
+					//return null;
+				}
+				//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
+				if(invoker.getIsWebx()) {
+					PlainWeb webx = (PlainWeb) invoker.bookImpl;
+					if (webx.hasExcludedResV4 && Build.VERSION.SDK_INT<21) {
+						if (webx.shouldExcludedResV4(url)) {
+							//CMN.Log("排除::"+url);
+							return emptyResponse;
+						}
+					}
+					if(accept==null || accept.contains("text/html")) {
+						if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
+							boolean proceed = true;
+							String[] shWebsite = webx.cleanExtensions;
+							if(shWebsite!=null){
+								for (int i = 0; i < shWebsite.length; i++) {
+									if(url_contains(url, shWebsite[i])){
+										proceed=false;
+										break;
+									}
+								}
+							}
+							
+							if(proceed && mWebView.bShouldOverridePageResource) {
+								//CMN.debug("accept", accept, url);
+								InputStream overridePage = invoker.getWebPage(url);
+								if(overridePage!=null){
+									//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
+									//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
+									return new WebResourceResponse("text/html","UTF-8",overridePage);
+								}
+							}
+							if(webx.canSaveResource) {
+								try {
+									shWebsite = webx.cacheExtensions;
 									for (int i = 0; i < shWebsite.length; i++) {
-										if(url_contains(url, shWebsite[i])){
-											proceed=false;
+										//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
+										if(url.contains(shWebsite[i])){
+											File pathDownload = invoker.getInternalResourcePath(true);
+											if(!pathDownload.exists()) pathDownload.mkdirs();
+											if(pathDownload.isDirectory()) {
+												boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
+												File path;
+												int start = url.indexOf("://");
+												if(start<0) start=0; else start+=3;
+												start = Math.max(url.indexOf("/", start)+1, start);
+												int end = needTrim?url.indexOf("?"):-1;
+												if(end<0) end=url.length();
+												String name=url.substring(start, end);
+												try {
+													name=URLDecoder.decode(name, "utf8");
+												} catch (Exception e) { }
+												if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
+												if(name.length()==0){
+													name = "plod-index";
+												}
+												path=new File(pathDownload, name);
+												CMN.debug("pathDownload", path);
+												pathDownload = path.getParentFile();
+												boolean saveit = !webx.butReadonly;
+												if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
+												if(pathDownload.isDirectory())
+												{
+													name=path.getName();
+													if(name.length()>64){
+														name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
+														path=new File(pathDownload, name);
+													}
+													/* 下载 */
+													if(saveit && !path.exists()) {
+														CMN.debug("shouldInterceptRequest 下载中...！", url);
+														CMN.debug("shouldInterceptRequest 下载目标: ", name);
+														try {
+															ViewUtils.downloadToStream(url, new OutputStream[]{null}, path.getPath()
+																	, accept, refer, origin, request, webx);
+															CMN.debug("shouldInterceptRequest 已下载！", url);
+														} catch (Exception e) {
+															CMN.debug(e);
+															path.delete();
+															return emptyResponse;
+														}
+														// 预处理
+													}
+													/* 再构 */
+													if(path.isFile()){
+														String mime=accept;
+														if(mime!=null){
+															int idx = mime.indexOf(",");
+															if(idx>0) mime=mime.substring(0, idx);
+														}else{
+															mime="*/*";
+														}
+														if(mime.startsWith("image") && webx.svgKeywords!=null){
+															for (int j = 0; j < webx.svgKeywords.length; j++) {
+																if(url.contains(webx.svgKeywords[i])){
+																	mime="image/svg+xml";
+																	break;
+																}
+															}
+														}
+														
+														WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
+														if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+															ret.setResponseHeaders(CrossFireHeaders);
+														}
+														return ret;
+													}
+												}
+											}
+											
 											break;
 										}
 									}
 								}
-			
-								if(proceed && mWebView.bShouldOverridePageResource) {
-									//CMN.debug("accept", accept, url);
-									InputStream overridePage = invoker.getWebPage(url);
-									if(overridePage!=null){
-										//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
-										//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
-										return new WebResourceResponse("text/html","UTF-8",overridePage);
-									}
+								catch (Exception e) {
+									CMN.debug(e);
 								}
-								if(webx.canSaveResource) {
+							}
+						}
+						else{
+							view.setTag(R.id.save, null);
+						}
+					}
+					if (url.endsWith(".js")) {
+						if (webx.getShouldReplaceLetToVar(url)) {
+							try {
+								return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
+							} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
+						}
+					}
+					if(invoker.getUseHosts() && webx.shouldUseClientResponse(url)) {
+						// hosts
+						return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+					}
+					if(url.startsWith("http://mdbr.com")) {
+						try {
+							HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+							Response ret = getMdictServer().handle(req);
+							if(ret!=null) {
+								//CMN.debug("WebResourceResponse::", ret.getMimeType());
+								String mime = ret.getMimeType();
+								int idx=mime.indexOf(";");
+								if(idx>0) mime = mime.substring(0, idx);
+								return new WebResourceResponse(mime, "UTF-8", ret.getData());
+							}
+						} catch (Exception e) {
+							CMN.debug(url, e);
+							return emptyResponse;
+						}
+					}
+				}
+				if(!mdbr) {
+					return invoker.getOfflineMode()?emptyResponse:null;
+				}
+				//CMN.Log("漏网之鱼::", url);
+			}
+			else {
+				// custom schemas
+				if(url.startsWith(soundTag)) {
+					opt.supressAudioResourcePlaying=false;
+					key = url.substring(soundTag.length());
+				}
+				else if(url.startsWith(soundsTag)) {
+					url = url.substring(soundsTag.length());
+					try {
+						url = URLDecoder.decode(url,"UTF-8");
+					} catch (Exception ignored) { }
+					String soundKey="\\"+url+".";
+					CMN.debug("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
+					InputStream restmp=null;
+					WebResourceResponse ret=null;
+					BookPresenter mdTmp;
+					for (int i = 0; i < loadManager.md_size; i++) {
+						mdTmp = findPronouncer(i, invoker);
+						if(mdTmp!=EmptyBook){
+							Boolean spx=false;
+							try {
+								Object[] result=mdTmp.getSoundResourceByName(soundKey);
+								if(result!=null) {
+									spx = (Boolean) result[0];
+									restmp = (InputStream) result[1];
+								}
+							} catch (IOException ignored) { }
+							if(restmp!=null && spx!=null) {
+								if (spx) {
 									try {
-										shWebsite = webx.cacheExtensions;
-										for (int i = 0; i < shWebsite.length; i++) {
-											//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
-											if(url.contains(shWebsite[i])){
-												File pathDownload = invoker.getInternalResourcePath(true);
-												if(!pathDownload.exists()) pathDownload.mkdirs();
-												if(pathDownload.isDirectory()) {
-													boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
-													File path;
-													int start = url.indexOf("://");
-													if(start<0) start=0; else start+=3;
-													start = Math.max(url.indexOf("/", start)+1, start);
-													int end = needTrim?url.indexOf("?"):-1;
-													if(end<0) end=url.length();
-													String name=url.substring(start, end);
-													try {
-														name=URLDecoder.decode(name, "utf8");
-													} catch (Exception e) { }
-													if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
-													if(name.length()==0){
-														name = "plod-index";
-													}
-													path=new File(pathDownload, name);
-													CMN.debug("pathDownload", path);
-													pathDownload = path.getParentFile();
-													boolean saveit = !webx.butReadonly;
-													if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
-													if(pathDownload.isDirectory())
-													{
-														name=path.getName();
-														if(name.length()>64){
-															name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
-															path=new File(pathDownload, name);
-														}
-														/* 下载 */
-														if(saveit && !path.exists()) {
-															CMN.debug("shouldInterceptRequest 下载中...！", url);
-															CMN.debug("shouldInterceptRequest 下载目标: ", name);
-															try {
-																ViewUtils.downloadToStream(url, new OutputStream[]{null}, path.getPath()
-																		, accept, refer, origin, request, webx);
-																CMN.debug("shouldInterceptRequest 已下载！", url);
-															} catch (Exception e) {
-																CMN.debug(e);
-																path.delete();
-																return emptyResponse;
-															}
-															// 预处理
-														}
-														/* 再构 */
-														if(path.isFile()){
-															String mime=accept;
-															if(mime!=null){
-																int idx = mime.indexOf(",");
-																if(idx>0) mime=mime.substring(0, idx);
-															}else{
-																mime="*/*";
-															}
-															if(mime.startsWith("image") && webx.svgKeywords!=null){
-																for (int j = 0; j < webx.svgKeywords.length; j++) {
-																	if(url.contains(webx.svgKeywords[i])){
-																		mime="image/svg+xml";
-																		break;
-																	}
-																}
-															}
-			
-															WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
-															if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-																ret.setResponseHeaders(CrossFireHeaders);
-															}
-															return ret;
-														}
-													}
-												}
-			
-												break;
-											}
-										}
-									}
-									catch (Exception e) {
+										ret = decodeSpxStream(restmp);
+										if (ret != null) break;
+									} catch (Exception e) {
 										CMN.debug(e);
 									}
 								}
-							}
-							else{
-								view.setTag(R.id.save, null);
-							}
-						}
-						if (url.endsWith(".js")) {
-							if (webx.getShouldReplaceLetToVar(url)) {
-								try {
-									return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
-								} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
-							}
-						}
-						if(invoker.getUseHosts() && webx.shouldUseClientResponse(url)) {
-							// hosts
-							return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
-						}
-						if(url.startsWith("http://mdbr.com")) {
-							try {
-								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
-								Response ret = getMdictServer().handle(req);
-								if(ret!=null) {
-									//CMN.debug("WebResourceResponse::", ret.getMimeType());
-									String mime = ret.getMimeType();
-									int idx=mime.indexOf(";");
-									if(idx>0) mime = mime.substring(0, idx);
-									return new WebResourceResponse(mime, "UTF-8", ret.getData());
-								}
-							} catch (Exception e) {
-								CMN.debug(url, e);
-								return emptyResponse;
+								ret = new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
+								break;
 							}
 						}
 					}
-					if(!mdbr) {
-						return invoker.getOfflineMode()?emptyResponse:null;
+					if(ret!=null){
+						CMN.debug("返回音频");
+						return ret;
+					} else {
+						ReadEntryPlanB(mWebView, url);
 					}
-					//CMN.Log("漏网之鱼::", url);
+					//return emptyResponse;
+					return null;
 				}
-				else {
-					// custom schemas
-					if(url.startsWith(soundTag)) {
-						opt.supressAudioResourcePlaying=false;
-						key = url.substring(soundTag.length());
-					}
-					else if(url.startsWith(soundsTag)) {
-						url = url.substring(soundsTag.length());
+				else if(url.startsWith("font:")){
+					if (fontlibs!=null) {
+						url=url.substring(7);
 						try {
-							url = URLDecoder.decode(url,"UTF-8");
-						} catch (Exception ignored) { }
-						String soundKey="\\"+url+".";
-						CMN.debug("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
-						InputStream restmp=null;
-						WebResourceResponse ret=null;
-						BookPresenter mdTmp;
-						for (int i = 0; i < loadManager.md_size; i++) {
-							mdTmp = findPronouncer(i, invoker);
-							if(mdTmp!=EmptyBook){
-								Boolean spx=false;
-								try {
-									Object[] result=mdTmp.getSoundResourceByName(soundKey);
-									if(result!=null) {
-										spx = (Boolean) result[0];
-										restmp = (InputStream) result[1];
-									}
-								} catch (IOException ignored) { }
-								if(restmp!=null && spx!=null) {
-									if (spx) {
-										try {
-											ret = decodeSpxStream(restmp);
-											if (ret != null) break;
-										} catch (Exception e) {
-											CMN.debug(e);
-										}
-									}
-									ret = new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
-									break;
-								}
-							}
-						}
-						if(ret!=null){
-							CMN.debug("返回音频");
-							return ret;
-						} else {
-							ReadEntryPlanB(mWebView, url);
-						}
-						//return emptyResponse;
-						return null;
+							return new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, url)));
+						} catch (Exception ignored) {  }
 					}
-					else if(url.startsWith("font:")){
-						if (fontlibs!=null) {
-							url=url.substring(7);
-							try {
-								return new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, url)));
-							} catch (Exception ignored) {  }
-						}
-						return null;
-					}
-				}
-				if (key==null) {
-					key = url.substring(schemaIdx+3);
+					return null;
 				}
 			}
-			//CMN.Log("chrochro_inter_0",url);
-			final String SepWindows = "\\";
-			try {
-				key = URLDecoder.decode(key,"UTF-8");
-			} catch (Exception ignored) { }
-			key=key.replace("/", SepWindows);
-			CMN.debug("chrochro_inter_key is", key, fakedDomainResponse);
-			if(!key.startsWith(SepWindows)) key=SepWindows+key;
-			if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
-			
-			int suffixIdx = key.lastIndexOf(".");
-			String suffix = null;
-			String mime = null;
-			if(suffixIdx>=0){
-				suffix = key.substring(suffixIdx).toLowerCase();
-				suffixIdx = key.indexOf("?");
-				if(suffixIdx!=-1)suffix = key.substring(0, suffixIdx);
+			if (key==null) {
+				key = url.substring(schemaIdx+3);
 			}
-			if(suffix!=null)
+		}
+		//CMN.Log("chrochro_inter_0",url);
+		final String SepWindows = "\\";
+		try {
+			key = URLDecoder.decode(key,"UTF-8");
+		} catch (Exception ignored) { }
+		key=key.replace("/", SepWindows);
+		CMN.debug("chrochro_inter_key is", key, fakedDomainResponse);
+		if(!key.startsWith(SepWindows)) key=SepWindows+key;
+		if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
+		
+		int suffixIdx = key.lastIndexOf(".");
+		String suffix = null;
+		String mime = null;
+		if(suffixIdx>=0){
+			suffix = key.substring(suffixIdx).toLowerCase();
+			suffixIdx = key.indexOf("?");
+			if(suffixIdx!=-1)suffix = key.substring(0, suffixIdx);
+		}
+		if(suffix!=null)
 			switch (suffix) {
 				case ".ini":
 				case ".js":
 					mime = "text/x-javascript";
-				break;
+					break;
 				case ".png":
 					mime = "image/png";
-				break;
+					break;
 				case ".css":
 					mime = "text/css";
-				break;
+					break;
 				case ".svg":
 					mime = "image/svg+xml";
-				break;
+					break;
 			}
-			String parms=null;
-			int parmIdx = key.indexOf("?");
-			//key= mdict.requestPattern.matcher(key).replaceAll("");
-			if(parmIdx>0) {
-				parms = key.substring(parmIdx+1);
-				key = key.substring(0, parmIdx);
-			}
-			boolean shouldLoadFiles = PDICMainAppOptions.getAllowPlugRes()||invoker.isHasExtStyle();
-			//检查后缀，js，ini,png,css,直接路径。
-			if(shouldLoadFiles && (!PDICMainAppOptions.getAllowPlugResNone()||!invoker.bookImpl.hasMdd()||parms!=null&&parms.contains("f=a"))) {
-				WebResourceResponse ret = getPlugRes(invoker, key);
-				if(ret!=null) return ret;
-				shouldLoadFiles = false;
-			}
-
-			if(!invoker.bookImpl.hasMdd())
-				return fakedDomainResponse;
-			if(mWebView.fromCombined==0 && !mWebView.fromNet() && invoker.getIsolateImages() && RegImg.matcher(key).find()){
-				//CMN.Log("Isolating Images...");
-				new_photo = key;
-				PhotoPager.removeCallbacks(PhotoRunnable);
-				PhotoPager.post(PhotoRunnable);
-				return fakedDomainResponse;
-			}
-			try {
-				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
-				CMN.debug("getResourceByKey::",key, restmp);
-				if(restmp==null) {
-					if(shouldLoadFiles) {
-						WebResourceResponse ret = getPlugRes(invoker, key);
-						if(ret!=null) return ret;
-					}
-					if(true) return fakedDomainResponse; //!!!
-					//CMN.Log("chrochro inter_ key is not find: ",key);
-					if(url.startsWith("http://")) {
-						URL uurrll = new URL(url);
-						HttpURLConnection conn = (HttpURLConnection) uurrll.openConnection();
-						conn.setConnectTimeout(3 * 1000);
-						conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
-
-						conn.setRequestMethod("GET");
-						InputStream inStream = conn.getInputStream();
-						//conn.setRequestProperty("lfwywxqyh_token",toekn);
-						byte[] buffer = new byte[1024];
-						int len;
-						ByteArrayOutputStream bos = new ByteArrayOutputStream();
-						while((len = inStream.read(buffer)) != -1) {
-							bos.write(buffer, 0, len);
-						}
-						bos.close();
-						restmp = new ByteArrayInputStream(bos.toByteArray());
-						//return new WebResourceResponse("","UTF-8",inStream);
-					}
-					else return null;
+		String parms=null;
+		int parmIdx = key.indexOf("?");
+		//key= mdict.requestPattern.matcher(key).replaceAll("");
+		if(parmIdx>0) {
+			parms = key.substring(parmIdx+1);
+			key = key.substring(0, parmIdx);
+		}
+		boolean shouldLoadFiles = PDICMainAppOptions.getAllowPlugRes()||invoker.isHasExtStyle();
+		//检查后缀，js，ini,png,css,直接路径。
+		if(shouldLoadFiles && (!PDICMainAppOptions.getAllowPlugResNone()||!invoker.bookImpl.hasMdd()||parms!=null&&parms.contains("f=a"))) {
+			WebResourceResponse ret = getPlugRes(invoker, key);
+			if(ret!=null) return ret;
+			shouldLoadFiles = false;
+		}
+		
+		if(!invoker.bookImpl.hasMdd())
+			return fakedDomainResponse;
+		if(mWebView.fromCombined==0 && !mWebView.fromNet() && invoker.getIsolateImages() && RegImg.matcher(key).find()){
+			//CMN.Log("Isolating Images...");
+			new_photo = key;
+			PhotoPager.removeCallbacks(PhotoRunnable);
+			PhotoPager.post(PhotoRunnable);
+			return fakedDomainResponse;
+		}
+		try {
+			InputStream restmp=invoker.bookImpl.getResourceByKey(key);
+			CMN.debug("getResourceByKey::",key, restmp);
+			if(restmp==null) {
+				if(shouldLoadFiles) {
+					WebResourceResponse ret = getPlugRes(invoker, key);
+					if(ret!=null) return ret;
 				}
-
-				if(mime==null && suffix!=null)
+				if(true) return fakedDomainResponse; //!!!
+				//CMN.Log("chrochro inter_ key is not find: ",key);
+				if(url.startsWith("http://")) {
+					URL uurrll = new URL(url);
+					HttpURLConnection conn = (HttpURLConnection) uurrll.openConnection();
+					conn.setConnectTimeout(3 * 1000);
+					conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+					
+					conn.setRequestMethod("GET");
+					InputStream inStream = conn.getInputStream();
+					//conn.setRequestProperty("lfwywxqyh_token",toekn);
+					byte[] buffer = new byte[1024];
+					int len;
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					while((len = inStream.read(buffer)) != -1) {
+						bos.write(buffer, 0, len);
+					}
+					bos.close();
+					restmp = new ByteArrayInputStream(bos.toByteArray());
+					//return new WebResourceResponse("","UTF-8",inStream);
+				}
+				else return null;
+			}
+			
+			if(mime==null && suffix!=null)
 				switch (suffix){
 					case ".mp4":
 						mime = "video/mp4";
-					break;
+						break;
 					case ".mp3":
 						mime = "audio/mpeg";
-					break;
+						break;
 					case ".spx":{
 						mime = "audio/*";
 						WebResourceResponse ret = decodeSpxStream(restmp);
@@ -8602,89 +8767,70 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					case ".gif":
 					case ".jpeg":
 						mime = "audio/mpeg";
-					break;
+						break;
 				}
-				if(mime==null)
-					mime="";
-				return new WebResourceResponse(mime,"UTF-8",restmp);
-			}
-			catch (Exception e) {
-				CMN.debug(e);
-				return super.shouldInterceptRequest(view, url);
-			}
+			if(mime==null)
+				mime="";
+			return new WebResourceResponse(mime,"UTF-8",restmp);
 		}
-		
-		private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
-			try {
-				CMN.debug("getPlugRes!", "Ext::"+presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
-				if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
-					int sid = uri.lastIndexOf(".");
-					if(sid>0 && sid<uri.length()-2) {
-						//SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
-						if(presenter.isHasExtStyle()
-								&& uri.endsWith(".css")
-								&& uri.regionMatches(1, presenter.getDictionaryName(), 0, sid-1))
-						{
-							return new WebResourceResponse("text/css", "UTF-8"
-									, presenter.getDebuggingResource("/"+uri.substring(1)));
-						}
-						if(PDICMainAppOptions.getAllowPlugRes()) {
-							if(PDICMainAppOptions.getAllowPlugResSame()) {
-								String p = presenter.getPath();
-								int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
-								if(sep>0) {
-									String d = presenter.getDictionaryName();
-									if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
-										// CMN.debug("同名目录!");
-										p=null;
-									}
-								}
-								if(p!=null) {
-									return emptyResponse;
+		catch (Exception e) {
+			CMN.debug(e);
+			//return super.shouldInterceptRequest(view, url);
+			return null;
+		}
+	}
+	
+	private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
+		try {
+			CMN.debug("getPlugRes!", "Ext::"+presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+			if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
+				int sid = uri.lastIndexOf(".");
+				if(sid>0 && sid<uri.length()-2) {
+					//SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+					if(presenter.isHasExtStyle()
+							&& uri.endsWith(".css")
+							&& uri.regionMatches(1, presenter.getDictionaryName(), 0, sid-1))
+					{
+						return new WebResourceResponse("text/css", "UTF-8"
+								, presenter.getDebuggingResource("/"+uri.substring(1)));
+					}
+					if(PDICMainAppOptions.getAllowPlugRes()) {
+						if(PDICMainAppOptions.getAllowPlugResSame()) {
+							String p = presenter.getPath();
+							int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
+							if(sep>0) {
+								String d = presenter.getDictionaryName();
+								if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
+									// CMN.debug("同名目录!");
+									p=null;
 								}
 							}
-							int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-							//CMN.debug("文件", uri, mid);
-							if(mid>=0 && !(mid>=5&&mid<=18)) {
-								InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
-								if(input!=null) {
-									String MIME = mid==0?"application/x-javascript"
-											:mid==2?"text/css"
-											:mid>=5&&mid<18?"img/*"
-											:mid==18?"img/svg" //todo
-											:"*/*"
-											;
-									return new WebResourceResponse(MIME, "UTF-8", input);
-								}
+							if(p!=null) {
+								return emptyResponse;
+							}
+						}
+						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
+						//CMN.debug("文件", uri, mid);
+						if(mid>=0 && !(mid>=5&&mid<=18)) {
+							InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
+							if(input!=null) {
+								String MIME = mid==0?"application/x-javascript"
+										:mid==2?"text/css"
+										:mid>=5&&mid<18?"img/*"
+										:mid==18?"img/svg" //todo
+										:"*/*"
+										;
+								return new WebResourceResponse(MIME, "UTF-8", input);
 							}
 						}
 					}
 				}
-			} catch (Exception e) {
-				CMN.debug(e);
 			}
-			return null;
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
-		
-		@Override
-		public void onReceivedSslError(WebView view, final SslErrorHandler mHandler, SslError error) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this);
-			builder.setTitle("SSL Certificate Error");
-			builder.setMessage("code"+error.getPrimaryError()+"\ndo u want to continue anyway?");
-			builder.setPositiveButton(R.string.continue_, (dialog, which) -> mHandler.proceed());
-			builder.setNegativeButton(R.string.cancel, (dialog, which) -> mHandler.cancel());
-			builder.setOnKeyListener((dialog, keyCode, event) -> {
-				if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-					mHandler.cancel();
-					dialog.dismiss();
-					return true;
-				}
-				return false;
-			});
-			AlertDialog dialog = builder.create();
-			dialog.show();
-		}
-	};
+		return null;
+	}
 	
 	private int fastFrameIndexOf(ViewGroup webholder, WebViewmy mWebView, int frameAt) {
 		View ca = webholder.getChildAt(frameAt);
@@ -11386,7 +11532,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(ActivedAdapter!=null) invoker = ActivedAdapter.getPresenter();
 		}
 		else if(weblist!=null) {
-			invoker = weblist.getWebContext().presenter; // 111  x打开 空
+			invoker = weblist.getWebContextNonNull().presenter; // todo 111  x打开 空
 		}
 		if (invoker == null || invoker == EmptyBook) {
 			invoker = currentDictionary;
@@ -11404,6 +11550,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (!bookNotes.isVisible()) {
 			bookNotes.toggle(root, null, -1);
 		}
+		else bookNotes.refresh();
 	}
 	
 	/** type: 0=下划线  1=高亮 -1=保持不变   */

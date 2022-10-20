@@ -12,7 +12,7 @@ if(!window.tpshc){
     var dx, dy;
     window.addEventListener('touchstart',window.tpshts=function(e){
         var w=this;
-        if(!w.getSelection().isCollapsed) {
+        if(!w.getSelection().isCollapsed && !w._touchtarget_lck) {
             tRange = w.getSelection().getRangeAt(0);
             var t = e.changedTouches[0];
             dx = t.clientX;
@@ -24,7 +24,7 @@ if(!window.tpshc){
     });
     window.addEventListener('touchend',window.tpshtd=function(e){
         //console.log('popuping ini...shzh=', t.clientX, t.clientY, t.pageX, t.pageY);
-        if(tRange && bAutoGranu && granu>0) {
+        if(tRange && bAutoGranu && granu>0 && !w._touchtarget_lck) {
             if(e.timeStamp-tTime>=350) return
             var t = e.changedTouches[0];
             dx=t.clientX-dx;
@@ -50,7 +50,7 @@ if(!window.tpshc){
             }
         }
     });
-    window.addEventListener('click',window.tpshc=function(e){
+window.addEventListener('click',window.tpshc=function(e){
     var w=this,d=w.document,sz=w.shzh,app=w.app;
     if(w.frameElement){sz=parent.window.shzh;app=parent.window.app}
     debug('wrappedClickFunc 2', e);
@@ -67,7 +67,7 @@ if(!window.tpshc){
         return w>0 && y>0
         && (pY>y-pad && pY<y+h+pad && pX>x-pad && pX<x+w+pad);
     }
-    if(sz&7 && curr!=d.documentElement && (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) && curr.nodeName!='BUTTON' && curr.nodeName!='A' && !curr.noword && !curr.onclick){
+    if(sz&7 && curr!=d.documentElement && (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) && curr.nodeName!='BUTTON' && curr.nodeName!='A' && !curr.noword && !curr.onclick && !w._touchtarget_lck){
         //todo d.activeElement.tagName
         var s = w.getSelection();
         if(!(s.isCollapsed && s.anchorNode)) {

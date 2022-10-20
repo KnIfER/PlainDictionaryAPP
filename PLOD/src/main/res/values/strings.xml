@@ -217,6 +217,7 @@
 	<string name="page_rukou">添加为入口</string>
 	<string name="page_nav">输入网址…</string>
 	<string name="page_fuzhi">复制文本</string>
+	<string name="page_sel">选择文本</string>
 	<string name="page_baocun">保存代码</string>
 	<string name="page_dakai">使用浏览器打开</string>
 	<string name="page_lianjie">复制链接</string>
@@ -254,4 +255,5 @@
 	<string name="lnk_note">链接到已有笔记…</string>
 	<string name="edit_yy_note">修改已选笔记</string>
 	<string name="share_name">名称</string>
+	<string name="page_save_img">下载图片</string>
 </resources>

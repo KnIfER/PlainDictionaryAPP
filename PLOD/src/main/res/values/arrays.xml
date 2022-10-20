@@ -89,18 +89,6 @@
 		<item>地址直达</item>
 	</string-array>
 
-	<string-array name="config_images">
-		<item>下载图片</item>
-		<item>选择文本</item>
-	</string-array>
-
-	<string-array name="config_links">
-		<item>复制链接</item>
-		<item>复制文本</item>
-		<item>选择文本</item>
-		<item>翻阅模式</item>
-	</string-array>
-
 	<string-array name="config_md_links">
 		<item>列表直达</item>
 		<item>复制文本</item>

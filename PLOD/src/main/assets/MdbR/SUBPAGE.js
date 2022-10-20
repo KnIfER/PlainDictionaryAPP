@@ -48,5 +48,5 @@ function loadJs(url,callback){
     d.body.appendChild(script);
 }
 window.expUrl = function() {
-	return bid+"_"+currentPos;
+	return bid+"_"+_posid;
 }
