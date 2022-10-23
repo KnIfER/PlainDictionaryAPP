@@ -86,7 +86,7 @@ public final class WordBreakFilter extends TokenFilter {
 	}
 
 	/** 判断是否是合写语言，即中文那样不用空格断词的语言 */
-	private boolean isBigram(char c) {
+	public static boolean isBigram(char c) {
 		final String block = Character.UnicodeBlock.of(c).toString();
 		if (block.startsWith("CJK")) {
 			return true;

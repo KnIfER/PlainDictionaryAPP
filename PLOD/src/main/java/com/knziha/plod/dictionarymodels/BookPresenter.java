@@ -76,6 +76,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
+import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import com.knziha.plod.widgets.AdvancedNestFrameView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.DragScrollBar;
@@ -2564,6 +2565,15 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		/** detect char has implicit word boudary.
+		 * see https://en.wikipedia.org/wiki/Category:Writing_systems_without_word_boundaries
+		 * */
+		@JavascriptInterface
+		public boolean hexie(char ch) {
+			return WordBreakFilter.isBigram(ch);
+		}
+		
+		
 		@JavascriptInterface
 		public long probeWord(int sid, String paragraph, String text) {
 			if (presenter!=null) {
@@ -3247,7 +3257,8 @@ function debug(e){console.log(e)};
 			WebViewmy wv = findWebview(sid);
 			wv.weblistHandler.onHighlightReady(idx, number);
         }
-
+        
+        
         @JavascriptInterface
         public void popupWord(int sid, String key, int frameAt, float pX, float pY, float pW, float pH) {
 			try {

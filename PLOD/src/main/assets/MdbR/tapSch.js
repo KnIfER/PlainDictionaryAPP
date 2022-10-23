@@ -126,9 +126,9 @@ window.addEventListener('click',window.tpshc=function(e){
                     }
                     //sty.innerText = '._PDB.note{visibility:hidden}'; // skip note texts
                     sty.innerText = '._PDB.note{visibility:hidden}'; // skip note texts
+
                     s.modify('extend', 'backward', 'paragraphboundary');
-                    var tx1 = s.toString();
-                    var now = tx1.length;
+                    var textParag = s.toString(), now = textParag.length;
                     s.collapseToStart();
                     s.modify('extend', 'forward', 'paragraphboundary');
                     
@@ -152,7 +152,7 @@ window.addEventListener('click',window.tpshc=function(e){
                     if(granu==0) 
                     {
                         //console.time('probeWord')
-                        var sted = app.probeWord(sid.get(), s.toString(), tx1);
+                        var sted = app.probeWord(sid.get(), s.toString(), textParag);
                         //console.timeEnd('probeWord')
 
                         var tst, ted=sted&0xFFFFFFFF;
@@ -193,6 +193,7 @@ window.addEventListener('click',window.tpshc=function(e){
                     
                     return
                 } else {
+                    // 先简单取词 'word'
                     s.empty(); s.addRange(rg);
                     s.collapseToStart();
                     s.modify('move', 'backward', 'word');
@@ -206,8 +207,54 @@ window.addEventListener('click',window.tpshc=function(e){
                         range = s.getRangeAt(0);
                     }
                     
-                    var text = s.toString();
-                    if(app && text.trim().length){
+                    var text = s.toString(), len=text.trim().length;
+                    if(len){
+                        // 测试大内存取词
+                        if(len==1 && app.hexie(text.charCodeAt(0))) {
+                            // 开始大内存取词
+                            s.empty();s.addRange(rg);
+                            // 先取整个段落
+                            s.modify('extend', 'backward', 'paragraphboundary');
+                            var textParag = s.toString(), now = textParag.length;
+                            s.collapseToStart();
+                            s.modify('extend', 'forward', 'paragraphboundary');
+                            // 再取词
+                            //console.time('probeWord')
+                            var sted = app.probeWord(sid.get(), s.toString(), textParag);
+                            //console.timeEnd('probeWord')
+                            var tst, ted=sted&0xFFFFFFFF;
+                            var num = (sted).toString(16);
+                            tst = parseInt('0x'+num.slice(0,num.length-8))||0;
+                            debug('wrappedClickFunc=', tst, ted, now);
+                            if(now>=tst && now<=ted) {
+                                s.empty();s.addRange(rg);
+                                s.collapseToStart();
+                                var r=s.getRangeAt(0);
+                                var st=r.startContainer,so=r.startOffset,ed=r.endContainer,eo=r.endOffset;
+                                //debug('r='+r, st, so, ed, eo);
+                                //debug('movebackward', now-tst);
+                                for(var i=0;i<now-tst;i++) {
+                                    s.modify('extend', 'backward', 'character');
+                                    r=s.getRangeAt(0);
+                                    st=r.startContainer;so=r.startOffset;
+                                }
+                                s.empty();s.addRange(rg);
+                                s.collapseToStart();
+                                for(var i=0;i<ted-now;i++) {
+                                    s.modify('extend', 'forward', 'character');
+                                    r=s.getRangeAt(0);
+                                    ed=r.endContainer;eo=r.endOffset;
+                                // ed=r.startContainer;eo=r.startOffset;
+                                }
+                                r = new Range();
+                                r.setStart(st, so);
+                                r.setEnd(ed, eo);
+                                s.empty();
+                                s.addRange(r);
+                                range = r;
+                                text = r.toString();
+                            }
+                        }
                         rc = range.getBoundingClientRect();
                         app.popupWord(sid.get(), text, 0/*frameAt */, d.documentElement.scrollLeft+rc.left, d.documentElement.scrollTop+rc.top, rc.width, rc.height);
                         w.popup=1;

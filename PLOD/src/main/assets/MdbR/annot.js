@@ -603,10 +603,7 @@
                         //log('check range restore 直接验证！ ', k1);
                     } else {
                         log('check range restore 曲折验证！ ', k1);
-                        var sel=this.getSelection();
-                        sel.empty(); sel.addRange(range);
-                        var text = sel.toString();
-                        sel.empty(); 
+                        var text = range.toString();
                         k1 = text[0];
                         if(!tcn.d) k1 += text[text.length-1];
                         p = pass(k1);
