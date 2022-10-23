@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -77,7 +76,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewParent;
@@ -152,6 +150,7 @@ import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
+import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
@@ -171,7 +170,7 @@ import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NewTitlebar;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
-import com.knziha.plod.PlainUI.PagePopupMenuHelper;
+import com.knziha.plod.PlainUI.PageMenuHelper;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
@@ -181,6 +180,7 @@ import com.knziha.plod.PlainUI.SettingsSearcher;
 import com.knziha.plod.PlainUI.ShareHelper;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordPopup;
+import com.knziha.plod.PlainUI.JsonNames;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.db.SearchUI;
@@ -217,7 +217,6 @@ import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
-import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.AppIconsAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
@@ -288,7 +287,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.knziha.plod.PlainUI.PagePopupMenuHelper.PageMenuType.LNK_IMG;
+import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK_IMG;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionary.mdBase.markerReg;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
@@ -510,36 +509,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Metaline
 	public final static String randx_remake="";
 	public final static String randx_off="window.randx_mode=0";
-	/**debug('fatal debug annot::restoring::???');
+	/**debug('\n\nfatal debug annot::restoring::???');
 	 (function(){
-		 function cb(){
-		 	if(window.remarkPage) remarkPage(remark);
-	 		else remark(currentPos);
-		 }
-		 function remark(position, rootNode, doc){
-				var t = app.remark(sid.get(), position);
-	 			if(t.length) {
-					t = t.split('\n');
-					for(var i=0;i<t.length;i+=2) {
-	 					if(t[i].length){
-	 						try{
-								var row = JSON.parse(t[i]);
-								var nid = parseInt(t[i+1]);
-								var nn = row.n.split(';'), n0=nn[0], n1=nn[1];
-								if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
-								else if(nn.length!=2) continue;
-								var r = MakeRange(n0, n1, rootNode, doc);
-								console.log('fatal debug annot::restoring::', nn, r);
-								if(r) {
-									var el = MakeMark(row, -1, 0, 0);
-									WrapRange(r, el, rootNode, doc, nid)
-								}
-							} catch(e) {console.log('error::', t[i], e)}
-						}
-					}
-				}
-			}
-			try{loadJs('//mdbr/annot.js', cb)}catch(e){window.loadJsCb=cb;app.loadJs(sid.get(),'annot.js')}
+		var t='';
+		function cb(){
+			if(window.remarkPage) remarkPage(remark);
+			else remark(currentPos);
+		}
+		function remark(position, rootNode, doc){
+			RestoreMarks(t, rootNode, doc);
+		}
+		if(!window.marked||1) {
+			t = app.remark(sid.get(), currentPos);
+			if(t) try{loadJs('//mdbr/annot.js', cb)}catch(e){window.loadJsCb=cb;app.loadJs(sid.get(),'annot.js')}
+			window.marked = 1;
+		}
 		})()
 	 */
 	@Metaline(trim = false)
@@ -672,7 +656,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean awaiting;
 	Runnable postTask;
 	View EmptyView;
-	private boolean debugging_webx = false;
+	public static boolean debugging_webx = false;
+	public static boolean debugging_annot = true;
 	
 	public View favoriteBtn() {
 		return contentUIData.browserWidget8;
@@ -815,6 +800,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bShowLoadErr=bShowErr&&!prvNxt;
 			result = loadManager.md_get(dictPicker.adapter_idx=i);
 			bShowLoadErr=bShowErr;
+			currentDictionary.checkFlag(this);
 			
 			if (CurrentViewPage == 1 || true) {
 				currentDictionary = result;
@@ -3385,6 +3371,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if((!AutoBrowsePaused || bRequestingAutoReading) && !opt.getTTSBackgroundPlay()){
 			stopAutoReadProcess();
 		}
+		if(systemIntialized && currentDictionary!=null)
+			currentDictionary.checkFlag(this);
 		ViewUtils.sNestScrollHelper.setCurrentView(null);
 	}
 
@@ -4447,24 +4435,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								break;
 							}
 							AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
-							builder.setTitle(invoker.appendCleanDictionaryName(MainStringBuilder).append(" -> ").append(getString(R.string.bm)).toString());
+							builder.setTitle(invoker.appendCleanDictionaryName(null).append(" -> ")
+									.append(getString(R.string.bm)).toString());
 							builder.setItems(new String[]{}, null);
 							builder.setNeutralButton(R.string.delete, null);
 							AlertDialog d = builder.show();
 							ListView list = d.getListView();
-							list.setAdapter(getUsingDataV2() ? getBookMarkAdapterV2(lastInDark, invoker) : getBookMarkAdapter(lastInDark, invoker, con));
+							list.setAdapter(getBookMarkAdapterV2(lastInDark, invoker));
 							//d.getListView().setFastScrollEnabled(true);
 							
 							//tofo
 							if (lastBookMarkPosition != -1) list.setSelection(lastBookMarkPosition);
 							
 							list.setOnItemClickListener((parent1, view1, position1, id1) -> {
-								if (prepareHistoryCon().testDBV2) {
-									BookmarkAdapter.BookmarkDatabaseReader reader = (BookmarkAdapter.BookmarkDatabaseReader) mBookMarkAdapter.getItem(position1);
-									if (reader != null) {
-										WebViewmy webview = this.mWebView;
+								BookmarkAdapter.BookmarkDatabaseReader reader = (BookmarkAdapter.BookmarkDatabaseReader) mBookMarkAdapter.getItem(position1);
+								if (reader != null) {
+									WebViewmy webview = this.mWebView;
+									String url = reader.entryName==null?reader.url:reader.entryName;
+									if (url != null) {
 										if (invoker.getIsWebx()) {
-											String url = reader.entryName;
+											url = reader.url;
 											if (url.startsWith("/")) {
 												url = ((PlainWeb) webview.presenter.bookImpl).getHost() + url;
 											}
@@ -4472,21 +4462,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										} else {
 											UniversalDictionaryInterface book = webview.presenter.bookImpl;
 											int pos = reader.position;
-											if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
-												int tmp_pos = book.lookUp(reader.entryName);
+											if (!TextUtils.equals(mdict.processText(url), mdict.processText(book.getEntryAt(pos)))) {
+												int tmp_pos = book.lookUp(url);
 												if (tmp_pos >= 0) {
 													pos = tmp_pos;
 												}
 											}
 											myWebClient.shouldOverrideUrlLoading(webview, "entry://@" + pos);
 										}
-										//opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
-										//if(!cb.isChecked())
 									}
-									// todo notify error
-								} else {
-									showT("已弃用旧版数据库，请尽快升级。");
+									//opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
+									//if(!cb.isChecked())
 								}
+								// todo notify error
 								d.dismiss();
 							});
 							list.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
@@ -5101,7 +5089,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		private void statHasBookmark() {
 			int resId=R.string.bmAdd;
 			if(getUsingDataV2()) {
-				if(invoker.hasBookmark(mWebView)){
+				if(invoker.hasBookmark(mWebView)!=-1){
 					resId=R.string.bmSub;
 				}
 			}
@@ -5149,44 +5137,47 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return value.length()>length?value.substring(0, length):value;
 	}
 	
+	public String lastNotes;
+	
 	public void Annot(WebViewmy mWebView, int type, AnnotationDialog annot) {
 		//CMN.Log("Annot_js=", js);
 		int value = opt.annotColor(type, 0, false);
-		String note = null;
+		String notes = null;
 		com.alibaba.fastjson.JSONObject row = new com.alibaba.fastjson.JSONObject();
-		row.put("typ", type);
-		row.put("clr", value);
+		row.put(JsonNames.typ, type);
+		row.put(JsonNames.clr, value);
 		int noteType = 0;
 		if (annot != null) {
 			value = annot.uiData.colors[annot.uiData.toolIdx];
-			note = annot.getNoteText();
-			if (TextUtils.isEmpty(note)) {
-				note = null;
+			notes = annot.getNoteText();
+			if (TextUtils.isEmpty(notes)) {
+				notes = null;
 			}
-			if (note!=null) {
+			lastNotes = notes;
+			if (notes!=null) {
 				noteType = annot.uiData.noteType;
 				int k = PDICMainAppOptions.colorSameForNoteTypes()?0:noteType;
-				row.put("note", note);
-				row.put("ntyp", noteType);
+				row.put(JsonNames.note, notes);
+				row.put(JsonNames.ntyp, noteType);
 				if (noteType == 1 && annot.uiData.noteOnBubble) {
-					row.put("bon", 1); // 将笔记直接显示在气泡之中
+					row.put(JsonNames.bon, 1); // 将笔记直接显示在气泡之中
 				}
 				// 注释笔记也可以显示气泡，使其更加显著
 				boolean showBubble = annot.uiData.showBubbles[noteType];
 				if (showBubble||noteType == 1) {
-					if(noteType!=1) row.put("bin", 1);
+					if(noteType!=1) row.put(JsonNames.bin, 1);
 					if (annot.uiData.bubbleColorsEnabled[k]) {
 						value = annot.uiData.bubbleColors[k];
-						if (value!=0) row.put("bclr", value);
+						if (value!=0) row.put(JsonNames.bclr, value);
 					}
 				}
 				if (annot.uiData.fontColorEnabled[k]) {
 					value = annot.uiData.fontColors[k];
-					if (value!=0) row.put("fclr", value);
+					if (value!=0) row.put(JsonNames.fclr, value);
 				}
 				if (annot.uiData.fontSizesEnabled[k]) {
 					value = annot.uiData.fontSizes[k];
-					if (value>0) row.put("fsz", value);
+					if (value>0) row.put(JsonNames.fsz, value);
 				}
 				noteType++;
 			}
@@ -5211,14 +5202,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						for(String key:row.keySet()) {
 							data.put(key, row.get(key));
 						}
-						if (data.containsKey("bclr") && !row.containsKey("bclr")) {
-							data.remove("bclr");
+						if (data.containsKey(JsonNames.bclr) && !row.containsKey(JsonNames.bclr)) {
+							data.remove(JsonNames.bclr);
 						}
-						if (data.containsKey("fclr") && !row.containsKey("fclr")) {
-							data.remove("fclr");
+						if (data.containsKey(JsonNames.fclr) && !row.containsKey(JsonNames.fclr)) {
+							data.remove(JsonNames.fclr);
 						}
-						if (data.containsKey("fsz") && !row.containsKey("fsz")) {
-							data.remove("fsz");
+						if (data.containsKey(JsonNames.fsz) && !row.containsKey(JsonNames.fsz)) {
+							data.remove(JsonNames.fsz);
 						}
 						cv.put("annot", newAnnot=data.toString());
 						CMN.debug("newNote::", data);
@@ -5312,18 +5303,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	BookmarkAdapter mBookMarkAdapter;
-	public ListAdapter getBookMarkAdapter(boolean darkMode, BookPresenter invoker, MdxDBHelper con) {
-		if(mBookMarkAdapter==null)
-			mBookMarkAdapter=new BookmarkAdapter(this,R.layout.drawer_list_item,R.id.text1,invoker,con.getDB(),0,getUsingDataV2());
-		else
-			mBookMarkAdapter.refresh(invoker,con.getDB());
-		mBookMarkAdapter.darkMode=darkMode;
-		return mBookMarkAdapter;
-	}
-	
 	public ListAdapter getBookMarkAdapterV2(boolean darkMode, BookPresenter invoker) {
 		if(mBookMarkAdapter==null)
-			mBookMarkAdapter=new BookmarkAdapter(this,R.layout.drawer_list_item,R.id.text1,invoker, prepareHistoryCon().getDB(),0,getUsingDataV2());
+			mBookMarkAdapter=new BookmarkAdapter(this,R.layout.drawer_list_item,R.id.text1,invoker, prepareHistoryCon().getDB(),0);
 		else
 			mBookMarkAdapter.refresh(invoker, prepareHistoryCon().getDB());
 		mBookMarkAdapter.darkMode=darkMode;
@@ -6833,8 +6815,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	public final PagePopupMenuHelper pageMenuHelper = new PagePopupMenuHelper(this);
-	// popupmenu
+	public final PageMenuHelper pageMenuHelper = new PageMenuHelper(this);
+	// pagemenu
 	@Override
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
 		WebViewmy mWebView = (WebViewmy) popupMenuHelper.tag1;
@@ -6857,6 +6839,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				break;
 			case R.string.page_fuzhi:
 				copyText(mWebView.word);
+				break;
+			case R.string.page_rukou:
+				if(pageMenuHelper.lnk_href!=null) {
+					EditText etNew = FU.buildStandardTopETDialog(this, false, Gravity.CENTER);
+					String title = mWebView.getTitle();
+					try {
+						Message href = mWebView.getHandler().obtainMessage();
+						mWebView.requestFocusNodeHref(href);
+						title = href.getData().getString("title");
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+					etNew.setText(title);
+					View btn_Done = ((View)etNew.getTag());
+					View btn_exec = ((View)btn_Done.getTag());
+					btn_Done.setTag(btn_exec.getTag());
+					btn_exec.setVisibility(View.GONE);
+					btn_Done.setOnClickListener(v1 -> {
+						String url = pageMenuHelper.lnk_href;
+						String name = etNew.getText().toString();
+						if(name.length()>0) url += "\r"+etNew.getText();
+						book.getWebx().addEntrance(url);
+						book.hasWebEntrances(true);
+						notifyDictionaryDatabaseChanged(book);
+						((Dialog)v1.getTag()).dismiss();
+						showT("已添加！");
+					});
+				}
 				break;
 			case R.string.page_dakai:
 				
@@ -6888,8 +6898,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				});
 			} break;
 			case R.string.page_nav:
-				break;
-			case R.string.page_rukou:
 				break;
 			case R.id.nav_back:
 				mWebView.goBack();
@@ -7486,6 +7494,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		Dialog d; View cv;
 		
 		@Override
+		public void onReceivedTitle(WebView view, String title) {
+			((WebViewmy) view).verTitle ++;
+		}
+		
+		@Override
 		public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
 			CMN.debug("onJsPrompt 0");
 			result.confirm();
@@ -7555,23 +7568,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (url == null) {
 				return false;
 			}
-			BookPresenter presenter = webxford.get(SubStringKey.new_hostKey(url));
+			BookPresenter presenter = ((WebViewmy) view).presenter;
 			String urlKey = null;
-			if (presenter == null) {
+			if (!presenter.isWebx) {
 				int idx = url.indexOf("/entry/");
 				if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 7));
 				else {
 					idx = url.indexOf("entry://");
 					if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 8));
 				}
-				presenter = ((WebViewmy) view).presenter;
-			} else {
-				try {
-					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
 			}
+			//presenter = webxford.get(SubStringKey.new_hostKey(url));
+//			if (presenter == null) {
+//			} else {
+//				try {
+//					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx ???
+//				} catch (Exception e) {
+//					CMN.debug(e);
+//				}
+//			}
 			// getRandomPageHandler(true, false, null);
 			WebViewListHandler wlh = getRandomPageHandler(true, false, presenter);
 			WebViewmy randomPage = wlh.getMergedFrame();
@@ -7819,6 +7834,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					}
 //				}
 			}
+			else {
+				if(GlobalOptions.debug)
+					mWebView.evaluateJavascript("window.debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log(\"%c Web \",\"color:#333!important;background:#0FF;\",t[0],t[1],t[2],t[3],t[4])}", null);
+				PlainWeb webx = invoker.getWebx();
+				if (webx!=null && webx.markable) {
+					mWebView.marked = invoker.hasBookmarkV2(mWebView);
+					// CMN.debug("webx::restoring::???", mWebView.marked, invoker);
+					if (mWebView.marked != -1) {
+						mWebView.evaluateJavascript("window.currentPos="+mWebView.marked, null);
+						//mWebView.restoreMarks();
+						mWebView.evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
+					}
+				}
+				invoker.ApplyPadding(mWebView);
+			}
 			
 			if(wlh.isViewSingle()) {
 				if (PDICMainAppOptions.padBottom())
@@ -7940,7 +7970,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if(mWebView.fromCombined==1 && awaiting) loadNext(mWebView);
 		}
-
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
 			//CMN.Log(oldScale, "-", newScale, " newScale");

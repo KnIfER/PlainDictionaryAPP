@@ -1,0 +1,11 @@
+{host:"http://news.baidu.com/"
+,index:""
+,js:""
+,search:"https://www.baidu.com/s?wd=%s"
+,useragent:"pc"
+,markable:"true"
+,delayedMarks:"600"
+
+,"webSetttings": "$.setUserAgentString[s](Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36);"
+,"webSetttingsReset": "$.setUserAgentString[s](null)"
+}

@@ -38,6 +38,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.text.ColoredTextSpan;
 
 import java.lang.ref.WeakReference;
@@ -64,7 +65,8 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	private int sortType = -1;
 	long dbVer;
 	private long bid;
-	private String expUrl = "";
+	String expUrl = "";
+	public int mViewVer = -1;
 	
 	public AnnotAdapter(MainActivityUIBase a, int textViewResourceId
 			, SQLiteDatabase database, int scope
@@ -74,7 +76,11 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		textViewResourceID=textViewResourceId;
 		this.scope = scope;
 		this.bRangeNotes = scope==-1;
-		rebuildCursor(database, null, bookNotes, null);
+		if(scope==2) {
+			refreshPageScope(bookNotes, database, true); /*构造刷新*/
+		} else {
+			rebuildCursor(database, null, bookNotes, null); /*构造刷新*/
+		}
 	}
 	
 	public int sortType(BookNotes bookNotes) {
@@ -136,7 +142,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		public long position;
 		public long bid;
 		/** the note */
-		public JSONObject annot;
+		private JSONObject annot;
 		int multiSorts = 0;
 		
 		@Override
@@ -160,6 +166,10 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			}
 		}
 		
+		public JSONObject getAnnot() {
+			return annot;
+		}
+		
 		@Override
 		public String toString() {
 			return "WebAnnotationCursorReader{" +
@@ -176,30 +186,43 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			int sortType = sortType(bookNotes);
 			boolean isDirty = lastSortType != sortType || dbVer != LexicalDBHelper.annotDbVer
 					|| scope == 1 && bid!=bookNotes.invoker.getId();
-			if(isDirty) {
-				rebuildCursor(database, null, bookNotes, null); /*切页刷新*/
+			if(scope==2) {
+				refreshPageScope(bookNotes, database, isDirty); /*切页刷新*/
 			}
-			else if(scope==2)
-			{
-				WebViewListHandler wlh = a.weblistHandler;
-				if (wlh.isMergingFrames() || wlh.isViewSingle()) {;
-					wlh.getMergedFrame().evaluateJavascript("expUrl()", value -> {
-						if (!expUrl.equals(value)) {
-							rebuildCursor(database, null, bookNotes, value); /*切页刷新*/
-						}
-					});
-				} else {
-					String value = wlh.collectExpUrl();
-					if (!expUrl.equals(value)) {
-						rebuildCursor(database, null, bookNotes, value); /*切页刷新*/
-					}
-				}
+			else if(isDirty) {
+				rebuildCursor(database, null, bookNotes, null); /*切页刷新*/
 			}
 			else {
 				//resumeListPos(lv);
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
+		}
+	}
+	
+	private void refreshPageScope(BookNotes bookNotes, SQLiteDatabase database, boolean dirty) {
+		//CMN.debug("refreshPageScope", dirty, mViewVer!=bookNotes.mViewVer);
+		if (dirty || mViewVer!=bookNotes.mViewVer) {
+			WebViewListHandler wlh = a.weblistHandler;
+			if (wlh.isMergingFrames() || wlh.isViewSingle()) {
+				WebViewmy wv = wlh.getWebContextNonNull();
+				if (wv.mdbr) {
+					wv.evaluateJavascript("expUrl()", value -> {
+						refreshExpUrl(dirty, bookNotes, database, value);
+					});
+				} else if (wv.marked != 0) {
+					refreshExpUrl(dirty, bookNotes, database, wv.presenter.getId()+"_"+wv.marked);
+				}
+			} else {
+				refreshExpUrl(dirty, bookNotes, database, wlh.collectExpUrl());
+			}
+			mViewVer=bookNotes.mViewVer;
+		}
+	}
+	
+	private void refreshExpUrl(boolean dirty, BookNotes bookNotes, SQLiteDatabase database, String newUrl) {
+		if (dirty || !expUrl.equals(newUrl)) {
+			rebuildCursor(database, null, bookNotes, newUrl);  /* refreshPageScope::refreshExpUrl */
 		}
 	}
 	
@@ -218,7 +241,12 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	}
 	
 	public void rebuildCursor(SQLiteDatabase database, View sortView, BookNotes bookNotes, String expUrl) {
-		CMN.debug("rebuildCursor::", scope);
+		CMN.debug("rebuildCursor::", scope, expUrl);
+		try {
+			throw new RuntimeException("watch stacktrace!");
+		} catch (RuntimeException e) {
+			CMN.debug(e);
+		}
 		try {
 			dataAdapter.close();
 			dataAdapter = DummyReader;
@@ -270,7 +298,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					}
 					if (scope == 1) {
 						bid = bookNotes.invoker.getId();
-						dataAdapter.where("bid=?", new String[]{bid + ""});
+						dataAdapter.where("bid=? and last_edit_time!=0", new String[]{bid + ""});
 					}
 					else if (scope == 2) {
 						if (expUrl != null) {
@@ -301,17 +329,19 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 							, AnnotationMultiSortReader[]::new);
 					this.dataAdapter = dataAdapter;
 					String[] sortBy;
+					boolean desc = sortType%2!=0;
 					if (sortType<=3) { // 词典页码段落
 						sortBy = new String[]{"bid", "pos", "tPos", FIELD_EDIT_TIME, "id"};
 					}  else if (sortType<=5) { // 词典页码时间
 						sortBy = new String[]{"bid", "pos", FIELD_EDIT_TIME, "id"};
 					} else { // 词典时间
 						sortBy = new String[]{"bid", FIELD_EDIT_TIME};
+						desc = !desc;
 					}
-					CMN.debug("sortBy::", sortBy);
+					CMN.debug("组合排序 sortBy::", sortType, sortBy);
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
-							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, sortType%2!=0, "entry,lex,pos,bid,annot");
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, desc, "entry,lex,pos,bid,annot");
 					long[] sorts = null;
 					long[] pos = savedPositions.get(getFragmentId());
 					long offset = 0;
@@ -331,7 +361,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					}
 					if (scope == 1) {
 						bid = bookNotes.invoker.getId();
-						dataAdapter.where("bid=?", new String[]{bid + ""});
+						dataAdapter.where("bid=? and last_edit_time!=0", new String[]{bid + ""});
 					}
 					else if(scope == 2){
 						if (expUrl != null) {
@@ -526,7 +556,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		holder.tag = reader; //???
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 		ssb.append(" ");
-		ssb.append(lex);
+		ssb.append(lex==null?lex+"":lex);
 		ssb.append(" ");
 		
 		vh.title.setTextColor(a.AppBlack);
@@ -535,17 +565,10 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		
 		int color=0xffffaaaa, type=0;
 		if(reader!=null) {
-			String note = reader.annot.getString("note");
-			try {
-				color = reader.annot.getInteger("clr");
-			} catch (Exception e) {
-				//CMN.debug(e);
-			}
-			try {
-				type = reader.annot.getInteger("typ");
-			} catch (Exception e) {
-				//CMN.debug(e);
-			}
+			JSONObject annot = reader.getAnnot();
+			String note = JsonNames.readString(annot, JsonNames.note);
+			color = JsonNames.readInt(annot, JsonNames.clr, color);
+			type = JsonNames.readInt(annot, JsonNames.typ, type);
 			ViewUtils.setVisible(vh.preview, note!=null);
 			ViewUtils.setVisibility(holder.dotVue, note!=null);
 			

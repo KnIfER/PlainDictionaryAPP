@@ -3,29 +3,22 @@ package com.knziha.plod.PlainUI;
 import android.os.Looper;
 import android.util.SparseArray;
 import android.view.View;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.MdictServer;
-import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
-import org.nanohttpd.protocols.http.HTTPSession;
-import org.nanohttpd.protocols.http.response.Response;
-
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class PagePopupMenuHelper {
+public class PageMenuHelper {
 	final MainActivityUIBase a;
 	SparseArray<int[]> utils = new SparseArray<>();
 	public boolean lnk_info_fetched = false;
@@ -33,7 +26,7 @@ public class PagePopupMenuHelper {
 	public PageMenuType mType;
 	public WebViewmy mWebView;
 	
-	public PagePopupMenuHelper(MainActivityUIBase a) {
+	public PageMenuHelper(MainActivityUIBase a) {
 		this.a = a;
 	}
 	
@@ -42,6 +35,7 @@ public class PagePopupMenuHelper {
 		, Nav_WEB
 		, LNK
 		, LNK_IMG
+		, LNK_WEB
 	}
 	
 	int[] getPageUtils(PageMenuType type) {
@@ -80,6 +74,17 @@ public class PagePopupMenuHelper {
 						, R.string.page_dakai
 					};
 				break;
+				case LNK_WEB:
+					ret = new int[] {
+						R.string.page_lianjie
+						, R.string.page_sel
+						, R.layout.page_lnk_fanyi
+						, R.layout.page_lnk_apply
+						, R.string.page_ucc
+						, R.string.page_rukou
+						, R.string.page_dakai
+					};
+				break;
 				case LNK_IMG:
 					ret = new int[] {
 						 R.string.page_save_img
@@ -99,10 +104,17 @@ public class PagePopupMenuHelper {
 		popupMenu.initLayout(getPageUtils(type), a);
 		int[] vLocationOnScreen = new int[2];
 		v.getLocationOnScreen(vLocationOnScreen);
-		int x=(int)mWebView.weblistHandler.pageSlider.lastX;
-		int y=(int)mWebView.weblistHandler.pageSlider.lastY;
-		popupMenu.show(mWebView.weblistHandler.pageSlider, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
-		ViewUtils.preventDefaultTouchEvent(v, x, y);
+		if (v == mWebView) {
+			int x=(int)mWebView.lastX;
+			int y=(int)mWebView.lastY;
+			popupMenu.show(mWebView, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+			ViewUtils.preventDefaultTouchEvent(v, x, y);
+		} else {
+			int x=(int)mWebView.weblistHandler.pageSlider.lastX;
+			int y=(int)mWebView.weblistHandler.pageSlider.lastY;
+			popupMenu.show(mWebView.weblistHandler.pageSlider, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+			ViewUtils.preventDefaultTouchEvent(v, x, y);
+		}
 		
 		popupMenu.tag1 = mWebView;
 		return popupMenu;

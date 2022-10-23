@@ -3206,6 +3206,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			return false;
 		}
 	}
+	
+	@Override
+	public void saveConfigs(Object book) {
+	
+	}
 }
 
 

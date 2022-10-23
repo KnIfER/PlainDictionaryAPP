@@ -40,6 +40,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+//import static com.knziha.plod.PlainUI.JsonNames.*;
 import com.knziha.text.ColoredTextSpan;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -797,25 +798,11 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			AnnotAdapter.VueHolder vh = (AnnotAdapter.VueHolder) v.getTag();
 			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position);
 			setEditingNote(reader.row_id);
-			String note = reader.annot.getString("note");
-			int color=0xffffaaaa, type=0, ntyp=0;
-			try {
-				color = reader.annot.getInteger("clr");
-			} catch (Exception e) {
-				//CMN.debug(e);
-			}
-			try {
-				type = reader.annot.getInteger("typ");
-			} catch (Exception e) {
-				//CMN.debug(e);
-			}
-			if (note != null) {
-				try {
-					ntyp = reader.annot.getInteger("ntyp");
-				} catch (Exception e) {
-					//CMN.debug(e);
-				}
-			}
+			JSONObject json = reader.getAnnot();
+			String note = JsonNames.readString(json, JsonNames.note);
+			int color = JsonNames.readInt(json, JsonNames.clr, 0xffffaaaa);
+			int type = JsonNames.readInt(json, JsonNames.typ, 0);
+			int ntyp = JsonNames.readInt(json, JsonNames.ntyp, 0);
 			CMN.debug("editPressedNote::", type, ntyp);
 			
 			uiData.toolIdx = type;
@@ -825,21 +812,20 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			
 			getText().clear();
 			if (note != null) {
-				JSONObject json = reader.annot;
 				noteTypes.getChildAt(ntyp).performClick();
 				getText().append(note);
 				int k = PDICMainAppOptions.colorSameForNoteTypes()?0:ntyp;
 				try {
 					uiData.noteOnBubble = json.containsKey("bon");
-					uiData.showBubbles[ntyp] = ntyp==1||json.containsKey("bin");
-					if (uiData.bubbleColorsEnabled[k] = json.containsKey("bclr")) {
-						uiData.bubbleColors[k] = json.getInteger("bclr");
+					uiData.showBubbles[ntyp] = ntyp==1||JsonNames.hasKey(json, JsonNames.bin);
+					if (uiData.bubbleColorsEnabled[k] = JsonNames.hasKey(json, JsonNames.bclr)) {
+						uiData.bubbleColors[k] = JsonNames.readInt(json, JsonNames.bclr, 0);
 					}
-					if (uiData.fontColorEnabled[k] = json.containsKey("fclr")) {
-						uiData.fontColors[k] = json.getInteger("fclr");
+					if (uiData.fontColorEnabled[k] = JsonNames.hasKey(json, JsonNames.fclr)) {
+						uiData.fontColors[k] = JsonNames.readInt(json, JsonNames.fclr, 0);
 					}
-					if (uiData.fontSizesEnabled[k] = json.containsKey("fsz")) {
-						uiData.fontSizes[k] = json.getInteger("fsz");
+					if (uiData.fontSizesEnabled[k] = JsonNames.hasKey(json, JsonNames.fsz)) {
+						uiData.fontSizes[k] = JsonNames.readInt(json, JsonNames.fsz, 0);
 					}
 				} catch (Exception e) {
 					CMN.debug(e);

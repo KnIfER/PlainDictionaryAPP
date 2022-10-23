@@ -49,6 +49,7 @@ import androidx.appcompat.view.VU;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PeruseView;
@@ -77,6 +78,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	//public int SelfIdx;
 	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式。*/
 	public int fromCombined;
+	private String useragent;
+	
 	//public boolean fromPeruseview;
 	public final boolean fromNet(){ return presenter.isWebx; };
 	
@@ -189,7 +192,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		settings.setJavaScriptEnabled(true);
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
-		settings.setMediaPlaybackRequiresUserGesture(false);
+		settings.setMediaPlaybackRequiresUserGesture(true);
 
 		// todo enhance safety
 		settings.setAppCacheEnabled(true);
@@ -295,23 +298,43 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	public String url;
+	public String title;
+	private int mVerTitle;
+	public int verTitle;
 	public boolean mdbr;
+	public long marked;
 	public boolean merge;
 	public ArrayList<BookPresenter> frames = new ArrayList<>();
+	public ArrayList<Long> frames_marked = new ArrayList<>();
 	public ArrayList<BookPresenter> webx_frames = new ArrayList<>();
 	
+	public final void recTitle() {
+		if (mVerTitle != verTitle) {
+			this.title = getTitle();
+			mVerTitle = verTitle;
+			if(MainActivityUIBase.debugging_annot) CMN.debug("recUrl::recTitle=", title);
+		}
+	}
+	
 	public final void recUrl(String url) {
-		if (url!=null && !url.equals(this.url)) {
+		CMN.debug("recUrl::", url);
+		CMN.debug("recUrl::", presenter.idStr10);
+		if (url!=null && !url.equals(this.url) && !url.equals("about:blank")) {
 			this.url = url;
 			int schemaIdx = url.indexOf(":");
 			mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
 			merge = mdbr && url.regionMatches(schemaIdx + 12, "merge", 0, 5);
+			if (frames.size()>0) {
+				frames.clear();
+				frames_marked.clear();
+				webx_frames.clear();
+			}
+			if (marked != -1)
+				marked = -1;
 			if (mdbr && merge) {
 				long bid;
 				StringTokenizer tokens = new StringTokenizer(url, "-");
 				boolean first = true;
-				frames.clear();
-				webx_frames.clear();
 				MainActivityUIBase a = presenter.a;
 				if(a!=null)
 				while (tokens.hasMoreTokens()) {
@@ -335,12 +358,21 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 						bid = IU.TextToNumber_SIXTWO_LE(tk);
 						BookPresenter book = a.getBookByIdNoCreation(bid);
 						if (book!=a.EmptyBook) {
+							frames_marked.add(null);
 							frames.add(book);
 							if (fc=='w') {
 								webx_frames.add(book);
 							}
 						}
 					}
+				}
+			}
+			else {
+				if(!mdbr) {
+					//marked = presenter.hasBookmark(this);
+				}
+				if (mdbr && url.startsWith(".d", schemaIdx+8) && !url.startsWith(presenter.idStr10, schemaIdx+10)) {
+					//presenter = presenter.a.getBookById();
 				}
 			}
 		}
@@ -628,6 +660,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			setInitialScale(0);//opt.dm.density
 		}
 	}
+
 //	/**  reset overshot */
 //	public void calcScroll() {
 //		scrollTo(computeHorizontalScrollOffset(), computeVerticalScrollOffset());
@@ -695,6 +728,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		int id = item.getItemId();
 		switch(id) {
 			case R.id.toolbar_action0:{
+				recTitle();
 				MainActivityUIBase a = presenter.a;
 				if (a==null && getContext() instanceof MainActivityUIBase) {
 					a = ((MainActivityUIBase) getContext());
@@ -1446,4 +1480,24 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		VU.setVisible(progressBar, true);
 	}
 	
+	public void setUserAgentString(String useragent) {
+		CMN.debug("setUserAgentString::", useragent);
+		if (this.useragent != useragent) {
+			getSettings().setUserAgentString(this.useragent=useragent);
+		}
+	}
+	
+	
+	Runnable remarkRn;
+	
+	public void restoreMarks() {
+		if (presenter.getWebx() != null && presenter.getWebx().delayedMarks>0) {
+			if (remarkRn == null) {
+				remarkRn = () -> evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
+			}
+			postDelayed(remarkRn, presenter.getWebx().delayedMarks);
+		} else {
+			evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
+		}
+	}
 }

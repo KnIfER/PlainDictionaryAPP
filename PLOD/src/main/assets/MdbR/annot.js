@@ -155,11 +155,10 @@
             el.style="background:#ffaaaa;";
         }
         if(!r) r = getSelection().getRangeAt(0);
-        log('wrapping...',r.startContainer, r.startOffset, r.endContainer, r.endOffset);
+        //log('wrapping...',r.startContainer, r.startOffset, r.endContainer, r.endOffset);
 		splitRangeBoundaries(r);
-        log('splitRangeBoundaries...',r.startContainer, r.startOffset, r.endContainer, r.endOffset);
-        //getSelection().empty(0);
-        //getSelection().addRange(r);
+        //log('splitRangeBoundaries...',r.startContainer, r.startOffset, r.endContainer, r.endOffset);
+        //getSelection().empty(0); getSelection().addRange(r);
         if(!doc) doc = document;
         if(!rootNode) rootNode = doc.body;
 		var f = getTextNodesInRange(r);
@@ -188,7 +187,6 @@
 			}
 		}
         first.end = last;
-        log('last=!!!!!!!!!!!!=',tcn.note,first,last);
 		r.setStart(f[0], 0);
 		var a = f[f.length - 1];
 		r.setEnd(a, a.length);
@@ -375,7 +373,7 @@
             log('笔记=', d, last)
         }
         first.end = last;
-        log('last=',tcn.note,first,last);
+        //log('last=',tcn.note,first,last);
 	}
     function getNodeIndex(node) {
         var i = 0;
@@ -384,34 +382,6 @@
             ++i;
         }
         return i;
-      }
-
-    function serializePosition(node, offset, rootNode) {
-        if(true) return storePos(node, offset, rootNode);
-        var pathParts = [], n = node;
-        while (n && n != rootNode) {
-            pathParts.push(getNodeIndex(n, true));
-            n = n.parentNode;
-        }
-        return pathParts.join("/") + ":" + offset;
-    }
-    function deserializePosition(serialized, rootNode, ex) {
-      if(!rootNode) rootNode = doc.body;
-      if(true) return restorePos(serialized, rootNode, ex);
-      var parts = serialized.split(":");
-      var node = rootNode;
-      var nodeIndices = parts[0] ? parts[0].split("/") : [], i = nodeIndices.length, nodeIndex;
-
-      while (i--) {
-          nodeIndex = parseInt(nodeIndices[i], 10);
-          if (nodeIndex < node.childNodes.length) {
-              node = node.childNodes[nodeIndex];
-          } else {
-              log( " has no child with index " + nodeIndex + ", " + i + ", " + node.childNodes.length);
-              return;
-          }
-      }
-      return [node, parseInt(parts[1], 10)]; // node, offset
     }
     
 	// function getNextNode(n) {
@@ -434,6 +404,7 @@
 		}
 		return a
 	}
+    // serialize node, offset as path:offset
     function storePos(n, o, rootNode) {
         var ret = [], p = n.parentNode;
         while (p && skip(p)) {
@@ -457,7 +428,10 @@
         ret = ret.reverse();
         return ret.join("/") + ":" + o;
     }
-
+    function is_all_ws(nod) {
+        return !(/[^\t\n\r ]/.test(nod.textContent));
+    }
+    // extract the semi-real text position
     function storeTextPos(n, o, rootNode) {
         var p = n.parentNode;
         while (p && skip(p)) {
@@ -481,13 +455,13 @@
                 if (t == p) {
                     break
                 }
-                if(t.nodeType == 3 && /\S/.test(t.nodeValue)) {
+                if(t.nodeType == 3 && !is_all_ws(t)) {
                     o += t.length;
                     if(debug)  log('2::len=', t.length, o, t, "tex="+t.nodeValue);
                 }
             }
         }
-        log('storeTextPos', o);
+        //log('storeTextPos', o);
         return o;
     }
     function skip(n) {
@@ -500,6 +474,7 @@
             return (n.tagName=='ANNOT'&&n.classList.contains('note'))||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.classList.contains('_PDict');
         else return n.nodeType!==3;
     }
+    // deserialize saved position str as [node, offset]
     function restorePos(str, rootNode, ex) {
         var parts = str.split(":");
         var node = rootNode;
@@ -517,7 +492,8 @@
                     nodeIndex--;
             }
             if (!n) {
-                console.log(str, " has no child with indice " + nodeIndices[i] + ", " + (i+1)+'/'+ln + ", " + node.childNodes.length, node);
+                log("'"+str.replaceAll('/',' ')+"'", " has no child with indice ",nodeIndices[i], + (i+1)+'/'+ln+"/"+node.childNodes.length+" at::", node);
+                node = 0;
                 break;
             }
             //log(str, " found " + nodeIndices[i] + ", " + (i)+'/'+ln + ", " + node.childNodes.length, node, n);
@@ -525,7 +501,7 @@
             i++;
         }
         if (!node) {
-            return;
+            return 0;
         }
         var o=0,l=parseInt(parts[1], 10),ln=l;
         if(ex) ln++;
@@ -580,7 +556,7 @@
         r = getSelection().getRangeAt(0);
         //var rootNode = this.getdocRangy(range.startContainer).docElement;
         var rootNode = doc.body;
-        return [serializePosition(r.startContainer, r.startOffset, rootNode), serializePosition(r.endContainer, r.endOffset, rootNode)];
+        return [storePos(r.startContainer, r.startOffset, rootNode), storePos(r.endContainer, r.endOffset, rootNode)];
     }
     function store(r, rootNode) {
         var p1 = storePos(r.startContainer, r.startOffset, rootNode);
@@ -597,24 +573,50 @@
         getSelection().addRange(makeRange(range[0], range[1]))
     }
     
-    function makeRange(r0, r1, rootNode, d) {
+    function makeRange(r0, r1, rootNode, d, tcn) {
         doc = d?d:document;
+        if(!rootNode) rootNode = doc.body;
         //if(app.done) return; app.done=1;
-        if(r0.length==0||r1.length==0) return null;
+        if(r0.length==0||r1.length==0) return 0;
         //var doc = doc.body;
         //var result = serialized.split(',');
         //todo checksum
         //log('1__'+result[0]);
         //log('2__'+result[1]);
-        var start = deserializePosition(r0, rootNode, 1), end = deserializePosition(r1, rootNode);
+        var start = restorePos(r0, rootNode, 1), end = restorePos(r1, rootNode);
         var range = new Range();
         if(start&&end) {
             try{
-            range.setStart(start[0], start[1]);
-            range.setEnd(end[0], end[1]);
-            return range;
+                range.setStart(start[0], start[1]);
+                range.setEnd(end[0], end[1]);
+                if(tcn && tcn.check) {
+                    var k=tcn.check, k1 = '', s1=tcn.d?2:4, b1=k.length==s1;
+                    try{
+                        k1 = range.startContainer.data[range.startOffset];
+                        if(!tcn.d) k1+=range.endContainer.data[range.endOffset-1];
+                    } catch(e) {
+                        k1='';
+                    }
+                    function pass(k1){return k.startsWith(k1)||b1&&k.startsWith(k1,s1)};
+                    var p = k1&&pass(k1);
+                    if(p) {
+                        //log('check range restore 直接验证！ ', k1);
+                    } else {
+                        log('check range restore 曲折验证！ ', k1);
+                        var sel=this.getSelection();
+                        sel.empty(); sel.addRange(range);
+                        var text = sel.toString();
+                        sel.empty(); 
+                        k1 = text[0];
+                        if(!tcn.d) k1 += text[text.length-1];
+                        p = pass(k1);
+                    }
+                    log('check range restore --- ', p?'pass':'验证失败!', k1+'=='+k);
+                }
+                return range;
             } catch(e){}
         }
+        return 0;
     }
 
     function whiterRgb(n, bf, a){
@@ -696,7 +698,7 @@
 
     function patchNote(nid, tcn) {
         var el = document.getElementById('_pd_annot'+nid);
-        console.log('fatal patchNote::', nid, el, tcn);
+        log('fatal patchNote::', nid, el, tcn);
         if(el) {
             var e = el.end, nds=[];
             log('patchNote::', nid, el, e);
@@ -721,7 +723,7 @@
             if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
             else if(nn.length!=2) return;
             var r = makeRange(n0, n1, rootNode, doc);
-            console.log('fatal log annot::renewing::', tcn, r);
+            log('fatal log annot::renewing::', tcn, r);
             if(r) {
                 var el = annot(row, -1, 0, 0);
                 wrapRange(r, el, rootNode, doc, nid)
@@ -732,6 +734,7 @@
     function annot(tcn, rootNode, doc, pos, bid) {
         log('MakeAnnotation::', tcn);
         if(typeof tcn==='string') tcn = JSON.parse(tcn);
+        tcn = upackRow(tcn);
         var type=tcn.typ, color=tcn.clr, note=tcn.note;
         if(type==undefined) type=0;
         if(!doc) doc = document;
@@ -745,7 +748,7 @@
             el.setAttribute("style", "border-bottom:4px solid "+toRgb(color));
         }
         el.tcn = tcn;
-        if(rootNode==-1) return el;
+        if(rootNode==-1) return el; // -1代表仅创建元素
         var sel = window.getSelection();
         try {
             var nntd = '_pd_nntd'
@@ -758,19 +761,147 @@
             sty.innerText = 'annot.note{visibility:hidden}'; // skip note texts
             var text = sel.toString();
             sty.innerText = '';
-            if(text.length==0) return;
             var range = sel.getRangeAt(0);
+            var tL=text.length,st=range.startContainer,so=range.startOffset;
+            if(tL==0) return;
             if(!rootNode) rootNode = doc.body;
-            var tPos = storeTextPos(range.startContainer, range.startOffset, rootNode);
+            var tPos = storeTextPos(st, so, rootNode);
             var r = store(range, rootNode);
-            log('tPos='+tPos)
             tcn.n = r;
             tcn.tPos = tPos;
+                var b1 = text.length>1, k1 = '', k2 = text[0];
+                tcn.d=0+!b1;
+                if(b1) k2+=text[text.length-1];
+                try{
+                    k1 = st.data[so];
+                    if(b1) k1+=range.endContainer.data[range.endOffset-1];
+                } catch(e) {
+                    k1='';
+                    log('装逼失败::',e)
+                }
+                if(k1==k2) k2='';
+            tcn.check = k1 + k2;
+            log('tPos='+tPos, 'stored='+r, "check="+tcn.check)
             if(pos==undefined)
                 pos = window.currentPos || 0; 
-            //var nid = app.annot(sid.get(), text, JSON.stringify(tcn), window.entryKey||null, pos, tPos, type, color, note, bid||null);
-            //wrapRange(range, el, rootNode, doc, nid, true)
+            tcn = packRow(tcn);
+            // 保存标记并获得存储id
+            var nid = app.annot(sid.get(), text, packTcn(tcn), window.entryKey||null, pos, tPos, type, color, note, bid||null);
+            // 创建新标记
+            wrapRange(range, el, rootNode, doc, nid, true); 
         } catch (e) { log(e) }
+    }
+
+    function packTcn(tcn){
+        if(!tcn.T) tcn.T=undefined;
+        if(!tcn.C) tcn.C=undefined;
+        if(!tcn.d) tcn.d=undefined;
+        if(tcn.N) tcn.N=undefined;
+        return JSON.stringify(tcn);
+    }
+
+    var waiting, waitCnt, waitRoot;
+    var jsonNames={
+		T:"typ"
+        , C:"clr"
+        , N:"note"
+        , P:"ntyp"
+        , B:"bon"
+        , b:"bin"
+        , Q:"bclr"
+        , q:"fclr"
+        , s:"fsz"
+        , p:"tPos"
+        //, d:"b1"
+        , k:"check"
+    },jsonNames1={};
+    for(var k in jsonNames){
+        jsonNames1[jsonNames[k]] = k;
+    }
+    
+    // 将存储名扩展为可读名
+    function upackRow(row){
+        var ret = {},keys=Object.keys(row),i=0,k,v,k1;
+        for(;k=keys[i++];) {
+            v=row[k];
+            k1=jsonNames[k];
+            if(k1) k = k1;
+            ret[k] = v;
+        }
+        return ret;
+    }
+    
+    // 将可读名编码为存储名
+    function packRow(row){
+        var ret = {},keys=Object.keys(row),i=0,k,v,k1;
+        for(;k=keys[i++];) {
+            v=row[k];
+            k1=jsonNames1[k];
+            if(k1) k = k1;
+            ret[k] = v;
+        }
+        return ret;
+    }
+
+    function restoreMarks(t, rootNode, doc) {
+        //log('fatal debug annot::restoreMarks::', t);
+        waiting = 0;
+        if(t.length) {
+            t = t.split('\n');
+            for(var i=0,len=t.length-2;i<len;i+=3) {
+                try{
+                    var tcn = JSON.parse(t[i]), nid = parseInt(t[i+1])
+                        , nn = tcn.n.split(';'), n0=nn[0], n1=nn[1];
+                    tcn = upackRow(tcn)
+                    if(t[i+2])
+                        tcn.note = t[i+2];
+                    tcn.nid = nid;
+                    if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
+                    else if(nn.length!=2) continue;
+                    var range = makeRange(n0, n1, rootNode, doc, tcn);
+                    log('restoring --- ', range?"sucess":"fail", nid);
+                    if(range) {
+                        var el = annot(tcn, -1, 0, 0);
+                        wrapRange(range, el, rootNode, doc, nid)
+                    } else {
+                        if(waiting===0) waiting = [];
+                        tcn.n = [n0,n1];
+                        waiting.push(tcn);
+                    }
+                } catch(e) {log('error::', t[i], e)}
+            }
+            if(waiting) {
+                waitCnt=0;
+                waitRoot = rootNode;
+                log('waiting=', waiting)
+                setTimeout(relayMarks, 500)
+            }
+        }
+    }
+
+    function relayMarks() {
+        var t=waiting,i=0,len=t.length,nw=0, hasNxt = ++waitCnt<3;
+        for(;i<len;i++) {
+            var tcn = t[i];
+            try{
+                var range = makeRange(tcn.n[0], tcn.n[1], waitRoot, doc, tcn);
+                //range = 0;
+                //log('retrying::'+tcn.n, range);
+                if(range) {
+                    var el = annot(tcn, -1, 0, 0);
+                    wrapRange(range, el, waitRoot, doc, tcn.nid, tcn.check)
+                } else {
+                    if(nw===0) nw = [];
+                    nw.push(tcn);
+                }
+                log(waitCnt, 'retry --- '+(range?'success':'fail'), tcn.nid)
+            } catch(e) {log('error::', tcn, e)}
+        }
+        t=waiting=nw;
+        if(t.length) {
+            if(hasNxt) setTimeout(relayMarks, waitCnt>2?2500:waitCnt>1?1500:750)
+            // else ...
+        }
     }
 
     window.MakeMark=annot;
@@ -778,4 +909,5 @@
     window.WrapRange=wrapRange;
     window.NidsInRange=getNidsInRange;
     window.PatchNote=patchNote;
+    window.RestoreMarks=restoreMarks;
 })();

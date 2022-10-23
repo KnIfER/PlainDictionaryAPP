@@ -53,6 +53,7 @@ import com.knziha.plod.widgets.WebResourceResponseCompat;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
@@ -114,11 +115,13 @@ import okio.BufferedSink;
 public class PlainWeb extends DictionaryAdapter {
 	/** The main url */
 	String host;
+	String host0;
 	String hostName;
 	String index;
 	String jsCode;
 	String onstart;
 	String onload;
+	String useragent;
 	/** Searchable */
 	public boolean searchable;
 	/** The search sub url */
@@ -148,6 +151,7 @@ public class PlainWeb extends DictionaryAdapter {
 	SerializedLongArray searchKeyIds = new SerializedLongArray(100);
 	/** Json中的入口点 */
 	ArrayList<String> entrance = new ArrayList<>();
+	private int entranceSzInJson;
 	/** 重定向超链接的点击 */
 	ArrayList<String> routefrom = new ArrayList<>();
 	ArrayList<String> routeto = new ArrayList<>();
@@ -180,6 +184,8 @@ public class PlainWeb extends DictionaryAdapter {
 	private String synthesis_cors;
 	/** see {@link #modifyRes} */
 	private ArrayList<Pattern> synthesis_cors_regex;
+	public boolean markable;
+	public int delayedMarks;
 	
 	public boolean hasHosts() {
 		return jinkeSheaths!=null && jinkeSheaths.size()>0;
@@ -512,6 +518,8 @@ public class PlainWeb extends DictionaryAdapter {
 	private boolean bReplaceLetToVar;
 	public String[] kikUrlPatterns;
 	
+	private int isDirty;
+	
 	//构造
 	public PlainWeb(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a);
@@ -591,6 +599,8 @@ public class PlainWeb extends DictionaryAdapter {
 		website = JSONObject.parseObject(a != null?a.fileToString(f.getPath()):BU.fileToString(f));
 		String _host = null, tmp;
 		Map.Entry<String, Object> node; Object val;
+		useragent = null;
+		entrance.clear();
 		for(Iterator<Map.Entry<String, Object>> iter = website.entrySet().iterator(); iter.hasNext();) {
 			node = iter.next();
 			val = node.getValue();
@@ -702,13 +712,7 @@ public class PlainWeb extends DictionaryAdapter {
 					tmp = val.toString();
 					if(tmp.length()>0){
 						//read json defined entrances
-						entrance = new ArrayList<>(Arrays.asList(tmp.split("\n")));
-						int sz = entrance.size();
-						if (sz>0) {
-							if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
-							if(sz>1 && 0==TextUtils.getTrimmedLength(entrance.get(0))) entrance.remove(0);
-						}
-						//todo read entrances that saved in db.
+						addEntrances(tmp);
 					}
 					break;
 				case "reroute":
@@ -737,6 +741,12 @@ public class PlainWeb extends DictionaryAdapter {
 				case "settings":
 					dopt = JSONUtils.toJSONObject(val);
 					break;
+				case "useragent":
+					if ("pc".equals(val)) {
+						val = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36";
+					}
+					useragent = val.toString();
+					break;
 				case "randx":
 					randx = val.toString();
 					break;
@@ -763,11 +773,17 @@ public class PlainWeb extends DictionaryAdapter {
 				case "pageTranslator":
 					pageTranslator = val.toString();
 					break;
+				case "markable":
+					markable = TypeUtils.castToBoolean(val);
+					break;
+				case "delayedMarks":
+					delayedMarks = IU.parsint(val);
+					break;
 			}
 		}
 		if(_host==null) _host=getRandomHost();
 		if(_host.endsWith("/")) _host=_host.substring(0, _host.length()-1);
-		host=_host;
+		host0=host=_host;
 		
 		if (name==null) name = "index";
 		abSearch = search!=null&&search.startsWith("http");
@@ -779,20 +795,6 @@ public class PlainWeb extends DictionaryAdapter {
 //			bgColor = CMN.GlobalPageBackground;
 //		}
 		
-		if(excludeAll){
-			hasExcludedUrl =true;
-			hosts.add(host);
-			for(String sI:entrance){
-				int idx = sI.indexOf("://");
-				idx++; if(idx>0) idx+=2;
-				idx = sI.indexOf("/", idx);
-				if(idx>0)
-					sI = sI.substring(0, idx);
-				//CMN.Log("hosts :: ", sI);
-				hosts.add(sI);
-			}
-		}
-		
 //		bNeedCheckSavePathName=true;
 		
 		int idx = host.indexOf("://");
@@ -801,6 +803,119 @@ public class PlainWeb extends DictionaryAdapter {
 		if(idx>0) hostName = host.substring(0, idx);
 		
 		parseJinke(context);
+		entranceSzInJson = entrance.size();
+		if (getBooKID()!=0) {
+			readEntrances(true);
+		}
+	}
+	
+	private void addEntrances(String tmp) {
+		int sz0 = entrance.size();
+		entrance.addAll(Arrays.asList(tmp.split("\n")));
+		int sz = entrance.size();
+		if (sz>sz0) {
+			if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
+			if(sz>sz0+1 && 0==TextUtils.getTrimmedLength(entrance.get(sz0))) entrance.remove(0);
+		}
+	}
+	
+	public void addEntrance(String tmp) {
+		entrance.add(tmp);
+		isDirty |= 0x1;
+	}
+	
+	public void readEntrances(boolean forceRead) {
+		if (entranceSzInJson==entrance.size() || forceRead) {
+			Cursor cursor = null;
+			try {
+				String kDumpName = "ent_"+getBooKID();
+				String[] where = new String[]{kDumpName};
+				LexicalDBHelper database = LexicalDBHelper.getInstance();
+				cursor = database.getDB().rawQuery("select type,len,data from data where name=? limit 1", where);
+				if (cursor.moveToNext()) {
+					int type = cursor.getInt(0);
+					int length = cursor.getInt(1);
+					byte[] data = cursor.getBlob(2);
+					String text;
+					if (type == 2) { // zlib
+						Inflater inf = new Inflater();
+						inf.setInput(data, 0, data.length);
+						data = new byte[length];
+						inf.inflate(data, 0, length);
+						text = new String(data);
+					} else {
+						text = new String(data);
+					}
+					addEntrances(text);
+				}
+				CMN.debug("ent_::读取了::", kDumpName, entranceSzInJson+"/"+entrance.size());
+			} catch (Exception e) {
+				CMN.Log(e);
+			} finally {
+				try {
+					if (cursor!=null)
+						cursor.close();
+				} catch (Exception ignored) { }
+			}
+			
+			if(excludeAll){
+				hasExcludedUrl =true;
+				hosts.add(host);
+				for(String sI:entrance){
+					int idx = sI.indexOf("://");
+					idx++; if(idx>0) idx+=2;
+					idx = sI.indexOf("/", idx);
+					if(idx>0)
+						sI = sI.substring(0, idx);
+					//CMN.Log("hosts :: ", sI);
+					hosts.add(sI);
+				}
+			}
+		}
+	}
+	
+	public void saveEntrances() {
+		try {
+			String kDumpName = "ent_"+getBooKID();
+			String[] where = new String[]{kDumpName};
+			LexicalDBHelper database = LexicalDBHelper.getInstance();
+			Cursor cursor = database.getDB().rawQuery("select id,edit_count from data where name=? limit 1", where);
+			long id = -1;
+			int edit_count = 0;
+			if (cursor.moveToNext()) {
+				id = cursor.getLong(0);
+				edit_count = cursor.getInt(1);
+			}
+			cursor.close();
+			if (entrance.size() > entranceSzInJson) {
+				ContentValues value = new ContentValues();
+				long now = CMN.now();
+				byte[] data = StringUtils.join(entrance, '\n', entranceSzInJson, entrance.size()).getBytes();
+				value.put("type", 0);
+				value.put("data", data);
+				value.put("len", data.length);
+				
+				value.put(FIELD_EDIT_TIME, now);
+				value.put("edit_count", ++edit_count);
+				if (id>=0) {
+					where[0] = ""+id;
+					database.getDB().update(TABLE_DATA_v2, value, "id=?", where);
+				} else {
+					value.put("name", kDumpName);
+					value.put(FIELD_CREATE_TIME, now);
+					id = database.getDB().insert(TABLE_DATA_v2, null, value);
+				}
+				CMN.debug("ent_::保存了::", kDumpName, StringUtils.join(entrance, '\n', entranceSzInJson, entrance.size()));
+			} else {
+				if (id != -1) {
+					where[0] = ""+id;
+					database.getDB().delete(TABLE_DATA_v2, "name=?", where);
+				}
+				CMN.debug("ent_::删除了::");
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
 	//粗暴地排除
@@ -1808,25 +1923,6 @@ public class PlainWeb extends DictionaryAdapter {
 				} catch (Exception e) { }
 			return true;
 			case R.string.page_rukou:
-//					String _url = final_mWebView.getUrl();
-//					if(_url!=null) {
-//						EditText etNew = FU.buildStandardTopETDialog(a, false);
-//						etNew.setText(final_mWebView.getTitle());
-//						View btn_Done = ((View)etNew.getTag());
-//						View btn_exec = ((View)btn_Done.getTag());
-//						btn_Done.setTag(btn_exec.getTag());
-//						btn_exec.setVisibility(View.GONE);
-//						btn_Done.setOnClickListener(v1 -> {
-//							String __url = _url;
-//							String name = etNew.getText().toString();
-//							if(name.length()>0) __url += "\r"+etNew.getText();
-//							if(entrance==null) entrance=new ArrayList<>();
-//							entrance.add(__url);
-//							bNeedSave = true;
-//							a.notifyDictionaryDatabaseChanged(PlainWeb.this);
-//							((Dialog)v1.getTag()).dismiss();
-//						});
-//					}
 			return true;
 			case R.string.page_lianjie:
 				presenter.a.FuzhiText(mWebView.getUrl());
@@ -1932,7 +2028,7 @@ public class PlainWeb extends DictionaryAdapter {
 		if(mWebView.titleBar!=null) {
 			mWebView.progressBar();
 		}
-		//onProgressChanged(mWebView, 5);
+		mWebView.setUserAgentString(useragent);
 		
 		currentUrl=view.getUrl();
 //		if(jsLoader!=null || onstart!=null) {
@@ -2019,7 +2115,7 @@ public class PlainWeb extends DictionaryAdapter {
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {
 		//if(updateTitle) mWebView.toolbar_title.setText(mWebView.word=bookPresenter.currentDisplaying=mWebView.getTitle());
-		if(mWebView.titleBar!=null) {
+		if(mWebView.progressBar!=null) {
 			Drawable d = mWebView.progressBar.getBackground();
 			if(d.getAlpha()!=255) {
 				return;
@@ -2211,5 +2307,13 @@ public class PlainWeb extends DictionaryAdapter {
 			}
 		}
 		return off?pageTranslatorOff:pageTranslator;
+	}
+	
+	@Override
+	public void saveConfigs(Object book) {
+		if ((isDirty & 0x1)!=0) {
+			saveEntrances();
+		}
+		isDirty = 0;
 	}
 }

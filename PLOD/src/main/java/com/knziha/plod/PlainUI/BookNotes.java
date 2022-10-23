@@ -69,6 +69,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	ShelfLinearLayout bottomShelf;
 	Toolbar toolbar;
 	BookPresenter invoker;
+	public int mViewVer;
 	
 	public BookNotes(MainActivityUIBase a) {
 		super(a, false);
@@ -174,7 +175,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					bottomShelf.selectToolIndex(lastPos = i);
 					lv = viewList[i];
 					
-					AnnotAdapter ada = getAnnotationAdapter(false, lv, i);
+					/*切页初始化*/AnnotAdapter ada = getAnnotationAdapter(false, lv, i);
 					if (lv.getAdapter()==null) {
 						lv.setAdapter(ada);
 						ada.resumeListPos(lv);
@@ -214,6 +215,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	protected void onShow() {
 		//drawer.open();
 		//drawer.openDrawer(GravityCompat.START);
+		mViewVer++;
 		drawerOpen = false;
 		drawer.post(() -> drawer.open());
 		refresh();
@@ -315,7 +317,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			if (lv.getAdapter() != null) {
 				lv.suppressLayout(true);
 				AnnotAdapter adapter = getAnnotationAdapter(false, lv, k);
-				/*变换排序规则*/adapter.rebuildCursor(a.prepareHistoryCon().getDB(), pressedV.get(), this, null);
+				/*变换排序规则*/adapter.rebuildCursor(a.prepareHistoryCon().getDB(), pressedV.get(), this, adapter.expUrl);
 			}
 		}
 	}

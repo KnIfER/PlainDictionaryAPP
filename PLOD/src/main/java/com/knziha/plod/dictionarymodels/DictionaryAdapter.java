@@ -658,4 +658,9 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	public InputStream getRecordStream(int idx) throws IOException {
 		return new ByteArrayInputStream(getRecordData(idx));
 	}
+	
+	@Override
+	public void saveConfigs(Object book) {
+	
+	}
 }

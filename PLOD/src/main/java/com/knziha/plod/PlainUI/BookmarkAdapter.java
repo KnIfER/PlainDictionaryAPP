@@ -40,20 +40,18 @@ public class BookmarkAdapter extends BaseAdapter{
 	int textViewResourceID;
 	Context a;
 	public boolean darkMode;
-	public final boolean testDBV2;
 	
-	private PagingAdapterInterface<BookmarkDatabaseReader> DummyReader = new CursorAdapter<>(EmptyCursor, new BookmarkDatabaseReader(true));
+	private PagingAdapterInterface<BookmarkDatabaseReader> DummyReader = new CursorAdapter<>(EmptyCursor, new BookmarkDatabaseReader());
 	PagingAdapterInterface<BookmarkDatabaseReader> dataAdapter = DummyReader;
 	ImageView pageAsyncLoader;
 	
-	public BookmarkAdapter(MainActivityUIBase a, int resource, int textViewResourceId, BookPresenter md_, SQLiteDatabase database, int l, boolean testDBV2) {
+	public BookmarkAdapter(MainActivityUIBase a, int resource, int textViewResourceId, BookPresenter md_, SQLiteDatabase database, int l) {
 		//this(a,resource,textViewResourceId,objects);
 		this.a=a;
 		resourceID=resource;
 		textViewResourceID=textViewResourceId;
 		presenter=md_;
 		isWeb = md_!=null && md_.getIsWebx();
-		this.testDBV2 = testDBV2;
 		refresh(md_, database);
    }
    
@@ -61,27 +59,22 @@ public class BookmarkAdapter extends BaseAdapter{
 		public long row_id;
 		public long sort_number;
 		public String entryName;
+		public String url;
 		public int position;
-		public final boolean testDBV2;
-		
-		public BookmarkDatabaseReader(boolean testDBV2) {
-			this.testDBV2 = testDBV2;
-		}
 		
 		@Override
 		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
-			if (testDBV2) {
-				position = (int) cursor.getLong(2);
-				entryName = cursor.getString(3);
-			} else {
-				position = (int) Long.parseLong(cursor.getString(2));
-			}
+			position = (int) cursor.getLong(2);
+			entryName = cursor.getString(3);
 			if (rowID!=-1) {
 				row_id = rowID;
 				sort_number = sortNum;
 			} else {
 				row_id = cursor.getLong(0);
 				sort_number = cursor.getLong(1);
+			}
+			if (cursor.getColumnCount()==5) {
+				url = cursor.getString(4);
 			}
 		}
 		
@@ -92,25 +85,24 @@ public class BookmarkAdapter extends BaseAdapter{
 					'}';
 		}
 	}
-	ConstructorInterface<BookmarkDatabaseReader> BookmarkDatabaseReaderConstructor = length -> new BookmarkDatabaseReader(true);
+	ConstructorInterface<BookmarkDatabaseReader> BookmarkDatabaseReaderConstructor = length -> new BookmarkDatabaseReader();
 	
 	public void refresh(BookPresenter invoker, SQLiteDatabase database) {
 		//if(invoker!=md || con!=con_ || cr==null)
 		try {
-	    	presenter =invoker;
+	    	presenter = invoker;
 	    	isWeb = invoker!=null && invoker.getIsWebx();
 			dataAdapter.close();
 			dataAdapter = DummyReader;
-			if (testDBV2) {
-				boolean bSingleThreadLoading = true;
-				if (bSingleThreadLoading) {
-					Cursor cursor = database.rawQuery("select id,last_edit_time,pos,lex from "
-									+LexicalDBHelper.TABLE_BOOK_NOTE_v2 +" where bid=? order by last_edit_time desc"
-							, new String[]{presenter.bookImpl.getBooKID()+""});
-					CMN.Log("查询个数::"+cursor.getCount());
-					dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader(testDBV2));
-					notifyDataSetChanged();
-				} else {
+			boolean bSingleThreadLoading = true;
+			if (bSingleThreadLoading) {
+				Cursor cursor = database.rawQuery("select id,last_edit_time,pos,"+(invoker.getIsWebx()?"miaoshu,lex":"lex")+" from "
+								+LexicalDBHelper.TABLE_BOOK_NOTE_v2 +" where bid=? order by last_edit_time desc"
+						, new String[]{presenter.bookImpl.getBooKID()+""});
+				CMN.Log("查询个数::"+cursor.getCount());
+				dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader());
+				notifyDataSetChanged();
+			} else {
 //					if (pageAsyncLoader==null) {
 //						pageAsyncLoader = new ImageView(a);
 //					}
@@ -126,12 +118,6 @@ public class BookmarkAdapter extends BaseAdapter{
 //						dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
 //					}
 //					dataAdapter.startPaging(lastVisiblePositionMap.get(getFragmentId(), 0L), 20, 15);
-				}
-			} else {
-				Cursor cursor = database.rawQuery(isWeb?"select rowid,date,_id from t3 ":"select * from t1 ", null);
-				CMN.Log("查询个数::"+cursor.getCount());
-				dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader(testDBV2));
-				notifyDataSetChanged();
 			}
 		} catch (Exception e) {
 			dataAdapter = DummyReader;
@@ -147,14 +133,10 @@ public class BookmarkAdapter extends BaseAdapter{
 			title = itemView.findViewById(R.id.text1);
 			ivDel = itemView.findViewById(R.id.del);
 			ivDel.setOnClickListener(v -> {
-				if (testDBV2) {
-					presenter.deleteBookMark(entry_position, v1 -> {
-						refresh(presenter, presenter.a.prepareHistoryCon().getDB());
-						notifyDataSetChanged();
-					});
-				} else {
-					presenter.a.showT("已弃用旧版数据库，请尽快升级。");
-				}
+				presenter.deleteBookMark(entry_position, v1 -> {
+					refresh(presenter, presenter.a.prepareHistoryCon().getDB());
+					notifyDataSetChanged();
+				});
 			});
 		}
 	}
@@ -177,16 +159,12 @@ public class BookmarkAdapter extends BaseAdapter{
 		//else
 		try {
 			//LexicalText=md.bookImpl.getEntryAt(testDBV2?cr.getInt(2):cr.getInt(0));
-			if (testDBV2) {
-				BookmarkDatabaseReader reader = dataAdapter.getReaderAt(position);
-				vh.entry_position = reader.position;
-				LexicalText=reader.entryName;
-				PlainWeb webx = presenter.getWebx();
-				if (webx!=null) {
-					LexicalText = webx.getDisplayName(LexicalText);
-				}
-			} else {
-				LexicalText= presenter.bookImpl.getEntryAt(DummyReader.getReaderAt(position).position);
+			BookmarkDatabaseReader reader = dataAdapter.getReaderAt(position);
+			vh.entry_position = reader.position;
+			LexicalText=reader.entryName==null?reader.url:reader.entryName;
+			PlainWeb webx = presenter.getWebx();
+			if (webx!=null) {
+				LexicalText = webx.getDisplayName(LexicalText);
 			}
 		} catch (Exception e) {
 			LexicalText="!!!Error: "+e.getLocalizedMessage();

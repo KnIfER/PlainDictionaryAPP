@@ -14,7 +14,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.text.Html;
 import android.text.Spannable;
@@ -46,7 +45,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.knziha.plod.PlainUI.PagePopupMenuHelper;
+import com.knziha.plod.PlainUI.PageMenuHelper;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -97,13 +96,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,6 +110,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.InflaterOutputStream;
 
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_ANNOT_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
@@ -123,7 +120,6 @@ import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
-import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
 
 import io.noties.markwon.Markwon;
 
@@ -527,6 +523,9 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=47, shift=1) public void padLeft(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=48, shift=1) public boolean padRight() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=48, shift=1) public void padRight(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=49) public boolean hasWebEntrances() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=49) public void hasWebEntrances(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
 	
 	public boolean getSavePageToDatabase(){
@@ -749,6 +748,9 @@ function debug(e){console.log(e)};
 		
 		if(THIS!=null) {
 			readConfigs(THIS, THIS.prepareHistoryCon());
+			if (isWebx && hasWebEntrances()) {
+				getWebx().readEntrances(false);
+			}
 		}
 		
 		StringBuilder sb = new StringBuilder(32);
@@ -1004,7 +1006,7 @@ function debug(e){console.log(e)};
 		return false;
 	}
 	
-	public PopupMenuHelper showPopupMenu(PagePopupMenuHelper.PageMenuType type, WebViewmy mWebView, View v) {
+	public PopupMenuHelper showPopupMenu(PageMenuHelper.PageMenuType type, WebViewmy mWebView, View v) {
 		if (mWebView == null) {
 			initViewsHolder(a);
 			mWebView = this.mWebView;
@@ -1013,9 +1015,9 @@ function debug(e){console.log(e)};
 	}
 	
 	public void showMoreToolsPopup(WebViewmy mWebView, View v) {
-		PagePopupMenuHelper.PageMenuType type = PagePopupMenuHelper.PageMenuType.Nav_main;
+		PageMenuHelper.PageMenuType type = PageMenuHelper.PageMenuType.Nav_main;
 		if (getIsWebx()) {
-			type = PagePopupMenuHelper.PageMenuType.Nav_WEB;
+			type = PageMenuHelper.PageMenuType.Nav_WEB;
 		}
 		PopupMenuHelper popupMenu = showPopupMenu(type, mWebView, v);
 		
@@ -1359,7 +1361,7 @@ function debug(e){console.log(e)};
 				/* 长按下载图片 */
 				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
 				case WebViewmy.HitTestResult.IMAGE_TYPE:{
-					wv.presenter.showPopupMenu(PagePopupMenuHelper.PageMenuType.LNK_IMG, wv, (View) wv.getParent());
+					wv.presenter.showPopupMenu(PageMenuHelper.PageMenuType.LNK_IMG, wv, (View) wv.getParent());
 					if(true) return true;
 					String url = result.getExtra();
 					AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
@@ -1415,7 +1417,7 @@ function debug(e){console.log(e)};
 				/* 长按anchor */
 				case WebViewmy.HitTestResult.SRC_ANCHOR_TYPE:{
 					a.pageMenuHelper.lnk_href = result.getExtra();
-					wv.presenter.showPopupMenu(PagePopupMenuHelper.PageMenuType.LNK, wv, (View) wv.getParent());
+					wv.presenter.showPopupMenu(wv.presenter.getIsWebx()?PageMenuHelper.PageMenuType.LNK_WEB:PageMenuHelper.PageMenuType.LNK, wv, wv);
 				}
 				return true;
 			}
@@ -1481,7 +1483,7 @@ function debug(e){console.log(e)};
 				getCon(true).enssurePageTable();
 			}
 		}
-		String url=getSaveUrl(mWebView);
+		String url= getSaveUrl(mWebView); // deprecated
 		if(url!=null && url.length()>0)
 		mWebView.evaluateJavascript(save_js, v -> {
 			if(v!=null && v.startsWith("\"")) {
@@ -1552,21 +1554,23 @@ function debug(e){console.log(e)};
 		return sb.toString();
 	}
 
-	@Nullable public String getSaveUrl(WebViewmy mWebView) {
-		String url;
-		if (a == null) return null;
-		if(a.getUsingDataV2()) {
-			if (mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
-				url=mWebView.getUrl();
-				String host = ((PlainWeb)bookImpl).host;
-				if (url!=null && url.startsWith(host)) {
-					url = url.substring(host.length());
-				}
-			} else {
-				url=bookImpl.getEntryAt(mWebView.currentPos);
-			}
+	/** get bookmark save url */
+	@Nullable
+	public String getSaveUrl(WebViewmy mWebView) {
+		String url=mWebView.url;
+		CMN.debug("getSaveUrl::", url);
+		if (a == null || url==null) return null;
+		int schemaIdx = url.indexOf(":");
+		boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
+		if (mdbr) {
+			url=bookImpl.getEntryAt(mWebView.currentPos);
 		} else {
-			url = ""+mWebView.currentPos;
+			if (isWebx) {
+				PlainWeb webx = getWebx();
+				if (url!=null && url.startsWith(webx.host) && !webx.host.equals(webx.host0)) {
+					url = webx.host0+url.substring(webx.host.length());
+				}
+			}
 		}
 		return url;
 	}
@@ -2489,6 +2493,7 @@ function debug(e){console.log(e)};
 	public void checkFlag(Toastable_Activity context) {
 		if(FFStamp!=firstFlag || isDirty)
 			saveStates(context, context.prepareHistoryCon());
+		if(isWebx) bookImpl.saveConfigs(this);
 	}
 
 	@Override
@@ -2639,6 +2644,7 @@ function debug(e){console.log(e)};
 				WebViewmy mWebView = findWebview(sid);
 				if (mWebView != null) {
 					CMN.debug("annot::marking", text, annot, "pos="+pos, "tPos="+tPos, mWebView.presenter, did);
+					CMN.debug("annot::marking", mWebView.title, mWebView.url);
 					try {
 						LexicalDBHelper.increaseAnnotDbVer();
 						if (presenter.a.getUsingDataV2()) {
@@ -2650,35 +2656,56 @@ function debug(e){console.log(e)};
 							if (entry == null) {
 								entry = mWebView.word;
 							}
-							PlainWeb webx = book.getWebx();
-							if (webx!=null) {
-								entry = mWebView.getUrl();
-								if (entry.startsWith(webx.getHost()))
-									entry = entry.substring(webx.getHost().length());
-							}
-							long entryHash = hashKey(entry);
+							
 							ContentValues values = new ContentValues();
+							
+							String url = mWebView.url;
+							CMN.debug("annot::url::", url);
+							
+							int schemaIdx = url.indexOf(":");
+							boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
+							if (url.startsWith("http") && !mdbr) {
+								url = book.getSaveUrl(mWebView); // 在线页面的标记  获取虚拟pos
+								entry = mWebView.title;
+								long vPos=mWebView.marked; if(vPos==-1) vPos=presenter.ensureBookMark(mWebView);
+								//long vPos = book.toggleBookMark(mWebView, book.a, true);
+								CMN.debug("vPos=", vPos);
+								values.put("pos", vPos);
+							} else {
+								url = null;
+//								if(mWebView.marked==-1)
+//									presenter.ensureBookMark(mWebView);
+								values.put("pos", pos);
+							}
+							
 							values.put("bid", book.getId());
-							values.put("pos", pos);
 							values.put("entry", entry);
 							values.put("lex", text);
 							values.put("annot", annot);
 							values.put("type", type);
 							values.put("color", color);
 							values.put("tPos", tPos);
-							// values.put("note", note); //不单独存储笔记了
+							String notes = presenter.a.lastNotes;
+							if (notes != null) {
+								values.put("notes", notes);
+								presenter.a.lastNotes = null;
+							}
 							long now = CMN.now();
 							values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
 							values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
-							JSONObject json = new JSONObject();
-							json.put("x", mWebView.getScrollX());
-							json.put("y", mWebView.getScrollY());
-							json.put("s", mWebView.webScale);
-							values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
 							
-							return presenter.a.prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+								JSONObject json = new JSONObject();
+								json.put("x", mWebView.getScrollX());
+								json.put("y", mWebView.getScrollY());
+								json.put("s", mWebView.webScale);
+								if (url != null) {
+									json.put("url", url);
+								}
+								values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
 							
-							//showT(id+", "+value);
+							final long id = presenter.a.prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+							CMN.debug("annot.id=", id);
+							return id;
 						}
 					} catch (Exception e) { CMN.debug(e); }
 				}
@@ -2686,19 +2713,31 @@ function debug(e){console.log(e)};
 			return -1;
         }
 		
-		private StringBuilder getMarksByPos(StringBuilder sb, long bid, long position) {
+		private StringBuilder getMarksByPos(WebViewmy mWebView, StringBuilder sb, long bid, long position) {
 			//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
 			String[] where = new String[]{""+bid, ""+position};
-			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id, annot from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=? order by tPos", where);
+			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id,annot,notes,last_edit_time==0 from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=? order by tPos", where);
 			//CMN.debug("cursor::", position, cursor.getCount());
 //			cursor.moveToLast();
 //			while (cursor.moveToPrevious()) {
 			while (cursor.moveToNext()) {
-				String annot = cursor.getString(0);
-				if(annot!=null) {
-					if(sb==null) sb = new StringBuilder();
-					sb.append(cursor.getString(1)).append("\n"); // {}
-					sb.append(cursor.getLong(0)).append("\n"); // note id
+				boolean bkmk = cursor.getInt(3)==1;
+				final long id = cursor.getLong(0);
+				// CMN.debug("bkmk::", bkmk, id);
+				if (bkmk) {
+					if (mWebView.merge) {
+					} else {
+						mWebView.marked = id;
+					}
+				} else {
+					String annot = cursor.getString(0);
+					if(annot!=null) {
+						String notes = cursor.getString(2);
+						if(sb==null) sb = new StringBuilder();
+						sb.append(cursor.getString(1)).append("\n"); // {}
+						sb.append(id).append("\n"); // note id
+						sb.append(notes==null?"":notes).append("\n"); // notes
+					}
 				}
 			}
 			cursor.close();
@@ -2729,7 +2768,7 @@ function debug(e){console.log(e)};
 									key.reset(idx, nxt);
 									long position = IU.TextToNumber_SIXTWO_LE(key);
 									int len = sb == null ? 0 : sb.length();
-									sb = getMarksByPos(sb, bid, position);
+									sb = getMarksByPos(mWebView, sb, bid, position);
 									if (sb != null && sb.length() > len) {
 										sb.append("\t");
 										sb.append(position);
@@ -2740,7 +2779,7 @@ function debug(e){console.log(e)};
 							} while (idx < ed);
 						} else {
 							long position = IU.TextToNumber_SIXTWO_LE(key);
-							sb = getMarksByPos(sb, bid, position);
+							sb = getMarksByPos(mWebView, sb, bid, position);
 						}
 					}
 				}
@@ -2753,29 +2792,15 @@ function debug(e){console.log(e)};
 		
 		@JavascriptInterface
         public String remark(int sid, int position) {
-			//CMN.debug("annot:::remark::", position);
+			if(MainActivityUIBase.debugging_annot) CMN.debug("annot:::remark::position=", position);
 			if (presenter!=null) {
 				WebViewmy mWebView = findWebview(sid);
 				if (mWebView != null) {
-					//CMN.debug("annot::restore::remark::", position, mWebView.presenter);
+					if(MainActivityUIBase.debugging_annot) CMN.debug("annot::restore::remark::", position, mWebView.presenter);
 					try {
-						if (presenter.a.getUsingDataV2()) {
-							PlainWeb webx = mWebView.presenter.getWebx();
-							if (webx!=null) {
-								position = -1;
-								String entry = mWebView.getUrl();
-								if (entry.startsWith(webx.getHost()))
-									entry = entry.substring(webx.getHost().length());
-								Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id from "+LexicalDBHelper.TABLE_BOOK_NOTE_v2+" where lex=? limit 1", new String[]{entry});
-								if (cursor.moveToNext()) {
-									position = cursor.getInt(0);
-								}
-								cursor.close();
-							}
-							StringBuilder sb = getMarksByPos(null, mWebView.presenter.getId(), position);
-							if (sb!=null) {
-								return sb.toString();
-							}
+						StringBuilder sb = getMarksByPos(mWebView, null, mWebView.presenter.getId(), position);
+						if (sb!=null) {
+							return sb.toString();
 						}
 					} catch (Exception e) { CMN.debug(e); }
 				}
@@ -4022,7 +4047,7 @@ function debug(e){console.log(e)};
 	}
 	
 	boolean unwrapSuffix = true;
-			
+	
 	protected String SubPathToDBStorage(String extra) {
 		String fullFileName = bookImpl.getDictionaryName();
 		int end = fullFileName.length();
@@ -4087,7 +4112,7 @@ function debug(e){console.log(e)};
 	protected CachedDirectory CachedPathSubToDBStorage(String extra) {
 		return new CachedDirectory(opt.fileToDatabases(), SubPathToDBStorage(extra));
 	}
-			
+	
 	/** Show Per-Dictionary settings dialog via peruseview, normal view. */
 	public static void showDictTweaker(WebViewmy view, Toastable_Activity context, BookPresenter...md) {
 		if(md.length==0) return;
@@ -4197,7 +4222,7 @@ function debug(e){console.log(e)};
 		
 		}
 	}
-			
+	
 	@Override
 	public void onValueChanged(WebViewmy mWebView, int val, int mask, int flagPosition, int processId) {
 		CMN.Log("onValueChanged::", mWebView, processId);
@@ -4246,18 +4271,37 @@ function debug(e){console.log(e)};
 		return viewsHolderReady;
 	}
 	
-	public boolean hasBookmark(WebViewmy mWebView) {
+	public long hasBookmark(WebViewmy mWebView) {
 		String entryName = getSaveUrl(mWebView);
-		if (entryName==null) return false;
+		if (entryName==null) return -1;
 		CMN.Log("hasBookmark::", entryName);
-		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
+		SQLiteStatement stat;
+		if (entryName.startsWith("http") && entryName.indexOf("://")>0) {
+			stat = a.prepareHistoryCon().preparedHasWebBookmarkForEntry;
+			stat.bindString(1, entryName);
+		} else {
+			stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
+			stat.bindString(1, entryName);
+			stat.bindLong(2, getId());
+		}
+		try {
+			return stat.simpleQueryForLong();
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+	
+	public long hasBookmarkV2(WebViewmy mWebView) {
+		String entryName = getSaveUrl(mWebView);
+		if (entryName==null) return -1;
+		CMN.Log("hasBookmarkV2::", entryName);
+		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForUrl;
 		stat.bindString(1, entryName);
 		stat.bindLong(2, getId());
 		try {
-			stat.simpleQueryForLong();
-			return true;
+			return stat.simpleQueryForLong();
 		} catch (Exception e) {
-			return false;
+			return -1;
 		}
 	}
 	
@@ -4303,20 +4347,71 @@ function debug(e){console.log(e)};
 		sayToggleBookMarkResult((int) id, notifier);
 	}
 	
-	public void toggleBookMark(WebViewmy mWebView, OnClickListener notifier, boolean forceAdd) {
+	public long ensureBookMark(WebViewmy mWebView) {
+		long ret = -1;
+		SQLiteDatabase database = a.prepareHistoryCon().getDB();
+		String lex = getSaveUrl(mWebView);
+		//String sql = "select id from "+TABLE_BOOK_ANNOT_v2+" where url = ? limit 1";
+		//String[] where = new String[]{lex};
+		//Cursor c = database.rawQuery(sql, new String[]{lex});
+		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForUrl;
+		stat.bindString(1, lex);
+		stat.bindLong(2, getId());
+		try {
+			ret = stat.simpleQueryForLong();
+		} catch (Exception e) {
+			//CMN.debug(e);
+		}
+		if (ret==-1) {
+			long pos = -1;
+			try {
+				stat = a.prepareHistoryCon().predictNextBookmarkId;
+				if (stat != null) pos = stat.simpleQueryForLong() + 1;
+			} catch (Exception e) {
+				//CMN.debug(e);
+			}
+			long bid = bookImpl.getBooKID();
+			ContentValues values = new ContentValues();
+			values.put("url", lex);
+			values.put("bid", bid);
+			values.put("pos", pos);
+			values.put("lex", mWebView.title);
+			
+			values.put("last_edit_time", 0);
+			values.put("creation_time", CMN.now());
+			ret = database.insert(TABLE_BOOK_ANNOT_v2, null, values);
+			CMN.debug("predicted=", ret, pos);
+			if (ret != pos) {
+				values.put("pos", ret);
+				database.update(TABLE_BOOK_ANNOT_v2, values, "id=?", new String[]{""+ret});
+			}
+		}
+		return ret;
+	}
+	
+	public long toggleBookMark(WebViewmy mWebView, OnClickListener notifier, boolean forceAdd) {
 		long id=-1;
+		boolean say = notifier!=a;
 		if (mWebView!=null) {
 			long bid = bookImpl.getBooKID();
 			CMN.rt();
-			String url = getSaveUrl(mWebView);
-			if(url==null) return;
-			CMN.Log("toggleBookMark::url::", url);
+			String lex = getSaveUrl(mWebView);
+			if(lex==null) return id;
+			CMN.Log("toggleBookMark::url::", lex);
 			try {
 				SQLiteDatabase database = a.prepareHistoryCon().getDB();
 				boolean hasNotes=false;
-				String[] where = new String[]{""+url, ""+bid};
 				boolean insertNew=true;
-				Cursor c = database.rawQuery("select id,notes is not null from "+TABLE_BOOK_NOTE_v2+" where lex = ? and bid = ? limit 1", where);
+				Cursor c;
+				boolean b1 = lex.startsWith("http") && lex.indexOf("://")>0;
+				if (b1) {
+					String sql = "select id,notes is not null from "+TABLE_BOOK_NOTE_v2+" where lex = ? limit 1";
+					c = database.rawQuery(sql, new String[]{lex});
+				} else {
+					String[] where = new String[]{lex, ""+bid};
+					String sql = "select id,notes is not null from "+TABLE_BOOK_NOTE_v2+" where lex = ? and bid = ? limit 1";
+					c = database.rawQuery(sql, where);
+				}
 				if(c.moveToFirst()) {
 					insertNew = false;
 					id = c.getLong(0);
@@ -4327,15 +4422,18 @@ function debug(e){console.log(e)};
 				if(insertNew||forceAdd) {
 					if (insertNew) {
 						ContentValues values = new ContentValues();
-						values.put("lex", url);
+						values.put("lex", lex);
 						values.put("bid", bid);
 						values.put("pos", mWebView.currentPos);
+						if (b1) {
+							values.put("miaoshu", mWebView.title);
+						}
 						long now = CMN.now();
 						values.put("last_edit_time", now);
 						values.put("creation_time", now);
 						id = database.insert(TABLE_BOOK_NOTE_v2, null, values);
 					}
-					if (forceAdd) {
+					if (say && forceAdd) {
 						a.showT(R.string.bmAdded);
 					}
 					a.putRecentBookMark(bid, id, mWebView.currentPos);
@@ -4348,12 +4446,13 @@ function debug(e){console.log(e)};
 								.setPositiveButton("确认", new DialogInterface.OnClickListener() {
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										sayToggleBookMarkResult(database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_})>0?-2:-1, notifier);
+										int ret = database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_}) > 0 ? -2 : -1;
+										if(say) sayToggleBookMarkResult(ret, notifier);
 									}
 								})
 								.setNegativeButton("取消", null)
 								.show();
-					} else {
+					} else if (say) {
 						id=database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_})>0?-2:-1;
 					}
 				}
@@ -4361,7 +4460,10 @@ function debug(e){console.log(e)};
 				CMN.Log(e);
 			}
 		}
-		sayToggleBookMarkResult((int) id, notifier);
+		if (say) {
+			sayToggleBookMarkResult((int) id, notifier);
+		}
+		return id;
 	}
 	
 	private void sayToggleBookMarkResult(int ret, OnClickListener notifier) {
@@ -4537,6 +4639,19 @@ function debug(e){console.log(e)};
 				CMN.GlobalPagePaddingRight = opt.getString("GPR", "3%");
 			sb.append("padding-right:").append(CMN.GlobalPagePaddingRight).append(";");
 			//else mWebView.evaluateJavascript("document.body.style.paddingRight='"+CMN.GlobalPagePaddingRight+"'", null);
+		}
+	}
+	
+	public void ApplyPadding(WebViewmy mWebView) {
+		if (PDICMainAppOptions.padLeft() && padLeft()) {
+			if (CMN.GlobalPagePaddingLeft==null)
+				CMN.GlobalPagePaddingLeft = opt.getString("GPL", "3%");
+			mWebView.evaluateJavascript("document.body.style.paddingLeft='"+CMN.GlobalPagePaddingLeft+"'", null);
+		}
+		if (PDICMainAppOptions.padRight() && padRight()) {
+			if (CMN.GlobalPagePaddingRight==null)
+				CMN.GlobalPagePaddingRight = opt.getString("GPR", "3%");
+			mWebView.evaluateJavascript("document.body.style.paddingRight='"+CMN.GlobalPagePaddingRight+"'", null);
 		}
 	}
 	

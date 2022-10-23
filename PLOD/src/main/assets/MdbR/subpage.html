@@ -134,23 +134,7 @@ function restoreMarks(pw){
 }
 
 function remark(t, rootNode, doc, w){
-	t = t.split('\n');
-	for(var i=0;i<t.length;i+=2) {
-		try{
-			var row = JSON.parse(t[i]);
-			var nid = parseInt(t[i+1]);
-			row.nid = nid;
-			// debug('read::remark=',row);
-			var nn = row.n.split(';'), n0=nn[0], n1=nn[1];
-			if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
-			else if(nn.length!=2) continue;
-			var r = w.MakeRange(n0, n1, rootNode, doc);
-			if(r) {
-				row = w.MakeMark(row, -1, 0, 0);
-				w.WrapRange(r, row, rootNode, document, nid)
-			}
-		} catch(e) {console.log('error::', t[i], e)}
-	}
+    w.RestoreMarks(t, rootNode, doc);
 }
 
 window.markPage = function(tcn) {

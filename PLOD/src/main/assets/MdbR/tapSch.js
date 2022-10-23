@@ -67,9 +67,11 @@ window.addEventListener('click',window.tpshc=function(e){
         return w>0 && y>0
         && (pY>y-pad && pY<y+h+pad && pX>x-pad && pX<x+w+pad);
     }
-    if(sz&7 && curr!=d.documentElement && (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) && curr.nodeName!='BUTTON' && curr.nodeName!='A' && !curr.noword && !curr.onclick && !w._touchtarget_lck){
+    //console.log(sz&7 , curr!=d.documentElement , (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) ,curr.nodeName!='BUTTON' , curr.nodeName!='A' , !curr.noword/*  , !curr.onclick */ , !w._touchtarget_lck);
+    if(sz&7 && curr!=d.documentElement && (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) && curr.nodeName!='BUTTON' && curr.nodeName!='A' && !curr.noword && !w._touchtarget_lck){
         //todo d.activeElement.tagName
         var s = w.getSelection();
+        debug('来了',s.isCollapsed && s.anchorNode);
         if(!(s.isCollapsed && s.anchorNode)) {
             // don't bother with user selection
             return;

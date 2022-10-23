@@ -1898,14 +1898,18 @@ public class ViewUtils extends VU {
 	}
 	
 	public static void makeFullscreenWnd(Window window) {
-		window.setDimAmount(0);
-		WindowManager.LayoutParams layoutParams = window.getAttributes();
-		layoutParams.width = MATCH_PARENT;
-		layoutParams.height = MATCH_PARENT;
-		layoutParams.horizontalMargin = 0;
-		layoutParams.verticalMargin = 0;
-		window.setAttributes(layoutParams);
-		window.getDecorView().setBackground(null);
-		window.getDecorView().setPadding(0,0,0,0);
+		try {
+			window.setDimAmount(0);
+			WindowManager.LayoutParams layoutParams = window.getAttributes();
+			layoutParams.width = MATCH_PARENT;
+			layoutParams.height = MATCH_PARENT;
+			layoutParams.horizontalMargin = 0;
+			layoutParams.verticalMargin = 0;
+			window.setAttributes(layoutParams);
+			window.getDecorView().setBackground(null);
+			window.getDecorView().setPadding(0,0,0,0);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 }
