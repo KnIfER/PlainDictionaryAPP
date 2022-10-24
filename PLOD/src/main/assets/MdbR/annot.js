@@ -281,6 +281,9 @@
                     log('  focus', t);
                     t = t.href+'';
                     t = doc._pd_foc = doc.getElementById(t.slice(t.indexOf('#')+1));
+                    if(window.PDF) {
+                        var p=t;while((p=p.parentNode)) {if(p.classList.contains('RefListP')){p.style.display='block';break}}
+                    }
                     t.focus();
                     return true;
                 }, function(e) {
@@ -342,8 +345,16 @@
                 sup.setAttribute('tabindex',0);
 
                 if(!rootNode._pd_ref) {
-                    var refP = craft('ANNOT', rootNode, 'note');
-                    craft('H2', refP).innerText = '笔记';
+                    var refP = craft('ANNOT', rootNode, 'note RefListP');
+                    var head = craft('H2', refP);
+                    head.innerText = '笔记';
+                    if(window.PDF) {
+                        head = craft('P', head, 'RefClose RefBack');
+                        head.innerText = '[X]';
+                        head.onclick=function() {
+                            refP.style.display='none'
+                        }
+                    }
                     rootNode._pd_ref = craft('OL', refP, 'RefList');
                 }
                 if(lnkTo!==null) {
@@ -466,12 +477,14 @@
     }
     function skip(n) {
         if(n.nodeType==1)
-            return n.tagName=='ANNOT'||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.tagName=='MARK'||n.classList.contains('_PDict');
+            return n.tagName=='ANNOT'||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.tagName=='MARK'||n.classList.contains('_PDict')
+            ||n.tagName=='IFRAME' || n.classList.contains('skiptranslate') && (n.firstElementChild||n).classList.contains('goog-te-banner-frame');
         else return n.nodeType!==3;
     }
     function skipIfNonTex(n) {
         if(n.nodeType==1)
-            return (n.tagName=='ANNOT'&&n.classList.contains('note'))||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.classList.contains('_PDict');
+            return (n.tagName=='ANNOT'&&n.classList.contains('note'))||n.tagName=='STYLE'||n.tagName=='LINK'||n.tagName=='SCRIPT'||n.classList.contains('_PDict')
+            ||n.tagName=='IFRAME' || n.classList.contains('skiptranslate') && (n.firstElementChild||n).classList.contains('goog-te-banner-frame');
         else return n.nodeType!==3;
     }
     // deserialize saved position str as [node, offset]
@@ -609,6 +622,7 @@
                         p = pass(k1);
                     }
                     log('check range restore --- ', p?'pass':'验证失败!', k1+'=='+k);
+                    if(!p) return 0;
                 }
                 return range;
             } catch(e){}

@@ -335,6 +335,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						case "GPR":
 							init_switcher(key, true, 48, p);
 							break;
+						case "GPB":
+							init_switcher(key, false, 50, p);
+							break;
 						case "reload":
 							p.setOnPreferenceClickListener(this);
 							break;

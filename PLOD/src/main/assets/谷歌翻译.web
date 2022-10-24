@@ -1,5 +1,5 @@
 {
-	,"host": "https://translate.google.com.hk"
+	,"host": "https://translate.google.com"
 	,"index": ""
 	,"style": "header,.VjFXz{display:none!important}#gtyexp{display:none;position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.25s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;}"
 	,"search": "/?sl=auto&tl=zh-CN&text=%s&op=translate"
@@ -316,7 +316,7 @@ succ"
 	,"translator":"true"
 	,"drawHighlightOnTop":"true"
 	,"excludeRes":"fonts.gstatic.com/s/roboto"
-	,"hosts": "208.80.154.224 www.wikipedia.org
+	,"hostsx": "208.80.154.224 www.wikipedia.org
 220.181.174.226 translate.googleapis.com
 198.35.26.112 upload.wikimedia.org"
 	,"fastFontsx":"true"
@@ -324,7 +324,7 @@ succ"
 		{url:"https://translate-pa.googleapis.com/v1/supportedLanguages"}
 		,{url:"https://www.google.com/images/cleardot.gif"}
 		,{url:"http://translate.google.com/gen204x"}
-		,{url:"https://translate.google.com.hk/translate_a/element.js"}
+		,{url:"https://translate.google.com/translate_a/element.js"}
 		,{urlv4:"https://translate.googleapis.com/_/translate_http/_/js/k=translate_http.tr.zh_CN.tbokbaq6GcI.O/am=AQ/d=1/exm=el_conf/ed=1/rs=AN8SPfpDwbSVWpQ6RLn8qBOWrZ8KB0pUCg/m=el_main"}
 	]
 	,"settings":{
@@ -522,7 +522,7 @@ succ"
 				//.goog-te-menu-frame{position:absolute}
 				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
 				document.body.id='body';
-				loadJs('https://translate.google.com.hk/translate_a/element.js?cb=googleTranslateElementInit')
+				loadJs('https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit')
 			})();
 			window.googleTranslateElementInit=function() {
 				var e=new google.translate.TranslateElement(
@@ -573,6 +573,6 @@ succ"
 			}
 			//setTimeout(tweakDone, 1500);
 		</script>
-	  	<script src='https://translate.google.com.hk/translate_a/element.js?cb=googleTranslateElementInit '></script>
+	  	<script src='https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit '></script>
 	"
 }

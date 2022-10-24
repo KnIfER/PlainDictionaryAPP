@@ -104,18 +104,17 @@ public class PageMenuHelper {
 		popupMenu.initLayout(getPageUtils(type), a);
 		int[] vLocationOnScreen = new int[2];
 		v.getLocationOnScreen(vLocationOnScreen);
+		int x,y;
 		if (v == mWebView) {
-			int x=(int)mWebView.lastX;
-			int y=(int)mWebView.lastY;
-			popupMenu.show(mWebView, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
-			ViewUtils.preventDefaultTouchEvent(v, x, y);
+			x=(int)mWebView.lastX;
+			y=(int)mWebView.lastY;
 		} else {
-			int x=(int)mWebView.weblistHandler.pageSlider.lastX;
-			int y=(int)mWebView.weblistHandler.pageSlider.lastY;
-			popupMenu.show(mWebView.weblistHandler.pageSlider, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
-			ViewUtils.preventDefaultTouchEvent(v, x, y);
+			x=(int)mWebView.weblistHandler.pageSlider.OrgX;
+			y=(int)mWebView.weblistHandler.pageSlider.OrgY;
+			v = mWebView.weblistHandler.pageSlider;
 		}
-		
+		popupMenu.show(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+		ViewUtils.preventDefaultTouchEvent(v, x, y);
 		popupMenu.tag1 = mWebView;
 		return popupMenu;
 	}

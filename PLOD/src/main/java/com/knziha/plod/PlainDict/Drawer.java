@@ -829,8 +829,8 @@ public class Drawer extends Fragment implements
 					properties.extensions.add(".web"); // 在线词典，JSON格式。
 					properties.extensions.add(".dsl");
 					properties.extensions.add(".dz");
+					properties.extensions.add(".pdf");
 					if(toPDF) {
-						properties.extensions.add(".pdf");
 						properties.extensions.add(".mdd");
 						properties.extensions.add(".txt");
 					}

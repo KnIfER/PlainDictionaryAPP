@@ -306,9 +306,9 @@ public class ViewUtils extends VU {
 	}
 	
 	/* 将对话框置顶 */
-	public static void ensureTopmost(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+	public static boolean ensureTopmost(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
 		if (VU.suppressNxtDialogReorder) {
-			return;
+			return false;
 		}
 		if (dialog!=null) {
 			if (!isTopmost(dialog, a)) {
@@ -316,16 +316,19 @@ public class ViewUtils extends VU {
 				dialog.dismiss();
 				dialog.show();
 				dialog.setOnDismissListener(disLis);
+				return true;
 				//CMN.debug("ensureTopmost::reshow!!!");
 			}
 			//else CMN.debug("ensureTopmost::same!!!");
 		}
+		return false;
 	}
 	
 	
-	public static void ensureWindowType(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+	public static boolean ensureWindowType(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
 		int type = a.isFloatingApp() || (a.foreground&(1<<a.thisActType.ordinal()))==0?a.mDialogType:WindowManager.LayoutParams.TYPE_APPLICATION;
 		//CMN.debug("ensureWindowType::", type, WindowManager.LayoutParams.TYPE_APPLICATION);
+		boolean ret = false;
 		try {
 			if (dialog.getWindow().getAttributes().type!=type) {
 				if (disLis!=null) {
@@ -336,6 +339,7 @@ public class ViewUtils extends VU {
 				if (disLis!=null) {
 					dialog.setOnDismissListener(disLis);
 				}
+				ret = true;
 			}
 			if (ViewUtils.littleCat && type==WindowManager.LayoutParams.TYPE_PHONE) {
 				a.moveTaskToFront();
@@ -344,6 +348,7 @@ public class ViewUtils extends VU {
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
+		return ret;
 	}
 	
 	public static int indexOf(CharSequence text, char cc, int now) {

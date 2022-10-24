@@ -326,7 +326,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		}
 	}
 	
-	// longclick
+	// longclick anteNote list
 	@Override
 	public boolean onLongClick(View v) {
 		PopupMenuHelper popupMenu = a.getPopupMenu();
@@ -335,7 +335,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			int[] texts = new int[]{
 					R.layout.menu_danji_xiugai
 					, R.string.copy
-					, R.string.send_dot
+					, R.string.tools_dot
 					, R.string.delete
 			};
 			popupMenu.initLayout(texts, this);
@@ -386,7 +386,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			if (rangeAdapter==null) {
 				rangeAdapter = new AnnotAdapter(a, R.id.text1, db, -1, null, null);
 			}
-			anteNotesPopup.popRoot.setTag(lv);
+			anteNotesPopup.tag1 = lv;
 			lv.setAdapter(rangeListAdapter=new BaseAdapter() {
 				@Override public int getCount() { return rangeAdapter.getItemCount(); }
 				@Override public Object getItem(int position) { return null; }
@@ -411,7 +411,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			});
 		}
 		
-		ListView lv = (ListView) anteNotesPopup.popRoot.getTag();
+		ListView lv = (ListView) anteNotesPopup.tag1;
 		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) lv.getLayoutParams();
 		rangeAdapter.rebuildCursor(db, null, null, value/*"1,2,3"*/);
 		
@@ -799,7 +799,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position);
 			setEditingNote(reader.row_id);
 			JSONObject json = reader.getAnnot();
-			String note = JsonNames.readString(json, JsonNames.note);
+			String note = reader.notes!=null?reader.notes:JsonNames.readString(json, JsonNames.note);
 			int color = JsonNames.readInt(json, JsonNames.clr, 0xffffaaaa);
 			int type = JsonNames.readInt(json, JsonNames.typ, 0);
 			int ntyp = JsonNames.readInt(json, JsonNames.ntyp, 0);

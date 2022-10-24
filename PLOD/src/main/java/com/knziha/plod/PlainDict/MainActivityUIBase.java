@@ -4438,6 +4438,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							builder.setTitle(invoker.appendCleanDictionaryName(null).append(" -> ")
 									.append(getString(R.string.bm)).toString());
 							builder.setItems(new String[]{}, null);
+							builder.setMaxLines(2);
 							builder.setNeutralButton(R.string.delete, null);
 							AlertDialog d = builder.show();
 							ListView list = d.getListView();
@@ -4903,6 +4904,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						,GlobalOptions.isDark?R.style.DialogStyle3Line
 						:R.style.DialogStyle4Line)
 						.setItems(ArrayUtils.EMPTY_STRING_ARRAY,null)
+						.setTitle("V")
+						.setMaxLines(3)
 						.create();
 				bottomView = (ViewGroup) getLayoutInflater().inflate(R.layout.checker2, dialogList = d.getListView(), false);
 				
@@ -4950,6 +4953,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(twoColumnAda!=null)  twoColumnAda.notifyDataSetChanged();
 			}
 			ViewUtils.ensureWindowType(d, MainActivityUIBase.this, MainActivityUIBase.this);
+			ViewUtils.ensureTopmost(d, MainActivityUIBase.this, MainActivityUIBase.this);
 			
 //			int switch_cl_id=bFromWebView?(opt.getToTextShare()?R.color.DeapDanger:R.color.ThinHeaderBlue)
 //					:opt.getToTextShare2()?R.color.colorAccent:R.color.ThinAccent;
@@ -7846,17 +7850,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//mWebView.restoreMarks();
 						mWebView.evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
 					}
+					invoker.ApplyPadding(mWebView);
 				}
-				invoker.ApplyPadding(mWebView);
 			}
 			
-			if(wlh.isViewSingle()) {
-				if (PDICMainAppOptions.padBottom())
-				{
-					if (CMN.GlobalPagePadding==null)
-						CMN.GlobalPagePadding = opt.getString("GPP", "50px");
-					mWebView.evaluateJavascript("document.body.style.paddingBottom='"+CMN.GlobalPagePadding+"'", null);
-				}
+			if(wlh.isViewSingle() && PDICMainAppOptions.padBottom() && invoker.padBottom()) {
+				if (CMN.GlobalPagePadding==null)
+					CMN.GlobalPagePadding = opt.getString("GPP", "50px");
+				mWebView.evaluateJavascript("document.body.style.paddingBottom='"+CMN.GlobalPagePadding+"'", null);
 			}
 			
 			if(invoker.getIsWebx())

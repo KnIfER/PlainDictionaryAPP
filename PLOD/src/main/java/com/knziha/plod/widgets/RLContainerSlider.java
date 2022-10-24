@@ -66,10 +66,10 @@ public class RLContainerSlider extends FrameLayout{
 
 	int first_touch_id=-1;
 
-	public float lastX;
-	public float lastY;
-	private float OrgX;
-	private float OrgY;
+	private float lastX;
+	private float lastY;
+	public float OrgX;
+	public float OrgY;
 	boolean dragged;
 	/** Slide to turn page enabled  */
 	public boolean slideTurn = false;
@@ -413,17 +413,6 @@ public class RLContainerSlider extends FrameLayout{
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev){
 		int masked = ev.getActionMasked();
-		if (bar!=null) {
-			if (masked==ACTION_DOWN) {
-				if(!bar.isHidden()){
-					bar.isWebHeld=true;
-					bar.cancelFadeOut();
-				}
-			}
-			if (masked==ACTION_UP) {
-				checkBar();
-			}
-		}
 		
 		if (masked==ACTION_DOWN) {
 			if (tapZoomV != SearchUI.tapZoomV)
@@ -433,6 +422,16 @@ public class RLContainerSlider extends FrameLayout{
 			if (MainActivityUIBase.layoutScrollDisabled) {
 				MainActivityUIBase.layoutScrollDisabled=false;
 			}
+			if(bar!=null && !bar.isHidden()){
+				bar.isWebHeld=true;
+				bar.cancelFadeOut();
+			}
+			OrgX = ev.getX();
+			OrgY = ev.getY();
+			if(twiceDetected) twiceDetected = false;
+		}
+		if (masked==ACTION_UP) {
+			checkBar();
 		}
 		
 		if(nothing) {
@@ -440,11 +439,6 @@ public class RLContainerSlider extends FrameLayout{
 		}
 		
 		int touch_id=ev.getPointerId(ev.getActionIndex());
-		
-		if(masked==ACTION_DOWN){
-			OrgX = lastX = ev.getX();
-			if(twiceDetected) twiceDetected = false;
-		}
 		
 		if(weblist.mBar.isDragging) {
 			return false;
@@ -493,7 +487,8 @@ public class RLContainerSlider extends FrameLayout{
 						}
 						first_touch_id=touch_id;
 					}
-					OrgY = lastY = ev.getY();
+					lastX = OrgX;
+					lastY = OrgY;
 					aborted = false;
 				break;
 				case ACTION_MOVE:
@@ -512,11 +507,14 @@ public class RLContainerSlider extends FrameLayout{
 							//todo touch slope when WebContext==null
 							int theta = 50;
 							if (WebContext==null
-									|| WebContext.AlwaysCheckRange==0
-									|| (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > GlobalOptions.density*theta || dx < -GlobalOptions.density*theta))
-									|| (WebContext.AlwaysCheckRange==1||!bZoomOut)
-										&& (dx > GlobalOptions.density*theta && WebContext.getScrollX()==0
-												|| dx < -GlobalOptions.density*theta && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)) {
+									|| ((WebContext.scrollLck==0 || (WebContext.scrollLck&1)==0&&dx>0 || (WebContext.scrollLck&2)==0&&dx<0) && (
+									 WebContext.AlwaysCheckRange==0
+										|| (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > GlobalOptions.density*theta || dx < -GlobalOptions.density*theta))
+										|| (WebContext.AlwaysCheckRange==1||!bZoomOut)
+											&& (dx > GlobalOptions.density*theta && WebContext.getScrollX()==0
+													|| dx < -GlobalOptions.density*theta && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)
+							))
+							) {
 								dragInitDx = dx;
 								float dy = lastY - OrgY;
 								if (dy == 0) dy = 0.000001f;

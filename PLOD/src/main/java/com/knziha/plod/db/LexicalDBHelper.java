@@ -170,6 +170,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", bid INTEGER NOT NULL"+
 					", pos INTEGER NOT NULL"+
 					", tPos INTEGER DEFAULT 0"+
+					", web INTEGER DEFAULT 0" +
 					", entry LONGVARCHAR" +
 					", lex LONGVARCHAR" +
 					", url LONGVARCHAR" +
@@ -194,6 +195,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			}
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "tPos")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN tPos INTEGER DEFAULT 0");
+			}
+			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "web")) {
+				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN web INTEGER DEFAULT 0");
 			}
 			if (!columnExists(db, TABLE_BOOK_ANNOT_v2, "hue")) {
 				db.execSQL("ALTER TABLE "+TABLE_BOOK_ANNOT_v2+" ADD COLUMN hue INTEGER DEFAULT 0");

@@ -236,6 +236,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	
 	@Override
 	public void refresh() {
+		CMN.debug("bookNotes::refresh");
 		if (MainAppBackground != a.MainAppBackground)
 		{
 			// 刷新颜色变化（黑暗模式或者设置更改）
@@ -253,8 +254,10 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
 			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
 		}
-		ViewUtils.ensureTopmost(dialog, a, dialogDismissListener);
-		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
+		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
+				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
+			ViewUtils.makeFullscreenWnd(dialog.getWindow());
+		}
 	}
 	
 	public void checkBoundary() {
@@ -356,7 +359,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						a.showT(tx);
 					}
 				} break;
-				case R.string.send_dot:{
+				case R.string.send_dot:
+				case R.string.tools_dot:{
 					View iteView = pressedV.get();
 					String tx = ((AnnotAdapter.VueHolder) iteView.getTag()).vh.title.getText().toString();
 					a.getVtk().setInvoker(null, null, null, tx);
@@ -511,7 +515,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			
 			int[] texts = new int[]{
 					R.string.copy
-					, R.string.send_dot
+					, R.string.tools_dot
 					, R.string.sortby
 					, R.string.delete
 			};
@@ -527,30 +531,33 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			return;
 		}
 		setUpContentView();
-		BookPresenter currentDictionary = a.getBookById(reader.bid);
+		BookPresenter invoker = a.getBookById(reader.bid);
 		int idx = (int) reader.position;
 		String key = reader.entryName;
 		
 		float desiredScale=-1;
 		
-		if (currentDictionary != null) {
+		if (invoker != a.EmptyBook) {
+			boolean isWeb = invoker.getIsWebx() || reader.web;
 			setUpContentView();
 			final boolean bUseMergedUrl = false;
-			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
-			weblistHandler.setViewMode(null, 0, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
+			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&invoker.getIsWebx();
+			bUseDictView = false;
+			weblistHandler.setViewMode(null, 0, bUseDictView?invoker.mWebView:weblistHandler.mMergedFrame);
 			weblistHandler.viewContent();
 			if(!bUseDictView) weblistHandler.initMergedFrame(0, true, false);
 			
 			WebViewmy webview = null;
 			ViewGroup someView = null;
 			if(bUseDictView) {
-				currentDictionary.initViewsHolder(a);
-				webview = currentDictionary.mWebView;
-				someView = currentDictionary.rl;
+				invoker.initViewsHolder(a);
+				webview = invoker.mWebView;
+				someView = invoker.rl;
 				if(webview.weblistHandler==a.weblistHandler && a.weblistHandler.isWeviewInUse(someView)) {
 					a.DetachContentView(false);
 				}
-			} else {
+			}
+			else {
 				webview = weblistHandler.getMergedFrame();
 				someView = weblistHandler.mMergedBook.rl;
 			}
@@ -590,7 +597,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				adelta=0;
 				a.lastClickTime=System.currentTimeMillis();
 				
-				pPos = currentDictionary.avoyager.get(idx);
+				pPos = invoker.avoyager.get(idx);
 				//a.showT(""+currentDictionary.expectedPos);
 			}
 			if(pPos!=null) {
@@ -605,18 +612,31 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			
 			weblistHandler.popupContentView(null, key);
 			
-			ViewGroup webviewHolder = weblistHandler.getViewGroup();
-			ViewUtils.addViewToParent(someView, webviewHolder);
-			if(webviewHolder.getChildCount()>1) {
-				for(int i=webviewHolder.getChildCount()-1;i>=0;i--)
-					if(webviewHolder.getChildAt(i)!=someView) webviewHolder.removeViewAt(i);
+			{
+				ViewGroup webviewHolder = weblistHandler.getViewGroup();
+				ViewUtils.addViewToParent(someView, webviewHolder);
+				if(webviewHolder.getChildCount()>1) {
+					for(int i=webviewHolder.getChildCount()-1;i>=0;i--)
+						if(webviewHolder.getChildAt(i)!=someView) webviewHolder.removeViewAt(i);
+				}
+				
+				invoker.renderContentAt(desiredScale,RENDERFLAG_NEW,0,webview, idx);
+				webview.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+				
+				contentUIData.PageSlider.setWebview(webview, null);
+				someView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 			}
-			
-			currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,webview, idx);
-			webview.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-			
-			contentUIData.PageSlider.setWebview(webview, null);
-			someView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+			if (isWeb) {
+				try (Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select url from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where id=?", new String[]{""+reader.position})){
+					cursor.moveToNext();
+					String url = cursor.getString(0);
+					weblistHandler.getMergedFrame().setPresenter(invoker);
+					weblistHandler.getMergedFrame().loadUrl(url);
+					return;
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
 		}
 	}
 	

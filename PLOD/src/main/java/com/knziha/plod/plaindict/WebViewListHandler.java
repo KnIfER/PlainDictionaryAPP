@@ -991,6 +991,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public AlloydPanel alloydPanel;
 	public void popupContentView(ViewGroup root, String key) {
+		CMN.debug("popupContentView::", key);
 		if(alloydPanel==null) {
 			alloydPanel = new AlloydPanel(a, this);
 		}

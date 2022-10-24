@@ -347,6 +347,12 @@
 			android:defaultValue="true"
 			android:title="右边距"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="GPB"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="底部边距"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

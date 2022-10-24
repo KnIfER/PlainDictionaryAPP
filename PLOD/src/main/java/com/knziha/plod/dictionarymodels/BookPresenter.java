@@ -527,7 +527,10 @@ function debug(e){console.log(e)};
 	
 	@Metaline(flagPos=49) public boolean hasWebEntrances() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=49) public void hasWebEntrances(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
-
+	
+	@Metaline(flagPos=50) public boolean padBottom() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50) public void padBottom(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+	
 	
 	public boolean getSavePageToDatabase(){
 		return true;
@@ -2552,6 +2555,16 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		@JavascriptInterface
+		public void scrollLck(int sid, int scrollLck) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					wv.scrollLck = scrollLck;
+				}
+			}
+		}
+		
 		public static HashMap<String, WeakReference<String>> AjaxData = new HashMap<>();
 	
 		@JavascriptInterface
@@ -2654,7 +2667,7 @@ function debug(e){console.log(e)};
 				WebViewmy mWebView = findWebview(sid);
 				if (mWebView != null) {
 					CMN.debug("annot::marking", text, annot, "pos="+pos, "tPos="+tPos, mWebView.presenter, did);
-					CMN.debug("annot::marking", mWebView.title, mWebView.url);
+					CMN.debug("annot::marking", mWebView.title, mWebView.url, presenter.a.lastNotes);
 					try {
 						LexicalDBHelper.increaseAnnotDbVer();
 						if (presenter.a.getUsingDataV2()) {
@@ -2674,7 +2687,8 @@ function debug(e){console.log(e)};
 							
 							int schemaIdx = url.indexOf(":");
 							boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
-							if (url.startsWith("http") && !mdbr) {
+							boolean web = url.startsWith("http") && !mdbr;
+							if (web) {
 								url = book.getSaveUrl(mWebView); // 在线页面的标记  获取虚拟pos
 								entry = mWebView.title;
 								long vPos=mWebView.marked; if(vPos==-1) vPos=presenter.ensureBookMark(mWebView);
@@ -2695,6 +2709,7 @@ function debug(e){console.log(e)};
 							values.put("type", type);
 							values.put("color", color);
 							values.put("tPos", tPos);
+							values.put("web", web);
 							String notes = presenter.a.lastNotes;
 							if (notes != null) {
 								values.put("notes", notes);
@@ -3955,15 +3970,16 @@ function debug(e){console.log(e)};
 				uncheckVersionBefore_5_4(false);
 			}
 			setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
-			if (!padSet())
-			{
-				padSet(true);
-				padLeft(false);
-				padRight(false);
-			}
-			
 			if (getUseMirrors()) getWebx().setMirroredHost(getMirrorIdx());
 			if(a!=null) a.registerWebx(this);
+		}
+		if (!padSet())
+		{
+			boolean set = mType==PLAIN_TYPE_TEXT || mType==PLAIN_TYPE_MDICT || mType==PLAIN_TYPE_DSL;
+			padLeft(set);
+			padRight(set);
+			padBottom(set);
+			padSet(true);
 		}
 	}
 	

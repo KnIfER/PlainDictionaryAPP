@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -67,6 +68,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	private long bid;
 	String expUrl = "";
 	public int mViewVer = -1;
+	final static String data_fields = "entry,lex,pos,bid,annot,web,notes";
 	
 	public AnnotAdapter(MainActivityUIBase a, int textViewResourceId
 			, SQLiteDatabase database, int scope
@@ -141,6 +143,8 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		public String annotText;
 		public long position;
 		public long bid;
+		public boolean web;
+		public String notes;
 		/** the note */
 		private JSONObject annot;
 		int multiSorts = 0;
@@ -162,8 +166,10 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 				annot = JSONObject.parseObject(cursor.getString(multiSorts+6));
 			} catch (Exception e) {
 				CMN.debug(e);
-				annot = new JSONObject();
+				annot = new JSONObject(); //todo opt
 			}
+			web = cursor.getInt(multiSorts+7)==1;
+			notes = cursor.getString(multiSorts+8);
 		}
 		
 		public JSONObject getAnnot() {
@@ -240,8 +246,8 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		}
 	}
 	
-	public void rebuildCursor(SQLiteDatabase database, View sortView, BookNotes bookNotes, String expUrl) {
-		CMN.debug("rebuildCursor::", scope, expUrl);
+	public void rebuildCursor(SQLiteDatabase database, View sortView, @Nullable BookNotes bookNotes, String expUrl) {
+		CMN.debug("rebuildCursor::", "scope="+scope, "url="+expUrl, bookNotes==null?null:bookNotes.invoker);
 		try {
 			throw new RuntimeException("watch stacktrace!");
 		} catch (RuntimeException e) {
@@ -250,7 +256,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		try {
 			dataAdapter.close();
 			dataAdapter = DummyReader;
-			if(bRangeNotes) {
+			if(bRangeNotes || bookNotes==null) {
 				if (expUrl!=null) {
 					dataAdapter = new AnnotRangeAdapter<>(database, AnnotationRangeReader.readerMaker, expUrl.split(","));
 				}
@@ -289,7 +295,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					this.dataAdapter = dataAdapter;
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
-							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_EDIT_TIME, sortType==0, "entry,lex,pos,bid,annot");
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, FIELD_EDIT_TIME, sortType==0, data_fields);
 					long[] pos = savedPositions.get(getFragmentId());
 					long lastTm = 0, offset = 0;
 					if (pos != null) {
@@ -341,7 +347,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 					CMN.debug("组合排序 sortBy::", sortType, sortBy);
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
-							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, desc, "entry,lex,pos,bid,annot");
+							.sortBy(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, sortBy, desc, data_fields);
 					long[] sorts = null;
 					long[] pos = savedPositions.get(getFragmentId());
 					long offset = 0;
@@ -566,7 +572,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		int color=0xffffaaaa, type=0;
 		if(reader!=null) {
 			JSONObject annot = reader.getAnnot();
-			String note = JsonNames.readString(annot, JsonNames.note);
+			String note = reader.notes!=null?reader.notes:JsonNames.readString(annot, JsonNames.note);
 			color = JsonNames.readInt(annot, JsonNames.clr, color);
 			type = JsonNames.readInt(annot, JsonNames.typ, type);
 			ViewUtils.setVisible(vh.preview, note!=null);
