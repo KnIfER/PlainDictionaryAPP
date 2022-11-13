@@ -448,7 +448,7 @@
 					var e=document.createElement(t);
 					if(c)e.className=c;
 					p.appendChild(e);
-					debug('craft', e);
+					//debug('craft', e);
 					return e;
 				}
 				craft(0,'STYLE',document.head).innerText='mark{background: yellow} mark.current{background:orange;box-shadow:inset 0px 0px 0px .5px #ff0000}';
@@ -517,7 +517,7 @@
 				if(title && title.id=='WOTD-rss-title') title.classList.add('notranslate');
 			}
 		}
-		debug(df);
+		//debug(df);
 
 		// e=e.body.innerHTML;
 		// var st1=e.indexOf(month+'_1');

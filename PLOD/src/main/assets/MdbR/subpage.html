@@ -58,6 +58,7 @@ function wrappedOnLoadFunc(){
 	// }
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
 	var fe=frameElement, pw=parent.window;
+	if(pw.processPage) pw.processPage(fe);
 	if(fe) {
 		debug('mdpage loaded', fe.dictInfo.name, 'tpshc!=null:'+parent.tpshc!=null);
 		var inf=fe.dictInfo;
