@@ -69,6 +69,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		//return lstItemViews.get(position);
 		ViewHolder vh;
 		CharSequence currentKeyText = results.getResAt(a, position);
+		if(currentKeyText==null) currentKeyText = "∞Error";
 		if(convertView!=null) {
 			vh=(ViewHolder) convertView.getTag();
 		} else {
@@ -230,7 +231,12 @@ public class ListViewAdapter2 extends BasicAdapter {
 			a.showTopSnack(R.string.endendr);
 			return;
 		}
-		String lstKey = currentKeyText = results.getResAt(a, pos).toString();
+		CharSequence entryName = results.getResAt(a, pos);
+		if(entryName==null) {
+			a.showT("Error!");
+			return;
+		}
+		String lstKey = currentKeyText = String.valueOf(entryName);
 		
 		if(a.PeruseListModeMenu.isChecked()) {
 			PeruseView pView = a.getPeruseView();

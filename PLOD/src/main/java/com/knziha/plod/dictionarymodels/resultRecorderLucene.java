@@ -223,22 +223,26 @@ public class resultRecorderLucene extends resultRecorderDiscrete {
 
 	@Override
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
-		if (pos < 0 || pos >= result_size + 1) {
-			if (pos == -1) {
-				return "←";
+		try {
+			if (pos < 0 || pos >= result_size + 1) {
+				if (pos == -1) {
+					return "←";
+				}
+				if (pos == result_size + 1) {
+					return "→";
+				}
+				return "!!! Error: code 1";
 			}
-			if (pos == result_size + 1) {
-				return "→";
+			if (pos == result_size) {
+				return "— 加载下一页 —";
 			}
-			return "!!! Error: code 1";
-		}
-		if (pos == result_size) {
-			return "— 加载下一页 —";
-		}
-		DocRecord record = getDocAt((int) pos);
-		if (record != null) {
-			bookId = record.getBookId(this);
-			return record.getEntry(this);
+			DocRecord record = getDocAt((int) pos);
+			if (record != null) {
+				bookId = record.getBookId(this);
+				return record.getEntry(this);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 		return "!!! Error: code 2 " + pos + " " + result_size + " " + results.size();
 	}

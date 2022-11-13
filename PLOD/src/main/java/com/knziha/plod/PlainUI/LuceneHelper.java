@@ -29,6 +29,8 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
@@ -480,5 +482,24 @@ public class LuceneHelper {
 		float pad = 2.8f * a.mResource.getDimension(R.dimen._50_) * (a.dm.widthPixels>GlobalOptions.realWidth?1:1.45f);
 		View root = a.root;
 		((AlertController.RecycleListView) lv).mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
+	}
+	
+	public void deleteIndex(String bookName) throws IOException {
+		final Analyzer analyzer = WordBreakFilter.newAnalyzer();
+		File folder = new File(a.opt.pathToMainFolder().append("lucene").toString());
+		Directory index = FSDirectory.open(folder);
+		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_47, analyzer);
+		IndexWriter writer = new IndexWriter(index, config);
+		writer.deleteDocuments(new TermQuery(new Term("bookName", bookName)));
+		writer.close();
+		closeIndexReader();
+		prepareSearch(false);
+		for(IndexedBook rec:indexedbooks)  {
+			if (rec.name.equals(bookName)) {
+				//indexedbooks.remove(rec);
+				reloadIndexedBookList();
+				break;
+			}
+		}
 	}
 }

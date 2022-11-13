@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.BitmapDrawable;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -32,10 +33,11 @@ import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortListView;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class SearchEngine extends BaseAdapter implements View.OnClickListener {
+public class SearchEngine extends BaseAdapter implements View.OnClickListener, View.OnLongClickListener, PopupMenuHelper.PopupMenuListener {
 	final MainActivityUIBase a;
 	final LuceneHelper helper;
 	
@@ -44,6 +46,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 	ViewGroup tools, group, inputs;
 	EditTextmy etSearch;
 	DragSortListView schLv;
+	String pressedBookName;
 	
 	int mForegroundColor;
 	PorterDuffColorFilter ForegroundFilter;
@@ -158,6 +161,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 			convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_dslitem, parent, false);
 			vh = new BookManagerMain.ViewHolder(convertView);
 			vh.title.setOnClickListener(this);
+			vh.title.setOnLongClickListener(this);
 			vh.ck.setOnClickListener(this);
 		} else {
 			vh = (BookManagerMain.ViewHolder) convertView.getTag();
@@ -184,6 +188,47 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener {
 		return convertView;
 	}
 	
+	@Override
+	public boolean onLongClick(View v) {
+		int id = v.getId();
+		if (id == R.id.text|| id == R.id.check1) {
+			BookManagerMain.ViewHolder vh
+					= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
+			if (vh != null) {
+				PopupMenuHelper popupMenu = a.getPopupMenu();
+				pressedBookName = vh.title.getText();
+				if(popupMenu.getListener()!=this) {
+					int[] texts = new int[]{
+						R.string.delete
+					};
+					popupMenu.initLayout(texts, this);
+				}
+				View rv = dialog.getWindow().getDecorView();
+				View vp = (View) v.getParent();
+				popupMenu.showAt(rv, 0, vp.getHeight()-v.getTop()-v.getHeight(), Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+				ViewUtils.preventDefaultTouchEvent(v, 0, 0);
+			}
+		}
+		return false;
+	}
+	
+	@SuppressLint("ResourceType")
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		if(v.getId()==R.string.delete) {
+			popupMenuHelper.dismiss();
+			try {
+				helper.deleteIndex(pressedBookName);
+				notifyDataSetChanged();
+				a.showT("索引<"+pressedBookName+">删除成功！");
+			} catch (IOException e) {
+				a.showT("删除失败……");
+			}
+		}
+		return true;
+	}
+	
+	// click
 	@Override
 	public void onClick(View v) {
 		int id = v.getId();
