@@ -26,6 +26,7 @@ import java.util.ArrayList;
 public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickListener {
 	public final PopupWindow mPopupWindow;
 	public final FrameLayout popRoot;
+	public final ScrollView sv;
 	public final LinearLayout lv;
 	public final Context context;
 	public Drawable leftDrawable;
@@ -52,7 +53,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 			bRecycle = true;
 		}
 		
-		ScrollView sv = new ScrollView(context);
+		sv = new ScrollView(context);
 		sv.setBackgroundResource(R.drawable.frame_pop_menu);
 		sv.setPadding(0, (int) (8*GlobalOptions.density), 0, (int) (10*GlobalOptions.density));
 		sv.addView(lv);
@@ -80,6 +81,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 			int resId = texts[menuPos];
 			//context.getResources().getResourceTypeName()
 			CMN.debug("initLayout::", Integer.toHexString(resId), "resId");
+			int tc = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
 			if(resId>=0x7f100000) {
 				TextMenuView tv;
 				if (bRecycle && menuPos<tvArr.size()) {
@@ -101,7 +103,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 				}
 				tv.setText(resId);
 				tv.setId(resId);
-				tv.setTextColor(Color.BLACK);
+				tv.setTextColor(tc);
 				tv.leftDrawable = leftDrawable;
 				lv.addView(tv);
 			} else {
@@ -120,6 +122,9 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
+			}
+			if (GlobalOptions.isDark) {
+				sv.getBackground().setColorFilter(GlobalOptions.NEGATIVE_1);
 			}
 		}
 	}
@@ -158,7 +163,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 			windowPos[1] = anchroY - padding;
 		}
 		
-		showLeft = true;
+		//showLeft = true;
 		
 		if (showLeft) {
 			windowPos[0] = anchorX - popWidth - padding;

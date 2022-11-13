@@ -372,8 +372,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				if(!mdbr) {
 					//marked = presenter.hasBookmark(this);
 				}
-				if (mdbr && url.startsWith(".d", schemaIdx+8) && !url.startsWith(presenter.idStr10, schemaIdx+10)) {
-					//presenter = presenter.a.getBookById();
+				if (mdbr && url.startsWith(".d", schemaIdx+7) && !url.startsWith(presenter.idStr10, schemaIdx+9)) {
+					long bid = IU.parseLong(url.substring(schemaIdx + 9, url.indexOf(".", schemaIdx + 10)), -1);
+					if (bid!=-1) {
+						BookPresenter book = presenter.a.getBookById(bid);
+						CMN.Log("fix::", book);
+						if (book!=presenter.a.EmptyBook) {
+							setPresenter(book);
+						}
+					}
 				}
 			}
 		}

@@ -147,7 +147,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			int tmp = uri.indexOf("/", 17);
 			BookPresenter book = md_getByURLPath(uri, 17, tmp);
 			key=uri.substring(tmp);
-			int pos=book.bookImpl.lookUp(Reroute(key),false);
+			int pos=book.bookImpl.lookUp(Reroute(key));
 			return newFixedLengthResponse(pos+"_"+book.bookImpl.getEntryAt(pos));
 		}
 		else if(uri.startsWith("/MdbRJointQuery/")) {

@@ -2,11 +2,14 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.text.Layout;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.R;
 
@@ -27,6 +30,8 @@ public class TextMenuView extends TextView {
 		super(context, attrs, defStyleAttr);
 		leftDrawable = getResources().getDrawable(R.drawable.ic_yes_blue);
 		leftDrawable.setBounds(0, 0, leftDrawable.getIntrinsicWidth(), leftDrawable.getIntrinsicHeight());
+		if(GlobalOptions.isDark)
+			setTextColor(Color.WHITE);
 	}
 	
 	@Override
@@ -35,8 +40,12 @@ public class TextMenuView extends TextView {
 		if (leftDrawable!=null && activated) {
 			if (showAtRight) {
 				int drawableSz = leftDrawable.getIntrinsicWidth();
-				int left = getMeasuredWidth() - getPaddingRight() - (int) ((drawableSz)*0.75);
 				int top = (int) ((getMeasuredHeight()-drawableSz)*0.55);
+				Layout lay = getLayout();
+				int left = getMeasuredWidth() - getPaddingRight() - (int) ((drawableSz)*0.75);
+				if (lay != null) {
+					left = Math.min(left, (int) lay.getLineRight(0) + drawableSz);
+				}
 				leftDrawable.setBounds(left, top, left+drawableSz, top+drawableSz);
 				leftDrawable.draw(canvas);
 			} else {

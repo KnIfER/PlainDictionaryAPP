@@ -262,6 +262,7 @@
                 last = bel;
             }
             else { // 脚注
+                //log('footnote=', note);
                 last = d;
                 var lnkTo = null;
                 if(note.startsWith('_pd_lnk='))
@@ -729,14 +730,15 @@
         }
         if(tcn) {
             var rootNode = document.body, doc = document;
-            var row = JSON.parse(tcn);
-            var nn = row.n.split(';'), n0=nn[0], n1=nn[1];
+            if(typeof tcn==='string') tcn = JSON.parse(tcn);
+            tcn = upackRow(tcn);
+            var nn = tcn.n.split(';'), n0=nn[0], n1=nn[1];
             if(nn.length==3) {n0=nn[0]+n1; n1=nn[0]+nn[2]}
             else if(nn.length!=2) return;
             var r = makeRange(n0, n1, rootNode, doc);
             log('fatal log annot::renewing::', tcn, r);
             if(r) {
-                var el = annot(row, -1, 0, 0);
+                var el = annot(tcn, -1, 0, 0);
                 wrapRange(r, el, rootNode, doc, nid)
             }
         }
@@ -808,6 +810,7 @@
         if(!tcn.C) tcn.C=undefined;
         if(!tcn.d) tcn.d=undefined;
         if(tcn.N) tcn.N=undefined;
+        if(tcn.note) tcn.note=undefined;
         return JSON.stringify(tcn);
     }
 
@@ -858,7 +861,7 @@
         //log('fatal debug annot::restoreMarks::', t);
         waiting = 0;
         if(t.length) {
-            t = t.split('\n');
+            t = t.split('\0');
             for(var i=0,len=t.length-2;i<len;i+=3) {
                 try{
                     var tcn = JSON.parse(t[i]), nid = parseInt(t[i+1])

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -182,6 +183,11 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
+	public int lookUp(String keyword, boolean isSrict, List<UniversalDictionaryInterface> morphogen) {
+		return lookUp(keyword, isSrict);
+	}
+	
+	@Override
 	public int lookUp(String keyword, boolean isSrict) {
 		return -1;
 	}
@@ -189,6 +195,11 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	@Override
 	public int lookUp(String keyword) {
 		return lookUp(keyword, false);
+	}
+	
+	@Override
+	public int guessRootWord(UniversalDictionaryInterface d, String keyword){
+		return -1;
 	}
 	
 	@Override

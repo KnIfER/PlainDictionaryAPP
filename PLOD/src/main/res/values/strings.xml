@@ -256,4 +256,10 @@
 	<string name="edit_yy_note">修改已选笔记</string>
 	<string name="share_name">名称</string>
 	<string name="page_save_img">下载图片</string>
+	<string name="tapSelDuan">段落点选</string>
+	<string name="tapSelZi">单词点选</string>
+	<string name="tapSch">点击翻译</string>
+	<string name="makeTradition">转成繁体</string>
+	<string name="makeSimple">转成简体</string>
+	<string name="tapSelOpt">点选设置</string>
 </resources>

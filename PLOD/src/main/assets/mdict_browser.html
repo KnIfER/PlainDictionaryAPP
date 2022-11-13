@@ -3514,7 +3514,10 @@
 			if(window.SettingsBuildCard) {
 				doShowSettings();
 			} else {
-				loadJs("MdbR/settings.js", function(){doShowSettings()});
+				loadJs("MdbR/settings.js", function(){
+					initSettings(window, document);
+					doShowSettings()
+				});
 			}
 		}
 

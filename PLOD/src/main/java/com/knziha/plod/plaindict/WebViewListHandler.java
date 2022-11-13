@@ -123,6 +123,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public WebViewmy scrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
+	public int zhTrans;
 	public int tapSel;;
 	public boolean showNavor;
 	
@@ -1250,6 +1251,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return tapSch;
 	}
 	
+	public void togZhTrans(int zhTrans, WebViewmy mWebView) {
+		this.zhTrans = zhTrans;
+		String js = "var w=window;function cb(){zh_tran("+zhTrans+");}if(w.zh_tran)cb();else try{loadJs('//mdbr/zh.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'zh.js');}";
+		if (mWebView == null) {
+			evalJsAtAllFrames(js);
+		} else {
+			mWebView.evaluateJavascript(js, null);
+		}
+	}
+	
 	public void updateTapSel(int value) {
 		if (tapSel != value) {
 			opt.putInt("tapSel", value);
@@ -2215,6 +2226,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					translators.add(a.new_book(a.defDicts[5], a));
 					translators.add(a.new_book(a.defDicts[6], a));
 					translators.add(a.new_book(a.defDicts[7], a));
+					translators.add(a.new_book(a.defDicts[8], a));
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
@@ -2273,7 +2285,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 							if (value.length() > 2) {
 								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
 								if (value.length() > 0) {
-									a.popupWord(value, book, wv.frameAt, wv);
+									a.popupWord(value, book.getPath().equals("/ASSET2/译.web")?null:book, wv.frameAt, wv);
 								}
 							}
 						});

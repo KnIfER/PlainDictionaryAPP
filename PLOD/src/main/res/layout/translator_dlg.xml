@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
 	android:paddingBottom="8dp"
-	>
+	tools:ignore="ResourceCycle">
 	<TextView
 		android:id="@+id/gTrans"
 		style="@style/singlechoice_plain_theme1"
@@ -18,25 +19,25 @@
 		android:orientation="horizontal"
 		>
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/tapSelDuan"
+			android:id="@string/tapSelDuan"
 			style="@style/singlechoice_plain_theme1"
-			android:text="段落点选"
+			android:text="@string/tapSelDuan"
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			/>
 
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/tapSelZi"
+			android:id="@string/tapSelZi"
 			style="@style/singlechoice_plain_theme1"
-			android:text="单词点选"
+			android:text="@string/tapSelZi"
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			/>
 
 		<TextView
-			android:id="@+id/closeTapSel"
+			android:id="@string/close"
 			style="@style/singlechoice_plain_theme1"
-			android:text="关闭"
+			android:text="@string/close"
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			/>
@@ -48,9 +49,9 @@
 		android:orientation="horizontal"
 		>
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/tapSch"
+			android:id="@string/tapSch"
 			style="@style/singlechoice_plain_theme1"
-			android:text="点击翻译"
+			android:text="@string/tapSch"
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			/>
@@ -63,5 +64,4 @@
 			android:layout_weight="2"
 			/>
 	</LinearLayout>
-
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.View.OVER_SCROLL_ALWAYS;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -106,6 +107,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -223,6 +225,7 @@ import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
+import com.knziha.plod.widgets.ListViewOverscroll;
 import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.ListViewmy;
@@ -2484,6 +2487,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			,"/ASSET2/彩云小译.web"
 			,"/ASSET2/必应翻译.web"
 			,"/ASSET2/有道翻译.web"
+			,"/ASSET2/译.web"
 	};
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
@@ -5215,14 +5219,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (data.containsKey(JsonNames.fsz) && !row.containsKey(JsonNames.fsz)) {
 							data.remove(JsonNames.fsz);
 						}
-						cv.put("annot", newAnnot=data.toString());
+						newAnnot=data.toString();
+						if (notes != null) {
+							data.remove(JsonNames.note);
+							cv.put("annot", data.toString());
+							cv.put("notes", notes);
+						} else {
+							cv.put("annot", newAnnot);
+						}
 						CMN.debug("newNote::", data);
 					}
 					cursor.close();
 					cursor = null;
 					int cnt = database.update(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, cv, "id=?", wh);
 					CMN.debug("newNote::update=", cnt);
-					annot.mWebView.evaluateJavascript("PatchNote("+edit+", '"+newAnnot+"')", null);
+					annot.mWebView.evaluateJavascript("PatchNote("+edit+", "+newAnnot+")", null);
 					LexicalDBHelper.increaseAnnotDbVer();
 				}
 				catch (Exception e) {
@@ -6745,42 +6756,79 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null || dd.isDark!=GlobalOptions.isDark)
 				{
-					ViewGroup cv = (ViewGroup) getLayoutInflater().inflate(R.layout.translator_dlg, root, false);
+					View vv = (View) getLayoutInflater().inflate(R.layout.translator_dlg, root, false);
+					ListViewOverscroll cv = new ListViewOverscroll(this);
+					cv.setAdapter(new BaseAdapter() {
+						@Override
+						public int getCount() {
+							return 1;
+						}
+						@Override
+						public Object getItem(int position) {
+							return null;
+						}
+						@Override
+						public long getItemId(int position) {
+							return 0;
+						}
+						@Override
+						public View getView(int position, View convertView, ViewGroup parent) {
+							return vv;
+						}
+					});
 					dd = new AlertDialog.Builder(this)
 						.setView(cv)
 						.setTitle("翻译当前页面").create();
-					cv.setTag(dd);
-					OnClickListener click = new OnClickListener() {
+					
+					cv.setOverScrollMode(OVER_SCROLL_ALWAYS);
+					AlertDialog finalDd = dd;
+					OnClickListener click = cv.overScroll = new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							if(weblist!=null)
-								doTranslation(weblist, v.getId(), (AlertDialog) cv.getTag());
+							if(v==cv) {
+								PDICMainAppOptions.translatePageTS(cv.dir>0);
+								onMenuItemClick(mmi);
+							}
+							else if(weblist!=null)
+								doTranslation(weblist, v.getId(), finalDd);
 						}
 					};
 					//ViewUtils.setOnClickListenersOneDepth(cv, click, 999, null);
-					View v = cv;
-					View[] tickers = new View[4];
+					View v = vv;
+					View[] ticks = new View[4];
+					cv.setTag(ticks);
 					int tc=0;
 					while((v=ViewUtils.getNextView(v))!=null) {
 						if (v instanceof TextView) {
 							if(GlobalOptions.isDark)
 								((TextView) v).setTextColor(AppBlack);
 							v.setOnClickListener(click);
-						}
-						if (v instanceof TextMenuView) {
-							((TextMenuView) v).leftDrawable = getTickDrawable();
-							((TextMenuView) v).showAtRight = true;
-							tickers[tc++] = v;
+							if (v instanceof TextMenuView) {
+								((TextMenuView) v).leftDrawable = getTickDrawable();
+								((TextMenuView) v).showAtRight = true;
+								ticks[tc++] = v;
+							}
 						}
 					}
 					tagHolder.tag = null;
-					tagHolder.tag1 = tickers;
 				}
-				View[] tickers = (View[]) tagHolder.tag1;
-				//tickers[0].setActivated(weblist.getWebContextNonNull().translating>0);
-				tickers[0].setActivated((weblist.tapSel&0x4)!=0);
-				tickers[1].setActivated((weblist.tapSel&0x2)!=0);
-				tickers[2].setActivated(weblist.tapSch);
+				View[] ticks = (View[]) dd.mAlert.mView.getTag();
+				boolean ts = PDICMainAppOptions.translatePageTS();
+				if(ticks[0].getId()==R.string.makeTradition ^ ts) {
+					int[] idStr = ts?new int[]{R.string.makeTradition, R.string.makeSimple, R.string.tapSelOpt}
+						: new int[]{R.string.tapSelDuan, R.string.tapSelZi, R.string.tapSch};
+					for (int i = 0; i < 3; i++) {
+						((TextView)ticks[i]).setText(idStr[i]);
+						ticks[i].setId(idStr[i]);
+						if(ts) ticks[i].setActivated(false);
+					}
+				}
+				if (!ts) {
+					//ticks[0].setActivated(weblist.getWebContextNonNull().translating>0);
+					ticks[0].setActivated((weblist.tapSel&0x4)!=0);
+					ticks[1].setActivated((weblist.tapSel&0x2)!=0);
+					ticks[2].setActivated(weblist.tapSch);
+				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
 			case R.id.fetchWord: {
@@ -7695,24 +7743,43 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	};
 	
-	void doTranslation(WebViewListHandler weblistHandler, int id, DialogInterface dialog) {
+	void doTranslation(WebViewListHandler weblistHandler, int id, AlertDialog dialog) {
 		WebViewmy mWebView = weblistHandler.getWebContext();
 		CMN.debug("doTranslation::", weblistHandler.bMergingFrames, weblistHandler, mWebView);
 		if(mWebView!=null) {
 			boolean off;
-			if (id==R.id.close) {
+			if (id==R.id.close || id==R.string.close) {
+				if(dialog!=null) {
+					View[] vus = (View[]) dialog.mAlert.mView.getTag();
+					if (vus[0].getId()==R.string.makeTradition) {
+						weblistHandler.togZhTrans(0, null);
+						if(dialog!=null) dialog.dismiss();
+						return;
+					}
+				}
 				off = true;
 				mWebView.translating = -1;
 			} else if(id==R.id.gTrans) {
 				off = false;
 				mWebView.translating = 1;
-			} else if(id==R.id.tapSch) {
+			} else if(id==R.string.makeTradition) {
+				weblistHandler.togZhTrans(1, null);
+				if(dialog!=null) dialog.dismiss();
+				return;
+			} else if(id==R.string.makeSimple) {
+				weblistHandler.togZhTrans(2, null);
+				if(dialog!=null) dialog.dismiss();
+				return;
+			}  else if(id==R.string.tapSelOpt) {
+				showT("未实现");
+				return;
+			} else if(id==R.id.tapSch || id==R.string.tapSch) {
 				weblistHandler.togTapSch();
 				if(dialog!=null) dialog.dismiss();
 				return;
 			} else {
-				weblistHandler.updateTapSel(id==R.id.tapSelZi?2
-						:id==R.id.tapSelDuan?4
+				weblistHandler.updateTapSel(id==R.string.tapSelZi?2
+						:id==R.string.tapSelDuan?4
 						:0);
 				if(dialog!=null) dialog.dismiss();
 				return;
@@ -7737,7 +7804,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			// CMN.debug("onPageStarted::"+mWebView.wvclient);
+			//CMN.debug("onPageStarted::"+mWebView.wvclient, url);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
 				final BookPresenter invoker = mWebView.presenter;
@@ -7776,6 +7843,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if (PDICMainAppOptions.quickTranslatorV1() && mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
+			}
+			if (wlh.zhTrans>0) {
+				wlh.togZhTrans(wlh.zhTrans, mWebView);
 			}
 			if(delayedAttaching && mWebView.presenter==currentDictionary) { // todo same replace (mWebView.SelfIdx==adapter_idx, ->)
 				((PDICMainActivity)MainActivityUIBase.this).AttachContentViewDelayed(10);
@@ -8683,7 +8753,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			key = URLDecoder.decode(key,"UTF-8");
 		} catch (Exception ignored) { }
 		key=key.replace("/", SepWindows);
-		CMN.debug("chrochro_inter_key is", key, fakedDomainResponse);
+		CMN.debug("chrochro_inter_key is", key, fakedDomainResponse, invoker.getDictionaryName());
 		if(!key.startsWith(SepWindows)) key=SepWindows+key;
 		if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
 		

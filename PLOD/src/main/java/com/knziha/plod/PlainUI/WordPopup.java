@@ -42,11 +42,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.dictionarymodels.PlainMorphs;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.CMN;
@@ -73,8 +75,10 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -130,6 +134,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	LinearSplitView splitView;
 	AppBarLayout.BarSz barSz = new AppBarLayout.BarSz();
+	ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -138,6 +143,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		bAutoRefresh=false;
 		showType=1;
 		bottomPadding=0;
+		
+		forms.add(new PlainMorphs());
 	}
 	
 	@Override
@@ -1146,10 +1153,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						//}
 					}
 					else  {
-						idx = CCD.bookImpl.lookUp(popupKey, true);
+						idx = CCD.bookImpl.lookUp(popupKey, true, forms);
 						if (idx < -1 && use_morph) {
 							keykey = a.ReRouteKey(popupKey, true);
-							if (keykey != null) idx = CCD.bookImpl.lookUp(keykey, true);
+							if (keykey != null) idx = CCD.bookImpl.lookUp(keykey, true, forms);
 						}
 					}
 				}
@@ -1190,11 +1197,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 								}
 								else
 								{
-									idx = mdTmp.bookImpl.lookUp(popupKey, true);
+									idx = mdTmp.bookImpl.lookUp(popupKey, true, forms);
 									if (idx < -1 && use_morph) {
 										keykey = a.ReRouteKey(popupKey, true);
 										if (keykey != null)
-											idx = mdTmp.bookImpl.lookUp(keykey, true);
+											idx = mdTmp.bookImpl.lookUp(keykey, true, forms);
 									}
 									if(idx<0 && bForceJump){
 										idx = -1-idx;
@@ -1240,12 +1247,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							webx = null;
 						} else
 						if (CCD != a.EmptyBook) {
-							idx = CCD.bookImpl.lookUp(popupKey, true);
+							idx = CCD.bookImpl.lookUp(popupKey, true, forms);
 							if (idx < 0) {
 								if (!reject_morph && use_morph) {
 									keykey = a.ReRouteKey(popupKey, true);
 									if (keykey != null)
-										idx = CCD.bookImpl.lookUp(keykey, true);
+										idx = CCD.bookImpl.lookUp(keykey, true, forms);
 									else
 										reject_morph = true;
 								}
@@ -1281,6 +1288,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				this.rec = null;
 				this.CCD = CCD;
 			}
+			
 			resetPreviewMidPos();
 			
 			

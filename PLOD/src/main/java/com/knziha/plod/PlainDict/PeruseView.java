@@ -380,7 +380,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 					schKey = s.toString().trim();
 					if (!paused() || start==-1) {
-						int ret = currentDictionary.bookImpl.lookUp(schKey, false);
+						int ret = currentDictionary.bookImpl.lookUp(schKey);
 						if(ret!=-1) {
 							lv1.setSelectionFromTop(ret, (int) (20*density));
 							if(ToR && cvpolicy)
@@ -1512,7 +1512,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					&& currentDictionary!=BookEmpty
 					&& !TextUtils.isEmpty(schKey)
 			) {
-				voyager[stPos] = currentDictionary.bookImpl.lookUp(schKey,false);
+				voyager[stPos] = currentDictionary.bookImpl.lookUp(schKey);
 				voyager[stPos+2] = voyager[stPos];
 				voyager[stPos+1]=(int) (20*density);
 			}

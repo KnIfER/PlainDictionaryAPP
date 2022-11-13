@@ -386,8 +386,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return lookUp(keyword,false);
 	}
 	String HeaderTextStr, TailerTextStr;
-
-	public int lookUp(String keyword,boolean isSrict)
+	
+	public int lookUp(String keyword,boolean isSrict) {
+		return lookUp(keyword,isSrict,null);
+	}
+	
+	public int lookUp(String keyword, boolean isSrict, List<UniversalDictionaryInterface> morphogen)
 	{
 		if(isResourceFile) {
 			if(!keyword.startsWith("\\"))
@@ -503,7 +507,17 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				}
 			}
 			
+			if (morphogen != null && looseMatch.charAt(0)==other_key.charAt(0)) {
+				for(UniversalDictionaryInterface d:morphogen) {
+					int idx = d.guessRootWord(this, keyword);
+					if (idx>=0) {
+						return idx;
+					}
+				}
+			}
+			
 			if(isSrict) {
+				//SU.Log("isSrict:", morphogen, looseMatch.charAt(0),other_key.charAt(0));
 				SU.Log("isSrict:", keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
@@ -1709,7 +1723,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		} else {
 			if(mdd!=null && mdd.size()>0){
 				for(mdictRes mddTmp:mdd){
-					int idx = mddTmp.lookUp(canonicalName, false);
+					int idx = mddTmp.lookUp(canonicalName);
 					if(idx>=0) {
 						String matched=mddTmp.getEntryAt(idx);
 						//SU.Log("getSoundResourceByName", matched, canonicalName);
@@ -3210,6 +3224,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	@Override
 	public void saveConfigs(Object book) {
 	
+	}
+	
+	@Override
+	public int guessRootWord(UniversalDictionaryInterface d, String keyword){
+		return -1;
 	}
 }
 

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,9 +42,13 @@ public interface UniversalDictionaryInterface {
 	
 	void Reload(Object context);
 	
+	int lookUp(String keyword, boolean isSrict, List<UniversalDictionaryInterface> morphogen);
+	
 	int lookUp(String keyword,boolean isSrict);
 	
 	int lookUp(String keyword);
+	
+	int guessRootWord(UniversalDictionaryInterface d, String keyword);
 	
 	int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task);
 	

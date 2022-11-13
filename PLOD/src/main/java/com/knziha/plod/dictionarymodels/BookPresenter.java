@@ -2759,9 +2759,10 @@ function debug(e){console.log(e)};
 					if(annot!=null) {
 						String notes = cursor.getString(2);
 						if(sb==null) sb = new StringBuilder();
-						sb.append(cursor.getString(1)).append("\n"); // {}
-						sb.append(id).append("\n"); // note id
-						sb.append(notes==null?"":notes).append("\n"); // notes
+						// todo check input and enhance safty
+						sb.append(cursor.getString(1)).append("\0"); // {}
+						sb.append(id).append("\0"); // note id
+						sb.append(notes==null?"":notes).append("\0"); // notes
 					}
 				}
 			}
