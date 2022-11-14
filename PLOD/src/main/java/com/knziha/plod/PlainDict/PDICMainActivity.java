@@ -1821,7 +1821,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				
 			}, 350);
 			//showAppTweaker();
-			//if(CMN.testFLoatSearch)
+			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		}
 

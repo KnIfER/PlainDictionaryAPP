@@ -182,21 +182,6 @@
 
 	</style>
 
-
-	<style name="windowAnimationStylemyDebug" parent="@android:style/Animation.Dialog">
-		<item name="android:windowEnterAnimation">@anim/dialog_in</item>
-		<item name="android:windowExitAnimation">@anim/dialog_out</item>
-	</style>
-	<style name="DialogStyleDebug" parent="@android:style/Theme.Holo.Light.Dialog">
-		<item name="android:windowBackground">@android:color/transparent</item>
-		　　<item name="android:windowTitleStyle">@style/windowTitleStylemy</item>
-		　　<item name="android:windowContentOverlay">@null</item>
-		<item name="android:layout_marginTop">-8dp</item>
-		<item name="android:windowAnimationStyle">@style/windowAnimationStylemyDebug</item>
-		<item name="android:listDividerAlertDialog">@null</item>
-
-	</style>
-
 	<style name="RecyclerViewStyle">
 		<item name="android:layout_width">match_parent</item>
 		<item name="android:layout_height">match_parent</item>
@@ -210,10 +195,6 @@
 		<item name="fastScrollVerticalTrackDrawable">@drawable/line_drawable</item>
 	</style>
 
-
-	<style name="windowTitleBackgroundStylemy" parent="*android:WindowTitleBackground">
-		<item name="android:background">@color/colorPrimary</item>
-	</style>
 	<style name="windowTitleStylemy">
 		<item name="android:textSize">20sp</item>
 		<item name="android:layout_marginTop">8dp</item>

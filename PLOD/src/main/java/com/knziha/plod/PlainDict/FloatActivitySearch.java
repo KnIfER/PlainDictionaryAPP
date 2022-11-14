@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.ViewGroup;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
@@ -78,15 +79,22 @@ public class FloatActivitySearch extends FloatSearchActivity {
 	@Override
 	protected void exit() {
 		if(PDICMainAppOptions.getFloatClickHideToBackground()){
+			root.setAlpha(0);
 			moveTaskToBack(false);
 		} else {
 			super.exit();
 		}
 	}
-
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		root.setAlpha(1);
+	}
+	
 	@Override
 	protected void onDestroy() {
-		//CMN.Log("onDestroy");
+		CMN.debug("onDestroy");
 		MainShareActivity.hiddenId=null;
 		super.onDestroy();
 	}

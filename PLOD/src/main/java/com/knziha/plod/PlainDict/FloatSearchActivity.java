@@ -241,7 +241,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		};
     	overridePendingTransition(R.anim.abc_popup_enter, R.anim.abc_popup_enter);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-		|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+			|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         Intent intent = getIntent();
@@ -324,11 +324,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	protected void onDestroy(){
-		if(systemIntialized) {
-			dumpSettings();
-			root.getViewTreeObserver().removeOnGlobalLayoutListener(keyObserver);
-			keyObserver=null;
-		}
 		super.onDestroy();
     }
 	
@@ -395,8 +390,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
         main = mainframe;
 		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
-		if(PDICMainAppOptions.schPageFlt())
-			weblistHandler.togSchPage(0);
+//		if(PDICMainAppOptions.schPageFlt())
+//			weblistHandler.togSchPage(0);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
@@ -700,6 +695,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 	
 	protected void exit() {
+		if(systemIntialized) {
+			dumpSettings();
+			root.getViewTreeObserver().removeOnGlobalLayoutListener(keyObserver);
+		}
 		finish();
 	}
 

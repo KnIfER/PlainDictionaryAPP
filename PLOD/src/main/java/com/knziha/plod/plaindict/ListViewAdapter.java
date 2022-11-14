@@ -4,6 +4,7 @@ import static com.knziha.plod.dictionary.mdBase.markerReg;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import static com.knziha.plod.plaindict.PDICMainActivity.layoutScrollDisabled;
 
+import android.content.Intent;
 import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
@@ -187,8 +188,9 @@ public class ListViewAdapter extends BasicAdapter {
 	
 	@Override
 	public void onItemClick(int pos) {//lv1
-//		if(false) {
-//			a.testRandomWord();
+//		if (a.thisActType == MainActivityUIBase.ActType.PlainDict) {
+//			//a.testRandomWord();
+//			a.startActivity(new Intent(a,FloatActivitySearch.class).putExtra("EXTRA_QUERY", "happy"));
 //			return;
 //		}
 		if(pos<0 || !bOnePageNav && pos>=getCount()){
