@@ -72,8 +72,8 @@ public class AlloydPanel extends PlainAppPanel {
 			if(handler.tapSch) {
 				ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
 			}
-			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 5);
-			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 5);//new ArrayList<>(AllMenus.mItems);
+			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 8, 5);
+			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 8, 5);//new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
 			

@@ -1494,7 +1494,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		ViewGroup webviewHolder = hData.webviewHolder;
 		Toolbar bar = pageSchBar;
 		if (bar == null) {
-			bar = (Toolbar) a.getLayoutInflater().inflate(R.layout.searchbar, null);
+			bar = (Toolbar) a.getLayoutInflater().inflate(R.layout.searchbar, a.root, false);
 			bar.setNavigationIcon(R.drawable.abc_ic_clear_material);//abc_ic_ab_back_mtrl_am_alpha
 			EditText etSearch = bar.findViewById(R.id.etSearch);
 			//etSearch.setBackgroundColor(Color.TRANSPARENT);

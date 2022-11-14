@@ -77,6 +77,7 @@ public class VersionUtils {
 		opt.setFloatBottombarOnBottom(true);
 		opt.setPeruseBottombarOnBottom(true);
 		opt.setCacheCurrentGroup(false);
+		opt.shareTextOrUrl(0);
 		
 		if (ViewUtils.isKindleDark()) {
 			if(!opt.defaultReader.contains("dkB")) {

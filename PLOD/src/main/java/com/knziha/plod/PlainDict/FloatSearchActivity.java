@@ -300,7 +300,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		AllMenusStamp = Arrays.asList(AllMenus.getItems().toArray(new MenuItemImpl[AllMenus.size()]));
 	
 		MainMenu = SingleContentMenu = Multi_ContentMenu
-				= ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 3, 2, 4, 5, 6, 8, 9);
+				= ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 3, 2, 10, 4, 5, 6, 8, 9);
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		
 		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);

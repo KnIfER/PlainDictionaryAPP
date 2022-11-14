@@ -107,7 +107,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -1113,9 +1112,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				intent.setType(mime);
 			intent.addCategory(Intent.CATEGORY_DEFAULT);
 
-			boolean bCreateChooser = false;
-			boolean bMatchDefault = false;
-			boolean bQueryChooser = false;
 			boolean setFlags = false;
 			int mFlags = 0;
 			String key;
@@ -1137,14 +1133,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						for(String arrI:arr){
 							if(arrI.length()==1){
 								switch (Character.toLowerCase(arrI.charAt(0))){
-									case 'c':
-										bCreateChooser=true;
+									case 'c': // bCreateChooser
+										intentFalgs|=1;
 									break;
-									case 'q':
-										bQueryChooser=true;
+									case 'q': // bQueryChooser
+										intentFalgs|=1<<1;
 									break;
-									case 'd':
-										bMatchDefault=true;
+									case 'd': // bMatchDefault
+										intentFalgs|=1<<2;
+									break;
+									case 's': // bUseSystemUI
+										intentFalgs|=1<<3;
 									break;
 								}
 							}
@@ -1199,10 +1198,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				intent.addFlags(mFlags);
 			}
 
-			if(bCreateChooser) intentFalgs|=1;
-			if(bQueryChooser) intentFalgs|=1<<1;
-			if(bMatchDefault) intentFalgs|=1<<2;
-
 			if(intent.hasExtra("ClipData") && getVtk().mWebView!=null){
 				int finalIntentFalgs = intentFalgs;
 				getVtk().mWebView.evaluateJavascript(WebViewmy.CollectHtml, word -> {
@@ -1249,15 +1244,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if((intentFalgs&(1<<10))!=0) {
 			String title = shareHelper.getShareTitle();
-			shareUrlOrText(null, title, 0, intent);
+			shareUrlOrText(null, title, 0, intent, null);
 			return;
 		}
-		if((intentFalgs&0x1)!=0) {
-			if((intentFalgs&0x2)!=0) {
+		if((intentFalgs&0x1)!=0) { // bCreateChooser
+			if((intentFalgs&0x2)!=0 || (intentFalgs & 1 << 3)!=0) { // bQueryChooser || bUseSystemUI
 				/* bypass the system default */
 				PackageManager pm = getPackageManager();
 				List<Intent> candidates = new ArrayList<>();
-				List<ResolveInfo> activities = pm.queryIntentActivities(intent, (intentFalgs&0x4)!=0?PackageManager.MATCH_DEFAULT_ONLY:PackageManager.MATCH_ALL);
+				List<ResolveInfo> activities = pm.queryIntentActivities(intent, (intentFalgs&0x4/*bMatchDefault*/)!=0?PackageManager.MATCH_DEFAULT_ONLY:PackageManager.MATCH_ALL);
 				for (ResolveInfo currentInfo : activities) {
 					Intent candidate = new Intent(intent);
 					String packageName = currentInfo.activityInfo.packageName;
@@ -1267,10 +1262,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if (candidates.size() == 0)
 					candidates.add(intent);
-				Intent chooserIntent = Intent.createChooser(candidates.remove(0), "title");
-				if (candidates.size() > 0)
-					chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, candidates.toArray(new Parcelable[]{}));
-				startActivity(chooserIntent);
+				String title = shareHelper.getShareTitle();
+				if ((intentFalgs & 1 << 3) != 0) { // bUseSystemUI
+					Intent chooserIntent = Intent.createChooser(candidates.remove(0), "title");
+					if (candidates.size() > 0)
+						chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, candidates.toArray(new Parcelable[]{}));
+					startActivity(chooserIntent);
+				} else {
+					shareUrlOrText(null, title, 0, intent, activities);
+				}
 			}
 			else {
 				intent = Intent.createChooser(intent, "chooser");
@@ -5842,7 +5842,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showIconCustomizator();
 			} break;
 			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
-				shareUrlOrText();
+				shareUrlOrText(true);
 			} break;
 			case R.drawable.ic_baseline_nightmode_24: {
 				showNightModeSwitch();
@@ -6234,18 +6234,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		click_handled_not = false;
 	}
 	
-	public void shareUrlOrText() {
+	/** 0=文本（分享或发送单词或选择） 1=合并网址 */
+	public void shareUrlOrText(boolean shareLink) {
 		if (weblist!=null) {
-			int shareWhat = PDICMainAppOptions.shareTextOrUrl();
 			MenuGrid menuGrid = (MenuGrid) getReferencedObject(WeakReferenceHelper.menu_grid);
-			if (shareWhat>1 && menuGrid!=null && !ViewUtils.ViewIsId(menuGrid.bottombar, R.id.bottombar2)) {
-				shareWhat = 1;
-			}
-			if (shareWhat>1) {
-				shareUrlOrText(weblist.getShareUrl(shareWhat>3), null, shareWhat, null);
+//			if (shareWhat>1 && menuGrid!=null && !ViewUtils.ViewIsId(menuGrid.bottombar, R.id.bottombar2)) {
+//				shareWhat = 1;
+//			}
+			if (shareLink) {
+				shareUrlOrText(weblist.getShareUrl(true), null, shareLink, null);
 			} else {
 				WebViewmy wv = null;
 				View view = getCurrentFocus();
+
+				ArrayList<AppIconsAdapter.PrefetchedApps> activities = new ArrayList<>();
+				Intent intentSch=new Intent(Intent.ACTION_WEB_SEARCH);
+				intentSch.putExtra(SearchManager.QUERY, "test");
+				PackageManager pm = getPackageManager();
+				activities.add(new AppIconsAdapter.PrefetchedApps(intentSch, pm.queryIntentActivities(intentSch, PackageManager.MATCH_ALL)));
+				Intent intentSend=new Intent(Intent.ACTION_SEND);
+				intentSend.putExtra(Intent.EXTRA_TEXT, "test");
+				intentSend.setType("text/plain");
+				activities.add(new AppIconsAdapter.PrefetchedApps(intentSend, pm.queryIntentActivities(intentSend, PackageManager.MATCH_ALL)));
+				
 				if (view!=null) {
 					if (view.getId()==R.id.webviewmy) {
 						wv = ((WebViewmy)view);
@@ -6256,7 +6267,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							String text = tv.getText().toString();
 							int st = tv.getSelectionStart(), ed=tv.getSelectionEnd();
 							try {
-								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareWhat, null);
+								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareLink, activities);
 								return;
 							} catch (Exception e) { }
 						}
@@ -6272,7 +6283,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if (wv!=null) {
 					if (wv != null && wv.bIsActionMenuShown) {
-						int fineShare = shareWhat;
 						wv.evaluateJavascript("getSelection().toString()", value -> {
 							String newKey = "";
 							if (value.length() > 2) {
@@ -6281,17 +6291,52 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									newKey = value;
 								}
 							}
-							shareUrlOrText(null, newKey, fineShare, null);
+							shareUrlOrText(null, newKey, shareLink, activities);
 						});
 					} else {
-						shareUrlOrText(null, wv.weblistHandler.displaying, shareWhat, null);
+						shareUrlOrText(null, wv.weblistHandler.displaying, shareLink, activities);
 					}
 				}
 			}
 		}
 	}
 	
-	public void shareUrlOrText(String url, String text, int shareWhat, Intent intent) {
+	public void shareUrlOrText(String url, String text, boolean shareLnk, List<AppIconsAdapter.PrefetchedApps> activities) {
+		//CMN.Log("menu_icon6menu_icon6");
+		//CMN.rt("分享链接……");
+		if (url!=null || text!=null) {
+			int id = WeakReferenceHelper.share_dialog;
+			BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
+			AppIconsAdapter shareAdapter;
+			if(dlg==null) {
+				shareAdapter=new AppIconsAdapter(this);
+				putReferencedObject(id, dlg=shareAdapter.shareDialog);
+			} else {
+				shareAdapter = (AppIconsAdapter) dlg.tag;
+			}
+			//CMN.pt("新建耗时：");
+			if (url==null) {
+				//url = currentWebView.getUrl();
+			}
+			if (text!=null && activities!=null) {
+				for (AppIconsAdapter.PrefetchedApps pref : activities) {
+					Intent intent = pref.intent;
+					String act = intent.getAction();
+					if (Intent.ACTION_WEB_SEARCH.equals(act)) {
+						intent.putExtra(SearchManager.QUERY, text);
+					}
+					else if (intent.hasExtra(Intent.EXTRA_TEXT)) {
+						intent.putExtra(Intent.EXTRA_TEXT, text);
+					}
+				}
+			}
+			shareAdapter.pullAvailableApps(this, null, url, text, activities);
+			//shareAdapter.pullAvailableApps(this, null, "happy");
+			//CMN.pt("拉取耗时：");
+		}
+	}
+	
+	public void shareUrlOrText(String url, String text, int shareWhat, Intent intent, List<ResolveInfo> activities) {
 		//CMN.Log("menu_icon6menu_icon6");
 		//CMN.rt("分享链接……");
 		if (url!=null || text!=null || intent!=null) {
@@ -6308,7 +6353,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (url==null) {
 				//url = currentWebView.getUrl();
 			}
-			shareAdapter.pullAvailableApps(this, intent, url, text, shareWhat);
+			if(intent==null) {
+				activities=null;
+			}
+			// , shareWhat
+			shareAdapter.pullAvailableApps(this, intent, url, text, activities==null?null:Arrays.asList(new AppIconsAdapter.PrefetchedApps(intent, activities)));
 			//shareAdapter.pullAvailableApps(this, null, "happy");
 			//CMN.pt("拉取耗时：");
 		}
@@ -6685,6 +6734,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.refresh:{
 				wlh.getMergedFrame().reload();
 			} break;
+			case R.id.shareText:{
+				shareUrlOrText(false);
+			} break;
 			case R.drawable.ic_settings_black_24dp:{
 				launchSettings(0, 0);
 			} break;
@@ -6825,9 +6877,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if (!ts) {
 					//ticks[0].setActivated(weblist.getWebContextNonNull().translating>0);
-					ticks[0].setActivated((weblist.tapSel&0x4)!=0);
-					ticks[1].setActivated((weblist.tapSel&0x2)!=0);
+					ticks[0].setActivated((weblist.tapSel & 0x4) != 0);
+					ticks[1].setActivated((weblist.tapSel & 0x2) != 0);
 					ticks[2].setActivated(weblist.tapSch);
+				} else {
+					ticks[0].setActivated(weblist.zhTrans==1);
+					ticks[1].setActivated(weblist.zhTrans==2);
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
@@ -7748,15 +7803,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.debug("doTranslation::", weblistHandler.bMergingFrames, weblistHandler, mWebView);
 		if(mWebView!=null) {
 			boolean off;
-			if (id==R.id.close || id==R.string.close) {
-				if(dialog!=null) {
-					View[] vus = (View[]) dialog.mAlert.mView.getTag();
-					if (vus[0].getId()==R.string.makeTradition) {
-						weblistHandler.togZhTrans(0, null);
-						if(dialog!=null) dialog.dismiss();
-						return;
-					}
-				}
+			if (id==R.string.close) {
 				off = true;
 				mWebView.translating = -1;
 			} else if(id==R.id.gTrans) {
@@ -7778,6 +7825,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(dialog!=null) dialog.dismiss();
 				return;
 			} else {
+				if(id==R.id.close) {
+					if(dialog!=null) {
+						View[] vus = (View[]) dialog.mAlert.mView.getTag();
+						if (vus[0].getId()==R.string.makeTradition) {
+							weblistHandler.togZhTrans(0, null);
+							if(dialog!=null) dialog.dismiss();
+							return;
+						}
+					}
+				}
 				weblistHandler.updateTapSel(id==R.string.tapSelZi?2
 						:id==R.string.tapSelDuan?4
 						:0);

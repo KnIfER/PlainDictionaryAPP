@@ -21,4 +21,6 @@
 
 <!--7--><item android:title="取词模式" android:id="@+id/fetchWord" android:icon="@drawable/ic_baseline_colorize_24" app:showAsAction="always" android:checkable="true" />
 
+<!--8--><item android:title="分享单词…" android:id="@+id/shareText" android:icon="@drawable/ic_send_black_24dp" app:showAsAction="never"/>
+
 </menu>

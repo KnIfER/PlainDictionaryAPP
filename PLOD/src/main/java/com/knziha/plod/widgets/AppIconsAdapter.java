@@ -4,9 +4,7 @@ package com.knziha.plod.widgets;
 import static com.knziha.plod.widgets.ViewUtils.GrayBG;
 
 import android.annotation.SuppressLint;
-import android.app.SearchManager;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -22,7 +20,6 @@ import android.view.Window;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,7 +40,6 @@ import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
@@ -62,7 +58,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	private int landScapeMode;
 	/** true:sharing url */
 	private boolean shareLink;
-	private int shareWhat;
+	private boolean withIntent;
 	private int headBtnSz = 1;
 	//private String text;
 	
@@ -87,45 +83,34 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 		}
 		shareDialog.tag = this;
         itemClicker = v1 -> {
-			ViewHolder vh = (ViewHolder) v1.getTag();
-			int pos = vh.getLayoutPosition()-headBtnSz;
-			if (pos < 0) { // 选择分享方式
-				if (shareWhat < shareTargetsInfo.length) {
-					AlertDialog dlg = new AlertDialog.Builder(shareDialog.getContext())
-							.setTitle("选择要分享的内容：")
-							.setSingleChoiceItems(shareTargetsInfo, shareWhat, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									PDICMainAppOptions.shareTextOrUrl(which);
-									dialog.dismiss();
-									((MainActivityUIBase) a).shareUrlOrText();
-								}
-							})
-							//.setWikiText("", null)
-							.create();
-					ViewUtils.ensureWindowType(dlg, (MainActivityUIBase) a, null);
-					dlg.getWindow().setDimAmount(0.2f);
-					dlg.show();
+			try {
+				ViewHolder vh = (ViewHolder) v1.getTag();
+				int pos = vh.getLayoutPosition()-headBtnSz;
+				if (pos < 0) { // 选择分享方式
+					shareLink = !shareLink;
+					((MainActivityUIBase) a).shareUrlOrText(shareLink);
 				}
-			}
-			else { // 分享…
-				AppInfoBean appBean = list.get(pos);
-				Intent shareIntent = new Intent(appBean.intent);
-				shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
-				shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				if (shareLink && shareIntent.getData()!=null && shareIntent.getDataString().contains("localhost")) {
-					// 开启服务器
-					MainActivityUIBase act = (MainActivityUIBase) a;
-					if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
-						((PDICMainActivity)act).startServer(true);
+				else { // 分享…
+					AppInfoBean appBean = list.get(pos);
+					Intent shareIntent = new Intent(appBean.intent);
+					shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
+					shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					if (shareLink && shareIntent.getData()!=null && shareIntent.getDataString().contains("localhost")) {
+						// 开启服务器
+						MainActivityUIBase act = (MainActivityUIBase) a;
+						if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
+							((PDICMainActivity)act).startServer(true);
+						}
+					}
+					try {
+						a.startActivity(shareIntent);
+						shareDialog.dismiss();
+					} catch (Exception e) {
+						a.showT(e);
 					}
 				}
-				try {
-					a.startActivity(shareIntent);
-					shareDialog.dismiss();
-				} catch (Exception e) {
-					a.showT(e);
-				}
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 		};
         bottomSheet = View.inflate(a, R.layout.share_bottom_dialog, null);
@@ -151,61 +136,85 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         int target = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
         textPainter.setColor(target);
         indicator.setTextColor(target);
-        indicator.setText(shareTargetsInfo1[shareWhat]);
+        indicator.setText(shareTargetsInfo1[withIntent?2:shareLink?1:0]);
         bottomSheet.setBackground(GlobalOptions.isDark?GrayBG:null);
     }
-
+	
+	public static class PrefetchedApps{
+		public final Intent intent;
+		public final List<ResolveInfo> activities;
+		public PrefetchedApps(Intent intent, List<ResolveInfo> activities) {
+			this.intent = intent;
+			this.activities = activities;
+		}
+	}
     /** 获取应用列表 */
-    public void pullAvailableApps(Toastable_Activity a, Intent intent, String url, String text, int shareWhat) {
+    public void pullAvailableApps(Toastable_Activity a, Intent intent, String url, String text, List<PrefetchedApps> preFetched) {
 		list.clear();
-		if(intent==null) {
+		withIntent = intent!=null;
+		if(withIntent) {
+			shareLink=false;
+			headBtnSz = 0;
+			shareTargetsInfo1[2] = text;
+		} else {
 			shareLink=text==null;
-			this.shareWhat=shareWhat;
 			if(shareLink) {
 				intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 				//this.text = url;
 			} else {
-				if(shareWhat==1) {
-					intent=new Intent(Intent.ACTION_WEB_SEARCH);
-					intent.putExtra(SearchManager.QUERY, text);
-				} else {
-					intent=new Intent(Intent.ACTION_SEND);
-					intent.putExtra(Intent.EXTRA_TEXT, text);
-					intent.setType("text/plain");
-				}
+//				if(shareWhat==1) {
+//					intent=new Intent(Intent.ACTION_WEB_SEARCH);
+//					intent.putExtra(SearchManager.QUERY, text);
+//				} else {
+//					intent=new Intent(Intent.ACTION_SEND);
+//					intent.putExtra(Intent.EXTRA_TEXT, text);
+//					intent.setType("text/plain");
+//				}
 				//this.text = text;
 			}
 			headBtnSz = 1;
-		} else {
-			shareLink=false;
-			headBtnSz = 0;
-			shareTargetsInfo1[this.shareWhat=4] = text;
 		}
         pm = a.getPackageManager();
-        ResolveResolvedQuery(intent);
+        ResolveResolvedQuery(intent, preFetched);
         if(shareLink) {
 			intent=new Intent(intent);
 			intent.setAction(Intent.ACTION_SEND);
 			intent.putExtra(Intent.EXTRA_TEXT, url);
 			intent.putExtra(Intent.EXTRA_HTML_TEXT, "FUCK");
 			intent.setType("text/plain");
-			ResolveResolvedQuery(intent);
+			ResolveResolvedQuery(intent, preFetched);
 		}
         notifyDataSetChanged();
         show(a);
     }
 	
-	private void ResolveResolvedQuery(Intent intent) {
-		List<ResolveInfo> resolved = pm.queryIntentActivities(intent, PackageManager.MATCH_ALL);
-		for (ResolveInfo RinfoI : resolved) {
-			if (RinfoI.activityInfo.exported) {
-				AppInfoBean appBean = new AppInfoBean();
-				appBean.intent = intent;
-				appBean.data = RinfoI;
-				appBean.pm = pm;
-				appBean.pkgName = RinfoI.activityInfo.packageName;
-				appBean.appLauncherClassName = RinfoI.activityInfo.name;
-				list.add(appBean);
+	private void ResolveResolvedQuery(Intent intent, List<PrefetchedApps> preFetched) {
+		if (preFetched != null) {
+			for (PrefetchedApps pref : preFetched) {
+				for (ResolveInfo RinfoI : pref.activities) {
+					if (RinfoI.activityInfo.exported) {
+						AppInfoBean appBean = new AppInfoBean();
+						appBean.intent = pref.intent;
+						appBean.data = RinfoI;
+						appBean.pm = pm;
+						appBean.pkgName = RinfoI.activityInfo.packageName;
+						appBean.appLauncherClassName = RinfoI.activityInfo.name;
+						list.add(appBean);
+					}
+				}
+			}
+		} else {
+			List<ResolveInfo> resolved = pm.queryIntentActivities(intent, PackageManager.MATCH_ALL);
+			for (ResolveInfo RinfoI : resolved) {
+				if (RinfoI.activityInfo.exported) {
+					AppInfoBean appBean = new AppInfoBean();
+					appBean.intent = intent;
+					appBean.data = RinfoI;
+					appBean.pm = pm;
+					appBean.pkgName = RinfoI.activityInfo.packageName;
+					appBean.appLauncherClassName = RinfoI.activityInfo.name;
+					list.add(appBean);
+				}
 			}
 		}
 	}
@@ -231,22 +240,11 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	
 	String[] shareTargets = new String[]{
 			"文本"
-			,"搜索"
-			,"网页"
 			,"网页+"
-	};
-	
-	CharSequence[] shareTargetsInfo = new String[]{
-			"当前单词文本"
-			,"网页搜索"
-			,"打开局域网页版"
-			,"合并的局域网页版"
 	};
 	
 	String[] shareTargetsInfo1 = new String[]{
 			"分享单词："
-			,"搜索单词："
-			,"分享网址："
 			,"分享网址："
 			,null
 	};
@@ -255,7 +253,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 		DescriptiveImageView iv = holder.textImageView;
 		if (position < headBtnSz) { // 选择分享内容
-			((TextView)iv.getTag()).setText(shareTargets[shareWhat]);
+			((TextView)iv.getTag()).setText(shareTargets[shareLink?1:0]);
 		}
 		else {
 			position-=headBtnSz;

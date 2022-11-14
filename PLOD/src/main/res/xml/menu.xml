@@ -55,5 +55,7 @@
 
 <!--23--><item android:title="随机词条" android:id="@+id/wordshuffle" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="always"/>
 
+<!--24--><item android:title="分享单词…" android:id="@+id/shareText" android:icon="@drawable/ic_send_black_24dp" app:showAsAction="never"/>
+
 
 </menu>

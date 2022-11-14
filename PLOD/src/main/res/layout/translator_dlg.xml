@@ -35,7 +35,7 @@
 			/>
 
 		<TextView
-			android:id="@string/close"
+			android:id="@id/close"
 			style="@style/singlechoice_plain_theme1"
 			android:text="@string/close"
 			android:layout_width="0dp"
@@ -57,7 +57,7 @@
 			/>
 
 		<TextView
-			android:id="@+id/close"
+			android:id="@string/close"
 			style="@style/singlechoice_plain_theme1"
 			android:text="关闭翻译"
 			android:layout_width="0dp"
