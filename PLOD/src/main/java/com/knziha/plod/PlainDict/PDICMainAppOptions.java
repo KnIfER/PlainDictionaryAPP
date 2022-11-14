@@ -185,7 +185,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			if (nightUsePageColor()) {
 				sb.append("background:#")
 						.append(SU.toHexRGB(defaultReader.getInt("dkB", ViewUtils.isKindleDark()?0xFF333333:0xFFFFFFFF)))
-						.append(";");
+						.append("!important;");
 			}
 			if (nightUseFontColor()) {
 				sb.append("color:#")

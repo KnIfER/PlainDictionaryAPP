@@ -36,16 +36,19 @@ import java.util.ArrayList;
 //for menu list
 public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener
 {
-	public final ViewGroup rootPanel;
+	public ViewGroup rootPanel;
+	public AlertDialog dialog;
 	MainActivityUIBase a;
 	private TextPaint menu_grid_painter;
 	ArrayList<String> menuList = new ArrayList<>();
 	private int menu_width;
 	
 	public static class MenuItemViewHolder {
+		public int position;
 		public final DescriptiveImageView tv;
 		public MenuItemViewHolder(View convertView) {
 			tv = convertView.findViewById(R.id.text);
+			convertView.setTag(this);
 		}
 	}
 	
@@ -87,22 +90,23 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		this.a = a;
 		
 		this.rootPanel = rootPanel;
-		TwoWayGridView mainMenuLst = rootPanel.findViewById(R.id.schtools);
-		mainMenuLst.setHorizontalSpacing(0);
-		mainMenuLst.setVerticalSpacing(0);
-		mainMenuLst.setHorizontalScroll(true);
-		mainMenuLst.setStretchMode(GridView.NO_STRETCH);
-		mainMenuLst.setAdapter(this);
-		mainMenuLst.setOnItemClickListener(this);
-		mainMenuLst.setScrollbarFadingEnabled(false);
-		mainMenuLst.setSelector(a.mResource.getDrawable(R.drawable.listviewselector0));
-		mainMenuLst.setBackgroundColor(a.MainAppBackground);
-		
+		if (rootPanel!=null) {
+			TwoWayGridView mainMenuLst = rootPanel.findViewById(R.id.schtools);
+			mainMenuLst.setHorizontalSpacing(0);
+			mainMenuLst.setVerticalSpacing(0);
+			mainMenuLst.setHorizontalScroll(true);
+			mainMenuLst.setStretchMode(GridView.NO_STRETCH);
+			mainMenuLst.setAdapter(this);
+			mainMenuLst.setOnItemClickListener(this);
+			mainMenuLst.setScrollbarFadingEnabled(false);
+			mainMenuLst.setSelector(a.mResource.getDrawable(R.drawable.listviewselector0));
+			mainMenuLst.setBackgroundColor(a.MainAppBackground);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				mainMenuLst.setHorizontalScrollbarThumbDrawable(new ColorDrawable(0x45555555));
+			}
+		}
 		menu_grid_painter = DescriptiveImageView.createTextPainter(false);
 		
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			mainMenuLst.setHorizontalScrollbarThumbDrawable(new ColorDrawable(0x45555555));
-		}
 	}
 	
 	static class TopThumb extends ColorDrawable {
@@ -158,12 +162,13 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			MenuItemViewHolder holder;
 			if(convertView==null) {
 				convertView = a.getLayoutInflater().inflate(R.layout.menu_item, parent, false);
-				convertView.setTag(holder=new MenuItemViewHolder(convertView));
+				holder = new MenuItemViewHolder(convertView);
 				holder.tv.textPainter = menu_grid_painter;
 			} else {
 				holder = (MenuItemViewHolder) convertView.getTag();
 			}
 			//convertView.getLayoutParams().width = id==0?1:menu_width;
+			holder.position = position;
 			int tid = menu_ids[position];
 			holder.tv.setText(menuList.get(position));
 			int did = R.drawable.ic_view_comfy_2_black_24dp;
@@ -249,7 +254,11 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					}
 				}
 				if(mRowHeight==0) {
-					a.showTopSnack("无候选");
+					if (a.thisActType == MainActivityUIBase.ActType.PlainDict) {
+						a.showTopSnack("无候选");
+					} else {
+						a.showT("无候选");
+					}
 					break;
 				}
 				mRowHeight = (int) ((mRowHeight+1)*(new RadioSwitchButton(a).getTextSize()+15*GlobalOptions.density)*1.25f);
@@ -385,11 +394,19 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			} break;
 			case R.string.lucene_idx:
 			{
-				getLuceneHelper().showBuildIndexDlg();
+				try {
+					getLuceneHelper().showBuildIndexDlg();
+				} catch (Exception e) {
+					a.showT("不支持");
+				}
 			} break;
 			case R.string.lucene_search:
 			{
-				getLuceneHelper().showSearchEngineDlg();
+				try {
+					getLuceneHelper().showSearchEngineDlg();
+				} catch (Exception e) {
+					a.showT("不支持");
+				}
 			} break;
 			case R.string.book_notes:
 			{

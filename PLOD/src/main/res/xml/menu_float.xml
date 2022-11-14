@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
-	tools:ignore="AppCompatResource"
+	tools:ignore="AppCompatResource,DuplicateIds"
 	>
 <!--0--><item android:title="Action" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="always"/>
 
@@ -20,10 +20,18 @@
 
 <!--7--><item android:title="翻阅模式" android:id="@+id/peruseList" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
 
-<!--8--><item android:title="多页面设置" android:id="@+id/viewMode" android:icon="@drawable/ic_viewpager_carousel_vertical" app:showAsAction="never" />
+<!--8--><item android:title="多页面设置" android:id="@+id/viewMode" android:icon="@drawable/ic_viewpager_carousel_vertical" app:showAsAction="always" />
 
-<!--9--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="never"/>
+<!--9--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
 
 <!--10--><item android:title="分享单词…" android:id="@+id/shareText" android:icon="@drawable/ic_send_black_24dp" app:showAsAction="never"/>
+
+<!--11--><item android:title="切换单本搜索" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+
+<!--12--><item android:title="切换联合搜索" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+
+<!--13--><item android:title="@string/favorite" android:id="@+id/toolbar_action4" android:icon="@drawable/star_ic" app:showAsAction="always"/>
+
+<!--14--><item android:title="搜索工具栏…" android:id="@+id/schtools" android:icon="@drawable/tools_toolbar" app:showAsAction="never"/>
 
 </menu>

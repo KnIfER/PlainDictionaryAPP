@@ -2565,6 +2565,23 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		
+		@JavascriptInterface
+		public void randxLoaded(int sid) {
+			if (presenter!=null) {
+				CMN.debug("randxLoaded");
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					wv.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							wv.weblistHandler.getViewGroup().setAlpha(1);
+						}
+					}, 250);
+				}
+			}
+		}
+		
 		public static HashMap<String, WeakReference<String>> AjaxData = new HashMap<>();
 	
 		@JavascriptInterface

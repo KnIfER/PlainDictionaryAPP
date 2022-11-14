@@ -1297,7 +1297,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		orientationChanged();
+		//orientationChanged();
 
 //		if (mSelector == null) {
 //			useDefaultSelector();
@@ -1315,9 +1315,9 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	 */
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		if (orientationChanged()) {
-			setupScrollInfo();
-		}
+//		if (orientationChanged()) {
+//			setupScrollInfo();
+//		}
 		super.onLayout(changed, l, t, r, b);
 		mInLayout = true;
 		if (changed) {

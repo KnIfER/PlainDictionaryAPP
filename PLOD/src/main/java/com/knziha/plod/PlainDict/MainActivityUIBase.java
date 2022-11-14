@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.View.GONE;
 import static android.view.View.OVER_SCROLL_ALWAYS;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -7228,6 +7229,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(initPopup) {
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			weblistHandler.setUpContentView(cbar_key);
+			if (random) weblistHandler.checkUI();
 			weblistHandler.popupContentView(null, random?"随机页面":null);
 			if (presenter == null) {
 				randomPage.setPresenter(weblistHandler.mMergedBook);
@@ -7254,7 +7256,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return randomPageHandler;
 	}
 	
-	// loadWordToday
+	// loadWordToday 随机页面
 	public void showRandomShuffles(boolean refresh) {
 		try {
 			getMdictServer();
@@ -7265,13 +7267,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			randomPageHandler.getMergedFrame(wikibook);
 			String testUrl=webx.getHost()+"/randx";
 			refreshingRandom = refresh;
-			if(refresh || randomPageHandler.fetchWord == 0)
+			if(!refresh) refresh = randomPageHandler.fetchWord == 0;
+			if(refresh)
 			{
 				randomPageHandler.setFetchWord(-1, null);
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
 			randomPageHandler.setViewMode(null, 0, randomPage);
+			if (GlobalOptions.isDark && refresh) {
+				randomPageHandler.getViewGroup().setAlpha(0.2f);
+			}
+//			hdl.postDelayed(new Runnable() {
+//				@Override
+//				public void run() {
+//					randomPageHandler.getViewGroup().setAlpha(1);
+//				}
+//			}, 1000);
 			randomPageHandler.viewContent();
 		} catch (Exception e) {
 			CMN.debug(e);

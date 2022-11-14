@@ -560,10 +560,12 @@
 		var url=getRandomPage();
 		debug('getRandomPage::', url);
 		location.replace(url);
+		app.randxLoaded(sid.get());
 	} else {
 		var stored = app.getRandomPage(sid.get());
 		if(stored) {
 			generate(stored);
+			app.randxLoaded(sid.get());
 		} else {
 			var url=getRandomPage();
 			debug('word!!!',url);
@@ -586,6 +588,7 @@
 				debug('加载完成::',yearNow+'_'+month, e);
 				app.saveRandomPage(sid.get(), e);
 				generate(e);
+				app.randxLoaded(sid.get());
 			})
 		}
 	}</script>"

@@ -1171,6 +1171,9 @@ public class PlainWeb extends DictionaryAdapter {
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
+//		if (GlobalOptions.isDark) {
+//			randx="<body style='background:#000;height:100%;width:100%'></body>"+randx;
+//		}
 		return randx;
 	}
 	

@@ -22,17 +22,24 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.FrameLayout;
+import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
+import com.jess.ui.TwoWayGridView;
+import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -81,7 +88,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		
 		if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()) {
-			moveTaskToBack(false);
+			exit();
 			return true;
 		}
 		return false;
@@ -299,8 +306,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		AllMenusStamp = Arrays.asList(AllMenus.getItems().toArray(new MenuItemImpl[AllMenus.size()]));
 	
-		MainMenu = SingleContentMenu = Multi_ContentMenu
-				= ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 3, 2, 10, 4, 5, 6, 8, 9);
+		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 13, 1, 7, 3, 2, 10, 14);
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 11, 7, 3, 2, 10, 14, 4, 5, 6);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 12, 7, 3, 2, 10, 14, 4, 5, 6);
+		AllMenus.setItems(MainMenu);
+		//SingleContentMenu = Multi_ContentMenu = MainMenu;
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		
 		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
@@ -628,8 +638,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		toolbar.findViewById(R.id.move0).setOnTouchListener(Toucher);
         root.setOnTouchListener(Toucher);
 
-        findViewById(R.id.toolbar_action1).setOnLongClickListener(this);
-
     	systemIntialized=true;
     	
 		File additional_config = new File(opt.pathToMainFolder().append("appsettings.txt").toString());
@@ -686,7 +694,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		schuiList = SearchUI.FloatApp.表;
 		etSearch = findViewById(R.id.etSearch);
 		super.findFurtherViews();
-		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
 		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
@@ -797,9 +804,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	public void onIdClick(View v, int id){
 		switch(id) {
-			case R.id.toolbar_action1:{
-				toggleBatchSearch();
-			} break;
 			//返回
 			case R.id.ivBack:{
 				if((etSearch_toolbarMode&1)==0) {//search
@@ -816,6 +820,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					}
 					weblistHandler.removeAllViews();
 					etSearch_ToToolbarMode(0);
+					AllMenus.setItems(MainMenu);
 				}
 			} break;
 		}
@@ -830,6 +835,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
 		switch (item.getItemId()) {
+			case R.id.toolbar_action1:{
+				if(isLongClicked) break;
+				toggleBatchSearch();
+			} break;
 			case R.id.text_tools:{
 				if(isLongClicked) break;
 				handleTextTools();
@@ -856,6 +865,45 @@ public class FloatSearchActivity extends MainActivityUIBase {
             case R.id.toolbar_action5:
 				weblistHandler.togSchPage(0);
             break;
+			case R.id.schtools:{//切换搜索工具栏
+				if(isLongClicked){ break;}
+				int W=root.getMeasuredWidth(); if(W==0)W=dm.widthPixels;
+				if (schTools == null || W!= IU.parsint(schTools.rootPanel.getTag()))
+				{
+					schTools = new SearchToolsMenu(this, null);
+					LinearLayout all = new LinearLayout(this);
+					all.setOrientation(LinearLayout.VERTICAL);
+					LinearLayout row=null;
+					View itemView;
+					int cc=0; int width=0,itemWidth;
+					View.OnClickListener itemClick = v -> {
+						int pos = ((SearchToolsMenu.MenuItemViewHolder) v.getTag()).position;
+						schTools.onItemClick(null, v, pos, v.getId());
+						if(pos<2) schTools.dialog.dismiss();
+					};
+					while (cc<schTools.getCount()) {
+						itemView = schTools.getView(cc++, null, all);
+						itemWidth = itemView.getLayoutParams().width;
+						if(row==null || width+itemWidth > W) {
+							row = new LinearLayout(this);
+							all.addView(row);
+							width = 0;
+						}
+						width += itemWidth;
+						row.addView(itemView);
+						if (itemView.getId() != 0) {
+							itemView.setOnClickListener(itemClick);
+						}
+					}
+					ScrollView sv = new ScrollView(this);
+					sv.addView(all);
+					schTools.rootPanel = sv;
+					sv.setLayoutParams(new FrameLayout.LayoutParams(-1, (int) (10*GlobalOptions.density + Math.min(mResource.getDimension(R.dimen._65_)*all.getChildCount(), dm.heightPixels/2))));
+					sv.setTag(W);
+					schTools.dialog = new AlertDialog.Builder(this).setView(sv).create();
+				}
+				schTools.dialog.show();
+			} break;
 			default:
 				return super.onMenuItemClick(item);
         }
@@ -889,6 +937,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void DetachContentView(boolean leaving) {
 		ViewUtils.removeView(contentview);
+		AllMenus.setItems(MainMenu);
 	}
 //
 //	@Override
