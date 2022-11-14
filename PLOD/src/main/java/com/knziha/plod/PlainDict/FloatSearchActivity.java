@@ -396,7 +396,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
 		if(PDICMainAppOptions.schPageFlt())
-			weblistHandler.togSchPage();
+			weblistHandler.togSchPage(0);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
@@ -855,7 +855,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:
-				weblistHandler.togSchPage();
+				weblistHandler.togSchPage(0);
             break;
 			default:
 				return super.onMenuItemClick(item);

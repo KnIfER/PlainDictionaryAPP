@@ -7341,7 +7341,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bNeedBringUp=bNeedBringUp&&weblistHandler.pageSchBar.getParent()==null;
 		}
 		if(bNeedBringUp){
-			weblistHandler.togSchPage();
+			weblistHandler.togSchPage(0);
 		}
 	}
 	

@@ -45,7 +45,6 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -55,7 +54,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -88,11 +86,7 @@ import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
-import com.knziha.plod.PlainUI.MenuGrid;
-import com.knziha.plod.PlainUI.NewTitlebar;
-import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
-import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -1795,8 +1789,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		intent.setType("text/plain");
 		startActivity(intent);*/
 
-		if(opt.schPage())
-			weblistHandler.togSchPage();
+//		if(opt.schPage())
+//			weblistHandler.togSchPage(2);
+
 //		if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("译");
 		//if(false)
 		if (BuildConfig.DEBUG) {
@@ -3135,7 +3130,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			/* 页内查找 */
 			case R.id.toolbar_action13:{
-				wlh.togSchPage();
+				wlh.togSchPage(0);
 			} break;
 			case R.id.toolbar_action7://切换词典
 				if(isLongClicked) break;

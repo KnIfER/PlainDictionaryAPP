@@ -2777,6 +2777,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=23, shift=1) public static boolean nightDimImg() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=23, shift=1) public static void nightDimImg(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=24, shift=1) public static boolean schpageAutoKeyboard() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=24, shift=1) public static void schpageAutoKeyboard(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=25) public static boolean schpageAtBottom() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=25) public static void schpageAtBottom(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	
 	///////
 	///////

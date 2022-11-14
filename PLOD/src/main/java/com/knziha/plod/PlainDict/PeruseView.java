@@ -1066,7 +1066,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	final void toggleSearchPage() {
-		weblistHandler.togSchPage();
+		weblistHandler.togSchPage(0);
 	}
 	
 	public void prepareProgressBar(View progressBar) {

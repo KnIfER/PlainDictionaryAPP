@@ -5,6 +5,7 @@ import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
+import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
 import android.animation.Animator;
@@ -24,9 +25,11 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.widget.BaseAdapter;
+import android.widget.Checkable;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridView;
@@ -44,7 +47,6 @@ import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
-import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -1487,7 +1489,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	void togSchPage() {
+	void togSchPage(int forceShow) {
 		final HighlightVagranter hData = getHData();
 		hData.HlightIdx =
 		hData.AcrArivAcc = 0;
@@ -1557,15 +1559,24 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				return true;
 			});
 		}
-		boolean b1=bar.getParent()==null;
+		boolean b1=bar.getParent()==null||forceShow==1;
 		if (b1) {
-			contentviewAddView(bar, 0);
-			bar.findViewById(R.id.etSearch).requestFocus();
+			int idx = PDICMainAppOptions.schpageAtBottom() ? 1 : 0;
+			if(contentUIData.webcontentlister.indexOfChild(bar)!=idx)
+				VU.removeView(bar);
+			contentviewAddView(bar, idx);
+			if(forceShow==0 && PDICMainAppOptions.schpageAutoKeyboard())
+				pageSchEdit.postDelayed(() -> {
+					pageSchEdit.requestFocus();
+					a.imm.showSoftInput(pageSchEdit, InputMethodManager.SHOW_IMPLICIT);
+				}, 100);
 			bar.setTag(pageSchEdit.getText());
 			SearchOnPage(null);
 		}
 		else {
-			ViewUtils.removeView(bar);
+			if (ViewUtils.removeView(bar)) {
+				a.imm.hideSoftInputFromWindow(a.root.getWindowToken(), 0);
+			}
 			clearLights(webviewHolder);
 			bar.setTag(null);
 		}
@@ -1585,7 +1596,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		int id=v.getId();
 		switch (id) {
 			case R.id.home:
-				togSchPage();
+				togSchPage(0);
 				a.imm.hideSoftInputFromWindow(pageSchEdit.getWindowToken(), 0);
 				break;
 			case R.id.ivDeleteText:
@@ -1681,7 +1692,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		final SettingsPanel settings = new SettingsPanel(a, opt
 				, new String[][]{
 						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "区分大小写", "以空格分割关键词", "通配符不匹配空格", "额外搜索变音字母"}
-						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转"/*, "使用音量键"*/}
+						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "自动弹出键盘"}
+						,new String[]{"显示位置", "页面顶部", "页面底部"}
 					}
 				, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */
 					, makeInt(101, 4, false) // pageSchUseRegex
@@ -1696,13 +1708,30 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					, makeInt(2, 55, false) // schPageAutoTurn
 					, makeInt(2, 56, false) // schPageAutoType
 					//, makeInt(2, 58, false) // schPageNavAudioKey
+					, makeInt(8, 24, true) // schpageAutoKeyboard
+				}
+				, new int[]{Integer.MAX_VALUE
+					, makeDynInt(1, 1, !PDICMainAppOptions.schpageAtBottom())
+					, makeDynInt(1, 2, PDICMainAppOptions.schpageAtBottom())
 				}
 		}, null);
 		settings.init(a, a.root);
 		settings.setActionListener(new SettingsPanel.ActionListener() {
 			@Override
 			public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
-				if (flagIdx==101) {
+				if (dynamic) {
+					if(!val) {
+						((Checkable)v).setChecked(!val);
+					}
+					val = flagPos==2;
+					PDICMainAppOptions.schpageAtBottom(val);
+					ViewGroup vg = (ViewGroup) v.getParent();
+					int idx = vg.indexOfChild(v)-flagPos;
+					((Checkable)vg.getChildAt(idx+1)).setChecked(!val);
+					((Checkable)vg.getChildAt(idx+2)).setChecked(val);
+					togSchPage(1);
+				}
+				else if (flagIdx==101) {
 					if (flagPos==4) {
 						for (int i = 6; i <= 8; i++)
 							settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(val?0.5f:1);
