@@ -1561,11 +1561,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		boolean b1=bar.getParent()==null||forceShow==1;
 		if (b1) {
-			int idx = PDICMainAppOptions.schpageAtBottom() ? 1 : 0;
+			boolean bottom = PDICMainAppOptions.schpageAtBottom() && a.thisActType == MainActivityUIBase.ActType.PlainDict;
+			int idx =  bottom ? 1 : 0;
 			if(contentUIData.webcontentlister.indexOfChild(bar)!=idx)
 				VU.removeView(bar);
 			contentviewAddView(bar, idx);
+			if (bottom) {
+				a.setSoftInputMode(a.softModeStd=a.softModeResize);
+			}
 			if(forceShow==0 && PDICMainAppOptions.schpageAutoKeyboard())
+				ViewUtils.setVisible(contentUIData.bottombar2, false); // todo 点击edit时总是提前隐藏，避免闪跳。
 				pageSchEdit.postDelayed(() -> {
 					pageSchEdit.requestFocus();
 					a.imm.showSoftInput(pageSchEdit, InputMethodManager.SHOW_IMPLICIT);
@@ -1579,12 +1584,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			clearLights(webviewHolder);
 			bar.setTag(null);
+			if (PDICMainAppOptions.schpageAutoKeyboard() && contentUIData.bottombar2.getVisibility()!=View.VISIBLE) {
+				ViewUtils.setVisible(contentUIData.bottombar2, true);
+			}
 		}
 		
 		if (src==SearchUI.MainApp.MAIN) {
 			opt.schPage(b1);
 		} else if (src==SearchUI.FloatApp.MAIN) {
-			PDICMainAppOptions.schPageFlt(b1);
+			//PDICMainAppOptions.schPageFlt(b1);
 		} else if (src==SearchUI.Fye.MAIN) {
 			opt.schPageFye(b1);
 		}
@@ -1618,7 +1626,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					boolean nxt=id==R.id.recess;
 					//CMN.Log("下一个");
 					//111
-					if(PDICMainAppOptions.schPageNavHideKeyboard()){
+					if(!PDICMainAppOptions.schpageAtBottom() && PDICMainAppOptions.schPageNavHideKeyboard()){
 						//a.imm.hideSoftInputFromWindow((a.PeruseSearchAttached()? a.peruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
 						a.imm.hideSoftInputFromWindow(pageSchEdit.getWindowToken(), 0);
 					}

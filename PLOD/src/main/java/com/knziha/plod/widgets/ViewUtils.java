@@ -1691,6 +1691,11 @@ public class ViewUtils extends VU {
 		return heightDiff > softKeyboardHeight * GlobalOptions.density;
 	}
 	
+	public static int keyboardHeight(View rootView) {
+		rootView.getWindowVisibleDisplayFrame(rect);
+		return rootView.getBottom() - rect.bottom;
+	}
+	
 	
 	public static String getInvokerPackage(Context context, Intent intent, boolean initialize, long appWakeTm) {
 		if (intent.hasExtra(FloatBtn.EXTRA_INVOKER)) {

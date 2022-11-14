@@ -113,6 +113,7 @@ import android.widget.TextView;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
@@ -368,6 +369,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public final Bag bNeverBlink = new Bag(false);
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
 	public int textFlag =0;
+	public Drawable mNavBtnDrawable;
 	final public TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
 			if (isContentViewAttached() && ActivedAdapter!=null && (textFlag &0x4)!=0) {
@@ -2385,7 +2387,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		boolean b1=thisActType==ActType.PlainDict;
 		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
-				, b1?((PDICMainActivity)this).UIData.etSchBar:null, mainframe, true);
+				, b1?((PDICMainActivity)this).UIData.etSchBar:null, mainframe, false);
 		etTools.initWay = this;
 		etTools.schSql = "src&"+(schuiMain|schuiMainSchs)+"!=0";
 		
@@ -3283,7 +3285,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	/** 0-搜索  1-返回  2-删除  4-撤销   */
-	boolean etSearch_ToToolbarMode(int mode) {
+	public boolean etSearch_ToToolbarMode(int mode) {
 		//CMN.Log("etSearch_ToToolbarMode::", mode);
 		if(thisActType==ActType.PlainDict) {
 //			ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
@@ -6085,9 +6087,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//adaptermy2.combining_search_result.expectedPos=0;
 				//webholder.removeOnLayoutChangeListener(((resultRecorderCombined)adaptermy2.combining_search_result).OLCL);
 				layoutScrollDisabled=false;
-				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				findWebList(v);
 				boolean slided = v.getTag()==v; /** see{@link #getPageListener} */
+				//if(!slided) imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				if (slided) v.setTag(null);
 				if (!slided && weblist.bottomNavWeb()) {
 					weblist.NavWeb(delta);
@@ -11763,6 +11765,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(cm!=null){
 			cm.setPrimaryClip(ClipData.newPlainText(null, text));
 			showT(text);
+		}
+	}
+	
+	public final static int softModeHold = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
+	public final static int softModeResize = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+	public final static int softModeNothing = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
+	
+	public int softMode;
+	public int softModeStd = softModeNothing;
+	
+	public void setSoftInputMode(int mode) {
+		if(softMode!=mode) {
+			softMode=mode;
+			getWindow().setSoftInputMode(mode);
 		}
 	}
 }

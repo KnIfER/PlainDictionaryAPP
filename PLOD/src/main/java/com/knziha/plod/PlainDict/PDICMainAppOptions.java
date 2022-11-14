@@ -1465,8 +1465,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	@Metaline(flagPos=8) public static boolean schPageFlt(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=8) public static void schPageFlt(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	// 废弃
+//	@Metaline(flagPos=8) public static boolean schPageFlt(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+//	@Metaline(flagPos=8) public static void schPageFlt(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
 	public static boolean getDoubleClickMaximizeClickSearch() {
 		return false;//(ThirdFlag & 0x200l) != 0x200l;
@@ -2780,8 +2781,26 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=24, shift=1) public static boolean schpageAutoKeyboard() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=24, shift=1) public static void schpageAutoKeyboard(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=25) public static boolean schpageAtBottom() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=25) public static void schpageAtBottom(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=25, shift=1) public static boolean schpageAtBottom() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=25, shift=1) public static void schpageAtBottom(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=26) public static boolean hideSchTools() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=26) public static void hideSchTools(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	
+	/////////////////////End Eighth Flag///////////////////////////////////
+	/////////////////////Start NINTH Flag///////////////////////////////////
+	//SE
+	private static long NinthFlag=0;
+	public long getNinthtFlag() {
+		if(NinthFlag==0) {
+			return NinthFlag=getLong("M9F",0);
+		}
+		return NinthFlag;
+	}
+	public final long NinthFlag() {
+		return NinthFlag;
+	}
 	
 	
 	///////
@@ -2942,8 +2961,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=34, shift=1) public static boolean getWarnDisenaddAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=34, shift=1) public static void setWarnDisenaddAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
-		@Metaline(flagPos=35) public static boolean translatePageTS() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=35) public static boolean translatePageTS() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=35) public static void translatePageTS(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36) public static void etHistoryExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	
 	public int getPseudoInitCode(int pseudoInit) {
 		return (getPseudoInitCode()&~3)|pseudoInit;

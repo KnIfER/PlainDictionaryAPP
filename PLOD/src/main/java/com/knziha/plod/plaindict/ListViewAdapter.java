@@ -256,7 +256,7 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		lastClickedPos = pos;
 		
-		if(!a.bWantsSelection) {
+		if(!a.bWantsSelection && userCLick) {
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			a.etSearch.clearFocus();
 		}

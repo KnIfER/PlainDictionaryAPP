@@ -52,7 +52,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SearchbarTools extends PlainAppPanel implements View.OnTouchListener, View.OnFocusChangeListener {
 	protected ViewGroup rootView;
 	private int fc;
+	private boolean etHistoryExpanded;
 	ViewGroup lv;
+	private ImageView expandBtn;
 	private RecyclerView mRecycler;
 	private RecyclerView.Adapter mAdapter;
 	private boolean isDirty;
@@ -74,8 +76,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	ImageView drpBtn;
 	public View topbar;
 	public String schSql = "src==128";
-	private View etSchExit;
-	private FrameLayout.LayoutParams etSchExitLP;
+	private View RvTools;
+	private FrameLayout.LayoutParams lpRvTools;
+	private FrameLayout.LayoutParams lpRv;
 	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {
@@ -167,10 +170,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		this.initView=initView;
 		this.scrollHideIM=scrollHideIM;
 		//showType = 2;
-		setEtSch(etSearch);
+		bindEdit(etSearch);
 	}
 	
-	public void setEtSch(EditText e) {
+	public void bindEdit(EditText e) {
 		if (e!=null) {
 			this.etSearch=e;
 			e.setOnTouchListener(this);
@@ -210,10 +213,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	private void initList() {
 		if (mRecycler==null) {
-			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.recyclerview, a.root, false);
+			etHistoryExpanded = PDICMainAppOptions.etHistoryExpanded();
+			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.etsch_recyclerview, a.root, false);
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
-			View backBtn = lv.findViewById(R.id.etBack);
-			ViewUtils.setOnClickListenersOneDepth((ViewGroup) backBtn.getParent(), this, 1, 0, null);
+			expandBtn = lv.findViewById(R.id.more);
+			ViewUtils.setOnClickListenersOneDepth((ViewGroup) expandBtn.getParent(), this, 1, 0, null);
 			int spanSz = 3; GridLayoutManager lm;
 			if(scrollHideIM) {
 				lm = new GridLayoutManager(a, spanSz) {
@@ -339,14 +343,17 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			//rv.setOverScrollMode(View.OVER_SCROLL_NEVER);
 			//rv.setPadding(0, (int) (GlobalOptions.density*8),0,0);
 			ViewUtils.addViewToParent(lv, (ViewGroup) drpBtn.getParent());
-			lv.setBackgroundColor(a.MainAppBackground);
-			lv.setPadding(pad/4,0,pad/4,0);
-			lv.getLayoutParams().height=-2;
-			etSchExit = lv.getChildAt(1);
-			etSchExitLP = (FrameLayout.LayoutParams) etSchExit.getLayoutParams();
+			rv.setBackgroundColor(a.MainAppBackground);
+			rv.setPadding(pad/4,0,pad/4,0);
+			lv.getLayoutParams().height=-1;
+			RvTools = lv.getChildAt(1);
+			lpRvTools = (FrameLayout.LayoutParams) RvTools.getLayoutParams();
+			lpRv = (FrameLayout.LayoutParams) rv.getLayoutParams();
 			mRecycler = rv;
 		}
 		ViewUtils.setVisible(drpBtn, false);
+		redrawExpandBtn();
+		
 		if (!ViewUtils.isVisible(lv)) {
 			ViewUtils.setVisible(lv, true);
 		}
@@ -366,7 +373,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	private void resizeModeSoft(boolean soft) {
 		if (initView!=null && !PDICMainAppOptions.etSchAlwaysHard()) {
-			((PDICMainActivity)a).setSoftInputMode(soft?PDICMainActivity.softModeResize:PDICMainActivity.softModeNothing);
+			((PDICMainActivity)a).setSoftInputMode(soft?PDICMainActivity.softModeResize:a.softModeStd);
 		}
 	}
 	
@@ -384,7 +391,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if(shouldOpenDrpDwn()) {
 			if(initView!=null && PDICMainAppOptions.delaySchLvHardSoftUI()) {
 				resizeModeSoft(true);
-				lv.setVisibility(View.INVISIBLE);
+				if(lv!=null)lv.setVisibility(View.INVISIBLE);
 				a.hdl.postDelayed(this::initList, 230); // 自动，稍后
 			}
 			else initList(); // 自动，立即。
@@ -490,6 +497,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				hideIM();
 				dismiss();
 			break;
+			case R.id.more:
+				PDICMainAppOptions.etHistoryExpanded(etHistoryExpanded = !etHistoryExpanded);
+				redrawExpandBtn();
+				mRecycler.requestLayout();
+			break;
 			case R.id.foldBtn:
 				ViewUtils.setVisibleV2(lv, false);
 				ViewUtils.setVisible(drpBtn, true);
@@ -546,6 +558,20 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	public void show() {
+		if(!PDICMainAppOptions.hideSchTools()) {
+			//rootView = PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root;
+			if (!isVisible()) {
+				toggle(rootView, null, -1);
+				refresh();
+			}
+		}
+		if (this==a.etTools && a.ivBack.getId()!=R.id.multiline) {
+			a.ivBack.setImageResource(R.drawable.ic_menu_material);
+			a.ivBack.setId(R.id.multiline);
+		}
+	}
+	
+	public void forceShow() {
 		if (!isVisible()) {
 			//rootView = PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root;
 			toggle(rootView, null, -1);
@@ -574,6 +600,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if(flowBtn!=null)
 			flowBtn.setOnClickListener(null);
 		resizeModeSoft(false);
+		a.etSearch_ToToolbarMode(0);
 	}
 	
 	int etScrollStart;
@@ -610,22 +637,23 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			}
 		} else {
 			dismiss();
+			a.etSearch_ToToolbarMode(0);
 		}
 	}
 	
 	@Override
 	public void refreshSoftMode(int height) {
-		if(etSchExitLP!=null && ViewUtils.isVisible(lv)) {
-			boolean hard = PDICMainAppOptions.etSchAlwaysHard();
-			if (etSchExit.getParent()==lv ^ !hard) {
-				ViewUtils.addViewToParent(etSchExit, hard? (ViewGroup) lv.getParent() :lv);
-				etSchExitLP = (FrameLayout.LayoutParams) etSchExit.getLayoutParams();
-			}
-			if(!hard) height=0;
-			if (etSchExitLP.bottomMargin != height) {
-				etSchExitLP.bottomMargin = height;
-				etSchExit.requestLayout();
-			}
+		if(lpRvTools !=null && ViewUtils.isVisible(lv)) {
+//			boolean hard = PDICMainAppOptions.etSchAlwaysHard();
+//			if (RvTools.getParent()==lv ^ !hard) {
+//				ViewUtils.addViewToParent(RvTools, hard? (ViewGroup) lv.getParent() :lv);
+//				lpRvTools = (FrameLayout.LayoutParams) RvTools.getLayoutParams();
+//			}
+//			if(!hard) height=0;
+//			if (lpRvTools.bottomMargin != height) {
+//				lpRvTools.bottomMargin = height;
+//				RvTools.requestLayout();
+//			}
 		}
 	}
 	
@@ -644,9 +672,14 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			for (int i = 0; i < ld.getNumberOfLayers()-1; i++) {
 				ld.getDrawable(i).setColorFilter(cf);
 			}
-			if (lv != null) {
-				lv.setBackgroundColor(MainAppBackground);
+			if (mRecycler != null) {
+				mRecycler.setBackgroundColor(MainAppBackground);
 			}
 		}
+	}
+	
+	private void redrawExpandBtn() {
+		expandBtn.setImageResource(etHistoryExpanded?R.drawable.ic_baseline_unfold_less_24:R.drawable.ic_baseline_unfold_more_24);
+		lpRv.height = etHistoryExpanded?-1:(int) ((int) (GlobalOptions.density*48) * 3.5);
 	}
 }

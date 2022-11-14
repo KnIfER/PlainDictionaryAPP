@@ -5,12 +5,12 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:background="@color/colorPrimary"
 	>
 	<androidx.recyclerview.widget.RecyclerView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		tools:listitem="@layout/listview_item0"
+		android:background="@color/colorPrimary"
 		app:fastScrollEnabled="true"
 		app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
 		app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
@@ -49,6 +49,35 @@
 			android:foreground="@drawable/popup_background3__"
 			android:foregroundTint="#fff"
 			android:rotation="180"
+			android:layout_marginRight="3dp"
+			/>
+
+		<com.knziha.plod.widgets.CheckableImageView
+			android:id="@+id/more"
+			android:layout_width="@dimen/_35_"
+			android:layout_height="@dimen/_35_"
+			android:layout_below="@+id/autoBtn"
+			android:background="?attr/listChoiceBackgroundIndicator"
+			tools:src="@drawable/ic_baseline_unfold_more_24"
+			android:padding="5dp"
+			android:foreground="@drawable/popup_background3__"
+			android:foregroundTint="#fff"
+			android:rotation="180"
+			android:layout_marginRight="3dp"
+			/>
+
+		<com.knziha.plod.widgets.CheckableImageView
+			android:id="@+id/settings"
+			android:layout_width="@dimen/_35_"
+			android:layout_height="@dimen/_35_"
+			android:layout_below="@+id/autoBtn"
+			android:background="?attr/listChoiceBackgroundIndicator"
+			android:src="@drawable/ic_settings_black_24dp"
+			android:padding="5dp"
+			android:foreground="@drawable/popup_background3__"
+			android:foregroundTint="#fff"
+			android:rotation="180"
+			android:alpha="0.45"
 			/>
 
 	</LinearLayout>

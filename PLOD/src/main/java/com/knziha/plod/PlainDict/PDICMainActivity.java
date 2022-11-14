@@ -64,6 +64,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -166,7 +167,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public String lastFullKeyword;
 	public String lastKeyword;
 	
-	ActionBarDrawerToggle mDrawerToggle;
+	public ActionBarDrawerToggle mDrawerToggle;
 	
 	private MyHandler mHandle;
 	public AsyncTaskWrapper<String, Object, String> mAsyncTask;
@@ -174,6 +175,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public ActivityMainBinding UIData;
 	KeyboardHeightPopupListener keyboardHeightPopupListener;
+	boolean keyboardShown = false;
 	
 	/** 定制底栏一：<br/>
 	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
@@ -207,6 +209,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private EnchanterReceiver locationReceiver;
 	private VirtualDisplay mDisplay;
 	private long lastResumeTime;
+	private boolean bImmersive;
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -900,7 +903,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
 		}
 		
-		setSoftInputMode(softModeNothing);
+		softModeStd = softModeResize;
+		setSoftInputMode(softModeStd);
 		
 		boolean transit = PDICMainAppOptions.getTransitSplashScreen();
 		if(!transit) setTheme(R.style.PlainAppTheme);
@@ -947,11 +951,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar.setId(R.id.action_context_bar);
 		mDrawerToggle = new ActionBarDrawerToggle(this, UIData.drawerLayout, toolbar, R.string.open, R.string.close);
 		mDrawerToggle.syncState();// 添加按钮
-		
+		mNavBtnDrawable = toolbar.mNavButtonView.getDrawable();
 		toolbar.addNavigationOnClickListener((v,e) -> {
 			if(etTools.isVisible()) {
 				etTools.dismiss();
-				etTools.hideIM();
 				return false;
 			}
 			if(wordPopup.isVisible()) {
@@ -960,6 +963,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			if(isContentViewAttached()) {
 				DetachContentView(true);
+				etTools.hideIM();
+				etSearch_ToToolbarMode(0);
 				return false;
 			}
 			if(!UIData.drawerLayout.isDrawerVisible(GravityCompat.START)) {
@@ -1083,27 +1088,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		super.findFurtherViews();
 	}
 	
-	private int softMode;
 	private boolean bottombarHidden;
-	public final static int softModeHold = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
-	public final static int softModeResize = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-	public final static int softModeNothing = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
-	
-	public void setSoftInputMode(int mode) {
-		if(softMode!=mode) {
-			softMode=mode;
-			getWindow().setSoftInputMode(mode);
-			if (systemIntialized) {
-				if(mode==softModeResize) {
-					bottombar.getLayoutParams().height=0;
-					contentUIData.bottombar2.getLayoutParams().height=0;
-				} else {
-					bottombar.getLayoutParams().height=barSzBot;
-					contentUIData.bottombar2.getLayoutParams().height=barSzBot;
-				}
-			}
-		}
-	}
 	
 	void onDrawerOpened() {
 		drawerOpen = true;
@@ -1505,17 +1490,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					, 0.5f, -1, Gravity.CENTER, 0);
 		
 		
-		keyboardHeightPopupListener = new KeyboardHeightPopupListener(this);
-		keyboardHeightPopupListener.init().setHeightListener(new KeyboardHeightPopupListener.HeightListener() {
-			@Override
-			public void onHeightChanged(int height) {
-				//showT(""+height+settingsPanel);
-				if(settingsPanel!=null) {
-					GlobalOptions.softInputHeight = height;
-					settingsPanel.refreshSoftMode(height);
-				}
-			}
-		});
+//		keyboardHeightPopupListener = new KeyboardHeightPopupListener(this);
+//		keyboardHeightPopupListener.init().setHeightListener(new KeyboardHeightPopupListener.HeightListener() {
+//			@Override
+//			public void onHeightChanged(int height) {
+//				showT(""+height+settingsPanel);
+//				CMN.debug("键盘::onHeightChanged", height);
+//			}
+//		});
 		
 		if(savedInstanceState!=null) {
 			// 状态恢复
@@ -1664,15 +1646,39 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
 		//if(false)
-//		root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-//			int lastW, lastH;
-//			@Override
-//			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-//				CMN.Log("onLayoutChange::", root.getHeight(), dm.heightPixels);
-//				CMN.Log("onLayoutChange::", bottom, oldBottom);
-//				CMN.Log("onLayoutChange::", getWindow().getDecorView().getHeight());
-//				if(softMode!=softModeHold) {
-//					boolean mKeyboardUp = isKeyboardShown(root);
+		root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+			int lastW, lastH;
+			@Override
+			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+				CMN.Log("键盘::onLayoutChange::", root.getHeight(), dm.heightPixels);
+				CMN.Log("onLayoutChange::", bottom, oldBottom);
+				int keyBoardHeight = ViewUtils.keyboardHeight(root);
+				CMN.Log("onLayoutChange::keyBoardHeight=", keyBoardHeight);
+				if(keyboardShown ^ keyBoardHeight>100) {
+					keyboardShown = !keyboardShown;
+					//softMode==softModeResize
+					CMN.Log("键盘::onLayoutChange::keyboardShown", keyboardShown);
+					UIData.appbar.strechNoBotom = keyboardShown;
+					if(keyboardShown) {
+						VU.setVisible(bottombar, false);
+						VU.setVisible(contentUIData.bottombar2, false);
+					} else {
+						VU.setVisible(bottombar, true);
+						VU.setVisible(contentUIData.bottombar2, true);
+					}
+					if (bImmersive) {
+						getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, null, appbar);
+					} else {
+						(isContentViewAttached()?contentUIData.webcontentlister:bottombar.getParent()).requestLayout();
+					}
+//					if(settingsPanel!=null) {
+//						GlobalOptions.softInputHeight = keyBoardHeight;
+//						settingsPanel.refreshSoftMode(keyBoardHeight);
+//					}
+				}
+				
+				if(softMode!=softModeHold) {
+					//boolean mKeyboardUp = isKeyboardShown(root);
 //					if (bottombarHidden != mKeyboardUp) {
 //						View bottombar2 = UIData.bottombar;
 //						if (mKeyboardUp) {
@@ -1689,9 +1695,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 ////							contentUIData.bottombar2.setVisibility(View.VISIBLE);
 //						}
 //					}
-//				}
-//			}
-//		});
+				}
+			}
+		});
 		
 		
 		try {
@@ -1815,7 +1821,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				
 			}, 350);
 			//showAppTweaker();
-			if(CMN.testFLoatSearch)
+			//if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		}
 
@@ -2192,7 +2198,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (floatApp!=null) {
 				floatApp.close();
 			}
-			keyboardHeightPopupListener.dismiss();
+//			keyboardHeightPopupListener.dismiss();
 		}
 		if(ServiceEnhancer.isRunning) {
 			if(PDICMainAppOptions.getAutoClearNotificationOnExit() || !PDICMainAppOptions.getNotificationEnabled()) {
@@ -2529,7 +2535,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			} break;
 			case R.id.multiline:
-				etTools.show();
+				boolean show = !etTools.isVisible();
+				PDICMainAppOptions.hideSchTools(!show);
+				if (show) {
+					etTools.forceShow();
+				} else {
+					etTools.dismiss();
+				}
 			break;
 			//切换搜索模式
 			case R.id.toolbar_action1:{
@@ -2652,6 +2664,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	/** 切换主界面沉浸式 */
 	public void setNestedScrollingEnabled(boolean bImmersive) {
+		this.bImmersive = bImmersive;
 		boolean v1 = bImmersive;// && !PDICMainAppOptions.ImmersiveForContentsOnly();
 		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(v1);
 		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(v1);
