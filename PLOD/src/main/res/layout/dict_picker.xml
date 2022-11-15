@@ -158,7 +158,7 @@
 
 	<ViewStub
 		android:id="@+id/view_stub"
-		android:layout_gravity="top|center"
+		android:layout_gravity="bottom|center"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:minHeight="?attr/actionBarSize"

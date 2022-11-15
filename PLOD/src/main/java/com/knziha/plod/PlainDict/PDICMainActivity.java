@@ -2393,7 +2393,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean isHalo=!GlobalOptions.isDark;
 		MainAppBackground = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
 		int filteredColor = MainAppBackground;//CU.MColor(MainBackground,ColorMultiplier);
-		CMN.AppBackground = MainAppBackground;
+		CMN.AppBackground = MainBackground;
 		UIData.viewpager.setBackgroundColor(AppWhite);
 		lv2.setBackgroundColor(AppWhite);
 		bottombar.setBackgroundColor(filteredColor);

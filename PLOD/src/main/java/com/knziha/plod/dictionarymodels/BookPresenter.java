@@ -237,7 +237,7 @@ public class BookPresenter
 				app.openImage(sid.get(), current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
 			}
 		}
-	 }, false, true)*/
+	 }, false, false)*/
 	@Metaline()
 	public final static String imgLoader =StringUtils.EMPTY;
 	
@@ -562,6 +562,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public int getTitleBackground() {
+		CMN.debug("getTitleBackground="+getUseTitleBackground(), this, tbgColor);
 		return getUseTitleBackground()?tbgColor:0;
 	}
 	

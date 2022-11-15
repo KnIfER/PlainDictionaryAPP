@@ -23,7 +23,8 @@ if(!window.tpshc){
         }
     });
     window.addEventListener('touchend',window.tpshtd=function(e){
-        //console.log('popuping ini...shzh=', t.clientX, t.clientY, t.pageX, t.pageY);
+        //debug('popuping::touchend ini...');
+        var w=this;
         if(tRange && bAutoGranu && granu>0 && !w._touchtarget_lck) {
             if(e.timeStamp-tTime>=350) return
             var t = e.changedTouches[0];
@@ -55,7 +56,7 @@ window.addEventListener('click',window.tpshc=function(e){
     if(w.frameElement){sz=parent.window.shzh;app=parent.window.app}
     debug('wrappedClickFunc 2', e);
     var curr = e.srcElement;
-    debug('popuping...设置=', sz);
+    debug('popuping::click...设置=', sz);
     function pointInRange(r, rg, rc) {
         var x = rc.left;
         var y = rc.top;

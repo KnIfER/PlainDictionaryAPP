@@ -30,6 +30,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	protected int MainColorStamp;
 	protected View bgView;
 	protected boolean bPopIsFocusable;
+	protected boolean resizeDlg = false;
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
 	protected int MainAppBackground;
@@ -108,6 +109,9 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 		dialog.setContentView(settingsLayoutHolder);
 		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
 		dialog.show();
+		if (resizeDlg) {
+			dialog.getWindow().setSoftInputMode(MainActivityUIBase.softModeResize);
+		}
 		
 		int padbot = bottomPadding;
 		if(padbot!=0) {

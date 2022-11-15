@@ -22,16 +22,17 @@
 </style>
 
 <script>
+var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c 子页面 ","color:(#FFF);background:#00F;",t[0],t[1],t[2],t[3],t[4])};
 (function(){
-var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c 子页面 ","color:(#FFF);background:#00F;",t[0],t[1],t[2],t[3],t[4])}
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
-window._edEtJts={};
+window._merge={};
+window.shzh=0;
 var remarked=false;
 window.edEtJts=function(a, b, c){
-	if(!_edEtJts[b]) {
-		window.addEventListener(a, b, c);
-		_edEtJts[b] = 1;
+	if(!_merge[b]) {
+		(b.d?document:window).addEventListener(a, b, c);
+		_merge[b] = 1;
 	}
 };
 window.addEventListener('load',wrappedOnLoadFunc,false);
@@ -64,7 +65,7 @@ function wrappedOnLoadFunc(){
 		var inf=fe.dictInfo;
 		if(pw) {
 			// window.addEventListener('click',pw.tpshc);
-			for(var i=0,j;j=pw._edEtJts[i++];) {
+			for(var i=0,j;j=pw._merge[i++];) {
 				edEtJts(j[0], j[1], j[2])
 			}
 			// if(pw.paddingLeft) {

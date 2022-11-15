@@ -620,20 +620,16 @@ public class ViewUtils extends VU {
 		}
 	}
 	
-	/**
-	 document.addEventListener('selectionchange', function(e){
-	 	e=getSelection().isCollapsed;
-	 	if(window.shzh&0x1000 ^ !e) {
-	 		if(e)
-				window.shzh&=~0x1000;
-			else {
-	 			window.shzh|=0x1000;
-	 		}
+	/**var fn=function(e){
+	 	var w=this.defaultView,app=w.app; if(w.frameElement) app=parent.window.app;
+	 	e=w.getSelection().isCollapsed;
+	 	if(w.shzh&0x1000 ^ !e) {
+	 		if(e) w.shzh&=~0x1000;
+			else w.shzh|=0x1000;
 	 		app.textMenu(sid.get(), !e);
 	 	}
-	 });
-	 * */
-	@Metaline()
+	 };fn.d=1;(window._merge?window:document).addEventListener('selectionchange', fn);*/
+	@Metaline(trim = false)
 	public static String toolsBoost = "";
 	
 	public final static void toolsBoost(WebViewmy mWebView) {
@@ -1922,4 +1918,9 @@ public class ViewUtils extends VU {
 			CMN.debug(e);
 		}
 	}
+	
+	public static float distance(float v, float v1) {
+		return v*v+v1*v1;
+	}
+	
 }

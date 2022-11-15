@@ -144,10 +144,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	/**}', d=document,
-	 head = d.getElementsByTagName('head')[0],
+	 head = d.head,
 	 sty = d.createElement('style');
 	 sty.id = "_PDict_Darken";
-	 if(!d.getElementById(sty.id))
+	 if(head && !d.getElementById(sty.id))
 	 {
 		 sty.class = "_PDict";
 		 sty.type = 'text/css';

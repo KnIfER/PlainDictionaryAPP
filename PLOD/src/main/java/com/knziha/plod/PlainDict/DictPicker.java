@@ -1,6 +1,7 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.debug;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -108,6 +110,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		this.splitter = splitter;
 		this.type = reason;
 		this.loadManager = a.loadManager;
+		this.resizeDlg = true;
 	}
 	
 	@SuppressLint("ResourceType")
@@ -179,6 +182,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				if(Build.VERSION.SDK_INT<=23)dialogLayout.setBackgroundResource(R.drawable.popup_background3);
 				else dialogLayout.getBackground().setColorFilter(null);
 				pdictBtm.getBackground().setColorFilter(null);
+			}
+			if (Searchbar != null) {
+				Searchbar.setBackgroundColor(a.MainAppBackground);
 			}
 			MainColorStamp = a.MainAppBackground;
 		}
@@ -510,6 +516,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				if(wtSearch!=null && ViewUtils.isVisibleV2(Searchbar)) {
 					a.imm.hideSoftInputFromWindow(wtSearch, 0);
 				}
+				// 点击界面背景
 				dismiss();
 				break;
 			case R.id.dictName:
@@ -544,7 +551,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					searchbar.mNavButtonView.setOnClickListener(this);
 					ViewUtils.ResizeNavigationIcon(searchbar);
 					//searchbar.setContentInsetsAbsolute(0, 0);
-					searchbar.setBackgroundColor(a.MainBackground);
+					searchbar.setBackgroundColor(a.MainAppBackground);
 					ViewGroup VG = (ViewGroup) searchbar.getChildAt(0);
 					SetImageClickListener(VG, true);
 					etSearchDict = (EditText) VG.findViewById(R.id.etSearch);
@@ -577,6 +584,64 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					} else {
 						ViewUtils.setVisible(Searchbar, true);
 						etSearchDict.postDelayed(showImmAby, 200);
+					}
+				}
+				if (pinned()) {
+					if(etSearchDict.getTag()==null) {
+						etSearchDict.setTag(etSearchDict);
+						root.setOnTouchListener(new View.OnTouchListener() {
+							int diffY = 0, orgX, orgY;
+							boolean checkMove = false;
+							View scrollView;
+							@Override
+							public boolean onTouch(View v, MotionEvent event) {
+								if (pinned()) {
+									if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+										int[] vLocation = new int[2];
+										mRecyclerView.getLocationOnScreen(vLocation);
+										diffY = vLocation[1];
+										root.getLocationOnScreen(vLocation);
+										diffY = vLocation[1] - diffY;
+										//debug("offser", diffY);
+										int y = (int) (event.getY() + diffY);
+										scrollView = null;
+										if (y >= 0 && y < mRecyclerView.getHeight()) {
+											if (event.getX() > mRecyclerView.getWidth()) {
+												//scrollView = a.thisActType == MainActivityUIBase.ActType.PlainDict ? ((PDICMainActivity)a).UIData.viewpagerPH : a.mlv;
+												scrollView = mRecyclerView;
+												checkMove = true;
+											} else {
+												scrollView = mRecyclerView;
+												checkMove = false;
+											}
+											orgX = (int) event.getRawX();
+											orgY = (int) event.getRawY();
+										}
+									}
+									if (scrollView != null) {
+										event.offsetLocation(0, diffY);
+										scrollView.dispatchTouchEvent(event);
+										if (checkMove) {
+											if (ViewUtils.distance(event.getRawX() - orgX, event.getRawY() - orgY) > 45 * GlobalOptions.density) {
+												checkMove = false;
+												return true;
+											}
+											return false;
+										}
+										return true;
+									}
+								}
+								return false;
+							}
+						});
+					}
+					if (wordPopup != null && wordPopup.isVisible() && wordPopup.getLastShowType()==2) {
+						try {
+							wordPopup.dialog.getWindow().setSoftInputMode(wordPopup.isMaximized()?MainActivityUIBase.softModeResize:MainActivityUIBase.softModeHold);
+							//CMN.debug("wordPopup.isMaximized()::", wordPopup.isMaximized());
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
 					}
 				}
 				if (!isVisible())

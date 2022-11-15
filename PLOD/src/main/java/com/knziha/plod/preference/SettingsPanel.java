@@ -40,6 +40,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected int rootHash;
 	public RadioSwitchButton actView;
 	
+	/**0=view;1=popup;2=dialog*/
 	public int getLastShowType() {
 		return lastShowType;
 	}

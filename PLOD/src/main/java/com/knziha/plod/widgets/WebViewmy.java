@@ -995,11 +995,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//CMN.Log("SelectAllText", SelectAllText, System.identityHashCode(SelectAllText));
 		int findCount=2;
 		int ToolsOrder=0;
+		MenuItem fanYi = null;
 		for(int i=0;i<menu.size();i++) {
 			MenuItem m = menu.getItem(i);
 			String title = m.getTitle().toString();
 			int id = m.getItemId();
-			//CMN.debug("menu id::", menu, title, Integer.toHexString(id));
+			//CMN.debug("menu id::", menu, title, m.getGroupId(), Integer.toHexString(id));
 			if(title.equals(shareText)) {
 				menu.removeItem(id);//移除 分享
 				i--;
@@ -1007,6 +1008,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			} else if(title.equals(SelectAllText)) {
 				ToolsOrder=m.getOrder();
 				menu.removeItem(id);//移除 全选
+				i--;
+				findCount--;
+			}
+			if(i<2 && title.equals("翻译")) {
+				fanYi = m;
+				menu.removeItem(id);
 				i--;
 				findCount--;
 			}
@@ -1018,6 +1025,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		menu.add(0,R.id.toolbar_action1,++ToolsOrder,R.string.tools);
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
+		
+//		if (fanYi != null) {  // 只因翻译应用跳转慢、或无联网，故置末尾。
+//			MenuItem m = menu.add(0, fanYi.getItemId(), menu.size() - 1, "翻译");
+//		}
 	}
 	
 	

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!--最初为mdict-js制作，后为局域网服务器提供界面，与联合搜索时合并的多页面模式共享代码（多webview v.s. 多frame）。-->
+<!--最初为mdict-js制作，后为局域网服务器提供界面，与联合搜索时合并的多页面模式共用代码（多webview v.s. 多frame）。-->
 <html>
 <head>
 	<meta name="description" content="MDict JS">
@@ -699,24 +699,22 @@
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
     	function gn(e,p){return _gn(e, p.firstElementChild);};
-		window.kit |= 0;
+		window.kit ||= 0;
 		window.rawAddEvent = window.addEventListener;
-		window._edEtJts = [];
+		window._merge = [];
+		//window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
+		//window.debug=function(...e){console.log('fatal web d::', e)};
+		//window.debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
+		window.debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c Web ","color:#333!important;background:#0FF;",t[0],t[1],t[2],t[3],t[4])}
 		window.addEventListener = function(a,b,c,d) {
-			var b1=b!=window.webpc;
-			// console.log('addEventListener::', a,b,c,d)
-			if(b===window.tpshc||!b1||d) {
+			if(d!=false) {
+				//debug('addEventListener::!!!', a,b,c,d)
+				_merge.push([a,b,c])
 				for(var i=0,fx;fx=frames[i];i++) {
-					if(fx.item && (b1||fx.img)) {
-						var w_ = fx.item.contentWindow;
-						if(b1) {
-							if(w_.edEtJts){
-								w_.edEtJts(a, b, c)
-							}
-							_edEtJts.push([a,b,c])
-						} else {
-							w_.addEventListener(a,b,c);
-						}
+					fx = fx.item;
+					if(fx) fx = fx.contentWindow;
+					if(fx && fx.edEtJts){
+						fx.edEtJts(a, b, c)
 					}
 				}
 				return;
@@ -863,7 +861,7 @@
 			el.addEventListener(mobile?'touchstart':'mousedown', resizer.down, cap||false);
 		}
 
-	    window.addEventListener("popstate",function(event){
+	    rawAddEvent("popstate",function(event){
 			var page=0;
 			if(event.state!==null){
 				page=event.state;
@@ -925,10 +923,6 @@
 		/**/
 
 		function Initialize() {
-			//window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
-			//window.debug=function(...e){console.log('fatal web d::', e)};
-			//window.debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
-			window.debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c Web ","color:#333!important;background:#0FF;",t[0],t[1],t[2],t[3],t[4])}
 			if(String.prototype.startsWith != 'function') {
 				loadJs("MdbR/KitPatch.js", doInitialize);
 			} else {
@@ -2408,7 +2402,7 @@
 				}
 			}
 			if(inf.title) {
-				inf._tbg|=0;
+				inf._tbg||=0;
 				inf.dictTitle.innerText=inf.name;
 				if(inf.tbg) {
 					inf.title.style.background='linear-gradient(to top, #'+inf.tbg+' , '+whiterRgb(inf.tbg)+')';
@@ -2769,8 +2763,8 @@
 	
 		updateProgress();
 		//$(window).on('resize', 0, function() {
-	
-		$(window).resize(function() {
+
+		rawAddEvent('resize', function() {
 			if(seekBarmy){
 				var seekBarmyCon  = ge("seekbar_container");
 				if(seekBarmyCon.hasChildNodes()) {
@@ -3976,8 +3970,8 @@
 			if(shyst==undefined)
 				shyst=e.changedTouches[0].clientY;
 			document.body.classList.add('dragging'); 
-			addEventListener(resizer.m, SH_M, 1);
-			addEventListener(resizer.u, SH_U, 1);
+			rawAddEvent(resizer.m, SH_M, 1);
+			rawAddEvent(resizer.u, SH_U, 1);
 		}
 		function SH_U(e) {
 			document.body.classList.remove('dragging'); 
@@ -3998,9 +3992,15 @@
 		function LoadIMG(fx) {
 			if(!window.webpc) {
 				if(!webpcW) {
-					loadJs("/mdbr/imgLoader.js");
-					webpcW=1;
+					webpcW = [];
+					loadJs("/mdbr/imgLoader.js", function(){
+						for(var i=0;i<webpcW.length;i++) {
+							try{webpcW[i].item.contentWindow.addEventListener('click',webpc);}catch(e){debug(e)}
+						}
+						webpcW = 0;
+					});
 				}
+				webpcW.push(fx);
 			} else {
 				fx.item.contentWindow.addEventListener('click',window.webpc);
 			}

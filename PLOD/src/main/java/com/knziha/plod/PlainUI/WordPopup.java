@@ -1521,4 +1521,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 		}
 	}
+	
+	public boolean isMaximized() {
+		return moveView.Maximized;
+	}
 }
