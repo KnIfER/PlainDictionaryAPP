@@ -136,7 +136,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	
 	@Override
 	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA, WebViewListHandler weblistHandler){
-		//CMN.debug("renderContentAt::", pos, getResAt(a, pos), weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
+		//CMN.debug("resultRecorderCombined::renderContentAt::", pos, getResAt(a, pos), weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
 		scrollTarget=null;
 		final ScrollView sv = (ScrollView) weblistHandler.getScrollView();
 		toHighLight=weblistHandler.hasPageKey();

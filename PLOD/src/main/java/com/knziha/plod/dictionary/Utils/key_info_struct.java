@@ -16,6 +16,9 @@
 */
 
 package com.knziha.plod.dictionary.Utils;
+
+import java.util.Arrays;
+
 /*store key_block's summary*/
 public class key_info_struct{
 	public key_info_struct(byte[] headerKeyText, byte[] tailerKeyText,
@@ -24,7 +27,7 @@ public class key_info_struct{
 		this.headerKeyText=headerKeyText;
 		this.tailerKeyText=tailerKeyText;		
 		this.key_block_compressed_size_accumulator=key_block_compressed_size_accumulator;		
-		this.key_block_decompressed_size=key_block_decompressed_size;		
+		this.key_block_decompressed_size=key_block_decompressed_size;
 	}
 	public key_info_struct(long num_entries_,long num_entries_accumulator_) {
 		num_entries=num_entries_;
@@ -42,4 +45,18 @@ public class key_info_struct{
     //public String[] keys;
     //public long[] key_offsets;
 	//public byte[] key_block_data;
+	
+	
+	@Override
+	public String toString() {
+		return "key_info_struct{" +
+				"headerKeyText=" + new String(headerKeyText) +
+				", tailerKeyText=" + new String(tailerKeyText) +
+				", key_block_compressed_size_accumulator=" + key_block_compressed_size_accumulator +
+				", key_block_compressed_size=" + key_block_compressed_size +
+				", key_block_decompressed_size=" + key_block_decompressed_size +
+				", num_entries=" + num_entries +
+				", num_entries_accumulator=" + num_entries_accumulator +
+				'}';
+	}
 }

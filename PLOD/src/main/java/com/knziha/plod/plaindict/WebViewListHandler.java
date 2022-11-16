@@ -247,6 +247,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			JumpToFrame(entrySeek.getProgress());
 		}
 	};
+	boolean seeking = false;
 	public final SeekBar.OnSeekBarChangeListener entrySeekLis = new SeekBar.OnSeekBarChangeListener() {
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -264,10 +265,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		@Override
 		public void onStartTrackingTouch(SeekBar seekBar) {
+			seeking = true;
 		}
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
-		
+			seeking = false;
 		}
 	};
 	
@@ -658,6 +660,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void JumpToFrame(int pos) {
 		if (multiDicts && pos>=0 && pos<multiRecord.jointResult.realmCount) {
+			//CMN.debug("JumpToFrame::", pos, isFoldingScreens());
 			frameSelection = pos;
 			if(isFoldingScreens()) {
 				renderFoldingScreen(pos);
@@ -903,7 +906,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			this.multiDicts=multiDicts;
 			changed = true;
 		}
-		//CMN.debug("view::setViewMode:: changed=", changed, bMerge);
+		//CMN.debug("view::setViewMode:: changed=", changed, bMerge, isFoldingScreens());
 		if(changed) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
@@ -938,6 +941,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			} else {
 				ViewUtils.setVisible(entrySeek, false);
 			}
+			if(seeking) {
+//				ViewUtils.preventDefaultTouchEvent(entrySeek, 0, 0);
+//				seeking = false;
+			}
 		}
 		if(this.dictView!=dictView) {
 			this.dictView = dictView;
@@ -945,7 +952,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void changeViewMode(WebViewmy view, String url) {
-		if (isViewSingle()) {
+		//CMN.debug("changeViewMode::", isViewSingle());
+		if (isViewSingle() && !isFoldingScreens()) {
 			boolean vis;
 			if (url.contains("merge")) {
 				ViewUtils.setVisible(entrySeek, url.indexOf("-d", 15)>0);

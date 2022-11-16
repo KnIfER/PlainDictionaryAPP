@@ -133,8 +133,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	LinearSplitView splitView;
 	AppBarLayout.BarSz barSz = new AppBarLayout.BarSz();
-	ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
-	SimpleQueryMorphs queryMorphs = new SimpleQueryMorphs();
+	public ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
+	SimpleMorphs simpleMorphs = new SimpleMorphs();
+	public SimpleQueryMorphs queryMorphs = new SimpleQueryMorphs();
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -144,7 +145,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		showType=1;
 		bottomPadding=0;
 		resizeDlg = true;
-		forms.add(new SimpleMorphs());
+		forms.add(simpleMorphs);
 	}
 	
 	@Override

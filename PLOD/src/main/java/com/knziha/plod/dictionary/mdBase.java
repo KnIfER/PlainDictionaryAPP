@@ -1142,6 +1142,10 @@ public abstract class mdBase {
 				long key_id = _version<2 ?BU.toInt(key_block, BlockOff+key_start_index)
 							:BU.toLong(key_block, BlockOff+key_start_index);
 				
+				if(key_id < 0) {
+					key_id = 0x00000000ffffffffL & key_id; // 兼容Collins2020.mdx
+				}
+				
 				key_end_index = key_start_index + _number_width + entryNumExt;
 				SK_DELI:
 				while(key_end_index+delimiter_width<BlockLen){
