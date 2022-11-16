@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.View.GONE;
 import static android.view.View.OVER_SCROLL_ALWAYS;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -4394,9 +4395,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		public boolean onItemClick(AdapterView<?> parent, @Nullable View view, int position, long strId, boolean isLongClicked, boolean isUserClick) {
 			if(position<0) return true;
-			shareHelper.lastClickedPos = shareHelper.pageSz*shareHelper.page + position;
-			if (shareHelper.page == 0 && position<7 && twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
-				shareHelper.lastClickedPos = shareHelper.pageSz + position;
+			if (twoColumnAda != null) {
+				shareHelper.lastClickedPos = shareHelper.pageSz*shareHelper.page + position;
+				if (shareHelper.page == 0 && position<7 && twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
+					shareHelper.lastClickedPos = shareHelper.pageSz + position;
+				}
 			}
 			int dissmisstype=0;
 			try {
@@ -6751,7 +6754,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
 				CMN.debug("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
-				if(dd==null) {
+				if(dd==null || dd.isDark!=GlobalOptions.isDark) {
 					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
