@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -79,7 +78,7 @@ public class VerbatimSearchTask extends AsyncTaskWrapper<String, Object, resultR
 						}
 					} else {
 						if(isCancelled()) break; // to impl
-						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.range_query_reveiver, null,i,15, null);
+						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.range_query_reveiver, null,i,15, null, false);
 					}
 				}
 				if (!batchSch) {

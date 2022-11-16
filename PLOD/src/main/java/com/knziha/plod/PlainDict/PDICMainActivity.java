@@ -1650,14 +1650,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			int lastW, lastH;
 			@Override
 			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-				CMN.Log("键盘::onLayoutChange::", root.getHeight(), dm.heightPixels);
-				CMN.Log("onLayoutChange::", bottom, oldBottom);
+				//CMN.debug("键盘::onLayoutChange::", root.getHeight(), dm.heightPixels);
+				//CMN.debug("onLayoutChange::", bottom, oldBottom);
 				int keyBoardHeight = ViewUtils.keyboardHeight(root);
-				CMN.Log("onLayoutChange::keyBoardHeight=", keyBoardHeight);
+				//CMN.debug("onLayoutChange::keyBoardHeight=", keyBoardHeight);
 				if(keyboardShown ^ keyBoardHeight>100) {
 					keyboardShown = !keyboardShown;
 					//softMode==softModeResize
-					CMN.Log("键盘::onLayoutChange::keyboardShown", keyboardShown);
+					//CMN.debug("键盘::onLayoutChange::keyboardShown", keyboardShown);
 					UIData.appbar.strechNoBotom = keyboardShown;
 					if(keyboardShown) {
 						VU.setVisible(bottombar, false);

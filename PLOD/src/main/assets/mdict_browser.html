@@ -699,7 +699,7 @@
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
     	function gn(e,p){return _gn(e, p.firstElementChild);};
-		window.kit ||= 0;
+		window.kit |= 0;
 		window.rawAddEvent = window.addEventListener;
 		window._merge = [];
 		//window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
@@ -2402,7 +2402,7 @@
 				}
 			}
 			if(inf.title) {
-				inf._tbg||=0;
+				inf._tbg|=0;
 				inf.dictTitle.innerText=inf.name;
 				if(inf.tbg) {
 					inf.title.style.background='linear-gradient(to top, #'+inf.tbg+' , '+whiterRgb(inf.tbg)+')';

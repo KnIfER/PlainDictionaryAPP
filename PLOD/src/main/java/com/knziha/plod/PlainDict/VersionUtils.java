@@ -8,6 +8,7 @@ import com.knziha.plod.widgets.RomUtils;
 import com.knziha.plod.widgets.ViewUtils;
 
 public class VersionUtils {
+	public static final boolean AnnotOff = true && !BuildConfig.isDebug;
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
 		if(PDICMainAppOptions.checkVersionBefore_4_0()) {

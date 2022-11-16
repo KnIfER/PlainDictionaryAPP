@@ -1241,8 +1241,8 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 	
 	@Override
-	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task) {
-		return keyIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta, task);
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) {
+		return keyIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta, task, false);
 		// todo std lookUpRange
 	}
 	

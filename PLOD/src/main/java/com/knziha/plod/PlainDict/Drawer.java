@@ -586,7 +586,7 @@ public class Drawer extends Fragment implements
 							try {
 								WebViewListHandler weblist = a.getRandomPageHandler(true, false, null);
 								WebViewmy randomPage = weblist.getMergedFrame();
-								BookPresenter socialbook = a.new_book(a.defDicts[4], a);
+								BookPresenter socialbook = a.new_book(a.defDicts1[1], a);
 								weblist.getMergedFrame(socialbook);
 								socialbook.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, randomPage, 0);
 								weblist.setViewMode(null, 0, randomPage);

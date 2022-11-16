@@ -74,6 +74,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.plaindict.VersionUtils;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
 import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
@@ -1241,7 +1242,7 @@ function debug(e){console.log(e)};
 			if (range_query_reveiver==null) {
 				range_query_reveiver = new ArrayList<>();
 			}
-			return bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(),15, task);
+			return bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(),15, task, false);
 		}
 		return -1;
 	}
@@ -2746,6 +2747,12 @@ function debug(e){console.log(e)};
 								}
 								values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
 							
+							if(VersionUtils.AnnotOff) {
+								presenter.a.hdl.post(()->{
+									showT("笔记功能仍处于测试中，下一版本开启！");
+								});
+								return 0;
+							}
 							final long id = presenter.a.prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
 							CMN.debug("annot.id=", id);
 							return id;
@@ -2758,6 +2765,7 @@ function debug(e){console.log(e)};
 		
 		private StringBuilder getMarksByPos(WebViewmy mWebView, StringBuilder sb, long bid, long position) {
 			//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
+			if(VersionUtils.AnnotOff) return sb;
 			String[] where = new String[]{""+bid, ""+position};
 			Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select id,annot,notes,last_edit_time==0 from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where bid=? and pos=? order by tPos", where);
 			//CMN.debug("cursor::", position, cursor.getCount());
@@ -3347,7 +3355,7 @@ function debug(e){console.log(e)};
 			if(presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if(wv!=null){
-					return bid.length()==0?PDICMainAppOptions.popViewEntryOne():PDICMainAppOptions.popViewEntry();
+					return bid.length()==0?PDICMainAppOptions.entryInNewWindowSingle():PDICMainAppOptions.entryInNewWindowMerge();
 					//return true;
 				}
 			}
@@ -3356,7 +3364,7 @@ function debug(e){console.log(e)};
 		
 		@JavascriptInterface
 		public boolean shouldPopupEntry() {
-			return PDICMainAppOptions.popViewEntry();
+			return PDICMainAppOptions.entryInNewWindowMerge();
 		}
 		
         @JavascriptInterface
@@ -4040,7 +4048,7 @@ function debug(e){console.log(e)};
 					book_id = db.getBookID(path, name);
 				}
 				db_.update(TABLE_BOOK_v2, values, "id=?", new String[]{""+book_id});
-				CMN.Log("已存放::", book_id, name);
+				CMN.debug("已存放::", book_id, name);
 				return;
 			} catch (Exception e) {
 				CMN.Log(e);

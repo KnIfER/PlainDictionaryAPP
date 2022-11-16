@@ -2,35 +2,43 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:key="lic"
-	android:title="开源许可"
+	android:title="开源成分表"
 	>
 	<PreferenceCategory
 		>
 		<com.knziha.plod.preference.URLPreference
 			android:key="https://github.com/KnIfER/PlainDictionaryAPP"
-			android:summary="GPL3.0"
+			android:summary="无限开源"
 			android:title="KnIfER/PlainDict | 开源的旧版本"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/KnIfER/mdict-java"
-			android:summary="GPL3.0"
+			android:summary="无限开源"
 			android:title="KnIfER/Mdict-Java | 开源的Java库"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
+			android:key="https://gitee.com/knziha/Metaline"
+			android:title="KnIfER/Metaline | 元线注解模块"
+			android:summary="无限开源"
+			/>
+
+		<com.knziha.plod.preference.URLPreference
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			android:key="https://bitbucket.org/xwang/"
-			android:summary="Public domain"
-			android:title="xwang/python-mdict-analysis | Mdict 格式解析"/>
+			android:title="xwang/python-mdict-analysis"
+			android:summary="Python写的词典格式解析（无搜索功能），参考很多"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/fengdh/mdict-js"
-			android:summary="Public domain"
-			android:title="fengdh/mdict-js | 用 JavaScript 打开 Mdict"/>
+			android:title="fengdh/mdict-js"
+			android:summary="JavaScript写的词典格式解析，参考了二分法搜索的写法（reduce）"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
@@ -42,23 +50,8 @@
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
-			android:key="https://gitee.com/knziha/Metaline"
-			android:summary="Public domain"
-			android:title="KnIfER/Metaline | 元线注解模块"/>
-
-		<com.knziha.plod.preference.URLPreference
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			android:key="https://github.com/jess-anders/two-way-gridview"
-			android:summary="Public domain"
 			android:title="jess-anders/two-way-gridview"/>
-
-		<com.knziha.plod.preference.URLPreference
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			android:key="https://github.com/IDFDeveloper/android-resize-view"
-			android:summary="Public domain"
-			android:title="IDFDeveloper/android-resize-view"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
@@ -71,7 +64,6 @@
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/bauerca/drag-sort-listview"
-			android:summary="Public domain"
 			android:title="bauerca/drag-sort-listview | 可排序列表"/>
 
 		<com.knziha.plod.preference.URLPreference
@@ -85,13 +77,7 @@
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/danoz73/RecyclerViewFastScroller"
-			android:summary="Apache 2.0"
-			android:title="org.apache.commons.lang"/>
-
-		<com.knziha.plod.preference.URLPreference
-			app:allowDividerAbove="true"
-			android:key="https://source.android.com/?"
-			android:summary="Apache 2.0"
-			android:title="Powered by Android"/>
+			android:summary="Apache 2.0 | 各种库文件"
+			android:title="org.apache.commons"/>
 	</PreferenceCategory>
 </PreferenceScreen>

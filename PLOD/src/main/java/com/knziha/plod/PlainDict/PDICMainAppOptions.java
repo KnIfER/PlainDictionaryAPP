@@ -2291,8 +2291,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=27, shift=1) public static boolean showDictName(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=27, shift=1) public static void showDictName(boolean val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 
-	@Metaline(flagPos=28) public static boolean getShowNotificationExitBtn() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=28) public static void setShowNotificationExitBtn(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28, shift=1) public static boolean getShowNotificationExitBtn() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28, shift=1) public static void setShowNotificationExitBtn(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=29) public static boolean getShowNotificationSubtitle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=29) public static void setShowNotificationSubtitle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2399,12 +2399,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return SixthFlag;
 	}
 	
-	@Metaline(flagPos=0, shift=1) public static boolean popViewEntry() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=0, shift=1) public static void popViewEntry(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=1) public static boolean popViewEntryOne() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=1) public static void popViewEntryOne(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2) public static boolean popViewEntryMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2) public static void popViewEntryMulti(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, shift=1) public static boolean entryInNewWindowMerge() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, shift=1) public static void entryInNewWindowMerge(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static boolean entryInNewWindowSingle() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static void entryInNewWindowSingle(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2) public static boolean entryInNewWindowMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2) public static void entryInNewWindowMulti(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	/** 调试网页版资源。在此模式下，直接电脑上修改服务器资源文件，手机端刷新即可看到效果。需要JavaFx桌面版本配合，打开asset/liba.mdx，ip地址填对。*/
 	@Metaline(flagPos=3, shift=1) public static boolean debug() { SixthFlag=SixthFlag; throw new RuntimeException();}

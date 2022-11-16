@@ -98,7 +98,7 @@
 
 
 	<string name="stg_require">请赋予存储权限。</string>
-	<string name="stg_statement">推荐赋予存储权限，否则无法打开由你下载到外部存储的词库文件。\n\n 注1：存储权限权能较大，可读写几乎全部文件，如不信任请勿赋予，可试用。\n\n 注2：已列出其他所需权限，请点击问号按钮查看！</string>
+	<string name="stg_statement">推荐赋予存储权限，否则无法打开由你下载到外部存储的词库文件。\n\n 注1：存储权限权能很大，可读写几乎全部文件，如不信任请勿赋予，可试用。\n\n 注2：已列出其他所需权限，请点击问号按钮查看！</string>
 	<string name="stg_grantnow">立即开启</string>
 	<string name="trialin">试用1中…… #</string>
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>

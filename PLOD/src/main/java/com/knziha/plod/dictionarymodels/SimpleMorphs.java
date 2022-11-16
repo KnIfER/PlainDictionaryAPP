@@ -3,12 +3,12 @@ package com.knziha.plod.dictionarymodels;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.plaindict.CMN;
 
-public class PlainMorphs extends DictionaryAdapter{
+public class SimpleMorphs extends DictionaryAdapter{
 	public final int lookUp(UniversalDictionaryInterface d, String keyword) {
 		return d.lookUp(keyword, true);
 	}
 	
-	public PlainMorphs() {
+	public SimpleMorphs() {
 	}
 	
 	@Override

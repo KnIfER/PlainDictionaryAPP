@@ -203,7 +203,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task) {
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) {
 		return 0;
 	}
 	

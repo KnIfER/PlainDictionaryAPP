@@ -50,7 +50,7 @@ public interface UniversalDictionaryInterface {
 	
 	int guessRootWord(UniversalDictionaryInterface d, String keyword);
 	
-	int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task);
+	int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict);
 	
 	InputStream getResourceByKey(String key);
 	

@@ -1152,7 +1152,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if (mWebView==null || (bDataOnly?PDICMainAppOptions.tapSchShowToolsBtn():PDICMainAppOptions.wvShowToolsBtn())) {
 			toolsBtn.setTag(mWebView);
 			ViewUtils.setVisible(toolsBtn, mWebView!=null);
-			initFanyiFor_JHH(mWebView!=null && true, false);
+			initQuickTranslatorsBar(mWebView!=null && true, false);
 		}
 	}
 	
@@ -2211,8 +2211,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	ArrayList<BookPresenter> translators = new ArrayList<>();
 	TwoWayGridView txtMenuGrid;
 	
-	/** initialize translator btns for my beauty. */
-	public void initFanyiFor_JHH(boolean show, boolean animate) {
+	public void initQuickTranslatorsBar(boolean show, boolean animate) {
+		CMN.debug("initQuickTranslatorsBar", show);
 		if (txtMenuGrid == null) {
 			txtMenuGrid = new TwoWayGridView(a);
 			txtMenuGrid.setHorizontalSpacing(0);
@@ -2265,7 +2265,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					translators.add(a.new_book(a.defDicts[7], a));
 					translators.add(a.new_book(a.defDicts[8], a));
 				} catch (Exception e) {
-					CMN.debug(e);
+					CMN.Log(e);
 				}
 			}
 			if (txtMenuGrid.getAdapter()==null) {

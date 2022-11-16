@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
@@ -23,10 +22,8 @@ import android.webkit.ValueCallback;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -37,7 +34,6 @@ import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.ebook.Utils.BU;
@@ -48,12 +44,10 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.SSLSocketFactoryCompat;
-import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebResourceResponseCompat;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
@@ -68,11 +62,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URLDecoder;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -83,7 +74,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -96,14 +86,12 @@ import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Cache;
 import okhttp3.Dns;
-import okhttp3.FormBody;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.BufferedSink;
 
 
 /*
@@ -2158,7 +2146,7 @@ public class PlainWeb extends DictionaryAdapter {
 	 *
 	 * from mimicking others' results [multiple. ]
 	 * @return*/
-	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task) //多线程
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) //多线程
 	{
 		if(takeWord(keyword)) {
 			if(treeBuilder !=null)

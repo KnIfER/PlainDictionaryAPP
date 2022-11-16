@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.View.GONE;
 import static android.view.View.OVER_SCROLL_ALWAYS;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -114,7 +113,6 @@ import android.widget.TextView;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
@@ -196,6 +194,7 @@ import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -721,7 +720,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (wv.bIsActionMenuShown) {
 				wv.evaluateJavascript("getSelection().collapseToStart()", null);
 			} else {
-				wv.weblistHandler.initFanyiFor_JHH(false, false);
+				wv.weblistHandler.initQuickTranslatorsBar(false, false);
 			}
 			return true;
 		}
@@ -2493,6 +2492,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			,"/ASSET2/译.web"
 	};
 	
+	final String[] defDicts1 = new String[]{
+			CMN.AssetTag + "李白全集.mdx"
+			,"/ASSET2/应用社区.web"
+	};
+	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
 		BookPresenter book = null;
 		try {
@@ -2501,7 +2505,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(retrieve_all) {
 			try {
 				String lastName = opt.getLastMdFn("LastMdFn"); //???!!!
-				for (String path:defDicts) {
+				for (String path:defDicts1) {
 					PlaceHolder placeHolder = new PlaceHolder(path, CC);
 					loadManager.addBook(new_book(placeHolder, this), placeHolder);
 					if(TextUtils.equals(new File(path).getName(), lastName)) {
@@ -6833,7 +6837,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					});
 					dd = new AlertDialog.Builder(this)
 						.setView(cv)
-						.setTitle("翻译当前页面").create();
+						.setTitle("翻译当前页面")
+						.setWikiText("此界面可上下翻页。谷歌翻译已经无法正常使用。", null)
+						.create();
 					
 					cv.setOverScrollMode(OVER_SCROLL_ALWAYS);
 					AlertDialog finalDd = dd;
@@ -8218,7 +8224,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (url.startsWith("http://") || url.startsWith("https://")) {
 				//CMN.Log("shouldOverrideUrlLoading_http",url);
 				int schemaIdx = url.indexOf(":");
-				CMN.debug("invoker.isMergedBook()::", invoker.isMergedBook(), url.regionMatches(schemaIdx+12, "base", 0, 4), !wlh.bShowingInPopup && opt.popViewEntry(), url.regionMatches(url.indexOf("/", schemaIdx+12+1+4+2)+1, "entry", 0, 5));
+				CMN.debug("invoker.isMergedBook()::", invoker.isMergedBook(), url.regionMatches(schemaIdx+12, "base", 0, 4), !wlh.bShowingInPopup && opt.entryInNewWindowMerge(), url.regionMatches(url.indexOf("/", schemaIdx+12+1+4+2)+1, "entry", 0, 5));
 				if(invoker.isMergedBook() || url.indexOf("mdbr.com")>0) {
 					//todo
 					return false;
@@ -8254,9 +8260,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					url = URLDecoder.decode(url, "UTF-8");
 				} catch (Exception ignored) { }
 				boolean fromCombined = !wlh.isViewSingle();
-				boolean pop = !wlh.bShowingInPopup // popup new content displayer
-						&& (fromCombined && opt.popViewEntryMulti()
-								|| !fromCombined && opt.popViewEntryOne());
+				boolean newWindow = !wlh.bShowingInPopup // popup new content displayer
+						&& (fromCombined && opt.entryInNewWindowMulti()
+								|| !fromCombined && opt.entryInNewWindowSingle());
 				/* 页内跳转 */
 				if (url.startsWith("entry://#")) {
 					//Log.e("chromium inter_ entry3", url);
@@ -8335,10 +8341,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						else {
 							/* 查询跳转目标 */
-							int idx = invoker.bookImpl.lookUp(url, true);
-							CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
-							if (idx >= 0) {//idx != -1
-								if(pop) { // 新窗口打开词条跳转 open in new window
+							ArrayList<myCpr<String, Long>> rangReceiver = new ArrayList<>();
+							invoker.bookImpl.lookUpRange(url, rangReceiver, null, 0, 30, null, true);
+							//int idx = invoker.bookImpl.lookUp(url, true);
+							//CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
+							CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), rangReceiver, url, (URLDecoder.decode(url,"UTF-8")));
+							if (rangReceiver.size() > 0) {
+								long[] pos = new long[rangReceiver.size()];
+								for (int i = 0; i < rangReceiver.size(); i++) {
+									pos[i] = rangReceiver.get(i).value;
+								}
+								if(newWindow) { // 新窗口打开词条跳转 open in new window
 									wlh = getRandomPageHandler(true, true, null);
 									if (mWebView.toTag!=null) {
 										wlh.getMergedFrame().toTag = mWebView.toTag;
@@ -8351,7 +8364,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									wlh.bMergeFrames=0;
 									wlh.initMergedFrame(0, true, false);
 									wlh.popupContentView(null, url);
-									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,wv, idx);
+									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,wv, pos);
 									wlh.pageSlider.setWebview(wv, null);
 									wlh.resetScrollbar();
 									if(wv.getBackgroundColor()==0) wv.setBackgroundColor(GlobalPageBackground); //todo optimize
@@ -8376,10 +8389,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								float initialScale = BookPresenter.def_zoom;
 								mWebView.setInitialScale((int) (100 * (initialScale / BookPresenter.def_zoom) * opt.dm.density));
 								mWebView.isloading = true;
-								invoker.setCurrentDis(mWebView, idx);
+								invoker.setCurrentDis(mWebView, pos[0]);
 								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
 								invoker.AddPlodStructure(mWebView, htmlBuilder, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
-								String htmlCode = invoker.bookImpl.getRecordsAt(null, idx);
+								String htmlCode = invoker.bookImpl.getRecordsAt(null, pos);
 								if(invoker.hasFilesTag()){
 									htmlCode = htmlCode.replace("file://", "");
 								}
@@ -10341,7 +10354,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					Objects.requireNonNull(pkgWebx);
 				}
 				mdict asset = pkgWebx;
-				int idx = asset.lookUp(path.substring(8, 10), true);
+				int idx = asset.lookUp(path.substring(8, 11), true);
 				if (idx >= 0) {
 					return asset.getRecordAt(idx, null, true);
 				}
@@ -10378,7 +10391,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					Objects.requireNonNull(pkgWebx);
 				}
 				mdict asset = pkgWebx;
-				final String key = path.substring(8, 10);
+				final String key = path.substring(8, 11);
 				int idx = asset.lookUp(key, true);
 				if (idx >= 0) {
 					return asset.getRecordStream(idx);
@@ -11698,6 +11711,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	/** src界面来源; 0=toolbar  1=menu grid   2=vtk */
 	public void showBookNotes(int src) {
+		if(VersionUtils.AnnotOff) {
+			showT("笔记功能仍处于测试中，下一版本开启！");
+			return;
+		}
 		BookPresenter invoker = null;
 		if (src==0) {
 			if(ActivedAdapter!=null) invoker = ActivedAdapter.getPresenter();

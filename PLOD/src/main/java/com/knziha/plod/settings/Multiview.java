@@ -3,7 +3,6 @@ package com.knziha.plod.settings;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.webkit.WebView;
 
 import androidx.core.graphics.ColorUtils;
@@ -72,7 +71,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 							init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null, p);
 							break;
 						case "neoS":
-							init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null, p);
+							init_switch_preference(this, "neoS", PDICMainAppOptions.entryInNewWindowMulti(), null, null, p);
 							break;
 						case "merge":
 							init_switch_preference(this, "merge", multiMode==1, null, null, p);
@@ -90,14 +89,14 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 							init_switch_preference(this, "exempt", PDICMainAppOptions.getMergeExemptWebx(), null, null, p);
 							break;
 						case "neo":
-							init_switch_preference(this, "neo", PDICMainAppOptions.popViewEntry(), null, null, p);
+							init_switch_preference(this, "neo", PDICMainAppOptions.entryInNewWindowMerge(), null, null, p);
 							break;
 						case "debug":
 							init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null, p)
 									.setVisible(BuildConfig.isDebug);
 							break;
 						case "neo1":
-							init_switch_preference(this, "neo1", PDICMainAppOptions.popViewEntryOne(), null, null, p);
+							init_switch_preference(this, "neo1", PDICMainAppOptions.entryInNewWindowSingle(), null, null, p);
 							break;
 						case "tz":
 							init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomGlobal(), null, null, p);
@@ -222,13 +221,13 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 				PDICMainAppOptions.setMergeExemptWebx((Boolean) newValue);
 			break;
 			case "neo":
-				PDICMainAppOptions.popViewEntry((Boolean) newValue);
+				PDICMainAppOptions.entryInNewWindowMerge((Boolean) newValue);
 			break;
 			case "neo1":
-				PDICMainAppOptions.popViewEntryOne((Boolean) newValue);
+				PDICMainAppOptions.entryInNewWindowSingle((Boolean) newValue);
 			break;
 			case "neoS":
-				PDICMainAppOptions.popViewEntryMulti((Boolean) newValue);
+				PDICMainAppOptions.entryInNewWindowMulti((Boolean) newValue);
 			break;
 			case "debug":
 				PDICMainAppOptions.debug((Boolean) newValue);

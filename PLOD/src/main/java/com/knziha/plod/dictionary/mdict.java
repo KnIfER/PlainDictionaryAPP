@@ -507,18 +507,30 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				}
 			}
 			
-			if (morphogen != null && looseMatch.charAt(0)==other_key.charAt(0)) {
-				for(UniversalDictionaryInterface d:morphogen) {
-					int idx = d.guessRootWord(this, keyword);
-					if (idx>=0) {
-						return idx;
+			if (morphogen != null) {
+				char ch = keyword.charAt(0);
+				boolean same1stChar = looseMatch.charAt(0)==ch;
+				if (!same1stChar) {
+					try {
+						looseMatch = getEntryAt(infoI.num_entries_accumulator+res-1);
+						same1stChar = looseMatch.charAt(0)==ch;
+					} catch (Exception e) {
+						SU.Log(e);
+					}
+				}
+				if (same1stChar) {
+					for(UniversalDictionaryInterface d:morphogen) {
+						int idx = d.guessRootWord(this, keyword);
+						if (idx>=0) {
+							return idx;
+						}
 					}
 				}
 			}
 			
 			if(isSrict) {
 				//SU.Log("isSrict:", morphogen, looseMatch.charAt(0),other_key.charAt(0));
-				SU.Log("isSrict:", keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
+				//SU.Log("isSrict:", keyword, other_key, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
 		}
@@ -631,7 +643,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	 	var f = getSelection().getRangeAt(0).startContainer;
 	 	while(f=f.parentNode) {
 		 	if(f.classList.contains('_PDict_body')) {
-	 			MakeMark(tcn, f, 0, parseInt(n.getAttribute('pd_pos')))
+	 			MakeMark(tcn, f, 0, parseInt(f.getAttribute('pd_pos')))
 			 	break;
 			 }
 		 }
@@ -2660,10 +2672,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 
 	//联合搜索  555
-	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task) //多线程
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) //多线程
 	{
 		if(virtualIndex!=null){
-			return virtualIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta, task);
+			return virtualIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta, task, false);
 		}
 		int[][] scaler_ = null;
 		byte[] key_block_cache_ = null;
@@ -2766,7 +2778,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						if(doHarvest) {
 							String kI = new String(key_block_cache_, key_start_index+_number_width + entryNumExt,key_end_index-(key_start_index+_number_width + entryNumExt), _charset);
 							String proKey = processMyText(kI);
-							if(proKey.startsWith(keyword)) {
+							if(proKey.startsWith(keyword) && (!strict || proKey.equals(keyword))) {
 								if(treeBuilder !=null)
 									treeBuilder.insert(kI, SelfAtIdx, keyCounter+infoI.num_entries_accumulator);
 								else
@@ -2774,7 +2786,13 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 								theta--;
 								results++;
 							} else return results;
-							if(theta<=0) return results;
+							if(theta<=0) {
+								if (results<1000 && proKey.equals(keyword)) {
+									theta += 30;
+								} else {
+									return results;
+								}
+							}
 						} else {
 							scaler_[keyCounter][0] = key_start_index+_number_width + entryNumExt;
 							scaler_[keyCounter][1] = key_end_index-(key_start_index+_number_width + entryNumExt);
@@ -2806,19 +2824,24 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 				String kI = new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset);
 				while(true) {
-					if(processMyText(kI).startsWith(keyword)) {
+					String proKey = processMyText(kI);
+					if(proKey.startsWith(keyword) && (!strict || proKey.equals(keyword))) {
 						if(treeBuilder !=null)
 							treeBuilder.insert(kI, SelfAtIdx, idx+infoI.num_entries_accumulator);
 						else
 							rangReceiver.add(new myCpr<>(kI, idx+infoI.num_entries_accumulator));
 						theta--;
 						results++;
-					} else
-						return results;
+					} else return results;
 					idx++;
 					//if(idx>=infoI.num_entries) SU.Log("nono!");
-					if(theta<=0)//no need to proceed. Max results fetched.
-						return results;
+					if(theta<=0) { // Max limit reached.
+						if (results<1000 && proKey.equals(keyword)) {
+							theta += 30;
+						} else {
+							return results;
+						}
+					}
 					if(idx>=infoI.num_entries) {
 						break;
 					}

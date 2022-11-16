@@ -55,8 +55,8 @@ window.addEventListener('click',window.tpshc=function(e){
     var w=this,d=w.document,sz=w.shzh,app=w.app;
     if(w.frameElement){sz=parent.window.shzh;app=parent.window.app}
     debug('wrappedClickFunc 2', e);
-    var curr = e.srcElement;
-    debug('popuping::click...设置=', sz);
+    var curr = e.target;
+    debug('popuping::click...设置=', sz, e, curr);
     function pointInRange(r, rg, rc) {
         var x = rc.left;
         var y = rc.top;
@@ -68,8 +68,15 @@ window.addEventListener('click',window.tpshc=function(e){
         return w>0 && y>0
         && (pY>y-pad && pY<y+h+pad && pX>x-pad && pX<x+w+pad);
     }
+    var p=e.path,t=e.srcElement;
+    if(!p && e.composedPath) p=e.composedPath();
+    var dont=false;
+    if(p) for(var i=0;(t=p[i])&&i++<5;) {
+        if(t.tagName==='A'||t.tagName==='BUTTON') {dont=true;break;}
+        else if(t.tagName==='TEXTAREA'||t.tagName==='INPUT') {dont=!t.readOnly;break;}
+    }
     //console.log(sz&7 , curr!=d.documentElement , (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) ,curr.nodeName!='BUTTON' , curr.nodeName!='A' , !curr.noword/*  , !curr.onclick */ , !w._touchtarget_lck);
-    if(sz&7 && curr!=d.documentElement && (curr.nodeName!='TEXTAREA'&&curr.nodeName!='INPUT'||curr.readOnly) && curr.nodeName!='BUTTON' && curr.nodeName!='A' && !curr.noword && !w._touchtarget_lck){
+    if(sz&7 && curr!=d.documentElement && !dont && !curr.noword && !w._touchtarget_lck){
         //todo d.activeElement.tagName
         var s = w.getSelection();
         debug('来了',s.isCollapsed && s.anchorNode);
