@@ -68,7 +68,7 @@
 				android:textSize="@dimen/abc_text_size_title_material"
 				android:paddingStart="12dp"
 				app:rating="true"
-				tools:text="牛津无敌词典"
+				tools:text="无限词典"
 				/>
 			<com.knziha.ankislicer.customviews.UnCrashableSpannedTextView
 				android:layout_margin="8dp"

@@ -66,16 +66,20 @@
 		android:text="1000/123213"
 		android:textColor="@android:color/black"
 		/>
+
 	<Button
 		android:id="@+id/skip"
-		android:textColor="@color/zumulv"
 		style="?android:attr/buttonBarButtonStyle"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:layout_centerHorizontal="true"
-		android:layout_margin="8dp"
-		android:text="跳过" />
+		android:layout_marginStart="8dp"
+		android:layout_marginTop="8dp"
+		android:layout_marginEnd="8dp"
+		android:layout_marginBottom="8dp"
+		android:text="跳过"
+		android:textColor="@color/zumulv" />
 	<Button
 		android:textColor="@color/zumulv"
 		android:id="@+id/cancel"

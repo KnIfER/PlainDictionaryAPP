@@ -34,7 +34,8 @@
 			android:layout_gravity="center_horizontal"
 			/>
     </ScrollView>
-    
+
+
     <Button
         android:textColor="@color/zumulv"
         android:id="@+id/cancel"

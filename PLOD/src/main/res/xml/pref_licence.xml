@@ -31,7 +31,7 @@
 			app:allowDividerBelow="true"
 			android:key="https://bitbucket.org/xwang/"
 			android:title="xwang/python-mdict-analysis"
-			android:summary="Python写的词典格式解析（无搜索功能），参考很多"/>
+			android:summary="Python写的词典格式解析（无搜索功能），初期参考很多"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
