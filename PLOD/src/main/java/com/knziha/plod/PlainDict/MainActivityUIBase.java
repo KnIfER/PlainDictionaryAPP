@@ -46,6 +46,7 @@ import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Parcelable;
@@ -135,6 +136,8 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
@@ -264,6 +267,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -287,6 +291,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7691,42 +7696,48 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//((WebView.WebViewTransport)resultMsg.obj).setWebView(randomPage);
 			//resultMsg.sendToTarget(); New WebView for popup window must not have been  previously navigated. ???
 			// https://stackoverflow.com/questions/9654529/handle-url-from-oncreatewindow-webview
-			Message href = view.getHandler().obtainMessage();
-			view.requestFocusNodeHref(href);
-			String url = href.getData().getString("url");
-			CMN.debug("onCreateWindow::", url);
-			if (url == null) {
-				return false;
-			}
-			BookPresenter presenter = ((WebViewmy) view).presenter;
-			String urlKey = null;
-			if (!presenter.isWebx) {
-				int idx = url.indexOf("/entry/");
-				if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 7));
-				else {
-					idx = url.indexOf("entry://");
-					if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 8));
+			try {
+				Handler handler = view.getHandler();
+				if (handler==null) handler = root.getHandler();
+				Message href = handler.obtainMessage();
+				view.requestFocusNodeHref(href);
+				String url = href.getData().getString("url");
+				CMN.debug("onCreateWindow::", url);
+				if (url == null) {
+					return true;
 				}
+				BookPresenter presenter = ((WebViewmy) view).presenter;
+				String urlKey = null;
+				if (!presenter.isWebx) {
+					int idx = url.indexOf("/entry/");
+					if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 7));
+					else {
+						idx = url.indexOf("entry://");
+						if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 8));
+					}
+				}
+				//presenter = webxford.get(SubStringKey.new_hostKey(url));
+	//			if (presenter == null) {
+	//			} else {
+	//				try {
+	//					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx ???
+	//				} catch (Exception e) {
+	//					CMN.debug(e);
+	//				}
+	//			}
+				// getRandomPageHandler(true, false, null);
+				WebViewListHandler wlh = getRandomPageHandler(true, false, presenter);
+				WebViewmy randomPage = wlh.getMergedFrame();
+				wlh.setStar(urlKey);
+	//			try {
+	//				href.recycle(); // This message cannot be recycled because it is still in use. ???
+	//			} catch (Exception e) {
+	//				CMN.debug(e);
+	//			}
+				randomPage.loadUrl(url);
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
-			//presenter = webxford.get(SubStringKey.new_hostKey(url));
-//			if (presenter == null) {
-//			} else {
-//				try {
-//					presenter.getWebx().getVirtualRecordAt(presenter, 0); //todo opt webx ???
-//				} catch (Exception e) {
-//					CMN.debug(e);
-//				}
-//			}
-			// getRandomPageHandler(true, false, null);
-			WebViewListHandler wlh = getRandomPageHandler(true, false, presenter);
-			WebViewmy randomPage = wlh.getMergedFrame();
-			wlh.setStar(urlKey);
-//			try {
-//				href.recycle(); // This message cannot be recycled because it is still in use. ???
-//			} catch (Exception e) {
-//				CMN.debug(e);
-//			}
-			randomPage.loadUrl(url);
 			return true;
 		}
 		

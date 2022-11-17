@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<SeekBar
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="match_parent"
+		android:layout_height="35dp"
+		android:layout_margin="10dp"
+		android:progressDrawable="@drawable/purpose_bar"
+		android:progress="512"
+		android:max="1024"
+		android:thumb="@null"
+		android:layout_gravity="center_vertical"
+		/>
+</FrameLayout>

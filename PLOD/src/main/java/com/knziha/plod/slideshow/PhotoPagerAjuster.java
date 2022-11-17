@@ -103,7 +103,7 @@ public class PhotoPagerAjuster extends PagerAdapter {
 						ssb.append("\n");
 					}
 					
-					opt.setAsLinkedTextView(tv, true);
+					opt.setAsLinkedTextView(tv, true, true);
 					
 					tv.setLinkTextColor(Color.WHITE);
 					tv.setText(ssb, TextView.BufferType.SPANNABLE);

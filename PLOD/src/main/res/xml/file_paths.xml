@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <file-path path="shared_prefs/" name="p2"/>>
+    <external-cache-path path="apks/" name="apks"/>
 </paths>

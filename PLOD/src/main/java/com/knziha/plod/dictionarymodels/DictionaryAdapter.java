@@ -42,6 +42,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		,PLAIN_TYPE_EMPTY
 	}
 	File f;
+	boolean fExist;
 	long _bid;
 	long _num_entries;
 	long _num_record_blocks;

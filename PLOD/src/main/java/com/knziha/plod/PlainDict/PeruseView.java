@@ -912,7 +912,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		ssb.delete(ssb.length()-4,ssb.length());
 		
-		opt.setAsLinkedTextView(tv, true);
+		opt.setAsLinkedTextView(tv, true, true);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
 
 //		tv.setTextSize(17f);

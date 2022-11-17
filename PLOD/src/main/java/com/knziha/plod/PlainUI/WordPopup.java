@@ -5,6 +5,7 @@ import static com.knziha.plod.PlainUI.WordPopupTask.TASK_LOAD_HISTORY;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV_NXT;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_SCH;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_UPD_SCH;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 
 import android.annotation.SuppressLint;
@@ -57,6 +58,7 @@ import com.knziha.plod.plaindict.DictPicker;
 import com.knziha.plod.plaindict.FloatSearchActivity;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MultiShareActivity;
+import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
@@ -493,10 +495,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						View child = lv.getChildAt(0);
 						if (lv.getPositionForView(child)==0) {
 							TextView tv = child.findViewById(android.R.id.text1);
-							ClickableSpan touching = opt.XYTouchRecorderInstance().getTouchingSpan(tv);
-							if (touching!=null) {
-								which = -1;
-							}
+//							ClickableSpan touching = opt.XYTouchRecorderInstance().getTouchingSpan(tv);
+//							if (touching!=null) {
+//								which = -1;
+//							}
 						}
 					}
 					if (which>=0) {
@@ -529,7 +531,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 									};
 									span.setSpan(clkSpan, ret.length()-3, ret.length()-1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 									tv.setText(span, TextView.BufferType.SPANNABLE);
-									tv.setOnTouchListener(opt.XYTouchRecorderInstance());
+//									tv.setOnTouchListener(opt.XYTouchRecorderInstance());
 								}
 								return view;
 							}
@@ -864,6 +866,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			boolean ret = wordPopupTask.start(type);
 			CMN.Log("新开线程……", ret, CMN.now());
 		}
+	}
+	
+	public void stopTask() {
+		wordPopupTask.taskRunning.set(false);
 	}
 	
 	private void reInit() {
@@ -1428,6 +1434,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 		else if(mType==TASK_FYE_SCH) {
 			a.peruseView.SearchAll(a, task);
+		}
+		else if(mType==TASK_UPD_SCH) {
+			((PDICMainActivity)a).checkUpdate(task);
 		}
 	}
 	

@@ -1,16 +1,24 @@
 package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
@@ -3160,12 +3168,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 	}
 
-	XYTouchRecorder xyt;
-	public XYTouchRecorder XYTouchRecorderInstance() {
-		if(xyt==null) xyt = new XYTouchRecorder();
-		return xyt;
-	}
-
 	public JSONObject getDimensionalSharePatternByIndex(String savid) {
 		String val = getString(savid, null);
 		JSONObject ret = null;
@@ -3185,17 +3187,19 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	@SuppressLint("ClickableViewAccessibility")
-	public void setAsLinkedTextView(TextView tv, boolean center) {
-		if(xyt==null) xyt = new XYTouchRecorder();
+	public static XYTouchRecorder setAsLinkedTextView(TextView tv, boolean center, boolean setTextSz) {
+		XYTouchRecorder xyt = new XYTouchRecorder();
 		tv.setOnClickListener(xyt);
 		tv.setOnTouchListener(xyt);
-		tv.setTextSize(GlobalOptions.isLarge?22f:17f);
-//		if(GlobalOptions.isLarge) {
-//			tv.setTextSize(tv.getTextSize());
-//		}
+		//tv.setTextSize(GlobalOptions.isLarge?22f:17f);
+		if(setTextSz) tv.setTextSize(GlobalOptions.isLarge?20:19);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			tv.setTextIsSelectable(true);
+		}
 		if(center) {
 			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 		}
+		return xyt;
 	}
 	
 	public String tryGetDomesticFileName(String path) {
@@ -3204,5 +3208,34 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			path = path.substring(parent.length()+1);
 		}
 		return path;
+	}
+	
+	public static void interceptPlainLink(Activity context, String url) {
+		DialogInterface.OnClickListener btns = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if (which==-1) {
+					Intent intent = new Intent(Intent.ACTION_VIEW)
+							.setData(Uri.parse(url));
+					context.startActivity(intent);
+				}
+				else if (which==-3) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+						ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+						if(cm!=null){
+							cm.setPrimaryClip(ClipData.newPlainText(null, url));
+							Toast.makeText(context, "已复制", 0).show();
+						}
+					}
+				}
+			}
+		};
+		AlertDialog d = new AlertDialog.Builder(context)
+				.setTitle("是否访问链接？")
+				.setMessage(url)
+				.setNeutralButton("复制", btns)
+				.setNegativeButton("取消", btns)
+				.setPositiveButton("访问", btns)
+				.show();
 	}
 }

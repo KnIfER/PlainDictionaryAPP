@@ -542,6 +542,21 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return mMergedFrame;
 	}
 	
+	public WebViewmy newFrame() {
+		getMergedFrame();
+		WebViewmy mMergedFrame;
+		getMergedBook().initViewsHolder(a);
+		mMergedFrame = new WebViewmy(a);
+		mMergedFrame.weblistHandler = this;
+		//mMergedBook.rl.setTag(mMergedFrame);
+		mMergedFrame.setWebViewClient(a.myWebClient);
+		mMergedFrame.setWebChromeClient(a.myWebCClient);
+		//mMergedFrame.setOnScrollChangedListener(null);
+		//mMergedFrame.SetupScrollRect(true);
+		mMergedFrame.getSettings().setTextZoom(BookPresenter.def_fontsize);
+		return mMergedFrame;
+	}
+	
 	boolean webHolderSwapHide = true;
 	
 	/** 是否将共用的 mMergedFrame 以一定手段塞入webholder列表。但是列表只会显示一个（mMergedFrame 或 mWebView）。 */

@@ -392,7 +392,7 @@ public class PlainWeb extends DictionaryAdapter {
 				Response k3response = klient.newCall(k3request.build()).execute();
 				MIME = k3response.header("content-type");
 				//CMN.Log("重定向啦拉拉!!!", k3response.isRedirect(), url);
-				//CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
+				CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
 				if (moders!=null) {
 					String raw = k3response.body().string();
 					for (Pair p:moders) {
@@ -584,7 +584,9 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	private void parseJsonFile(MainActivityUIBase a) throws IOException {
-		website = JSONObject.parseObject(a != null?a.fileToString(f.getPath()):BU.fileToString(f));
+		String text = a != null?a.fileToString(f.getPath()):BU.fileToString(f);
+		fExist = text==null || f.getPath().startsWith("/ASSET");
+		website = JSONObject.parseObject(text);
 		String _host = null, tmp;
 		Map.Entry<String, Object> node; Object val;
 		useragent = null;
@@ -724,7 +726,7 @@ public class PlainWeb extends DictionaryAdapter {
 				case "message": // testCode
 					tmp = val.toString();
 					this.message = tmp;
-					CMN.Log(context, tmp);
+					if(!fExist) CMN.Log(context, tmp);
 					break;
 				case "settings":
 					dopt = JSONUtils.toJSONObject(val);

@@ -12,11 +12,12 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,8 +28,10 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebResourceResponse;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -50,6 +53,7 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
@@ -61,35 +65,50 @@ import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.settings.NightMode;
 import com.knziha.plod.settings.ServerPreference;
-import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.plod.widgets.XYTouchRecorder;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.noties.markwon.Markwon;
+import io.noties.markwon.core.spans.LinkSpan;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
+import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_UPD_SCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 /** @author KnIfER */
@@ -528,6 +547,8 @@ public class Drawer extends Fragment implements
 	long[] bnPos = new long[3];
 	public BasicAdapter adaptermy;
 	
+	public WeakReference<AlertDialog> aboutDlg = ViewUtils.DummyRef;
+	
 	@Override
 	public void onClick(View v) {
 		if(!a.systemIntialized) return;
@@ -538,85 +559,79 @@ public class Drawer extends Fragment implements
 			return;
 			case R.string.about:
 			case R.id.menu_item_setting:{
-				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
-				final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
-				
-				String infoStr = getString(R.string.infoStr, BuildConfig.VERSION_NAME+(BuildConfig.isDebug?"工程调试版":""));
-				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);
-				
-				if (mdict.error_input!=null) {
-					ssb.append("\n出错信息：").append(mdict.error_input);
-				}
-				final TextView tv = dv.findViewById(R.id.resultN);
-				tv.setPadding(0, 0, 0, 50);
-				
-				try {
-					int startss = ssb.toString().indexOf("[");
-					int endss = ssb.toString().indexOf("]",startss);
-					
-					ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(@NonNull View widget) {
-							a.launchSettings(6, 1297);
-						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					
-					startss = ssb.toString().indexOf("[",endss);
-					endss = ssb.toString().indexOf("]",startss);
-					String title="更新日志";
-					ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(@NonNull View widget) {
-							AlertDialog d = new AlertDialog.Builder(a)
-									.setTitle(title)
-									.setMessage(title)
-									.setPositiveButton(R.string.confirm, null)
-									.show();
-							Markwon markwon = Markwon.create(a);
-							TextView tv = d.findViewById(android.R.id.message);
-							a.opt.setAsLinkedTextView(tv, false);
-							tv.setTextSize(GlobalOptions.isLarge?20:19);
-							markwon.setMarkdown(tv, a.fileToString(CMN.AssetTag+"rizhi.md"));
-						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					
-					startss = ssb.toString().indexOf("[",endss);
-					endss = ssb.toString().indexOf("]",startss);
-					ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(@NonNull View widget) {
-							try {
-								WebViewListHandler weblist = a.getRandomPageHandler(true, false, null);
-								WebViewmy randomPage = weblist.getMergedFrame();
-								BookPresenter socialbook = a.new_book(a.defDicts1[1], a);
-								weblist.getMergedFrame(socialbook);
-								socialbook.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, randomPage, 0);
-								weblist.setViewMode(null, 0, randomPage);
-								weblist.viewContent();
-							} catch (Exception e) {
-								CMN.debug(e);
+				AlertDialog d = aboutDlg.get();
+				if (d == null || d.isDark != GlobalOptions.isDark || mdict.error_input!=null) {
+					d = new AlertDialog.Builder(a)
+							.setPositiveButton("取消", (dialog, which) -> a.wordPopup.stopTask())
+							.setNegativeButton("检查更新", null)
+							.setMessage("关于")
+							.setTitle("应用信息")
+							.show();
+					d.isDark = GlobalOptions.isDark;
+					Button btn = d.findViewById(android.R.id.button2);
+					btn.setOnClickListener(v1 -> {
+						AlertDialog dd = (AlertDialog) ViewUtils.getWeakRefObj(aboutDlg);
+						dd.setCanceledOnTouchOutside(false);
+						dd.setCancelable(false);
+						a.wordPopup.startTask(TASK_UPD_SCH);
+						btn.setText(btn.getText()+"……");
+					});
+					//a.mDrawerLayout.closeDrawer(GravityCompat.START);
+					String infoStr = getString(R.string.infoStr, BuildConfig.VERSION_NAME+(BuildConfig.isDebug?"工程调试版":""));
+					if (mdict.error_input!=null) {
+						infoStr += "\n出错信息：" + mdict.error_input;
+					}
+					TextView tv = d.mAlert.mMessageView;
+					XYTouchRecorder xyt = PDICMainAppOptions.setAsLinkedTextView(tv, false, false);
+					xyt.clickInterceptor = (view, span) -> {
+						if (span instanceof LinkSpan) {
+							String url = ((LinkSpan) span).getURL();
+							if ("kaiyuan".equals(url)) {
+								a.launchSettings(6, 1297);
+							} else if ("rizhi".equals(url)) {
+								String title="更新日志";
+								AlertDialog dd = new AlertDialog.Builder(a)
+										.setTitle(title)
+										.setMessage(title)
+										.setPositiveButton(R.string.confirm, null)
+										.show();
+								Markwon markwon = Markwon.create(a);
+								TextView tv1 = dd.findViewById(android.R.id.message);
+								XYTouchRecorder xyt1 = PDICMainAppOptions.setAsLinkedTextView(tv1, false, false);
+								tv1.setTextSize(GlobalOptions.isLarge?20:19);
+								markwon.setMarkdown(tv1, a.fileToString(CMN.AssetTag+"rizhi.md"));
+							} else if ("taolun".equals(url)) {
+								try {
+									WebViewListHandler weblist = a.getRandomPageHandler(true, false, null);
+									WebViewmy randomPage = weblist.getMergedFrame();
+									BookPresenter socialbook = a.new_book(a.defDicts1[1], a);
+									weblist.getMergedFrame(socialbook);
+									socialbook.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, randomPage, 0);
+									weblist.setViewMode(null, 0, randomPage);
+									weblist.viewContent();
+								} catch (Exception e) {
+									CMN.debug(e);
+								}
 							}
-						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					
-					
-				} catch (Exception e) {
-					e.printStackTrace();
+						}
+						return true;
+					};
+					Markwon markwon = Markwon.create(a);
+					markwon.setMarkdown(tv, infoStr);
+					d.tag = btn;
+					aboutDlg = new WeakReference<>(d);
+				} else {
+					d.setCanceledOnTouchOutside(true);
+					d.setCancelable(true);
+					Button btn = (Button) d.tag;
+					btn.setText("检查更新");
+					ViewUtils.setVisible(btn, true);
 				}
-				
-				
-				tv.setText(ssb);
-				tv.setMovementMethod(LinkMovementMethod.getInstance());
-				AlertDialog.Builder builder2 = new AlertDialog.Builder(a);
-				builder2.setView(dv);
-				final AlertDialog d = builder2.create();
-				d.setCanceledOnTouchOutside(true);
-				//d.setCanceledOnTouchOutside(false);
-				d.setOnDismissListener(dialog -> {
-				});
-				dv.findViewById(R.id.cancel).setOnClickListener(v1 -> d.dismiss());
 				d.show();
+				d.mAlert.mMessageView.requestFocus();
 				//android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
 				//lp.height = -2;
 				//d.getWindow().setAttributes(lp);
-				
 			} break;
 			//退出
 			case R.string.exit:

@@ -8,7 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.plaindict.CMN;
 
 public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
@@ -18,11 +17,18 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 	public float y;
 	public float scrollY;
 	public float scrollX;
-
+	public ClickableSpan span;
+	public View.OnLongClickListener longClick;
+	public SpanInterceptor clickInterceptor;
+	
+	public interface SpanInterceptor{
+		boolean onClick(TextView view, ClickableSpan span);
+	}
+	
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		if(event.getAction()==MotionEvent.ACTION_DOWN){
-			CMN.Log("down!!!");
+			CMN.debug("down!!!");
 			x0=event.getX();
 			y0=event.getY();
 			scrollX = v.getScrollX();
@@ -32,25 +38,25 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 		y=event.getY();
 		return false;
 	}
-
+	
 	public double distance() {
 		return Math.sqrt((x0-x)*(x0-x)+(y0-y)*(y0-y));
 	}
-
+	
 	@Override
 	public void onClick(View v) {
-		if(v instanceof FlowTextView) {
-			((FlowTextView) v).setStarLevelByClickOffset(x0, x);
-		}
-		else {
-			ClickableSpan touching = getTouchingSpan(v);
-			if (touching!=null) {
-				Spannable span = (Spannable) ((TextView) v).getText();
+		ClickableSpan touching = getTouchingSpan(v);
+		if (touching!=null) {
+			TextView widget = (TextView) v;
+			Spannable span = (Spannable) widget.getText();
+			if (clickInterceptor != null && clickInterceptor.onClick(widget, touching)) {
+				// intentionally blank
+			} else {
 				touching.onClick(v);
-				Selection.setSelection(span,
-						span.getSpanStart(touching),
-						span.getSpanEnd(touching));
 			}
+			Selection.setSelection(span,
+					span.getSpanStart(touching),
+					span.getSpanEnd(touching));
 		}
 	}
 	
@@ -72,11 +78,13 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 				y += widget.getScrollY();
 				
 				Layout layout = widget.getLayout();
-				int line = layout.getLineForVertical(y);
-				int off = layout.getOffsetForHorizontal(line, x);
-				ClickableSpan[] link = span.getSpans(off, off, ClickableSpan.class);
-				if (link.length > 0) {
-					return link[0];
+				if (layout != null) {
+					int line = layout.getLineForVertical(y);
+					int off = layout.getOffsetForHorizontal(line, x);
+					ClickableSpan[] link = span.getSpans(off, off, ClickableSpan.class);
+					if (link.length > 0) {
+						return link[0];
+					}
 				}
 			}
 		}
@@ -91,11 +99,11 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 			Selection.setSelection(span,
 					span.getSpanStart(touching),
 					span.getSpanEnd(touching));
-			((TextViewmy)v).span = touching;
-			if(((TextViewmy)v).longClick.onLongClick(v)) {
+			this.span = touching;
+			if(longClick.onLongClick(v)) {
 				return true;
 			}
-			((TextViewmy)v).span = null;
+			this.span = null;
 		}
 		return false;
 	}

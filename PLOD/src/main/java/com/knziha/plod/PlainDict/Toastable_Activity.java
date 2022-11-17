@@ -366,7 +366,7 @@ public class Toastable_Activity extends AppCompatActivity {
 				.show();
 		Markwon markwon = Markwon.create(context);
 		TextView tv = d.findViewById(android.R.id.message);
-		opt.setAsLinkedTextView(tv, false);
+		opt.setAsLinkedTextView(tv, false, true);
 		tv.setTextSize(GlobalOptions.isLarge?20:15);
 		markwon.setMarkdown(tv, ViewUtils.fileToString(context, new File(CMN.AssetTag, "quanxian.md")));
 	}
@@ -717,7 +717,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		//((ViewGroup)title.getParent()).setClipToPadding(false);
 		//((ViewGroup.MarginLayoutParams)title.getLayoutParams()).setMarginStart(-topad/4);
 		
-		opt.setAsLinkedTextView(tv, centerText);
+		opt.setAsLinkedTextView(tv, centerText, true);
 		
 		final androidx.appcompat.app.AlertDialog configurableDialog =
 				new androidx.appcompat.app.AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)

@@ -3539,6 +3539,47 @@ function debug(e){console.log(e)};
 		}
 		
 		@JavascriptInterface
+		public void knock2(int sid, int x, int y) {
+			//upsended = true;
+			WebViewmy wv = findWebview(sid);
+			View view = (View) findWebview(sid).getParent();
+			//view.lastSuppressLnkTm = CMN.now();
+//				view.postDelayed(new Runnable() {
+//					@Override
+//					public void run() {
+					long time = CMN.now();
+					float lastX = (float) (x*wv.webScale - wv.getScrollX() + Math.random()*20);
+					float lastY = (float) (y*wv.webScale - wv.getScrollY() + Math.random()*15);
+					lastX=20;
+					lastY+=35;
+					CMN.Log("knock2", wv.webScale, x, y, lastX, lastY);
+					MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
+					
+					evt.setAction(MotionEvent.ACTION_DOWN);
+					view.dispatchTouchEvent(evt);
+			
+			time+=200;
+			
+			float finalLastX = (float) (lastX+Math.random()*20);
+			float finalLastY = (float) (lastY+Math.random()*15);
+//				view.postDelayed(new Runnable() {
+//					@Override
+//					public void run() {
+					long time1 = CMN.now();
+					MotionEvent evt1 = MotionEvent.obtain(time, time1-10, MotionEvent.ACTION_DOWN, finalLastX-10, finalLastY, 0);
+					
+					evt1.setAction(MotionEvent.ACTION_MOVE);
+					view.dispatchTouchEvent(evt1);
+					
+					MotionEvent evt2 = MotionEvent.obtain(time, time1, MotionEvent.ACTION_DOWN, finalLastX, finalLastY, 0);
+					
+					evt2.setAction(MotionEvent.ACTION_UP);
+					view.dispatchTouchEvent(evt2);
+//					}
+//				}, (long) (299+Math.random()*99));
+		}
+		
+		@JavascriptInterface
 		public void knock1(int sid, int x, int y) {
 			//if(layout==a.currentViewImpl)
 			{
@@ -4203,9 +4244,9 @@ function debug(e){console.log(e)};
 		
 		tv.setTextSize(17f);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-		XYTouchRecorder xyt = mdTmp.getOpt().XYTouchRecorderInstance();
-		tv.setOnClickListener(xyt);
-		tv.setOnTouchListener(xyt);
+//		XYTouchRecorder xyt = mdTmp.getOpt().XYTouchRecorderInstance();
+//		tv.setOnClickListener(xyt);
+//		tv.setOnTouchListener(xyt);
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
