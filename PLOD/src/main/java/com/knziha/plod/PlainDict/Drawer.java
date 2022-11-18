@@ -589,17 +589,7 @@ public class Drawer extends Fragment implements
 							if ("kaiyuan".equals(url)) {
 								a.launchSettings(6, 1297);
 							} else if ("rizhi".equals(url)) {
-								String title="更新日志";
-								AlertDialog dd = new AlertDialog.Builder(a)
-										.setTitle(title)
-										.setMessage(title)
-										.setPositiveButton(R.string.confirm, null)
-										.show();
-								Markwon markwon = Markwon.create(a);
-								TextView tv1 = dd.findViewById(android.R.id.message);
-								XYTouchRecorder xyt1 = PDICMainAppOptions.setAsLinkedTextView(tv1, false, false);
-								tv1.setTextSize(GlobalOptions.isLarge?20:19);
-								markwon.setMarkdown(tv1, a.fileToString(CMN.AssetTag+"rizhi.md"));
+								a.showUpdateInfos(null);
 							} else if ("taolun".equals(url)) {
 								try {
 									WebViewListHandler weblist = a.getRandomPageHandler(true, false, null);

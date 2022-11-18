@@ -80,7 +80,7 @@ android {
         debug {
             buildConfigField "boolean","isDebug","true"
             aaptOptions {
-                ignoreAssetsPattern '!Markjs:'
+                ignoreAssetsPattern '!Markjs:!pdfjs:!Search'
             }
         }
         release {

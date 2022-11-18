@@ -21,6 +21,8 @@ import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.plaindict.CMN;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -233,7 +235,7 @@ public class  BU{//byteUtils
 			fo.flush();
 			fo.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			CMN.debug(e);
 		}
     }
     
@@ -331,8 +333,8 @@ public class  BU{//byteUtils
 			byte[] data = new byte[(int) f.length()];
 			fin.read(data);
 			return data;
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 		return null;
 	}
@@ -344,8 +346,8 @@ public class  BU{//byteUtils
 			fin.read(data);
 			fin.close();
 			return new String(data, "utf8");
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 		return null;
 	}

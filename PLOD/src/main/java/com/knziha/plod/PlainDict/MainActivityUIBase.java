@@ -241,6 +241,7 @@ import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ColoredTextSpan1;
 import com.knziha.text.ScrollViewHolder;
@@ -310,6 +311,9 @@ import static com.knziha.plod.plaindict.MdictServer.hasRemoteDebugServer;
 import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
+
+import io.noties.markwon.Markwon;
+import io.noties.markwon.core.spans.LinkSpan;
 
 /** 程序基础类<br/>
  *  Class for all dictionary activities. <br/>
@@ -11823,5 +11827,37 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			softMode=mode;
 			getWindow().setSoftInputMode(mode);
 		}
+	}
+	
+	public void showUpdateInfos(String oldVerName) {
+		String title="更新日志";
+		AlertDialog dd = new AlertDialog.Builder(this)
+				.setTitle(title)
+				.setMessage(title)
+				.setPositiveButton(R.string.confirm, null)
+				.show();
+		Markwon markwon = Markwon.create(this);
+		TextView tv = dd.findViewById(android.R.id.message);
+		XYTouchRecorder xyt = PDICMainAppOptions.setAsLinkedTextView(tv, false, false);
+		xyt.clickInterceptor = (view, span) -> {
+			if (span instanceof LinkSpan) {
+				String url = ((LinkSpan) span).getURL();
+				PDICMainAppOptions.interceptPlainLink(this, url);
+			}
+			return true;
+		};
+		tv.setTextSize(GlobalOptions.isLarge?20:19);
+		String rizhi = fileToString(CMN.AssetTag+"rizhi.md");
+		if (oldVerName != null) {
+			oldVerName = "# " + oldVerName.trim() + "\r\n";
+			int idx = rizhi.indexOf(oldVerName);
+			if(idx!=-1) {
+				rizhi = rizhi.substring(0, idx);
+			}
+			dd.setTitle("升级成功！");
+		}
+		tv.requestFocus();
+		markwon.setMarkdown(tv, rizhi);
+		//tv.requestFocus();
 	}
 }

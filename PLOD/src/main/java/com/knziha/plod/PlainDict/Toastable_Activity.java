@@ -42,6 +42,9 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.dictionary.Utils.Bag;
+import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -229,7 +232,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	protected void checkLog(Bundle savedInstanceState){
-		boolean[] launching=new boolean[]{false};
+		Bag flag = new Bag(false);
 		// skipCheckLog = true;
 		if(!skipCheckLog && opt.getLogToFile()){
 			try {
@@ -237,15 +240,31 @@ public class Toastable_Activity extends AppCompatActivity {
 				File lock=new File(log.getParentFile(),"lock");
 				if(lock.exists())
 				{
-					launching[0]=true;
+					if (lock.length() > 0) {
+						String oldVersion = BU.fileToString(lock);
+						//oldVersion = "v6.0";
+						boolean b1=oldVersion!=null && oldVersion.startsWith("v");
+						lock.delete();
+						if (b1 || !log.exists()) {
+							if (b1) {
+								String nowName = BuildConfig.VERSION_NAME;
+								if(!oldVersion.startsWith("v")) nowName = "v" + nowName;
+								if (!oldVersion.equals(nowName)) {
+									((MainActivityUIBase)this).showUpdateInfos(oldVersion);
+								}
+							}
+							throw new RuntimeException();
+						}
+					}
+					flag.val=true;
 					setStatusBarColor(getWindow(), Constants.DefaultMainBG);
 					CrashHandler.getInstance(this, opt).showErrorMessage(this, (dialog, whichButton) -> {
 						lock.delete();
 						checkLaunch(savedInstanceState);
 					}, false);
 				}
-			} catch (Exception e) { CMN.debug(e); }finally {
-				if(!launching[0])
+			} catch (Exception e) { CMN.debug(e); } finally {
+				if(!flag.val)
 					checkLaunch(savedInstanceState);
 			}
 		} else {

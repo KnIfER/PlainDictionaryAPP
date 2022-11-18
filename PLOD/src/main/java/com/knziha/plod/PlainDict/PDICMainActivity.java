@@ -34,6 +34,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.os.Message;
+import android.os.StrictMode;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.ActionMode;
@@ -54,6 +55,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -97,6 +99,8 @@ import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
@@ -136,13 +140,15 @@ import org.knziha.metaline.Metaline;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -3254,8 +3260,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent duco) {
 		super.onActivityResult(requestCode, resultCode, duco);
-		//CMN.Log("onActivityResult");
+		//CMN.Log("onActivityResult", requestCode, resultCode, duco);
 		switch (requestCode) {
+//			case VersionUtils.UpgradeCode:{
+//
+//			} break;
 			case Constants.OpenBookRequset:{  // MLSN
 				if(duco!=null) {
 					HandleOpenUrl(duco.getData());
@@ -3589,7 +3598,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	/**function auto() {
 	 	var d=document, b=d.getElementById('submit');
 	 	if(b) {
-	 
             b.style.width='100%'; b.style.height='100%';
 	 		var rc = b.getBoundingClientRect();
 	 		app.knock2(sid.get(), d.documentElement.scrollLeft+rc.left+rc.width*2/3, d.documentElement.scrollTop+rc.top+rc.height/2);
@@ -3619,25 +3627,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			//CMN.Log("安装::", intent);
 			//showT("如果无法直接安装，请勿升级！请查看公告。");
-			startActivity(intent);
+			startActivityForResult(intent, VersionUtils.UpgradeCode);
+			File log = new File(CrashHandler.getInstance(this, opt).getLogFile());
+			File lock = new File(log.getParentFile(),"lock");
+			String nowName = BuildConfig.VERSION_NAME;
+			if(!nowName.startsWith("v")) nowName = "v" + nowName;
+			BU.printFile(nowName.getBytes(StandardCharsets.UTF_8), lock);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
 	}
 	
 	private void startUpdateDownload(String versionName, HashMap<String, String> resp, AlertDialog dd, Button btn, AtomicBoolean dwnldTask) {
-		CMN.debug("startUpdateDownload::", resp);
-		String url = resp.get("url");
-		String desc = resp.get("desc");
-		int length = IU.parsint(resp.get("len"), 14 * 1024);
 		SeekBar seek = (SeekBar) getLayoutInflater().inflate(R.layout.purpose_bar, root, false);
-		seek.setMax(length);
-		seek.setProgress(10);
-		int W = dd.getWindow().getDecorView().getWidth();
-		W = Math.min(W/2, W-btn.getWidth());
-		ViewUtils.replaceView(seek, btn, false);
-		seek.getLayoutParams().width = W;
-		
 		Runnable fileRn = new Runnable() {
 			@Override
 			public void run() {
@@ -3645,9 +3647,24 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				dd.setCancelable(true);
 				dd.setTitle("下载失败，建议手动下载");
 				ViewUtils.removeView(seek);
+				ViewUtils.removeView(btn);
 				showT("下载失败！");
 			}
 		};
+		if (versionName==null) {
+			fileRn.run();
+			return;
+		}
+		CMN.debug("startUpdateDownload::", resp);
+		String url = resp.get("url");
+		String desc = resp.get("desc");
+		int length = IU.parsint(resp.get("len"), 14 * 1024);
+		seek.setMax(length);
+		seek.setProgress(10);
+		int W = dd.getWindow().getDecorView().getWidth();
+		W = Math.min(W/2, W-btn.getWidth());
+		ViewUtils.replaceView(seek, btn, false);
+		seek.getLayoutParams().width = W;
 		try {
 			//File target = new File(Environment.getExternalStorageDirectory(), "Download/测试.apk");
 			//File target = new File(getExternalCacheDir(), "apks/测试.apk");
@@ -3656,8 +3673,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			File lock = new File(target.getPath() + ".lock");
 			if(!target.getParentFile().exists()) target.getParentFile().mkdirs();
 			String finalUrl = url;
-			finalUrl = "http://192.168.0.100:8080/base/0/%E5%B9%B3%E5%85%B8%E6%90%9C%E7%B4%A2_v6.8.1.apk";
-			
+			finalUrl = VersionUtils.UpdateDebugger.fakeDownloadUrl(url);
 			DownloadInfo info = new DownloadInfo(new URL(finalUrl));
 			Runnable notify = new Runnable() {
 				long prev;
@@ -3676,12 +3692,28 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 									ViewUtils.replaceView(btn, seek, false);
 									btn.setText("安装");
 									btn.setEnabled(true);
-									btn.setOnClickListener(new OnClickListener() {
+									View folderBtn = dd.findViewById(android.R.id.button3);
+									VU.setVisible(folderBtn, true);
+									OnClickListener btns = new OnClickListener() {
 										@Override
 										public void onClick(View v) {
-											startUpdateInstall(target);
+											if (v == btn) {
+												startUpdateInstall(target);
+											} else {
+												StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+												try {
+													startActivity(new Intent(Intent.ACTION_VIEW)
+															.setDataAndType(Uri.fromFile(new File(getExternalCacheDir(), "apks/")), "resource/folder")
+															.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+													);
+												} catch (Exception e) {
+													show(R.string.no_suitable_app);
+												}
+											}
 										}
-									});
+									};
+									folderBtn.setOnClickListener(btns);
+									btn.setOnClickListener(btns);
 									if (dwnldTask.get()) {
 										dwnldTask.set(false);
 									}
@@ -3695,7 +3727,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							fileRn.run();
 							break;
 						case DOWNLOADING:
-							//CMN.debug("DOWNLOADING::", info.getCount());
+							if(VersionUtils.UpdateDebugger.logProgress) {
+								CMN.debug("DOWNLOADING::", info.getCount());
+							}
 							long now = System.currentTimeMillis();
 							if (now - 500 > prev) {
 								prev = now;
@@ -3748,14 +3782,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 	
-	
 	public void resolveUpdate(AtomicBoolean task, boolean succ, int buildNo, String name, String desc, String descLnk) {
 		hdl.post(new Runnable() {
 			@Override
 			public void run() {
 				AlertDialog d = drawerFragment.aboutDlg.get();
 				if (succ) {
-					if (false) { // BuildConfig.VERSION_CODE >= buildNo
+					boolean alreadyNewest = BuildConfig.VERSION_CODE >= buildNo;
+					alreadyNewest = VersionUtils.UpdateDebugger.fakeUpdateVerdict();
+					if (alreadyNewest) { //
 						showT("当前已经是最新版本！");
 						if (d != null) {
 							d.setCancelable(true);
@@ -3763,7 +3798,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							Button btn = (Button) d.tag;
 							ViewUtils.setVisible(btn, false);
 						}
-					} else {
+					}
+					else {
 						AtomicBoolean dwnldTask = new AtomicBoolean();
 						String info = StringEscapeUtils.unescapeJson(desc);
 						info = info.substring(info.indexOf("\n", info.indexOf("==") + 2) + 1);
@@ -3776,19 +3812,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 									}
 								})
 								.setNegativeButton("立即下载更新", null)
+								.setNeutralButton("打开文件夹", null)
 								.setMessage("关于")
 								.setTitle("发现新版本！")
 								.show();
 						Button btn = dd.findViewById(android.R.id.button2);
-						btn.setOnClickListener(v1 -> { // 立即下载更新
+						VU.setVisible(dd.findViewById(android.R.id.button3), false);
+						btn.setOnClickListener(v1 -> { // 立即下载更新 startUpdateParse
 							dd.setCancelable(false);
 							btn.setText("请等待……");
 							btn.setEnabled(false);
-							cachedUpdate = new HashMap();
-							cachedUpdate.put("url", "https://i82.lanzoug.com/1117160089190988bb/2022/11/16/10f4b916116368e1c4389e69c1cba5d5.apk?st=2oMWep3xzeUdMgrvAak1vg&e=1668674387&b=CL9e51PgU7NQgAPtVuABlVGYCrEHsgKmBwsMd1ZnUHxUPll3BDVUfwA0UHYEPw_c_c&fi=89190988&pid=153-34-122-253&up=2&mp=1&co=1");
-							cachedUpdate.put("desc", "attachment; filename= %E5%B9%B3%E5%85%B8%E6%90%9C%E7%B4%A2_v6.8.1.apk");
-							cachedUpdate.put("len", ""+13000000);
-							//cachedUpdate = null;
+							cachedUpdate = null;
+							cachedUpdate = VersionUtils.UpdateDebugger.fakeCachedDownloadStart();
 							if (cachedUpdate != null) {
 								startUpdateDownload(name, cachedUpdate, dd, btn, dwnldTask);
 							} else {
@@ -3796,7 +3831,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								wlh.setViewMode(null, 1, null);
 								wlh.viewContent();
 								//wlh.alloydPanel.dismissImmediate();
-								ViewUtils.getNthParentNonNull(wlh.alloydPanel.settingsLayout, 1).setAlpha(0);
+								View vg = ViewUtils.getNthParentNonNull(wlh.alloydPanel.settingsLayout, 1);
+								vg.setAlpha(0);
 								WebViewmy randomPage = wlh.getMergedFrame();
 								randomPage.setWebViewClient(new WebViewClient() {
 									@Override
@@ -3804,6 +3840,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										view.evaluateJavascript(autoUpdateScript, null);
 									}
 								});
+								Bag flag = new Bag(false);
+								Runnable finalRn = new Runnable() {
+									@Override
+									public void run() {
+										wlh.alloydPanel.dismissImmediate();
+										vg.setAlpha(1);
+										randomPage.setDownloadListener(null);
+										randomPage.setWebViewClient(myWebClient);
+										if (!flag.val) {
+											startUpdateDownload(null, cachedUpdate, dd, btn, dwnldTask);
+										}
+									}
+								};
 								randomPage.setDownloadListener(new DownloadListener() {
 									@Override
 									public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
@@ -3814,10 +3863,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										resp.put("len", ""+contentLength);
 										CMN.debug("onDownloadStart::", resp);
 										startUpdateDownload(name, cachedUpdate = resp, dd, btn, dwnldTask);
+										if (!flag.val) {
+											flag.val = true;
+											hdl.removeCallbacks(finalRn);
+											finalRn.run();
+										}
 									}
 								});
 								randomPage.loadUrl(descLnk);
 								ViewUtils.ensureTopmost(dd, PDICMainActivity.this, null);
+								hdl.postDelayed(finalRn, 5*1000);
 							}
 						});
 						dd.setCanceledOnTouchOutside(false);
@@ -3858,23 +3913,28 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		try {
 			BookPresenter book = MainActivityUIBase.new_book(defDicts1[1], this);
 			PlainWeb webx = book.getWebx();
-//			String uri = webx.getField("get");
-//			HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
-//			urlConnection.setRequestMethod("POST");
-//			urlConnection.setConnectTimeout(1000);
-//			urlConnection.setUseCaches(false);
-//			urlConnection.setDefaultUseCaches(false);
-//			try( DataOutputStream wr = new DataOutputStream( urlConnection.getOutputStream())) {
-//				wr.write(TestHelper.RotateEncrypt(webx.getField("key"), true).getBytes(StandardCharsets.UTF_8));
-//			}
-//			urlConnection.connect();
-//			final InputStream input = urlConnection.getInputStream();
-//			String result = BU.StreamToString(input);
-//			input.close();
-//			urlConnection.disconnect();
-			Thread.sleep(500); // 模拟检查耗时
+			String result = null;
+			result = VersionUtils.UpdateDebugger.fakeUpdateDetect();
+			if(result==null) {
+				String uri = webx.getField("get");
+				HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
+				urlConnection.setRequestMethod("POST");
+				urlConnection.setConnectTimeout(1000);
+				urlConnection.setUseCaches(false);
+				urlConnection.setDefaultUseCaches(false);
+				try( DataOutputStream wr = new DataOutputStream( urlConnection.getOutputStream())) {
+					wr.write(TestHelper.RotateEncrypt(webx.getField("key"), true).getBytes(StandardCharsets.UTF_8));
+				}
+				urlConnection.connect();
+				final InputStream input = urlConnection.getInputStream();
+				result = BU.StreamToString(input);
+				input.close();
+				urlConnection.disconnect();
+				CMN.debug("checkUpdate::蒲公英::result=", result);
+			} else {
+				Thread.sleep(500); // 模拟检查耗时
+			}
 			if (task.get()) {
-				String result = "{\"code\":0,\"message\":\"\",\"data\":{\"buildKey\":\"dbdf29a1116bdf279dee013dd76a717a\",\"buildType\":\"2\",\"buildIsFirst\":\"0\",\"buildIsLastest\":\"1\",\"buildFileSize\":\"13804054\",\"buildName\":\"PlainDict\",\"buildPassword\":\"\",\"buildVersion\":\"6.8.1\",\"buildVersionNo\":\"90\",\"buildQrcodeShowAppIcon\":\"1\",\"buildVersionType\":\"1\",\"buildBuildVersion\":\"2\",\"buildIdentifier\":\"com.knziha.plod.plaindict\",\"buildIcon\":\"e66e6ef88277de3996891a9cd13b4477\",\"buildDescription\":\"\",\"buildUpdateDescription\":\"# v 6.8.1 == iRMPH0g2n6fi\\n- \\u517c\\u5bb9Collins2020.mdx\\uff0c\\u539f\\u5148\\u4e0d\\u80fd\\u5c55\\u793a\\u540e\\u534a\\u672c\\u8bcd\\u6761\\u5185\\u5bb9\\n- \\u4fee\\u590d\\u5c4f\\u98ce\\u9875\\u9762\\u6a21\\u5f0f\\u4e0b\\u62d6\\u52a8\\u6761\\u7684\\u5f02\\u5e38\\n- \\u4fee\\u590d\\u5206\\u5b57\\u641c\\u7d22\\uff0c\\u548c\\u70b9\\u8bd1\\u4f7f\\u7528\\u4e00\\u6837\\u7684\\u6784\\u8bcd\\u5e93\\u3001\\u81ea\\u52a8\\u53bb\\u540e\\u7f00\",\"buildScreenshots\":\"dd71216c9fc758e2b8b09e6e39bf77cf\",\"buildShortcutUrl\":\"PLOD\",\"buildSignatureType\":\"0\",\"buildIsAcceptFeedback\":\"1\",\"buildIsUploadCrashlog\":\"1\",\"buildIsOriginalBuildInHouse\":\"1\",\"buildAdhocUuids\":\"[]\",\"buildTemplate\":\"colorful\",\"buildInstallType\":\"1\",\"buildManuallyBlocked\":\"2\",\"buildIsPlaceholder\":\"2\",\"buildCates\":\"\",\"buildCreated\":\"2022-11-17 11:30:07\",\"buildUpdated\":\"2022-11-17 11:30:07\",\"buildQRCodeURL\":\"https:\\/\\/www.pgyer.com\\/app\\/qrcodeHistory\\/1b60f56e74c7792df3fa833ee4f80e6e61b761c3a813d9a5c943f21c1b9b8831\",\"isOwner\":1,\"isJoin\":2,\"buildFollowed\":\"0\",\"appExpiredDate\":\"2024-11-16 11:30:07\",\"isImmediatelyExpired\":false,\"appExpiredStatus\":2,\"otherApps\":[{\"buildKey\":\"4ffb95f0b155e860ef655e3e6e37d004\",\"buildName\":\"PlainDict\",\"buildVersion\":\"6.8\",\"buildBuildVersion\":\"1\",\"buildIdentifier\":\"com.knziha.plod.plaindict\",\"buildCreated\":\"1\\u5929\\u524d\",\"buildUpdateDescription\":\"- \\u65b0\\u589e\\u9875\\u9762\\u7e41\\u7b80\\u8f6c\\u6362\\u529f\\u80fd\\n- \\u589e\\u5f3a\\u9ed1\\u6697\\u6a21\\u5f0f\\u7684\\u517c\\u5bb9\\u6027\\n- \\u4f18\\u5316\\u91cd\\u590d\\u8bcd\\u6761\\u5904\\u7406\"}],\"otherAppsCount\":\"1\",\"todayDownloadCount\":0,\"appKey\":\"33b6416b2018de0335e62633fde573d4\",\"appAutoSync\":\"1\",\"appShowPgyerCopyright\":\"1\",\"appDownloadPay\":\"0\",\"appDownloadDescription\":\"\",\"appGameLicenseStatus\":\"99\",\"appLang\":\"3\",\"appIsTestFlight\":\"2\",\"appIsInstallDate\":\"2\",\"appInstallStartDate\":\"0000-00-00\",\"appInstallEndDate\":\"0000-00-00\",\"appInstallQuestion\":\"\",\"appInstallAnswer\":\"\",\"appFeedbackStatus\":\"1\",\"isMerged\":2,\"mergeAppInfo\":null,\"canPayDownload\":1,\"iconUrl\":\"https:\\/\\/cdn-app-icon.pgyer.com\\/e\\/6\\/6\\/e\\/6\\/e66e6ef88277de3996891a9cd13b4477?x-oss-process=image\\/resize,m_lfit,h_120,w_120\\/format,jpg\",\"buildScreenshotsUrl\":[\"https:\\/\\/cdn-app-screenshot.pgyer.com\\/d\\/d\\/7\\/1\\/2\\/dd71216c9fc758e2b8b09e6e39bf77cf?x-oss-process=image\\/format,jpg\"]}}\\n- \\u517c\\u5bb9Collins2020.mdx\\uff0c\\u539f\\u5148\\u4e0d\\u80fd\\u5c55\\u793a\\u540e\\u534a\\u672c\\u8bcd\\u6761\\u5185\\u5bb9\\n- \\u4fee\\u590d\\u5c4f\\u98ce\\u9875\\u9762\\u6a21\\u5f0f\\u4e0b\\u62d6\\u52a8\\u6761\\u7684\\u5f02\\u5e38\\n- \\u4fee\\u590d\\u5206\\u5b57\\u641c\\u7d22\\uff0c\\u548c\\u70b9\\u8bd1\\u4f7f\\u7528\\u4e00\\u6837\\u7684\\u6784\\u8bcd\\u5e93\\u3001\\u81ea\\u52a8\\u53bb\\u540e\\u7f00\",\"buildScreenshots\":\"dd71216c9fc758e2b8b09e6e39bf77cf\",\"buildShortcutUrl\":\"PLOD\",\"buildSignatureType\":\"0\",\"buildIsAcceptFeedback\":\"1\",\"buildIsUploadCrashlog\":\"1\",\"buildIsOriginalBuildInHouse\":\"1\",\"buildAdhocUuids\":\"[]\",\"buildTemplate\":\"colorful\",\"buildInstallType\":\"1\",\"buildManuallyBlocked\":\"2\",\"buildIsPlaceholder\":\"2\",\"buildCates\":\"\",\"buildCreated\":\"2022-11-17 11:30:07\",\"buildUpdated\":\"2022-11-17 11:30:07\",\"buildQRCodeURL\":\"https:\\/\\/www.pgyer.com\\/app\\/qrcodeHistory\\/1b60f56e74c7792df3fa833ee4f80e6e61b761c3a813d9a5c943f21c1b9b8831\",\"isOwner\":1,\"isJoin\":2,\"buildFollowed\":\"0\",\"appExpiredDate\":\"2024-11-16 11:30:07\",\"isImmediatelyExpired\":false,\"appExpiredStatus\":2,\"otherApps\":[{\"buildKey\":\"4ffb95f0b155e860ef655e3e6e37d004\",\"buildName\":\"PlainDict\",\"buildVersion\":\"6.8\",\"buildBuildVersion\":\"1\",\"buildIdentifier\":\"com.knziha.plod.plaindict\",\"buildCreated\":\"1\\u5929\\u524d\",\"buildUpdateDescription\":\"- \\u65b0\\u589e\\u9875\\u9762\\u7e41\\u7b80\\u8f6c\\u6362\\u529f\\u80fd\\n- \\u589e\\u5f3a\\u9ed1\\u6697\\u6a21\\u5f0f\\u7684\\u517c\\u5bb9\\u6027\\n- \\u4f18\\u5316\\u91cd\\u590d\\u8bcd\\u6761\\u5904\\u7406\"}],\"otherAppsCount\":\"1\",\"todayDownloadCount\":0,\"appKey\":\"33b6416b2018de0335e62633fde573d4\",\"appAutoSync\":\"1\",\"appShowPgyerCopyright\":\"1\",\"appDownloadPay\":\"0\",\"appDownloadDescription\":\"\",\"appGameLicenseStatus\":\"99\",\"appLang\":\"3\",\"appIsTestFlight\":\"2\",\"appIsInstallDate\":\"2\",\"appInstallStartDate\":\"0000-00-00\",\"appInstallEndDate\":\"0000-00-00\",\"appInstallQuestion\":\"\",\"appInstallAnswer\":\"\",\"appFeedbackStatus\":\"1\",\"isMerged\":2,\"mergeAppInfo\":null,\"canPayDownload\":1,\"iconUrl\":\"https:\\/\\/cdn-app-icon.pgyer.com\\/e\\/6\\/6\\/e\\/6\\/e66e6ef88277de3996891a9cd13b4477?x-oss-process=image\\/resize,m_lfit,h_120,w_120\\/format,jpg\",\"buildScreenshotsUrl\":[\"https:\\/\\/cdn-app-screenshot.pgyer.com\\/d\\/d\\/7\\/1\\/2\\/dd71216c9fc758e2b8b09e6e39bf77cf?x-oss-process=image\\/format,jpg\"]}}";
 				JSONObject resp = new JSONObject(result);
 				CMN.debug("result::", resp);
 				JSONObject data = resp.getJSONObject("data");
@@ -3899,6 +3959,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		int finalBuild = buildVersionNo;
 		if (name!=null && !name.startsWith("v")) name = "v"+name;
+		lnk = VersionUtils.UpdateDebugger.fakeLanYunUrl(lnk);
 		resolveUpdate(task, succ, buildVersionNo, name, desc, lnk);
 	}
 }
