@@ -33,6 +33,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebSettings;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -112,6 +113,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.InflaterOutputStream;
 
+import static com.knziha.logger.CMN.formatter;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_ANNOT_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
@@ -955,6 +957,10 @@ function debug(e){console.log(e)};
 						CMN.debug(e);
 					}
 				}
+			}
+			if (getType()==PLAIN_TYPE_PDF) {
+				mWebView.getSettings().setMinimumFontSize(1);
+				mWebView.getSettings().setUseWideViewPort(true);
 			}
 		}
 	}
@@ -1946,9 +1952,11 @@ function debug(e){console.log(e)};
 	
 	public StringBuilder AcquirePageBuilder() {
 		StringBuilder sb = bookImpl.AcquireStringBuffer(512);
-		sb.append(htmlBase);
-		sb.append(js);
-		plugCssWithSameFileName(sb);
+		if (getType()!=PLAIN_TYPE_PDF) {
+			sb.append(htmlBase);
+			sb.append(js);
+			plugCssWithSameFileName(sb);
+		}
 		return sb;
 	}
 	
@@ -2203,9 +2211,11 @@ function debug(e){console.log(e)};
 	/** Let's call and call and call and call!!! */
 	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean mIsolateImages) {
     	//CMN.Log("MakeRCSP(opt)??", MakeRCSP(opt),MakeRCSP(opt)>>5);
-		htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-		if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
-		htmlBuilder.append("</div>");
+		if (getType()==PLAIN_TYPE_MDICT) {
+			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
+			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
+			htmlBuilder.append("</div>");
+		}
 		boolean styleOpened=false;
 		if (mWebView.weblistHandler.bDataOnly) {
 			htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
@@ -2680,6 +2690,27 @@ function debug(e){console.log(e)};
 			}
         }
 		
+		@JavascriptInterface
+		public String annotRaw(int sid, String nid) {
+			String ret = null;
+			try {
+				if (presenter!=null) {
+					WebViewmy mWebView = findWebview(sid);
+					if (mWebView != null) {
+						Cursor cs = presenter.a.prepareHistoryCon().getDB().rawQuery("select lex, "+LexicalDBHelper.FIELD_CREATE_TIME+" from " + TABLE_BOOK_ANNOT_v2 + " where id=?", new String[]{nid});
+						if (cs.moveToNext()) {
+							ret = cs.getString(0);
+							CMN.Log("annotRaw::", ret, formatter.format(cs.getLong(1)));
+						}
+						cs.close();
+					}
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return ret;
+		}
+		
         @JavascriptInterface
         public long annot(int sid, String text, String annot, String entry, int pos, int tPos, int type, int color, String note, String did) {
 			if (presenter!=null) {
@@ -3088,6 +3119,26 @@ function debug(e){console.log(e)};
 				return (int) (wv.getScrollY() / def_zoom);
 			}
 			return 0;
+		}
+		
+		/** 页面滚动X值 */
+		@JavascriptInterface
+		public int getScrollX(int sid) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				return (int) (wv.getScrollX() / def_zoom);
+			}
+			return 0;
+		}
+		
+		/** 页面滚动Y值 */
+		@JavascriptInterface
+		public float getZoom(int sid) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				return wv.webScale / def_zoom;
+			}
+			return 1;
 		}
 		
 		/** 保存在线翻译器语种 */

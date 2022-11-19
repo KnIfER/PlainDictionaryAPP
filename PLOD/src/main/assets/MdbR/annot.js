@@ -271,7 +271,7 @@
                 var sty = doc.getElementById(id);
                 if(!sty) {
                     sty = craft('STYLE', doc.head);
-                    sty.innerText = '.RefList>LI:focus{background:rgba(5,109,232,.08)}SUP:focus{box-shadow:0 0 0 2px #ffffff, 0 0 0 4px rgb(5 109 232 / 30%)}.RefBack{color:#175199;padding-right:0.25em;font-weight:600;}.RefBack,SUP>A{text-decoration:none}.RefList>LI{counter-reset:_pd_ref}.RefSup{color:#175199;padding-right:0.25em;font-weight:600}.RefBacks:before{counter-increment:_pd_ref;content:counter(_pd_ref, lower-alpha)}._pdn_sup:before{counter-increment:_pdn_sup;content:\'[\'counter(_pdn_sup)\']\'}._PDict_body,body{counter-reset:_pdn_sup}';
+                    sty.innerText = '.RefList{padding-left:10px}.RefList>LI:focus{background:rgba(5,109,232,.08)}SUP:focus{box-shadow:0 0 0 2px #ffffff, 0 0 0 4px rgb(5 109 232 / 30%)}.RefBack{color:#175199;padding-right:0.25em;font-weight:600;}.RefBack,SUP>A{text-decoration:none}.RefList>LI{counter-reset:_pd_ref}.RefSup{color:#175199;padding-right:0.25em;font-weight:600}.RefBacks:before{counter-increment:_pd_ref;content:counter(_pd_ref, lower-alpha)}._pdn_sup:before{counter-increment:_pdn_sup;content:\'[\'counter(_pdn_sup)\']\'}._PDict_body,body{counter-reset:_pdn_sup}';
                     sty.id = id;
                 }
                 var clk = doc._pd_clks;
@@ -283,9 +283,10 @@
                     t = t.href+'';
                     t = doc._pd_foc = doc.getElementById(t.slice(t.indexOf('#')+1));
                     if(window.PDF) {
-                        var p=t;while((p=p.parentNode)) {if(p.classList.contains('RefListP')){p.style.display='block';break}}
-                    }
-                    t.focus();
+                        var p=t;while((p=p.parentNode)) {if(p.classList.contains('RefListP')){onShowRefList(p, t);break}}
+                    } else {
+						t.focus();
+					}
                     return true;
                 }, function(e) {
                     var t = e.target || e.srcElement; 
@@ -352,8 +353,9 @@
                     if(window.PDF) {
                         head = craft('P', head, 'RefClose RefBack');
                         head.innerText = '[X]';
+						refP.cbtn = head;
                         head.onclick=function() {
-                            refP.style.display='none'
+							onHideRefList(refP);
                         }
                     }
                     rootNode._pd_ref = craft('OL', refP, 'RefList');
@@ -622,7 +624,7 @@
                         if(!tcn.d) k1 += text[text.length-1];
                         p = pass(k1);
                     }
-                    log('check range restore --- ', p?'pass':'验证失败!', k1+'=='+k);
+                    log('check range restore --- ', p?'pass':'验证失败!', k1+'=='+k, !p&&app.annotRaw(sid.get(), ''+tcn.nid));
                     if(!p) return 0;
                 }
                 return range;

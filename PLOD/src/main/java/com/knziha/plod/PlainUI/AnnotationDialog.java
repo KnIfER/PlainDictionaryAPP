@@ -253,14 +253,19 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				ViewUtils.setVisible(lnkPanel, false);
 			break;
 			case R.id.etClear:
-				if (TextUtils.isEmpty(getText())) {
-					getText().clear();
-					getText().append((String) v.getTag());
-				} else {
-					v.setTag(getText().toString());
-					getText().clear();
+				try {
+					if (TextUtils.isEmpty(getText())) {
+						getText().clear();
+						String backup = (String) v.getTag();
+						if(backup!=null) getText().append(backup);
+					} else {
+						v.setTag(getText().toString());
+						getText().clear();
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
 				}
-			break;
+				break;
 			case R.id.etPaste:
 				getText().append(a.getFloatBtn().getPrimaryClip());
 			break;

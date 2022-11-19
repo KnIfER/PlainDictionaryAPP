@@ -8,13 +8,17 @@ import android.view.ViewGroup;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 
 
 //common
 public class CMN {
-    public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
+	public final static DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd, HH-mm-ss", Locale.CHINA);
+	public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
     public final static String emptyStr = "";
     public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final Boolean OccupyTag = true;

@@ -179,7 +179,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 		//	settings.setSafeBrowsingEnabled(false);
 		//}
-		
 		settings.setSupportZoom(true);
 		settings.setBuiltInZoomControls(true);
 		settings.setDisplayZoomControls(false);

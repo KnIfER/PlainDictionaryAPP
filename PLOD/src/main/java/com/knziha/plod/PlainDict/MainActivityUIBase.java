@@ -8558,7 +8558,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
 						try {
 							if (".pdf".regionMatches(true, 0, url, url.length()-4, 4)) {
-								File file = new File(URLDecoder.decode(url.substring(url.indexOf("/", schemaIdx + 10))));
+								File file = invoker.f();//new File(URLDecoder.decode(url.substring(url.indexOf("/", schemaIdx + 10))));
 								CMN.debug("file::", file);
 								if (file.exists()) {
 									return new WebResourceResponse("*/*", "utf8", new AutoCloseInputStream(new FileInputStream(file)));

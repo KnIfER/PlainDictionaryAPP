@@ -25,10 +25,6 @@ public class PlainPDF extends DictionaryAdapter {
 	public String[] pdf_index;
 	boolean alphabetic;
 	
-	/**";</script><script src="pdfviewer.js"></script></head>*/
-	@Metaline
-	final static String tailing = "TAIL";
-
 	/**
 	var outlines = window.PDFViewerApplication.pdfOutlineViewer.outline;
 	var contents = new Array(outlines.length);
@@ -163,12 +159,12 @@ public class PlainPDF extends DictionaryAdapter {
 			try {
 				MainActivityUIBase a = AgentApplication.activities[0].get();
 				String ret = a.fileToString("/ASSET/pdfjs/web/"+"index");
-				if (ret != null) return ret+f.getAbsolutePath()+tailing;
+				if (ret != null) return ret;
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
 		}
-		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8)+f.getAbsolutePath()+tailing;
+		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8);
 	}
 
 	@Override
