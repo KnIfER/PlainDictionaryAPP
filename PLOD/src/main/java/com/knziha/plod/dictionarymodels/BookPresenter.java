@@ -950,9 +950,11 @@ function debug(e){console.log(e)};
 //				mWebView.getSettings().setMediaPlaybackRequiresUserGesture(true);
 //				mWebView.getSettings().setSupportMultipleWindows(false);
 				String webSetttings = getWebx().getField("webSetttings");
+				WebSettings settings = mWebView.getSettings();
+				settings.setMediaPlaybackRequiresUserGesture(true);
 				if (webSetttings!=null) {
 					try {
-						ViewUtils.execSimple(webSetttings, null, mWebView.getSettings());
+						ViewUtils.execSimple(webSetttings, null, settings);
 					} catch (Exception e) {
 						CMN.debug(e);
 					}
