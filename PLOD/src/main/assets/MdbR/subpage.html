@@ -26,15 +26,17 @@ var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]=
 (function(){
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
-window._merge={};
+if(frameElement) {
+	window._merge={};
+	window.edEtJts=function(a, b, c){
+		if(!_merge[b]) {
+			(b.d?document:window).addEventListener(a, b, c);
+			_merge[b] = 1;
+		}
+	};
+}
 window.shzh=0;
 var remarked=false;
-window.edEtJts=function(a, b, c){
-	if(!_merge[b]) {
-		(b.d?document:window).addEventListener(a, b, c);
-		_merge[b] = 1;
-	}
-};
 window.addEventListener('load',wrappedOnLoadFunc,false);
 window.addEventListener('click',wrappedClickFunc);
 window.addEventListener('mousedown',wrappedDown);

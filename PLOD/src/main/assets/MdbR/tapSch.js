@@ -60,7 +60,7 @@
 			var pX = e.clientX;
 			var pad=50;
 			return w>0 && y>0
-			&& (pY>y-pad && pY<y+h+pad && pX>x-pad && pX<x+w+pad);
+			&& (pY>y-pad && pY<y+h+pad && pX>x-10 && pX<x+w+10);
 		}
 		window.addEventListener('click',window.tpshc=function(e){
 			var tar=e.target, w=this, pw=parent, d=w.document, sz=pw.shzh, app=pw.app;
@@ -270,10 +270,11 @@
 						if(!s.isCollapsed) {
 							rg = s.getRangeAt(0);
 							var t=pw.abSel, f=(pw.abSeI||0)+1;
-							if(!t) pw.abSel=t=[];
-							t[pw.abSeI=(f%2)] = rg;
-							debug(t, pw.abSeI);
-							t[2] = s;
+							if(!t || t[2]!=s) {
+								pw.abSel=t=[];
+								t[2] = s;
+							}
+							t[pw.abSeI=f%2] = rg;
 						}
 						if(ret!=-1) return ret;
 					}

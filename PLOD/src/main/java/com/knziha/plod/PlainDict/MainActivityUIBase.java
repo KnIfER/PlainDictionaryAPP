@@ -8143,7 +8143,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(invoker.GetSearchKey()!=null)
 				invoker.ApplySearchKey(mWebView);
 			
-			if (wlh.tapSch && !invoker.getImageOnly())
+			if ((wlh.tapSch||wlh.tapSel!=0) && !invoker.getImageOnly())
 				mWebView.evaluateJavascript(getCommonAsset("tapSch.js"), null);
 			
 			if(PDICMainAppOptions.toolsBoost())
@@ -8870,7 +8870,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			key = URLDecoder.decode(key,"UTF-8");
 		} catch (Exception ignored) { }
 		key=key.replace("/", SepWindows);
-		CMN.debug("chrochro_inter_key is", key, fakedDomainResponse, invoker.getDictionaryName());
+		CMN.debug("chrochro_inter_key is", key, fakedDomainResponse, invoker.getDictionaryName(), invoker.bookImpl.hasMdd());
 		if(!key.startsWith(SepWindows)) key=SepWindows+key;
 		if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
 		

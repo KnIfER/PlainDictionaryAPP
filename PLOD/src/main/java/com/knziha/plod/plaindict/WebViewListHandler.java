@@ -126,7 +126,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	WebViewmy mWebView;
 	public boolean tapSch;
 	public int zhTrans;
-	public int tapSel;;
+	public int tapSel;
 	public boolean showNavor;
 	
 	public View browserWidget8;

@@ -192,7 +192,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		settings.setJavaScriptEnabled(true);
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
-		settings.setMediaPlaybackRequiresUserGesture(true);
+		settings.setMediaPlaybackRequiresUserGesture(false);  /* entry:// 发音之必须 */
 
 		// todo enhance safety
 		settings.setAppCacheEnabled(true);
@@ -1135,7 +1135,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 	public static final String SelectAll="document.execCommand('selectAll')";
 	
-	/** var t=window.parent.abSel||[], a=t[0], b=t[1], s=t[2],r=new Range();
+	/** var pw=window.parent, t=pw.abSel||[], a=t[0], b=t[1], s=t[2],r=new Range(), h=!(pw.shzh&7);
+	 	if(h) {
+	 		var s1=pw.getSelection(), S=pw.abSeI||0, R=s1.getRangeAt(0);
+			if(s!=s1) {t=[];t[2]=s=s1;}
+	 		if(!s1.isCollapsed) {
+				pw.abSel=t;
+				if(t[S]!=R) t[pw.abSeI=(S+1)%2] = R;
+	 		}
+	 		a=t[0]; b=t[1];
+		}
 		if(a && b) {
 			r.setStart(a.startContainer, a.startOffset);
 			r.setEnd(b.endContainer, b.endOffset);
@@ -1152,6 +1161,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	 			app.knock0(sid.get());
 				setTimeout(function(){window._touchtarget_lck=0}, 450)
 			}
+	 		if(h) pw.abSel=[]
 		}
 	 */
 	@Metaline
