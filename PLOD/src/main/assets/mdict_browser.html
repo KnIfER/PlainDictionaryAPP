@@ -2512,7 +2512,14 @@
 
 		var rawGetSel = window.getSelection;
 		window.getSelection=function() {
-			for (var i=0,fx; fx=frames[i++];) {
+			var i=0,fx=document.activeElement;
+			if(fx && fx.contentWindow) {
+				fx = fx.contentWindow.getSelection();
+				if(fx && !fx.isCollapsed) {
+					return fx;
+				}
+			}
+			for (; fx=frames[i++];) {
 				fx = fx.item;
 				fx = fx?fx.contentWindow.getSelection():fx;
 				if(fx && !fx.isCollapsed) {
