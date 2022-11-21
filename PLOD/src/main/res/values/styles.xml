@@ -543,6 +543,11 @@
 		<item name="android:src">@drawable/tools_toolbar</item>
 	</style>
 
+	<style name="resizeDlgTheme" parent="Theme.AppCompat.Light.Dialog"> <!--parent="Theme.Design.Light.BottomSheetDialog"-->
+		<item name="android:windowIsFloating">false</item>
+		<item name="android:windowSoftInputMode">adjustResize</item>
+	</style>
+
 </resources>
 
 

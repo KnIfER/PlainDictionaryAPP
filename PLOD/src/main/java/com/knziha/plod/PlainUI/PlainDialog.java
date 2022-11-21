@@ -5,9 +5,11 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.knziha.plod.plaindict.R;
+
 public class PlainDialog extends Dialog {
 	public PlainDialog(@NonNull Context context) {
-		super(context);
+		super(context, R.style.resizeDlgTheme);
 	}
 	
 	public interface BackPrevention {

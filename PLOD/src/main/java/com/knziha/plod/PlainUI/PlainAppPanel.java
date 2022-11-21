@@ -108,10 +108,11 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);
 		dialog.setContentView(settingsLayoutHolder);
 		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
+//		if (resizeDlg)
+//			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+		
 		dialog.show();
-		if (resizeDlg) {
-			dialog.getWindow().setSoftInputMode(MainActivityUIBase.softModeResize);
-		}
+		
 		
 		int padbot = bottomPadding;
 		if(padbot!=0) {
@@ -138,6 +139,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 			t = window.findViewById(id);
 			if(t!=null) t.setVisibility(View.GONE);
 		}
+		
 	}
 	
 	@CallSuper

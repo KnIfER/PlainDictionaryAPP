@@ -949,8 +949,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			fadeInContents.addListener(new AnimatorListenerAdapter() {
 				@Override
 				public void onAnimationEnd(Animator animation) {
-					win.getDecorView().setBackground(Build.VERSION.SDK_INT>=23
-							?null:new ColorDrawable(0));
+					resetWndColor();
 				}
 			});
 			root.post(fadeInContents::start);
@@ -2451,7 +2450,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		UIData.browserWidget0.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
 		
 		MainPageBackground = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
-		
 		weblistHandler.checkUI();
 		//showT(Integer.toHexString(filteredColor)+" "+Integer.toHexString(GlobalPageBackground));
 		if(dictPicker.pinned()) {
@@ -2461,6 +2459,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		UIData.dictName.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
 		// UIData.dictNameFore.setTextColor(ColorUtils.blendARGB(MainAppBackground&0x88FFFFFF, 0x88FFFFFF, 0.8f));
+		resetWndColor();
+	}
+	
+	public void resetWndColor() {
+//		win.getDecorView().setBackground(Build.VERSION.SDK_INT>=23
+//				?null:new ColorDrawable(0));
+		if (root.getAlpha()==1) {
+			getWindow().getDecorView().setBackground(new ColorDrawable(MainAppBackground));
+		}
 	}
 	
 	private boolean getPinPicDictDialog() {
