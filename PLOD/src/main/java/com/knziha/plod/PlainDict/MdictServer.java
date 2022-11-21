@@ -83,7 +83,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	final String SepWindows = "\\";
 	final AppOptions opt;
 	
-	public static boolean hasRemoteDebugServer = true;
+	public static boolean hasRemoteDebugServer = BuildConfig.isDebug;
 	
 	String baseHtml;
 	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
@@ -431,7 +431,10 @@ public abstract class MdictServer extends NanoHTTPD {
 			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true, 0));
 		}
 		
-		boolean shouldLoadFiles = PDICMainAppOptions.getAllowPlugRes()||presenter.isHasExtStyle();
+		if(presenter==null)
+			presenter = loadManager.EmptyBook;
+		//CMN.debug("getPlugRes::", presenter, uri);
+		boolean shouldLoadFiles = !presenter.isMergedBook() && (PDICMainAppOptions.getAllowPlugRes()||presenter.isHasExtStyle());
 		// todo check session.getHeaders() nullable???
 		if(shouldLoadFiles && (!PDICMainAppOptions.getAllowPlugResNone()||!presenter.bookImpl.hasMdd()||session.getHeaders().size()>0&&session.getHeaders().containsKey("f"))) {
 			Response ret=getPlugRes(presenter, uri);

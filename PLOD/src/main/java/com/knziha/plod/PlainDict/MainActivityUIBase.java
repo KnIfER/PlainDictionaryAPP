@@ -2080,6 +2080,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		try {
 			loadManager.EmptyBook = currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 1);
+			EmptyBook.isMergedBook(true);
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -4381,8 +4382,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				iv_switch.setColorFilter(mResource.getColor(val?R.color.colorAccent:R.color.ThinAccent), PorterDuff.Mode.SRC_IN);
 			}
-			if(twoColumnAda!=null)
+			if(twoColumnAda!=null) {
+				twoColumnAda.putImage(val?2:-1, R.drawable.voice_ic_big);
 				twoColumnAda.setItems(shareHelper.getPageItems(this));
+			}
 		}
 		
 		private boolean hasText() {
@@ -4406,7 +4409,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(position<0) return true;
 			if (twoColumnAda != null) {
 				shareHelper.lastClickedPos = shareHelper.pageSz*shareHelper.page + position;
-				if (shareHelper.page == 0 && position<7 && twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
+				if (shareHelper.page == 0 && position<shareHelper.seven() && twoColumnAda.isData(shareHelper.arraySelUtils[2])) {
 					shareHelper.lastClickedPos = shareHelper.pageSz + position;
 				}
 			}
@@ -4691,8 +4694,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
 							}
-						}
-						break;
+						} break;
+						/* 间选 */
+						case R.string.sel_inter: {
+							mWebView.evaluateJavascript(WebViewmy.SelectBetween, null);
+							dissmisstype = 1;
+						} break;
 						/* 颜色 */
 						case R.string.hi_color:
 							break;
@@ -4726,7 +4733,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case R.string.search_dot:
 						case R.string.send_dot:
 							{
-							if (position == 8) {
+							if (position == 9) {
 //								if (isLongClicked) {
 //								} else {
 //									mWebView.evaluateJavascript("getSelection().toString()", value -> {
@@ -5002,7 +5009,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				RecyclerView footRcyView = new RecyclerView(bottomView.getContext());
 				footRcyView.setClipToPadding(false);
 				GridLayoutManager lman;
-				footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 2) {
+				footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 8) {
 					int flip;
 					boolean dragging;
 					@Override
@@ -5044,10 +5051,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}	);
 				lman.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 					@Override
-					public int getSpanSize(int position) {
-						if (!hasText()) return 2;
-						if (position == 0) return 2;
-						return 1;
+					public int getSpanSize(int lstPos) {
+						if (!hasText()) return 8;
+						if (shareHelper.page > 1) return 4;
+						if (lstPos == 0) return 8;
+						if (shareHelper.page==1) {
+							if (lstPos==2) return 1;
+							if (lstPos==3) return 3;
+						}
+						else if (lstPos<3) {
+							return 2;
+						}
+						return 4;
 					}
 				});
 				TwoColumnAdapter RcyAda = new TwoColumnAdapter(shareHelper.getPageItems(this));
@@ -5065,8 +5080,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			//twoColumnAda.page = toText?1:0;
 			if (hasText()) {
+				twoColumnAda.putImage(shareHelper.page==1?2:-1, R.drawable.voice_ic_big);
 				twoColumnAda.setItems(shareHelper.getPageItems(this));
 			} else {
+				twoColumnAda.putImage(-1, 0);
 				twoColumnAda.setItems(arrayTweakDict);
 			}
 			
@@ -5279,8 +5296,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	static int[] VersatileShareSlots = new int[]{7,9,10,18,20,21};
-	
 	public void execVersatileShare(String text, int id) {
 		CMN.debug("execVersatileShare", id);
 		id=0;
@@ -5299,7 +5314,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(id>=0&&id<=5)
 		{
 			getVtk().setInvoker(null, null, null, text);
-			shareHelper.execVersatileShare(false, VersatileShareSlots[id]);
+			shareHelper.execVersatileShare(false, 8);
 		}
 	}
 	

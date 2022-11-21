@@ -65,7 +65,8 @@ public class PlainPDF extends DictionaryAdapter {
 	//构造
 	public PlainPDF(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a);
-		//_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
+		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
+		CMN.debug("_INTERNAL_PDFJS::", _INTERNAL_PDFJS);
 		_num_entries = 1;
 		
 		File path = new File(_a.getExternalFilesDir(".PDF_INDEX"), _Dictionary_fName);
@@ -164,7 +165,7 @@ public class PlainPDF extends DictionaryAdapter {
 				CMN.debug(e);
 			}
 		}
-		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8);
+		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("\\index")), StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -180,12 +181,14 @@ public class PlainPDF extends DictionaryAdapter {
 			}
 		}
 		int id=_INTERNAL_PDFJS.lookUp(key);
-		if(id>=0) {
+		if (id >= 0) {
 			try {
 				return _INTERNAL_PDFJS.getResourseAt(id);
 			} catch (IOException e) {
 				CMN.Log(e);
 			}
+		} else {
+			CMN.debug("找不到::", key);
 		}
 		return null;
 	}

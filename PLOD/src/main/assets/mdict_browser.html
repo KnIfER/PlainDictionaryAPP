@@ -1900,7 +1900,8 @@
 			var currentHeight=Math.ceil(defP.scrollTop);
 			//debug('onWebListScroll st', firstVisFrame, lastVisFrame);
 			var reCalc;
-			if(!withinFrame(currentHeight, firstVisFrame) || (firstVisFrame!=lastVisFrame) && lastVisFrame && !withinFrame(currentHeight+defP.offsetHeight, lastVisFrame)) {
+			if(!withinFrame(currentHeight, firstVisFrame) 
+				|| !withinFrame(currentHeight+defP.offsetHeight, lastVisFrame||firstVisFrame)) {
 				firstVisFrame=lastVisFrame=midFrame=0;
 				var des=0;
 				for (var i=0,fx; fx=frames[i++];) {
@@ -2105,15 +2106,18 @@
 				if(inf) {
 					if(opt.lazy) {
 						if(opt.lazyLoadMax>0 && inf.title.offsetTop>=defP.scrollTop+opt.lazyLoadMax*defP.offsetHeight) {
-							expanding=false; // 暂停加载
+							expanding=false;
+							//debug('暂停加载...1')
 							return;
 						}
 						if(opt.lazyLoadMaxFramesEnabled>0 && inf.frameAt>=des+opt.lazyLoadMaxFrames) {
 							expanding=false; // 暂停加载
+							//debug('暂停加载...2')
 							return;
 						}
 						if(opt.fm1 && inf.fold) {
 							expanding=false; // 停止加载
+							//debug('停止加载')
 							return;
 						}
 
@@ -3993,7 +3997,7 @@
 			if(!window.webpc) {
 				if(!webpcW) {
 					webpcW = [];
-					loadJs("/mdbr/imgLoader.js", function(){
+					loadJs("/MdbR/imgLoader.js", function(){
 						for(var i=0;i<webpcW.length;i++) {
 							try{webpcW[i].item.contentWindow.addEventListener('click',webpc);}catch(e){debug(e)}
 						}
@@ -4002,7 +4006,7 @@
 				}
 				webpcW.push(fx);
 			} else {
-				fx.item.contentWindow.addEventListener('click',window.webpc);
+				fx.item.contentWindow.addEventListener('click',webpc);
 			}
 		}
 	</script>

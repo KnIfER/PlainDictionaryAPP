@@ -129,7 +129,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		if(shunt)
 			return;
-	   if (opt==null) opt = new PDICMainAppOptions(this);
+		if (opt==null) opt = new PDICMainAppOptions(this);
 	   opt.dm = dm = new DisplayMetrics();
 	   mResource = getResources();
 	   mConfiguration = new Configuration(mResource.getConfiguration());
@@ -180,6 +180,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	   } else {
 		   PDICMainAppOptions.bCheckVersionBefore_5_4=false;
 	   }
+		MdictServer.hasRemoteDebugServer &= PDICMainAppOptions.debug();
 	   //inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 	   //btnMaxWidth=GlobalOptions.btnMaxWidth;

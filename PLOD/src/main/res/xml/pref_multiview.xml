@@ -6,6 +6,15 @@
 	android:key="views"
 	android:title="多页面设置"
 	>
+	<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		android:key="debug"
+		android:persistent="false"
+		android:defaultValue="false"
+		android:title="即时调试模式"
+		android:summary="JIT"
+		app:allowDividerBelow="true"
+		/>
+
 	<PreferenceCategory
 		android:key="cat0"
 		android:title="多页面设置（联合搜索）"
@@ -307,15 +316,6 @@
 			app:inlineSummary="true"
 			/>
 	</PreferenceCategory>
-
-	<com.knziha.filepicker.settings.TwinkleSwitchPreference
-		android:key="debug"
-		android:persistent="false"
-		android:defaultValue="false"
-		android:title="即时调试模式"
-		android:summary="JIT"
-		app:allowDividerBelow="true"
-		/>
 
 	<PreferenceCategory> </PreferenceCategory>
 </PreferenceScreen>

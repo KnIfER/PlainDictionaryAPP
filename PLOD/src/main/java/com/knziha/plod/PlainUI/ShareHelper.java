@@ -38,7 +38,7 @@ import java.util.ArrayList;
 public class ShareHelper {
 	final MainActivityUIBase a;
 	public int page;
-	public final int pageSz = 11;
+	public final int pageSz = 12;
 	private static int ver = 0;
 	private final SparseIntArray mVers = new SparseIntArray();
 	private final SparseArray<String[]> pages = new SparseArray<>();
@@ -55,10 +55,10 @@ public class ShareHelper {
 			pages.put(page, arr = new String[pageSz]);
 		}
 		if (page <= 1) {
-			arr[7] = readTargetName(page, 7);
-			arr[8] = readTargetName(page, 8);
-			arr[9] = readTargetName(page, 9);
-			arr[10] = readTargetName(page, 10);
+			int svn = seven();
+			for (int i = svn; i < svn+4; i++) {
+				arr[i] = readTargetName(page, i);
+			}
 		} else {
 			for (int i = 0; i < pageSz; i++) {
 				arr[i] = readTargetName(page, i);
@@ -81,7 +81,7 @@ public class ShareHelper {
 	}
 	
 	public String getDefaultShareName(int pos) {
-		pos -= 7;
+		pos -= seven();
 		if(page == 1) pos += 4;
 		switch (pos) {
 			case 0: return "百度搜索";
@@ -106,7 +106,7 @@ public class ShareHelper {
 			CMN.debug(e);
 		}
 		if (pageNum <= 1) {
-			int pos = lstPos - 7 + 1;
+			int pos = lstPos - seven()/* + 1*/;
 			if(pageNum==1) pos+= 4;
 			return a.mResource.getString(R.string.share) + "#" + pos;
 		} else {
@@ -117,7 +117,7 @@ public class ShareHelper {
 	
 	public void initDefaultSharePattern(JSONObject json, final int pos) {
 		CMN.debug("initDefaultSharePattern::", pos);
-		int id = pos - 7;
+		int id = pos - seven();
 		if (page == 1) {
 			id += 4;
 		}
@@ -287,6 +287,7 @@ public class ShareHelper {
 	public final static int[] defPageStrIds = new int[]{
 			R.string.favor_sel
 			, R.string.select_all
+			, R.string.sel_inter
 			, R.string.hi_color
 			, R.string.highlight
 			, R.string.annote
@@ -298,6 +299,7 @@ public class ShareHelper {
 			, R.string.send_dot
 			, R.string.favor_sel
 			, R.string.send_inpage
+			, R.string.sona
 			, R.string.tts
 			, R.string.pop_sch
 			, R.string.peruse_sch
@@ -309,16 +311,21 @@ public class ShareHelper {
 			, R.string.send_dot
 	};
 	
+	public int seven() {
+		return 8;
+	}
+	
 	public String[] getPageItems(MainActivityUIBase.VerseKit vk) {
 		String[] ret = null;
 		int page = this.page;
+		int svn = seven();
 		if (page <= 1) {
 			if (arraySelUtils[page] == null) {
 				final Resources res = a.mResource;
 				final String[] arr = arraySelUtils[page] = new String[pageSz];
 				final int base = pageSz*page;
-				for (int i = 0; i < pageSz; i++) {
-					if (i < 7) {
+				for (int i = 0; i < arr.length; i++) {
+					if (i < svn) {
 						arr[i] = res.getString(defPageStrIds[base + i]);
 					} else {
 						arr[i] = readTargetName(page, i);
@@ -342,7 +349,7 @@ public class ShareHelper {
 					ret = arraySelUtils[2] = new String[pageSz];
 					System.arraycopy(arraySelUtils[1], 0, ret, 0, pageSz - 4);
 				}
-				System.arraycopy(arraySelUtils[page], 7, ret, 7, 4);
+				System.arraycopy(arraySelUtils[page], svn, ret, svn, 4);
 			}
 		} else {
 			// 加载更多多维分享……
@@ -356,22 +363,22 @@ public class ShareHelper {
 	
 	private String savidForPos(int pos){
 		if (page <= 1) {
-			pos -= 7;
-			return "dsp#" + (page * pageSz + pos);
+			pos -= seven();
+			return "dsp#" + (page * (pageSz-1) + pos);
 		} else {
 			return "dsp_"+((page-2)*pageSz+pos);
 		}
 	}
 	
-	public boolean execVersatileShare(boolean isLongClicked, final int pos) {
-		JSONObject json = a.opt.getDimensionalSharePatternByIndex(savidForPos(pos));
+	public boolean execVersatileShare(boolean isLongClicked, final int lstPos) {
+		JSONObject json = a.opt.getDimensionalSharePatternByIndex(savidForPos(lstPos));
 		boolean putDefault = json == null;
 		if (putDefault) {
 			json = new JSONObject();
 		} else {
 			putDefault = json.has("b")||json.length()==0;
 		}
-		if (putDefault) initDefaultSharePattern(json, pos);
+		if (putDefault) initDefaultSharePattern(json, lstPos);
 		/* 将 json 散列为数组。 */
 		ArrayList<String> data = new ArrayList<>(16);
 		serializeSharePattern(json, data);
@@ -414,13 +421,13 @@ public class ShareHelper {
 								android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(a.getLayoutInflater().getContext());
 								android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
 										.setPositiveButton(R.string.confirm, (dialog, which) -> {
-											a.opt.putDimensionalSharePatternByIndex(savidForPos(pos), null);
+											a.opt.putDimensionalSharePatternByIndex(savidForPos(lstPos), null);
 											JSONObject json = new JSONObject();
 											data.clear();
-											initDefaultSharePattern(json, pos);
+											initDefaultSharePattern(json, lstPos);
 											serializeSharePattern(json, data);
 											csa.notifyDataSetChanged();
-											itemChanged(pos);
+											itemChanged(lstPos);
 											ver++;
 										})
 										.create();
@@ -429,13 +436,13 @@ public class ShareHelper {
 							else try {
 								JSONObject neo = packoutNeoJson(data);
 								JSONObject original = new JSONObject();
-								initDefaultSharePattern(original, pos);
+								initDefaultSharePattern(original, lstPos);
 								if (baseOnDefaultSharePattern(neo, original)) {
 									neo = packoutNeoJson(data);
 								}
-								a.opt.putDimensionalSharePatternByIndex(savidForPos(pos), neo);
+								a.opt.putDimensionalSharePatternByIndex(savidForPos(lstPos), neo);
 								a.showT("保存成功！");
-								itemChanged(pos);
+								itemChanged(lstPos);
 								ver++;
 								dTmp.dismiss();
 							}

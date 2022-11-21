@@ -173,7 +173,7 @@ public class MdictServerMobile extends MdictServer {
 	
 	public static InputStream getRemoteServerRes(String key, boolean check) {
 		InputStream ret = null;
-		if(hasRemoteDebugServer && PDICMainAppOptions.debug()) {
+		if(hasRemoteDebugServer/* && PDICMainAppOptions.debug()*/) {
 			try {
 				if(check) {
 					StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();

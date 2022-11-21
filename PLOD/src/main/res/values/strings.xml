@@ -229,8 +229,8 @@
 	<string name="annote">高亮笔记</string>
 	<string name="underline">下划线</string>
 	<string name="deunderline">清除下划线</string>
-	<string name="send_inpage">发送到页内搜索</string>
-	<string name="tts">TTS 播放</string>
+	<string name="send_inpage">页内搜索</string>
+	<string name="tts">TTS 播放\t</string>
 	<string name="pop_sch">点译查询</string>
 	<string name="peruse_sch">翻阅查询</string>
 	<string name="send_etsch">发送到搜索框</string>
@@ -239,6 +239,7 @@
 	<string name="noti_set">通知栏设置</string>
 	<string name="wikiMultiViewMode">自v5.7起联合搜索开始支持“合并的多页面模式”，可用一个网页控件显示全部结果，而不是一个词典对应一个网页控件，理论上更省资源。缺点是只能简单显示在线词典。</string>
 	<string name="inter_sel">间选 | 间不选</string>
+	<string name="sel_inter">间选</string>
 	<string name="ts_convert">繁简转换</string>
 	<string name="ts_pick">繁简选字</string>
 	<string name="ts_table">繁简对照表</string>
@@ -262,4 +263,5 @@
 	<string name="makeTradition">转成繁体</string>
 	<string name="makeSimple">转成简体</string>
 	<string name="tapSelOpt">点选设置</string>
+	<string name="sona">🔊</string>
 </resources>

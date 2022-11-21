@@ -1134,6 +1134,29 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public static final String CollectHtml="CHJS";
 
 	public static final String SelectAll="document.execCommand('selectAll')";
+	
+	/** var t=window.parent.abSel||[], a=t[0], b=t[1], s=t[2],r=new Range();
+		if(a && b) {
+			r.setStart(a.startContainer, a.startOffset);
+			r.setEnd(b.endContainer, b.endOffset);
+			s.empty();
+			s.addRange(r);
+	 		if(s.isCollapsed) {
+				r.setStart(b.startContainer, b.startOffset);
+				r.setEnd(a.endContainer, a.endOffset);
+				s.empty();
+				s.addRange(r);
+			}
+			if(!s.isCollapsed) {
+	 			window._touchtarget_lck=1;
+	 			app.knock0(sid.get());
+				setTimeout(function(){window._touchtarget_lck=0}, 450)
+			}
+		}
+	 */
+	@Metaline
+	public static final String SelectBetween="";
+
 
 	public static int getReflactField(String className,String fieldName){
 		int result = 0;

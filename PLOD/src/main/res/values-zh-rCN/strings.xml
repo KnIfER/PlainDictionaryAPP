@@ -164,6 +164,7 @@
 	<string name="fold_all">折叠全部</string>
 	<string name="Commit">词典选项</string>
 	<string name="inter_sel">间选 | 间不选</string>
+	<string name="sel_inter">间选</string>
 	<string name="save_as">另存为</string>
 	<string name="disable_all">禁用全部 | 禁用选中项</string>
 	<string name="enable_all">启用全部 | 启用选中项</string>
@@ -204,8 +205,8 @@
 	<string name="annote">高亮笔记 🖌</string>
 	<string name="underline">下划线标注</string>
 	<string name="deunderline">下划线笔记</string>
-	<string name="send_inpage">发送到页内搜索</string>
-	<string name="tts">TTS 播放</string>
+	<string name="send_inpage">页内搜索</string>
+	<string name="tts">TTS 播放\t</string>
 	<string name="pop_sch">点译查询</string>
 	<string name="peruse_sch">翻阅查询</string>
 	<string name="send_etsch">发送到搜索框</string>
@@ -229,5 +230,6 @@
 	<string name="makeTradition">转成繁体</string>
 	<string name="makeSimple">转成简体</string>
 	<string name="tapSelOpt">点选设置</string>
+	<string name="sona">🔊</string>
 	>
 </resources>

@@ -220,7 +220,7 @@ public class BookPresenter
 	
 	public final static String tapTranslateLoader=StringUtils.EMPTY;
 	
-	/**if(!window.webpc)window.addEventListener('click',window.webpc=function(e) {
+	/**console.log('webpc loading!!!');if(!window.webpc)window.addEventListener('click',window.webpc=function(e) {
 		//_log('wrappedClickFunc 1', e.srcElement.id);
 		if(e.srcElement.tagName==='IMG'){
 			var img=e.srcElement;
@@ -240,7 +240,7 @@ public class BookPresenter
 				app.openImage(sid.get(), current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
 			}
 		}
-	 }, false, false)*/
+	 }, false, false);console.log('webpc loaded!!!', window.webpc);*/
 	@Metaline()
 	public final static String imgLoader =StringUtils.EMPTY;
 	
@@ -3571,6 +3571,32 @@ function debug(e){console.log(e)};
 						long time = CMN.now();
 						float lastX = (view.lastLongX + view.lastLongSX)/view.lastLongScale*view.webScale - view.getScrollX();
 						float lastY = (view.lastLongY + view.lastLongSY)/view.lastLongScale*view.webScale - view.getScrollY();
+						MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
+						view.dispatchTouchEvent(evt);
+						evt.setAction(MotionEvent.ACTION_UP);
+						view.dispatchTouchEvent(evt);
+						//view.dispatchTouchEvent(evt);
+						evt.recycle();
+//					}
+//				}, 0);
+			}
+		}
+		
+		// sendup
+		@JavascriptInterface
+		public void knock0(int sid) {
+			//if(layout==a.currentViewImpl)
+			{
+				//upsended = true;
+				WebViewmy view = findWebview(sid);
+				//view.lastSuppressLnkTm = CMN.now();
+				CMN.Log("knock", view.weblistHandler);
+//				view.postDelayed(new Runnable() {
+//					@Override
+//					public void run() {
+						long time = CMN.now();
+						float lastX = view.lastX;
+						float lastY = view.lastY;
 						MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
 						view.dispatchTouchEvent(evt);
 						evt.setAction(MotionEvent.ACTION_UP);
