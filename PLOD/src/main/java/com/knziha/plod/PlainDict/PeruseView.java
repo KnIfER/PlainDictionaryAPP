@@ -308,7 +308,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 //		MainMenus = ViewUtils.MapNumberToMenu(AllMenus, );
-//		PageMenus = ViewUtils.MapNumberToMenu(AllMenus, );
+		PageMenus = AllMenus.mItems;
+		ViewUtils.findInMenu(PageMenus, R.id.tapSch).setChecked(PDICMainAppOptions.fyeTapSch());
 		
 		firstMenu = AllMenus.findItem(R.id.multiline);
 		menuShowAll = AllMenus.findItem(R.id.showAll);
@@ -563,7 +564,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 		CMN.Log("PeruseView----->onCreateDialog");
 		if(mDialog==null){
-			mDialog = new SimpleDialog(requireContext(), getTheme());
+			mDialog = new SimpleDialog(requireContext(), R.style.resizeDlgTheme);
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
 				public void onBackPressed() {
@@ -833,9 +834,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void showPeruseTweaker() {
 		MainActivityUIBase a = getMainActivity();
 		final SettingsPanel settings = new SettingsPanel(a, opt
-				, new String[][]{new String[]{null, "启用页面点击翻译", "记忆页面位置", "同一词典使用相同的页面缩放", "允许滑动翻页", "使用页面双击缩放"}}
+				, new String[][]{new String[]{null, "记忆页面位置", "同一词典使用相同的页面缩放", "允许滑动翻页", "使用页面双击缩放"}}
 				, new int[][]{new int[]{Integer.MAX_VALUE
-				, makeDynInt(100, 0, weblistHandler.tapSch)
+				//, makeDynInt(100, 0, weblistHandler.tapSch)
 				, makeInt(6, 25, true) // fyeRemPos
 				, makeInt(6, 26, false) // fyeRemScale
 				, makeInt(6, 37, true) // turnPageFye
@@ -2319,6 +2320,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					} else {
 					
 					}
+				} break;
+				case R.id.tapSch: {
+					PDICMainAppOptions.fyeTapSch(weblistHandler.togTapSch());
+					m.setChecked(weblistHandler.tapSch);
 				} break;
 				/* 搜索 */
 				case R.id.search:

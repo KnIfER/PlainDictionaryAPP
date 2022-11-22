@@ -7851,9 +7851,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	};
 	
-	void doTranslation(WebViewListHandler weblistHandler, int id, AlertDialog dialog) {
-		WebViewmy mWebView = weblistHandler.getWebContext();
-		CMN.debug("doTranslation::", weblistHandler.bMergingFrames, weblistHandler, mWebView);
+	void doTranslation(WebViewListHandler wlh, int id, AlertDialog dialog) {
+		WebViewmy mWebView = wlh.getWebContext();
+		CMN.debug("doTranslation::", wlh.bMergingFrames, wlh, mWebView);
 		if(mWebView!=null) {
 			boolean off;
 			if (id==R.string.close) {
@@ -7863,18 +7863,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				off = false;
 				mWebView.translating = 1;
 			} else if(id==R.string.makeTradition) {
-				weblistHandler.togZhTrans(1, null);
+				wlh.togZhTrans(1, null);
 				if(dialog!=null) dialog.dismiss();
 				return;
 			} else if(id==R.string.makeSimple) {
-				weblistHandler.togZhTrans(2, null);
+				wlh.togZhTrans(2, null);
 				if(dialog!=null) dialog.dismiss();
 				return;
 			}  else if(id==R.string.tapSelOpt) {
 				showT("未实现");
 				return;
 			} else if(id==R.id.tapSch || id==R.string.tapSch) {
-				weblistHandler.togTapSch();
+				if (peruseView!=null && wlh==peruseView.weblistHandler) {
+					opt.fyeTapSch(wlh.togTapSch()); // todo dim tapSel
+					ViewUtils.findInMenu(peruseView.PageMenus, R.id.tapSch).setChecked(wlh.tapSch);
+				} else {
+					opt.tapSch(wlh.togTapSch()); // todo dim tapSel
+					ViewUtils.findInMenu(SingleContentMenu, R.id.tapSch).setChecked(wlh.tapSch);
+				}
 				if(dialog!=null) dialog.dismiss();
 				return;
 			} else {
@@ -7882,13 +7888,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(dialog!=null) {
 						View[] vus = (View[]) dialog.mAlert.mView.getTag();
 						if (vus[0].getId()==R.string.makeTradition) {
-							weblistHandler.togZhTrans(0, null);
+							wlh.togZhTrans(0, null);
 							if(dialog!=null) dialog.dismiss();
 							return;
 						}
 					}
 				}
-				weblistHandler.updateTapSel(id==R.string.tapSelZi?2
+				wlh.updateTapSel(id==R.string.tapSelZi?2
 						:id==R.string.tapSelDuan?4
 						:0);
 				if(dialog!=null) dialog.dismiss();
@@ -7899,8 +7905,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				PlainWeb webx = gTrans.getWebx();
 				if(webx.getHasModifiers())
 				{
-					weblistHandler.moders.remove(webx);
-					weblistHandler.moders.add(webx);
+					wlh.moders.remove(webx);
+					wlh.moders.add(webx);
 				}
 				mWebView.evaluateJavascript(webx.getPageTranslator(off), null);
 				if(dialog!=null) dialog.dismiss();
