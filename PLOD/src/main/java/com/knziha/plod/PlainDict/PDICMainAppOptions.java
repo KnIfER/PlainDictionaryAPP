@@ -2388,8 +2388,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=58, flagSize=2, shift=1) public static void multiViewMode(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 //	/** 0=文本 1=选择 2=网址 3=合并 */
-//	@Metaline(flagPos=59, flagSize=2) public static int shareTextOrUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=59, flagSize=2) public static void shareTextOrUrl(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=60, flagSize=2) public static int shareTextOrUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=60, flagSize=2) public static void shareTextOrUrl(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

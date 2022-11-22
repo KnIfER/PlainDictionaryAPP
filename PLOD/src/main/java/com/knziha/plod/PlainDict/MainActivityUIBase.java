@@ -6776,7 +6776,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.id.viewMode:{
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
-				CMN.debug("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
+				//CMN.debug("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null || dd.isDark!=GlobalOptions.isDark) {
 					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {

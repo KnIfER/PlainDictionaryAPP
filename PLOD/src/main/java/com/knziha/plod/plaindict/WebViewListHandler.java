@@ -213,7 +213,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						}
 						if(0==bMergingFrames && Math.abs(lastScrollUpdateY-y)>GlobalOptions.density*50) {
 							lastScrollUpdateY=y;
-							CMN.pt("滚动="+Math.abs(oldY)+","+"y="+y+"::");
+							//CMN.pt("滚动="+Math.abs(oldY)+","+"y="+y+"::");
 							//CMN.rt();
 							int bot=WHP.getScrollY() + WHP.getHeight()/2;
 							for (int i = 0; i < webholder.getChildCount(); i++) {
