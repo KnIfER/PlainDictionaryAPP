@@ -1381,15 +1381,15 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					invoker.toTag = null;
 				} else if(harvest){
 					String proKey = mdict.processText(CCD.getBookEntryAt(pos));
-					pos++;
-					while(pos < CCD.bookImpl.getNumberEntries()) {
-						if (proKey.equals(mdict.processText(CCD.getBookEntryAt(pos)))) {
+					int proPos = pos+1;
+					while(proPos < CCD.bookImpl.getNumberEntries()) {
+						if (proKey.equals(mdict.processText(CCD.getBookEntryAt(proPos)))) {
 							mergedUrl.append("_");
-							IU.NumberToText_SIXTWO_LE(pos, mergedUrl);
+							IU.NumberToText_SIXTWO_LE(proPos, mergedUrl);
 						} else {
 							break;
 						}
-						pos++;
+						proPos++;
 					}
 					
 				}
