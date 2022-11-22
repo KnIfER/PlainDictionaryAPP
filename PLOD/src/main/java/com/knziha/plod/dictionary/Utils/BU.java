@@ -345,7 +345,7 @@ public class  BU{//byteUtils
 			byte[] data = new byte[(int) f.length()];
 			fin.read(data);
 			fin.close();
-			return new String(data, "utf8");
+			return new String(data, StandardCharsets.UTF_8);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

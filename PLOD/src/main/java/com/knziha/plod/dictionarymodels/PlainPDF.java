@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 public class PlainPDF extends DictionaryAdapter {
-	mdictRes_asset _INTERNAL_PDFJS;
+	mdictRes_asset INTERNAL_RES;
 	public String[] pdf_index;
 	boolean alphabetic;
 	
@@ -65,8 +65,11 @@ public class PlainPDF extends DictionaryAdapter {
 	//构造
 	public PlainPDF(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a);
-		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
-		CMN.debug("_INTERNAL_PDFJS::", _INTERNAL_PDFJS);
+		try {
+			INTERNAL_RES=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
+		} catch (IOException e) {
+			CMN.debug("fail to init PlainPDF::", e);
+		}
 		_num_entries = 1;
 		
 		File path = new File(_a.getExternalFilesDir(".PDF_INDEX"), _Dictionary_fName);
@@ -165,7 +168,7 @@ public class PlainPDF extends DictionaryAdapter {
 				CMN.debug(e);
 			}
 		}
-		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("\\index")), StandardCharsets.UTF_8);
+		return new String(INTERNAL_RES.getRecordData(INTERNAL_RES.lookUp("\\index")), StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -180,10 +183,10 @@ public class PlainPDF extends DictionaryAdapter {
 				CMN.debug(key, e);
 			}
 		}
-		int id=_INTERNAL_PDFJS.lookUp(key);
+		int id= INTERNAL_RES.lookUp(key);
 		if (id >= 0) {
 			try {
-				return _INTERNAL_PDFJS.getResourseAt(id);
+				return INTERNAL_RES.getResourseAt(id);
 			} catch (IOException e) {
 				CMN.Log(e);
 			}

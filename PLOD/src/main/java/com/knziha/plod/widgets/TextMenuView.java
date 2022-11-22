@@ -42,7 +42,7 @@ public class TextMenuView extends TextView {
 				int drawableSz = leftDrawable.getIntrinsicWidth();
 				int top = (int) ((getMeasuredHeight()-drawableSz)*0.55);
 				Layout lay = getLayout();
-				int left = getMeasuredWidth() - getPaddingRight() - (int) ((drawableSz)*0.75);
+				int left = getMeasuredWidth() - (int) ((drawableSz)*0.75);
 				if (lay != null) {
 					left = Math.min(left, (int) lay.getLineRight(0) + drawableSz);
 				}

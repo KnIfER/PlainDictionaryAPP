@@ -3566,7 +3566,7 @@ function debug(e){console.log(e)};
 				//upsended = true;
 				WebViewmy view = findWebview(sid);
 				//view.lastSuppressLnkTm = CMN.now();
-				CMN.Log("knock", view.weblistHandler);
+				CMN.debug("knock", view.weblistHandler);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
@@ -3592,7 +3592,7 @@ function debug(e){console.log(e)};
 				//upsended = true;
 				WebViewmy view = findWebview(sid);
 				//view.lastSuppressLnkTm = CMN.now();
-				CMN.Log("knock", view.weblistHandler);
+				CMN.debug("knock", view.weblistHandler);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
@@ -3629,9 +3629,9 @@ function debug(e){console.log(e)};
 					long time = CMN.now();
 					float lastX = (float) (x*wv.webScale - wv.getScrollX() + Math.random()*20);
 					float lastY = (float) (y*wv.webScale - wv.getScrollY() + Math.random()*15);
-					lastX=20;
+					lastX+=20;
 					lastY+=35;
-					CMN.Log("knock2", wv.webScale, x, y, lastX, lastY);
+					CMN.debug("knock2", wv.webScale, x, y, lastX, lastY);
 					MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
 					
 					evt.setAction(MotionEvent.ACTION_DOWN);
@@ -3673,7 +3673,7 @@ function debug(e){console.log(e)};
 						float lastY = y*view.webScale - view.getScrollY();
 						lastX=20;
 						lastY+=35;
-						CMN.Log("knock1", x, y, lastX, lastY);
+						CMN.debug("knock1", x, y, lastX, lastY);
 						MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
 						
 						evt.setAction(MotionEvent.ACTION_DOWN);

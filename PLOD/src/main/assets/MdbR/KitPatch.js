@@ -49,3 +49,28 @@ if (typeof Object.assign != 'function') {
         return to;
     };
 }
+
+if(![].at) {
+	function at(n) {
+		try{n = Math.trunc(n) || 0;
+		if (n < 0) n += this.length;
+		if (n < 0 || n >= this.length) return undefined;
+		return this[n];
+		}catch(e){console.log(e)}
+	}
+
+	var TypedArray = Reflect.getPrototypeOf(Int8Array);
+	for (var C of [Array, String, TypedArray]) {
+		Object.defineProperty(C.prototype, "at",
+							{ value: at,
+								writable: true,
+								enumerable: false,
+								configurable: true });
+	}
+}
+
+if(!window.structuredClone){
+    window.structuredClone = function structuredClone(e) {
+          return JSON.parse(JSON.stringify(e));
+	}
+}

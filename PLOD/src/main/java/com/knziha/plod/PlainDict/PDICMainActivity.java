@@ -166,6 +166,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 import io.noties.markwon.Markwon;
 import io.noties.markwon.core.spans.LinkSpan;
@@ -3612,11 +3613,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	 	}
 	 console.log('auto!!!');
 	 }
+	 //document.addEventListener('click', function(e){console.log(e.target); console.log(e);});
 	 setTimeout(function(){setInterval(auto, 64)}, 200)
 	 */
 	@Metaline()
 	String autoUpdateScript = "";
-	HashMap<String, String> cachedUpdate = null;
 	
 	
 	private void startUpdateInstall(File target) {
@@ -3645,12 +3646,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 	
-	private void startUpdateDownload(String versionName, HashMap<String, String> resp, AlertDialog dd, Button btn, AtomicBoolean dwnldTask) {
+	private void startUpdateDownload(String versionName, HashMap<String, String> resp, AlertDialog dd, Button btn, AtomicBoolean dwnldAbort) {
 		SeekBar seek = (SeekBar) getLayoutInflater().inflate(R.layout.purpose_bar, root, false);
 		Runnable fileRn = new Runnable() {
 			@Override
 			public void run() {
-				dwnldTask.set(false);
+				dwnldAbort.set(true);
 				dd.setCancelable(true);
 				dd.setTitle("下载失败，建议手动下载");
 				ViewUtils.removeView(seek);
@@ -3695,6 +3696,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								@Override
 								public void run() {
 									showT("下载成功！");
+									if (info.getCount() > 0) {
+										CMN.debug("真的下载好了!");
+										BU.printFile(target.getName().getBytes(StandardCharsets.UTF_8), new File(getCacheDir(), "ver"));
+									}
 									dd.setCancelable(true);
 									ViewUtils.replaceView(btn, seek, false);
 									btn.setText("安装");
@@ -3721,8 +3726,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 									};
 									folderBtn.setOnClickListener(btns);
 									btn.setOnClickListener(btns);
-									if (dwnldTask.get()) {
-										dwnldTask.set(false);
+									if (!dwnldAbort.get()) {
+										dwnldAbort.set(true);
 									}
 									btn.performClick();
 									lock.delete();
@@ -3761,6 +3766,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					downloadName = null;
 				}
 			}
+			File cahcedDowloadVersion = new File(getCacheDir(), "ver");
+			cahcedDowloadVersion = VersionUtils.UpdateDebugger.fakeCachedVer(cahcedDowloadVersion);
+			if (cahcedDowloadVersion.exists() && BU.fileToString(cahcedDowloadVersion).equals(target.getName())) {
+				CMN.debug("下载过了!");
+				throw new IllegalStateException();
+			}
 			if (!"无限词典".equals(downloadName) && !"平典搜索".equals(downloadName)) {
 				CMN.debug("invalid file name::", downloadName);
 				throw new IllegalArgumentException();
@@ -3775,7 +3786,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						try {
 							if(!lock.exists()) lock.createNewFile();
 							WGet w = new WGet(info, target);
-							w.download(dwnldTask, notify);
+							w.download(dwnldAbort, notify);
 						} catch (Exception e) {
 							CMN.Log(e);
 							hdl.post(fileRn);
@@ -3797,7 +3808,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if (succ) {
 					boolean alreadyNewest = BuildConfig.VERSION_CODE >= buildNo;
 					alreadyNewest = VersionUtils.UpdateDebugger.fakeUpdateVerdict();
-					if (alreadyNewest) { //
+					if (alreadyNewest && true) { /* true false */
 						showT("当前已经是最新版本！");
 						if (d != null) {
 							d.setCancelable(true);
@@ -3807,7 +3818,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 					}
 					else {
-						AtomicBoolean dwnldTask = new AtomicBoolean();
+						AtomicBoolean dwnldAbort = new AtomicBoolean();
 						String info = StringEscapeUtils.unescapeJson(desc);
 						info = info.substring(info.indexOf("\n", info.indexOf("==") + 2) + 1);
 						info = "# "+name+"\n" + info + "\n\n[\\[ 手动下载 \\]]("+descLnk+")";
@@ -3815,7 +3826,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								.setPositiveButton("取消", new DialogInterface.OnClickListener() {
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										dwnldTask.set(true);
+										dwnldAbort.set(true);
 									}
 								})
 								.setNegativeButton("立即下载更新", null)
@@ -3825,21 +3836,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								.show();
 						Button btn = dd.findViewById(android.R.id.button2);
 						VU.setVisible(dd.findViewById(android.R.id.button3), false);
+						VU.setVisible(btn, Build.VERSION.SDK_INT>=23);
 						btn.setOnClickListener(v1 -> { // 立即下载更新 startUpdateParse
 							dd.setCancelable(false);
 							btn.setText("请等待……");
 							btn.setEnabled(false);
-							cachedUpdate = null;
-							cachedUpdate = VersionUtils.UpdateDebugger.fakeCachedDownloadStart();
+							HashMap<String, String> cachedUpdate = VersionUtils.UpdateDebugger.fakeCachedDownloadStart();
 							if (cachedUpdate != null) {
-								startUpdateDownload(name, cachedUpdate, dd, btn, dwnldTask);
+								startUpdateDownload(name, cachedUpdate, dd, btn, dwnldAbort);
 							} else {
 								WebViewListHandler wlh = getRandomPageHandler(true, false, null);
 								wlh.setViewMode(null, 1, null);
 								wlh.viewContent();
 								//wlh.alloydPanel.dismissImmediate();
 								View vg = ViewUtils.getNthParentNonNull(wlh.alloydPanel.settingsLayout, 1);
-								vg.setAlpha(0);
+								boolean resolve=true;
+								resolve = VersionUtils.UpdateDebugger.fakeShowWebview();
+								if(resolve) vg.setAlpha(0);
 								WebViewmy randomPage = wlh.getMergedFrame();
 								randomPage.setWebViewClient(new WebViewClient() {
 									@Override
@@ -3856,8 +3869,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										randomPage.setDownloadListener(null);
 										randomPage.setWebViewClient(myWebClient);
 										if (!flag.val) {
-											startUpdateDownload(null, cachedUpdate, dd, btn, dwnldTask);
+											startUpdateDownload(null, cachedUpdate, dd, btn, dwnldAbort);
 										}
+										wlh.alloydPanel.dismissImmediate();
 									}
 								};
 								randomPage.setDownloadListener(new DownloadListener() {
@@ -3869,7 +3883,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										resp.put("desc", contentDisposition);
 										resp.put("len", ""+contentLength);
 										CMN.debug("onDownloadStart::", resp);
-										startUpdateDownload(name, cachedUpdate = resp, dd, btn, dwnldTask);
+										startUpdateDownload(name, /*cachedUpdate = */resp, dd, btn, dwnldAbort);
 										if (!flag.val) {
 											flag.val = true;
 											hdl.removeCallbacks(finalRn);
@@ -3879,7 +3893,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								});
 								randomPage.loadUrl(descLnk);
 								ViewUtils.ensureTopmost(dd, PDICMainActivity.this, null);
-								hdl.postDelayed(finalRn, 5*1000);
+								if(resolve) hdl.postDelayed(finalRn, 8*1000); // 解析超时
 							}
 						});
 						dd.setCanceledOnTouchOutside(false);
@@ -3899,7 +3913,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				}
 				else {
-					showT("检查失败，建议前往dodo或者贴吧的更新贴手动查找更新！");
+					showT("检查失败，建议前往更新贴手动查找！");
 					if (d != null) {
 						Button btn = (Button) d.tag;
 						btn.setText("检查失败！");
@@ -3907,7 +3921,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			}
 		});
-		
 	}
 	
 	public void checkUpdate(AtomicBoolean task) {
@@ -3923,20 +3936,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			String result = null;
 			result = VersionUtils.UpdateDebugger.fakeUpdateDetect();
 			if(result==null) {
-				String uri = webx.getField("get");
-				HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
-				urlConnection.setRequestMethod("POST");
-				urlConnection.setConnectTimeout(1000);
-				urlConnection.setUseCaches(false);
-				urlConnection.setDefaultUseCaches(false);
-				try( DataOutputStream wr = new DataOutputStream( urlConnection.getOutputStream())) {
-					wr.write(TestHelper.RotateEncrypt(webx.getField("key"), true).getBytes(StandardCharsets.UTF_8));
+				File cahcedUpdateDetect = new File(getCacheDir(), "up.json");
+				if (cahcedUpdateDetect.exists() && (CMN.now()-cahcedUpdateDetect.lastModified())<60*1000) {
+					result = BU.fileToString(cahcedUpdateDetect);
+					CMN.debug("checkUpdate::使用缓存!!!");
+				} else {
+					try {
+						String uri = webx.getField("get");
+						HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
+						urlConnection.setRequestMethod("POST");
+						urlConnection.setConnectTimeout(1000);
+						urlConnection.setUseCaches(true);
+						urlConnection.setDefaultUseCaches(true);
+						try( DataOutputStream wr = new DataOutputStream( urlConnection.getOutputStream())) {
+							wr.write(TestHelper.RotateEncrypt(webx.getField("key"), true).getBytes(StandardCharsets.UTF_8));
+						}
+						urlConnection.connect();
+						final InputStream input = urlConnection.getInputStream();
+						result = BU.StreamToString(input);
+						input.close();
+						urlConnection.disconnect();
+						BU.printFile(result.getBytes(StandardCharsets.UTF_8), cahcedUpdateDetect);
+					} catch (Exception e) {
+						CMN.debug(e);
+						if (result == null) {
+							try {
+								if (cahcedUpdateDetect.exists())
+									result = BU.fileToString(cahcedUpdateDetect);
+							} catch (Exception ex) {
+							}
+						}
+						if (result == null) {
+							throw e;
+						}
+					}
 				}
-				urlConnection.connect();
-				final InputStream input = urlConnection.getInputStream();
-				result = BU.StreamToString(input);
-				input.close();
-				urlConnection.disconnect();
 				CMN.debug("checkUpdate::蒲公英::result=", result);
 			} else {
 				Thread.sleep(500); // 模拟检查耗时
@@ -3954,7 +3988,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				int idx1 = desc.indexOf("\n", idx+2);
 				if(idx1 > 0) {
 					lnk = webx.getField("url") + desc.substring(idx+2, idx1).trim();
-					lnk = "https://www.jianshu.com/p/" + desc.substring(idx+2, idx1).trim();
+					//lnk = "https://www.jianshu.com/p/" + desc.substring(idx+2, idx1).trim();
 				}
 				succ = true;
 			}

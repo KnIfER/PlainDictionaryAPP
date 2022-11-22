@@ -134,7 +134,7 @@ public class RetryWrap {
 
     public static void check(HttpURLConnection c) throws IOException {
         int code = c.getResponseCode();
-		CMN.Log("ResponseCode::", code);
+		CMN.debug("ResponseCode::", code);
         switch (code) {
         case HttpURLConnection.HTTP_OK:
         case HttpURLConnection.HTTP_PARTIAL:

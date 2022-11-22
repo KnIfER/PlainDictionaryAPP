@@ -7716,6 +7716,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//resultMsg.sendToTarget(); New WebView for popup window must not have been  previously navigated. ???
 			// https://stackoverflow.com/questions/9654529/handle-url-from-oncreatewindow-webview
 			try {
+				WebViewmy wv = (WebViewmy) view;
+				if (wv.weblistHandler.bShowInPopup||wv.weblistHandler.bShowingInPopup) {
+					if(!wv.weblistHandler.isPopupShowing()) return true;
+				}
 				Handler handler = view.getHandler();
 				if (handler==null) handler = root.getHandler();
 				Message href = handler.obtainMessage();

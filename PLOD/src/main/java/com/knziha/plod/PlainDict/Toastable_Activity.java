@@ -252,6 +252,8 @@ public class Toastable_Activity extends AppCompatActivity {
 								if(!oldVersion.startsWith("v")) nowName = "v" + nowName;
 								if (!oldVersion.equals(nowName)) {
 									((MainActivityUIBase)this).showUpdateInfos(oldVersion);
+									final File target = new File(getExternalCacheDir(), "apks/"+nowName+".apk");
+									target.delete();
 								}
 							}
 							throw new RuntimeException();

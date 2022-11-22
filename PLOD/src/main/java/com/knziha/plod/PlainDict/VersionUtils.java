@@ -9,6 +9,7 @@ import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class VersionUtils {
@@ -99,8 +100,8 @@ public class VersionUtils {
 	}
 	
 	public static class UpdateDebugger {
-		private static boolean gEnabled = true;
-		public static boolean logProgress = true;
+		private static boolean gEnabled = false; /* true false */
+		public static boolean logProgress = true; /* true false */
 		/*  使用缓存的更新信息 */
 		public static String fakeUpdateDetect() {
 			if (gEnabled && true) { /* true false */
@@ -110,14 +111,19 @@ public class VersionUtils {
 			}
 		}
 		
-		/*  总是更新 */
+		/*  总是当成更新 */
 		public static boolean fakeUpdateVerdict() {
 			return !(gEnabled && true); /* true false */
 		}
 		
+		/*  调试webview */
+		public static boolean fakeShowWebview() {
+			return !(gEnabled && false); /* true false */
+		}
+		
 		/** 不解析webview */
 		public static HashMap<String, String> fakeCachedDownloadStart() {
-			if (gEnabled && true) { /* true false */
+			if (gEnabled && false) { /* true false */
 				HashMap<String, String> cachedUpdate = new HashMap();
 				cachedUpdate.put("url", "https://i82.lanzoug.com/1117160089190988bb/2022/11/16/10f4b916116368e1c4389e69c1cba5d5.apk?st=2oMWep3xzeUdMgrvAak1vg&e=1668674387&b=CL9e51PgU7NQgAPtVuABlVGYCrEHsgKmBwsMd1ZnUHxUPll3BDVUfwA0UHYEPw_c_c&fi=89190988&pid=153-34-122-253&up=2&mp=1&co=1");
 				cachedUpdate.put("desc", "attachment; filename= %E5%B9%B3%E5%85%B8%E6%90%9C%E7%B4%A2_v6.8.1.apk");
@@ -125,6 +131,15 @@ public class VersionUtils {
 				return cachedUpdate;
 			} else {
 				return null;
+			}
+		}
+		
+		/** 不禁下载 */
+		public static File fakeCachedVer(File f) {
+			if (gEnabled && true) { /* true false */
+				return new File("/sdcard/ver");
+			} else {
+				return f;
 			}
 		}
 		
@@ -138,7 +153,7 @@ public class VersionUtils {
 		}
 		public static String fakeLanYunUrl(String url) {
 			// 开启后，测试解析失效
-			if (gEnabled && true) { /* true false */
+			if (gEnabled && false) { /* true false */
 				return "https://pan.baidu.com/share/init?surl=pEAtfW6JHYX8G1CLnYyNbg";
 			} else {
 				return url;
