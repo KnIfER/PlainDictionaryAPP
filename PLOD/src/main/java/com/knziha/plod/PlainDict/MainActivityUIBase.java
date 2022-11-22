@@ -11763,8 +11763,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(ActivedAdapter!=null) invoker = ActivedAdapter.getPresenter();
 		}
 		else if(weblist!=null) {
-			invoker = weblist.getWebContextNonNull().presenter; // todo 111  x打开 空
+			WebViewmy wv = weblist.getWebContextNonNull();
+			invoker = wv.presenter; // todo 111  x打开 空
+			if (wv.merge) {
+				wv.evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String val) {
+						CMN.debug("onReceiveValue::", val);
+						BookPresenter book = EmptyBook;
+						try {
+							val = val.substring(1, val.length() - 1);
+							String[] arr=val.split("_");
+							val = arr[0];
+							long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
+							book = getBookById(id);
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+						showBookNotes(book);
+					}
+				});
+				return;
+			}
 		}
+		showBookNotes(invoker);
+	}
+	
+	public void showBookNotes(BookPresenter invoker) {
 		if (invoker == null || invoker == EmptyBook) {
 			invoker = currentDictionary;
 		}
