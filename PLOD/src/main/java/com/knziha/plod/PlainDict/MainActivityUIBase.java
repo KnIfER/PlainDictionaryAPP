@@ -2850,18 +2850,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public long getBookIdAt(int i) {
-			if (getUsingDataV2()) {
-				try {
-					if (i>=0 && i<lazyMan.chairCount) {
-						i = lazyMan.CosyChair[i];
-						BookPresenter presenter = md.get(i);
-						if (presenter != null) return presenter.getId();
-						String name = new File(lazyMan.placeHolders.get(i).pathname).getName();
-						return prepareHistoryCon().getBookID(null, name);
-					}
-				} catch (Exception e) {
-					CMN.debug(e);
+			try {
+				if (i>=0 && i<lazyMan.chairCount) {
+					i = lazyMan.CosyChair[i];
+					BookPresenter presenter = md.get(i);
+					if (presenter != null) return presenter.getId();
+					String name = new File(lazyMan.placeHolders.get(i).pathname).getName();
+					return prepareHistoryCon().getBookID(null, name);
 				}
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 			return -1;
 		}
@@ -3558,53 +3556,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public LexicalDBHelper prepareFavoriteCon() {
 		if(favoriteCon!=null) return favoriteCon;
-		if (getUsingDataV2()) {
-			favoriteCon = prepareHistoryCon();
-			return favoriteCon;
-		}
-		ArrayList<MyPair<String, LexicalDBHelper>> slots = ((AgentApplication) getApplication()).AppDatabases;
-		String name = opt.getCurrFavoriteDBName();
-		int selectedPos=-1;
-		int candidate=-1;
-		boolean fading = false;
-		String dateBaseName = "favorite.sql";
-		if(slots.size()>0){
-			for (int i = 0; i < slots.size() & selectedPos==-1; i++) {
-				if(name!=null && slots.get(i).key.equals(name)){
-					selectedPos = i;
-				}
-				if(slots.get(i).value != null){
-					candidate = i;
-				}
-			}
-			if(selectedPos==-1){
-				selectedPos=candidate;
-				fading=true;
-			}
-		}
-		LexicalDBHelper _favoriteCon = null;
-		if(selectedPos!=-1){
-			dateBaseName = slots.get(selectedPos).key;
-			_favoriteCon = slots.get(selectedPos).value;
-			if(_favoriteCon!=null){
-				if(!new File(_favoriteCon.pathName).exists())
-					_favoriteCon=null;
-			}
-		}
-		if(fading || selectedPos==-1){
-			opt.putCurrFavoriteDBName(dateBaseName);
-		}
-		if(_favoriteCon==null) {
-			CMN.debug("打开数据库", dateBaseName, opt.getCurrFavoriteDBName());
-			CheckInternalDataBaseDirExist(false);
-			_favoriteCon = new LexicalDBHelper(getApplicationContext(), opt, dateBaseName, false);
-			if(selectedPos!=-1){
-				slots.get(selectedPos).value = _favoriteCon;
-			} else {
-				slots.add(new MyPair<>(dateBaseName, _favoriteCon));
-			}
-		}
-		return favoriteCon = _favoriteCon;
+		return favoriteCon = prepareHistoryCon();
 	}
 	
 	protected long lastInsertedId;
@@ -3632,7 +3584,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(key!=null) {
 			key = key.trim();
 		}
-		if (getUsingDataV2() && key.length()>0) {
+		if (key.length()>0) {
 			if (TextUtils.equals(lastInsertedKey, key)) return lastInsertedId;
 			else {
 				try {
@@ -3969,9 +3921,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BookPresenter getBookByName(String name) {
 		Long bid = BookPresenter.bookImplsNameMap.get(name);
 		if(bid==null) {
-			if (getUsingDataV2()) {
-				bid = prepareHistoryCon().getBookID(null, name);
-			}
+			bid = prepareHistoryCon().getBookID(null, name);
 		}
 		return getBookById(bid);
 	}
@@ -3979,24 +3929,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BookPresenter getBookById(long bid) {
 		BookPresenter ret = null;
 		try {
-			if (getUsingDataV2()) {
-				String fileName = null;
-				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
-				try {
-//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-//							, currentDictionary.bookImpl.getBooKID());
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-				if (impl!=null) {
-					fileName = impl.getFile().getPath();
-				} else {
-					fileName = prepareHistoryCon().getBookPath(bid);
-				}
-				if (fileName!=null) {
-					ret = new_book(fileName, this);
-				}
+			String fileName = null;
+			UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+			try {
+//				CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//						prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//						, currentDictionary.bookImpl.getBooKID());
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			if (impl!=null) {
+				fileName = impl.getFile().getPath();
+			} else {
+				fileName = prepareHistoryCon().getBookPath(bid);
+			}
+			if (fileName!=null) {
+				ret = new_book(fileName, this);
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
@@ -4021,21 +3969,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BookPresenter getBookByIdNoCreation(long bid) {
 		BookPresenter ret = null;
 		try {
-			if (getUsingDataV2()) {
-				String fileName = null;
-				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
-				try {
-//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-//							, currentDictionary.bookImpl.getBooKID());
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-				if (impl!=null) {
-					fileName = impl.getFile().getPath();
-					if (fileName!=null) {
-						ret = new_book(fileName, this);
-					}
+			String fileName = null;
+			UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+			try {
+//				CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//						prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//						, currentDictionary.bookImpl.getBooKID());
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			if (impl!=null) {
+				fileName = impl.getFile().getPath();
+				if (fileName!=null) {
+					ret = new_book(fileName, this);
 				}
 			}
 		} catch (Exception e) {
@@ -4048,21 +3994,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public String getBookNameByIdNoCreation(long bid) {
 		try {
-			if (getUsingDataV2()) {
-				String fileName = null;
-				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
-				try {
-//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-//							, currentDictionary.bookImpl.getBooKID());
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-				if (impl!=null) {
-					return impl.getFile().getPath();
-				}
-				return prepareHistoryCon().getBookName(bid);
+			String fileName = null;
+			UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+			try {
+//				CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//						prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//						, currentDictionary.bookImpl.getBooKID());
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
+			if (impl!=null) {
+				return impl.getFile().getPath();
+			}
+			return prepareHistoryCon().getBookName(bid);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
@@ -4071,28 +4015,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public String getBookInLstNameByIdNoCreation(long bid) {
 		try {
-			if (getUsingDataV2()) {
-				String fileName = null;
-				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
-				try {
-//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-//							, currentDictionary.bookImpl.getBooKID());
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-				String ret = null;
-				if (impl!=null) {
-					ret = impl.getFile().getName();
-				} else {
-					ret = new File(prepareHistoryCon().getBookName(bid)).getName();
-				}
-				int idx = ret.lastIndexOf(".");
-				if (idx > 0) {
-					ret = ret.substring(0, idx);
-				}
-				return ret;
+			String fileName = null;
+			UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+			try {
+//				CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//						prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//						, currentDictionary.bookImpl.getBooKID());
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
+			String ret = null;
+			if (impl!=null) {
+				ret = impl.getFile().getName();
+			} else {
+				ret = new File(prepareHistoryCon().getBookName(bid)).getName();
+			}
+			int idx = ret.lastIndexOf(".");
+			if (idx > 0) {
+				ret = ret.substring(0, idx);
+			}
+			return ret;
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
@@ -4105,11 +4047,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public boolean GetIsFavoriteTerm(@NonNull String text) {
-		return prepareFavoriteCon().GetIsFavoriteTerm(text, (!getUsingDataV2()||opt.getFavoritePerceptsAll())?-1:-2);
+		return prepareFavoriteCon().GetIsFavoriteTerm(text, opt.getFavoritePerceptsAll()?-1:-2);
 	}
 	
 	public void removeFavoriteTerm(String text) {
-		prepareFavoriteCon().remove(text, (!getUsingDataV2()||opt.getFavoritePerceptsRemoveAll())?-1:-2);
+		prepareFavoriteCon().remove(text, opt.getFavoritePerceptsRemoveAll()?-1:-2);
 	}
 	
 	public void putRecentBookMark(long bid, long nid, long pos) {
@@ -4426,16 +4368,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 书签 */
 						case R.string.bmAdd: {
 							if (isLongClicked) return false;
-							if (getUsingDataV2()) {
-								invoker.toggleBookMark(tkWebv, new OnClickListener() {
-									@Override
-									public void onClick(View v) {
-										statHasBookmark();
-									}
-								}, false);
-							} else {
-								showT("已弃用旧版数据库，请尽快升级。");
-							}
+							invoker.toggleBookMark(tkWebv, new OnClickListener() {
+								@Override
+								public void onClick(View v) {
+									statHasBookmark();
+								}
+							}, false);
 							if (mBookMarkAdapter != null) { // todo why
 								mBookMarkAdapter.clear();
 							}
@@ -4444,22 +4382,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 书签列表 */
 						case R.string.bookmarkL: {
 							if (isLongClicked) return false;
-							//stst = System.currentTimeMillis();
-							//ArrayList<Integer> result = new ArrayList<>();
-							
-							//Cursor cr;
-							//cr = con.getDB().rawQuery("select * from t1 ", null);
-							//SparseArray<String> DataRecord = new SparseArray<>();
-							
-							//cr = con.getDB().query("t1", null,null,null,null,null,"path");
-							//while(cr.moveToNext()){
-							//	result.add(0,cr.getInt(0));
-							//}
-							//cr.close();
-							if (con == null && !getUsingDataV2()) {
-								showT("没有书签", 0);
-								break;
-							}
 							AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
 							builder.setTitle(invoker.appendCleanDictionaryName(null).append(" -> ")
 									.append(getString(R.string.bm)).toString());
@@ -4519,10 +4441,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 笔记列表 */
 						case R.string.annotL: {
 							if (isLongClicked) return false;
-							if (!getUsingDataV2()) {
-								showT("仅支持数据库v2", 0);
-								break;
-							}
 							showBookNotes(2);
 
 
@@ -5132,12 +5050,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		private void statHasBookmark() {
 			int resId=R.string.bmAdd;
-			if(getUsingDataV2()) {
+			//if(getUsingDataV2()) {
 				if(invoker.hasBookmark(mWebView)!=-1){
 					resId=R.string.bmSub;
 				}
-			}
-			else if(!bFromTextView) con = invoker.getCon(false);
+			//} else if(!bFromTextView) con = invoker.getCon(false);
 			if (arrayTweakDict[0]!=resId) {
 				arrayTweakDict[0] = resId;
 				if (twoColumnAda!=null) {
@@ -6039,46 +5956,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				DArrayAdapter.ViewHolder vh = (DArrayAdapter.ViewHolder) p.getTag();
 				int position = vh.position;
 				int id_ = ((ViewGroup)p.getParent()).getId();
-				if (getUsingDataV2()) {
-					MyPair<String, Long> item = AppFunAdapter.notebooksV2.get(position);
-					if(p.getParent() instanceof ViewGroup)
-						//选择收藏夹
-						if(id_==R.id.favorList) {
-							putCurrFavoriteNoteBookId(item.value);
-							AppFunAdapter.notifyDataSetChanged();
-						}
-						//删除收藏夹
-						else if(id_==R.id.click_remove) {
-							if (prepareHistoryCon().removeFolder(item.value)>=0) {
-								AppFunAdapter.remove(position);
-							}
-						}
-				} else {
-					MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
-					if(p.getParent() instanceof ViewGroup)
-						//选择收藏夹
-						if(id_==R.id.favorList) {
-							//CMN.Log("选择!!!");
-							opt.putCurrFavoriteDBName(item.key);
-							favoriteCon = null;
-							prepareFavoriteCon();
-							AppFunAdapter.notifyDataSetChanged();
-						}
-						//删除收藏夹
-						else if(id_==R.id.click_remove) {
-							LexicalDBHelper vI = item.value;
-							if(vI!=null){
-								if(vI==favoriteCon)
-									favoriteCon=null;
-								vI.close();
-								item.value=null;
-							}
-							File fi = opt.fileToFavoriteDatabases(item.key, false);
-							fi.delete();
-							new File(fi.getPath()+"-journal").delete();
+				MyPair<String, Long> item = AppFunAdapter.notebooksV2.get(position);
+				if(p.getParent() instanceof ViewGroup)
+					//选择收藏夹
+					if(id_==R.id.favorList) {
+						putCurrFavoriteNoteBookId(item.value);
+						AppFunAdapter.notifyDataSetChanged();
+					}
+					//删除收藏夹
+					else if(id_==R.id.click_remove) {
+						if (prepareHistoryCon().removeFolder(item.value)>=0) {
 							AppFunAdapter.remove(position);
 						}
-				}
+					}
 			}break;
 			//返回
 			case R.id.browser_widget7:{
@@ -10151,69 +10041,45 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						final_bottomPlaylist.dismiss();
 					break;
 					case R.id.confirm:
-						if(getUsingDataV2()) {
-							Long[] selectionArr = AppFunAdapter.selectedPositionsArr;
-							ArrayList<MyPair<String, Long>> items = AppFunAdapter.notebooksV2;
-							HashSet<Long> selection = AppFunAdapter.selectedPositions;
-							if(selection.size()>0) {
-								int delCnt=0, delNum=0, addCnt=0, addNum=0;
-								for(Long oldFav:selectionArr) {
-									if (!selection.contains(oldFav)) {
-										delNum++;
-										try {
-											if(prepareHistoryCon().remove(text, oldFav)>=0) {
-												delCnt++;
-											}
-										} catch (Exception e) { CMN.debug(e); }
-									}
-								}
-								selection.removeAll(Arrays.asList(selectionArr));
-								addNum = selection.size();
-								selectionArr = selection.toArray(new Long[addNum]);
-								for(Long newFav:selectionArr) {
+						Long[] selectionArr = AppFunAdapter.selectedPositionsArr;
+						ArrayList<MyPair<String, Long>> items = AppFunAdapter.notebooksV2;
+						HashSet<Long> selection = AppFunAdapter.selectedPositions;
+						if(selection.size()>0) {
+							int delCnt=0, delNum=0, addCnt=0, addNum=0;
+							for(Long oldFav:selectionArr) {
+								if (!selection.contains(oldFav)) {
+									delNum++;
 									try {
-										if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
-											addCnt++;
+										if(prepareHistoryCon().remove(text, oldFav)>=0) {
+											delCnt++;
 										}
 									} catch (Exception e) { CMN.debug(e); }
 								}
-								String msg = "";
-								if (addNum>0) {
-									msg += " 添加完毕！(" + addCnt + "/" + addNum + ")";
-								}
-								if (delNum>0) {
-									if (!TextUtils.isEmpty(msg)) {
-										msg += "\t";
+							}
+							selection.removeAll(Arrays.asList(selectionArr));
+							addNum = selection.size();
+							selectionArr = selection.toArray(new Long[addNum]);
+							for(Long newFav:selectionArr) {
+								try {
+									if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
+										addCnt++;
 									}
-									msg += " 移除完毕！(" + delCnt + "/" + delNum + ")";
-								}
+								} catch (Exception e) { CMN.debug(e); }
+							}
+							String msg = "";
+							if (addNum>0) {
+								msg += " 添加完毕！(" + addCnt + "/" + addNum + ")";
+							}
+							if (delNum>0) {
 								if (!TextUtils.isEmpty(msg)) {
-									showT(msg);
+									msg += "\t";
 								}
-								selection.clear();
+								msg += " 移除完毕！(" + delCnt + "/" + delNum + ")";
 							}
-						}
-						else {
-							ArrayList<MyPair<String, LexicalDBHelper>> items = AppFunAdapter.notebooks;
-							HashSet<Long> selection = AppFunAdapter.selectedPositions;
-							if(selection.size()>0) {
-								int cc=0;
-								for (int i = 0; i < items.size(); i++) {
-									if (selection.contains((long)i)) {
-										try {
-											MyPair<String, LexicalDBHelper> iI = items.get(i);
-											LexicalDBHelper db = iI.value;
-											if (db == null) {
-												db = iI.value = new LexicalDBHelper(getApplicationContext(), opt, iI.key, false);
-											}
-											if(db.insertUpdate(this, text, weblist)>0){
-												cc++;
-											}
-										} catch (Exception ignored) { }
-									}
-								}
-								showT("添加完毕！("+cc+"/"+selection.size()+")");
+							if (!TextUtils.isEmpty(msg)) {
+								showT(msg);
 							}
+							selection.clear();
 						}
 						final_bottomPlaylist.dismiss();
 					break;
@@ -10240,9 +10106,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				ll.findViewById(R.id.bottombar).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 			}
 		}
-		if (getUsingDataV2()) {
-			FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
-		}
+		FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
 		View v = (View) _bottomPlaylist.getWindow().getDecorView().getTag();
 		DisplayMetrics dm2 = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);

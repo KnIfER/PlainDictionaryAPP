@@ -1493,9 +1493,7 @@ function debug(e){console.log(e)};
 			return;
 		}
 		if(getSavePageToDatabase()) {
-			if(!a.getUsingDataV2()) {
-				getCon(true).enssurePageTable();
-			}
+			//if(!a.getUsingDataV2()) getCon(true).enssurePageTable();
 		}
 		String url= getSaveUrl(mWebView); // deprecated
 		if(url!=null && url.length()>0)

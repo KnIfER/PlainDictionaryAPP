@@ -135,7 +135,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 			bookPresenter = loadManager.md_getAt(i);
 			if(bookPresenter!=null){ // to impl
 				if(isCancelled()) break;
-				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
+				bid = bookPresenter.bookImpl.getBooKID();
 				_treeBuilder.resetRealmer(bid);
 				combining_search_list = bookPresenter.range_query_reveiver;
 				boolean adding = true; //todo
