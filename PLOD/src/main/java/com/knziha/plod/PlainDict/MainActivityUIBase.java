@@ -205,6 +205,7 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
+import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -6937,10 +6938,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				break;
 			case R.string.page_dakai:
-				
 				break;
 			case R.string.refresh:
-				mWebView.reload();
+				if (book.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+					mWebView.setTag("forceLoad");
+					book.renderContentAt(-1, book.RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+				} else {
+					mWebView.reload();
+				}
 				break;
 			case R.string.page_source:
 				book.bViewSource=true;
@@ -8124,6 +8129,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.forbidLoading) {
 				return true;
 			}
+			int schemaIdx = url.indexOf(":");
+			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>schemaIdx+8;
+			if(mdbr && url.charAt(schemaIdx+8)=='d') {
+				return false;
+			}
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			WebViewListHandler wlh = mWebView.weblistHandler;
@@ -8191,7 +8201,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (url.startsWith("http://") || url.startsWith("https://")) {
 				//CMN.Log("shouldOverrideUrlLoading_http",url);
-				int schemaIdx = url.indexOf(":");
 				CMN.debug("invoker.isMergedBook()::", invoker.isMergedBook(), url.regionMatches(schemaIdx+12, "base", 0, 4), !wlh.bShowingInPopup && opt.entryInNewWindowMerge(), url.regionMatches(url.indexOf("/", schemaIdx+12+1+4+2)+1, "entry", 0, 5));
 				if(invoker.isMergedBook() || url.indexOf("mdbr.com")>0) {
 					//todo
@@ -8475,7 +8484,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					int slashIdx = url.indexOf("/", schemaIdx+7);
 					if(slashIdx<0) slashIdx = url.length();
 					if (url.charAt(schemaIdx+8)=='d') {
-						// loaded with base url
+						// loaded with base url ( mdbr.d123 )
 						if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 0, slashIdx-schemaIdx-9)) {
 							invoker = getBookById(IU.parseLong(url.substring(schemaIdx+9, slashIdx)));
 							//CMN.Log("view::changed::res::", invoker);

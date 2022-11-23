@@ -3801,7 +3801,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				AlertDialog d = drawerFragment.aboutDlg.get();
 				if (succ) {
 					boolean alreadyNewest = BuildConfig.VERSION_CODE >= buildNo;
-					alreadyNewest = VersionUtils.UpdateDebugger.fakeUpdateVerdict();
+					alreadyNewest = VersionUtils.UpdateDebugger.fakeUpdateVerdict(alreadyNewest);
 					if (alreadyNewest && true) { /* true false */
 						showT("当前已经是最新版本！");
 						if (d != null) {

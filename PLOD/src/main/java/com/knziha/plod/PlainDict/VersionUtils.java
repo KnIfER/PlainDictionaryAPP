@@ -114,8 +114,8 @@ public class VersionUtils {
 		}
 		
 		/*  总是当成更新 */
-		public static boolean fakeUpdateVerdict() {
-			return !(gEnabled && true); /* true false */
+		public static boolean fakeUpdateVerdict(boolean val) {
+			return !gEnabled ? val : true; /* true false */
 		}
 		
 		/*  调试webview */

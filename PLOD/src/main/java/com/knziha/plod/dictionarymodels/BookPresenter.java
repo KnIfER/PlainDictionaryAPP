@@ -1341,6 +1341,9 @@ function debug(e){console.log(e)};
 	}
 	
 	public boolean store(int pos) {
+		if (getType()==PLAIN_TYPE_PDF) {
+			return false;
+		}
 		return true;
 	}
 	
@@ -2696,13 +2699,13 @@ function debug(e){console.log(e)};
 			try {
 				if (presenter!=null) {
 					WebViewmy mWebView = findWebview(sid);
-					if (mWebView != null) {
-						Cursor cs = presenter.a.prepareHistoryCon().getDB().rawQuery("select lex, "+LexicalDBHelper.FIELD_CREATE_TIME+" from " + TABLE_BOOK_ANNOT_v2 + " where id=?", new String[]{nid});
-						if (cs.moveToNext()) {
-							ret = cs.getString(0);
-							CMN.Log("annotRaw::", ret, formatter.format(cs.getLong(1)));
+					if (mWebView != null) {														/*, "+LexicalDBHelper.FIELD_CREATE_TIME+"*/
+						Cursor cursor = presenter.a.prepareHistoryCon().getDB().rawQuery("select lex from " + TABLE_BOOK_ANNOT_v2 + " where id=?", new String[]{nid});
+						if (cursor.moveToNext()) {
+							ret = cursor.getString(0);
+							//CMN.Log("annotRaw::", ret, formatter.format(cs.getLong(1)));
 						}
-						cs.close();
+						cursor.close();
 					}
 				}
 			} catch (Exception e) {
