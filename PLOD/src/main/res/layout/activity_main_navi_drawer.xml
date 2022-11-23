@@ -33,7 +33,7 @@
 			android:background="@drawable/surrtrip1">
 			<ImageView
 				style="@style/MenuItemImageViewStyle"
-				android:background="@drawable/drawer_menu_icon_exit" />
+				android:src="@drawable/drawer_menu_icon_exit" />
 			<TextView
 				style="@style/MenuItemTextViewStyle"
 				android:text="@string/exit"
@@ -51,7 +51,7 @@
 			>
 			<ImageView
 				style="@style/MenuItemImageViewStyle"
-				android:background="@drawable/info" />
+				android:src="@drawable/info" />
 			<TextView
 				style="@style/MenuItemTextViewStyle"
 				android:text="@string/about"

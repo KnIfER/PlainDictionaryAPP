@@ -158,7 +158,7 @@ public abstract class BasicAdapter extends BaseAdapter
 					a.getVtk().onClick(null);
 				break;
 			}
-			popupMenuHelper.postDismiss(175);
+			popupMenuHelper.postDismiss(150);
 			return true;
 		}
 

@@ -12,7 +12,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
@@ -20,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
@@ -63,7 +61,6 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	int drawerStat;
 	boolean drawerOpen;
 	NoScrollViewPager viewPager;
-	boolean[] inited;
 	RecyclerView[] viewList;
 	ViewGroup bar;
 	ShelfLinearLayout bottomShelf;
@@ -236,23 +233,27 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	
 	@Override
 	public void refresh() {
-		CMN.debug("bookNotes::refresh");
+		//CMN.debug("bookNotes::refresh");
 		if (MainAppBackground != a.MainAppBackground)
 		{
 			// 刷新颜色变化（黑暗模式或者设置更改）
-			toolbar.setTitleTextColor(a.AppWhite);
+			//toolbar.setTitleTextColor(a.AppWhite);
 			MainAppBackground = a.MainAppBackground;
 			bar.setBackgroundColor(MainAppBackground);
 			bottomShelf.setBackgroundColor(MainAppBackground);
 			viewPager.setBackgroundColor(a.AppWhite);
-			for (int i = 0; i < 3; i++) {
-				//((TextView)btns.getChildAt(i)).setTextColor(a.AppBlack);
-				((TextView) bottomShelf.getChildAt(i)).setTextColor(a.AppWhite);
-			}
+			//for (int i = 0; i < 3; i++)  ((TextView) bottomShelf.getChildAt(i)).setTextColor(a.AppWhite);
 			int gray = 0x55888888;
 			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
 			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
+			for (int i = 0; i < 3; i++) {
+				try {
+					viewList[i].getAdapter().notifyDataSetChanged();
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
 		}
 		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
 				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
@@ -459,6 +460,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			}
 			popupMenuRef = new WeakReference<>(ret);
 		}
+		ret.sv.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE_1:null);
 		int k = viewPager.getCurrentItem();
 		AnnotAdapter ada = a.annotAdapters[k];
 		if (ada != null) {
@@ -470,6 +472,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				else if (sortType > 1) rowAct = 2;
 				else rowAct = 0;
 				CMN.debug("getSortByPopupMenu::activate::", rowAct, ada.sortType(this));
+				int blue = GlobalOptions.isDark?0xFF0DCAEE:Color.BLUE;
 				for (int i = 0; i < 4; i++) {
 					View view = ret.lv.getChildAt(i);
 					TextMenuView tv = (TextMenuView) ((ViewGroup) view).getChildAt(0);
@@ -478,8 +481,8 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 						ViewUtils.setVisible(view, k != 1);
 					}
 					tv.activated = rowAct == i;
-					tv.setTextColor(rowAct == i && !b1 ? Color.BLUE : a.AppBlack);
-					v.setColorFilter(rowAct == i && !b1? Color.BLUE:0);
+					tv.setTextColor(rowAct == i && !b1 ? blue : a.AppBlack);
+					v.setColorFilter(rowAct == i && !b1 ? blue : 0);
 					if (tv.getTag()==null) {
 						tv.setTag(tv.getText());
 					}

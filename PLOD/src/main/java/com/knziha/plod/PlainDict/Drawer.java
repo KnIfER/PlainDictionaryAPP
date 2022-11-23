@@ -10,6 +10,7 @@ import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -141,6 +142,8 @@ public class Drawer extends Fragment implements
 	private ViewGroup swRow;
 	private boolean toPDF;
 	private int basicArrLen;
+	private ViewGroup menu_item_setting;
+	private ViewGroup menu_item_exit;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -155,9 +158,11 @@ public class Drawer extends Fragment implements
 		if(mDrawerListLayout ==null){
 			mDrawerListLayout = inflater.inflate(R.layout.activity_main_navi_drawer, container,false);
 			FooterView = mDrawerListLayout.findViewById(R.id.footer);
-			FooterView.findViewById(R.id.menu_item_setting).setOnClickListener(this);
-			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnClickListener(this);
-			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
+			menu_item_setting = FooterView.findViewById(R.id.menu_item_setting);
+			menu_item_exit = FooterView.findViewById(R.id.menu_item_exit);
+			menu_item_setting.setOnClickListener(this);
+			menu_item_exit.setOnClickListener(this);
+			//menu_item_exit.setOnLongClickListener(this); // 测试 fileManager
 			mDrawerList = mDrawerListLayout.findViewById(R.id.left_drawer);
 			
 			int[] basicArr;
@@ -432,6 +437,7 @@ public class Drawer extends Fragment implements
 		sw4.setOnCheckedChangeListener(this);
 		if (val) {
 			a.changeToDarkMode();
+			refreshBtns(val);
 		}
 
 		sw5.setChecked(a.opt.getUseVolumeBtn());
@@ -1279,6 +1285,17 @@ public class Drawer extends Fragment implements
 		if(HeaderView2!=null) {
 			HeaderView2.getBackground().setColorFilter(dark?GlobalOptions.NEGATIVE:null);
 			((TextView)HeaderView2.findViewById(R.id.text)).setTextColor(a.AppBlack);
+		}
+		refreshBtns(dark);
+	}
+	
+	private void refreshBtns(boolean dark) {
+		if (!GlobalOptions.isLarge) {
+			ColorMatrixColorFilter cf = dark ? GlobalOptions.NEGATIVE : null;
+			((ImageView)menu_item_setting.getChildAt(0)).setColorFilter(cf);
+			((ImageView)menu_item_exit.getChildAt(0)).setColorFilter(cf);
+			((TextView)menu_item_setting.getChildAt(1)).setTextColor(a.AppBlack);
+			((TextView)menu_item_exit.getChildAt(1)).setTextColor(a.AppBlack);
 		}
 	}
 	

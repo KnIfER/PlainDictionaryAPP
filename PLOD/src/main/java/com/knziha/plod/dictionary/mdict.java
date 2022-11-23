@@ -328,7 +328,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			return ret;
 		} catch (Exception e) {
 			CrashHandler.hotTracingObject = getPath() + e;
-			SU.Log(e);
+			CMN.debug(e);
 			return "!!!";
 		}
 	}

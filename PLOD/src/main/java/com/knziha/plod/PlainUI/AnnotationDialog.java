@@ -314,7 +314,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			case R.id.fontColor:
 				showSubColorPicker(v.getId());
 			break;
-			case R.id.book_notes_drawer: // btnEditNotes 修改已有笔记
+			case R.id.book_notes_drawer: // btnEditNotes 修改已选笔记
 				mWebView.evaluateJavascript("NidsInRange(0)", value -> {
 					CMN.debug("NidsInRange::", value);
 					if (value.length() > 2) {
@@ -415,7 +415,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				}
 			});
 		}
-		
+		anteNotesPopup.sv.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE_1:null);
 		ListView lv = (ListView) anteNotesPopup.tag1;
 		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) lv.getLayoutParams();
 		rangeAdapter.rebuildCursor(db, null, null, value/*"1,2,3"*/);

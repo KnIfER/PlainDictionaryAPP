@@ -501,13 +501,13 @@ public abstract class MdictServer extends NanoHTTPD {
 	}
 	
 	private Response getPlugRes(BookPresenter presenter, String uri) {
-		//SU.Log("server::getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+//		CMN.debug("server::getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 		try {
 			if(uri.length()<32*5 && uri.length()>3) {
 				int sid = uri.lastIndexOf(".");
 				if(sid>0 && sid<uri.length()-2) {
 					String decoded = null;
-					//SU.Log("同名CSS!", URLDecoder.decode(uri), presenter.getDictionaryName());
+//					CMN.debug("同名CSS!", URLDecoder.decode(uri), presenter.getDictionaryName());
 					if(PDICMainAppOptions.getAllowPlugRes()) {
 						if(PDICMainAppOptions.getAllowPlugResSame()) {
 							String p = presenter.getPath();
@@ -515,7 +515,7 @@ public abstract class MdictServer extends NanoHTTPD {
 							int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
 							if(sep>0) {
 								if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
-									//SU.Log("同名目录!");
+//									CMN.debug("同名目录!");
 									p=null;
 								}
 							}
@@ -531,7 +531,7 @@ public abstract class MdictServer extends NanoHTTPD {
 							}
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-						//SU.Log("文件", uri, mid);
+//						CMN.debug("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							if(decoded==null)
 								decoded = uri.contains("%")?URLDecoder.decode(uri):uri;

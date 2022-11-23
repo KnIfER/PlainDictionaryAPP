@@ -10,6 +10,7 @@ import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MdictServer;
+import com.knziha.plod.widgets.WebViewmy;
 
 import org.knziha.metaline.Metaline;
 
@@ -211,7 +212,13 @@ public class PlainPDF extends DictionaryAdapter {
 		return true;
 	}
 	
-	public void toggleFavor() {
+	@Override
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
+		return "PDFViewerApplication?1:0";
+	}
 	
+	@Override
+	public String getVirtualTextEffectJs(long[] positions) {
+		return null;
 	}
 }

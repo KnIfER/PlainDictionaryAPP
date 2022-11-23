@@ -261,6 +261,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
 		//if(!baseUrl.equals("about:blank"))
 		//CMN.Log("loadDataWithBaseURL...");
+		merge = false;
+		mdbr = true;
 		drawRect=false;
 		isloading=true;
 	}
