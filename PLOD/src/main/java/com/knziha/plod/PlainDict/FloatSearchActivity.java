@@ -313,9 +313,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		//SingleContentMenu = Multi_ContentMenu = MainMenu;
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		
-		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
-		PeruseListModeMenu.setChecked(opt.getInFloatPeruseMode());
-		
 		hdl = new MyHandler(this);
 		checkLog(savedInstanceState);
     }

@@ -1034,7 +1034,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(opt.getRemPos2())ViewUtils.findInMenu(Multi_ContentMenu, R.id.remPagePos2).setChecked(true);
 		if(opt.tapSch())ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapSch).setChecked(true);
 		if(TintWildResult.first = opt.getTintWildRes())ViewUtils.findInMenu(LEFTMenu, R.id.tintList).setChecked(true);
-		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
 		applyMainMenu();
 		schTools = new SearchToolsMenu(this, UIData.schtools);
 		
@@ -1506,11 +1505,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		systemIntialized=true;
-		
-		if(opt.getInPeruseMode()) {
-			PeruseListModeMenu.setChecked(true);
-			showTopSnack("翻阅模式");
-		}
 		
 		if(PDICMainAppOptions.getSimpleMode() && PDICMainAppOptions.getHintSearchMode())
 			showTopSnack(null, "极简模式"

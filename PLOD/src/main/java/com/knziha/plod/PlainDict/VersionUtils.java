@@ -85,6 +85,8 @@ public class VersionUtils {
 		opt.setPeruseBottombarOnBottom(true);
 		opt.setCacheCurrentGroup(false);
 		opt.shareTextOrUrl(0);
+		opt.setInPeruseMode(false);
+		opt.setInFloatPeruseMode(false);
 		
 		if (ViewUtils.isKindleDark()) {
 			if(!opt.defaultReader.contains("dkB")) {

@@ -464,8 +464,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	List<MenuItemImpl> SingleContentMenu;
 	List<MenuItemImpl> Multi_ContentMenu;
 	
-	MenuItem PeruseListModeMenu;
-	
 	ViewGroup snack_holder;
 	public BookPresenter EmptyBook;
 	@NonNull public BookPresenter currentDictionary;
@@ -4325,7 +4323,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				iv_switch.setColorFilter(mResource.getColor(val?R.color.colorAccent:R.color.ThinAccent), PorterDuff.Mode.SRC_IN);
 			}
 			if(twoColumnAda!=null) {
-				twoColumnAda.putImage(val?2:-1, R.drawable.voice_ic_big);
+				twoColumnAda.putImage(val||!bFromWebView?2:-1, R.drawable.voice_ic_big);
 				twoColumnAda.setItems(shareHelper.getPageItems(this));
 			}
 		}
@@ -4975,7 +4973,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (!hasText()) return 8;
 						if (shareHelper.page > 1) return 4;
 						if (lstPos == 0) return 8;
-						if (shareHelper.page==1) {
+						if (shareHelper.page==1||!bFromWebView) {
 							if (lstPos==2) return 1;
 							if (lstPos==3) return 3;
 						}
@@ -5001,7 +4999,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			//twoColumnAda.page = toText?1:0;
 			if (hasText()) {
-				twoColumnAda.putImage(shareHelper.page==1?2:-1, R.drawable.voice_ic_big);
+				twoColumnAda.putImage(shareHelper.page==1||!bFromWebView?2:-1, R.drawable.voice_ic_big);
 				twoColumnAda.setItems(shareHelper.getPageItems(this));
 			} else {
 				twoColumnAda.putImage(-1, 0);
@@ -6875,13 +6873,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (isContentViewAttached()) {
 						EnterPeruseModeByContent(false);
 					} else {
-						boolean newVal = !item.isChecked();
-						item.setChecked(newVal);
-						opt.setInPeruseMode(newVal);
-						if (opt.getInPeruseMode()) {
-							showTopSnack(null, "点击列表，即进入翻阅模式"
-									, 1f, LONG_DURATION_MS, Gravity.CENTER, 0);
-						}
+						JumpToPeruseModeWithWord(getSearchTerm());
 					}
 				}
 			} break;
@@ -11816,5 +11808,51 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		tv.requestFocus();
 		markwon.setMarkdown(tv, rizhi);
 		//tv.requestFocus();
+	}
+	
+	String zhTranslate(String text, int zh) {
+		ensureTSHanziSheet(null);
+		SparseArrayMap map=zh==1?jnFanMap:fanJnMap;
+		String newText = null;
+		for (int i = 0; i < text.length(); i++) {
+			char c=text.charAt(i);
+			String cs=map.get(c);
+			if(cs!=null) {
+				for (int j = 0; j < cs.length(); j++) {
+					char c1 = cs.charAt(j);
+					if(c!=c1) {
+						c=c1;
+						break;
+					}
+				}
+				if (newText==null) {
+					newText = text.substring(0, i);
+				}
+			}
+			if (newText!=null) {
+				newText+=c;
+			}
+		}
+		return newText==null?text:newText;
+	}
+	
+	SpannableStringBuilder zhTranslate(SpannableStringBuilder text, int zh) {
+		ensureTSHanziSheet(null);
+		SparseArrayMap map=zh==1?jnFanMap:fanJnMap;
+		for (int i = 0; i < text.length(); i++) {
+			char c=text.charAt(i);
+			String cs=map.get(c);
+			if(cs!=null) {
+				for (int j = 0; j < cs.length(); j++) {
+					char c1 = cs.charAt(j);
+					if(c!=c1) {
+						c=c1;
+						text.replace(i, i+1, c+"");
+						break;
+					}
+				}
+			}
+		}
+		return text;
 	}
 }

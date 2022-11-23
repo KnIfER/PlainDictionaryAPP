@@ -4,6 +4,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 
 import android.graphics.Color;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.view.Gravity;
 import android.view.View;
@@ -93,6 +94,13 @@ public class ListViewAdapter2 extends BasicAdapter {
 						.append(text, 1, text.length());
 			}
 		}
+		if (PDICMainAppOptions.listZhTranslate() != 0) {
+			if((id==3 || id==4) && text instanceof SpannableStringBuilder) {
+				text = a.zhTranslate((SpannableStringBuilder)text, PDICMainAppOptions.listZhTranslate());
+			} else {
+				text = a.zhTranslate(text.toString(), PDICMainAppOptions.listZhTranslate());
+			}
+		}
 		vh.title.setText(text);
 		
 		BookPresenter book = a.getBookById(results.bookId);
@@ -116,6 +124,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 		int tmp = set0 ? PDICMainAppOptions.listPreviewColor() : PDICMainAppOptions.listPreviewColor1();
 		int color = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp == 0 ? 0.08f : tmp == 1 ? 0.5f : 0.8f);
 		if (preview != null) {
+			if (PDICMainAppOptions.listZhTranslate() != 0) {
+				preview = a.zhTranslate((SpannableStringBuilder)preview, PDICMainAppOptions.listZhTranslate());
+			}
 			int maxLines = (set0 ? PDICMainAppOptions.listOverreadMode() : PDICMainAppOptions.listOverreadMode1()) ? Integer.MAX_VALUE : 3;
 			tmp = set0 ? PDICMainAppOptions.listPreviewFont() : PDICMainAppOptions.listPreviewFont1();
 			int size = tmp == 0 ? 12 : tmp == 1 ? 14 : 17;
@@ -217,6 +228,32 @@ public class ListViewAdapter2 extends BasicAdapter {
 		return false;
 	}
 	
+	public String getRowText(int pos) {
+		return String.valueOf(results.getResAt(a, pos));
+	}
+	
+	public void enterPeruseMode(int pos) {
+		CharSequence entryName = results.getResAt(a, pos);
+		if(entryName==null) {
+			a.showT("Error!");
+			return;
+		}
+		String lstKey = String.valueOf(entryName);
+		PeruseView pView = a.getPeruseView();
+		boolean storeSch = results.shouldAddHistory(a);
+		if(storeSch) { // 保存输入框历史记录
+			a.addHistory(results.schKey, results.storeRealm, weblistHandler, a.etTools);
+			pView.lstKey = lstKey;
+		} else {
+			pView.lstKey = null;
+		}
+		if(!pView.keepGroup() || pView.bookIds.size()==0) {
+			results.getBooksAt(pView.bookIds, pos);
+		}
+		a.JumpToPeruseMode(lstKey, pView.bookIds, -2, true);
+		a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+	}
+	
 	@Override
 	public void onItemClick(int pos){//lv2 mlv1 mlv2
 		if (this.id == 5 && ((resultRecorderLucene)results).hasNextPage(pos)) {
@@ -237,23 +274,6 @@ public class ListViewAdapter2 extends BasicAdapter {
 			return;
 		}
 		String lstKey = currentKeyText = String.valueOf(entryName);
-		
-		if(a.PeruseListModeMenu.isChecked()) {
-			PeruseView pView = a.getPeruseView();
-			boolean storeSch = results.shouldAddHistory(a);
-			if(storeSch) { // 保存输入框历史记录
-				a.addHistory(results.schKey, results.storeRealm, weblistHandler, a.etTools);
-				pView.lstKey = lstKey;
-			} else {
-				pView.lstKey = null;
-			}
-			if(!pView.keepGroup() || pView.bookIds.size()==0) {
-				results.getBooksAt(pView.bookIds, pos);
-			}
-			a.JumpToPeruseMode(lstKey, pView.bookIds, -2, true);
-			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-			return;
-		}
 		
 		if(allMenus!=null) {
 			allMenus.setItems(contentMenus);

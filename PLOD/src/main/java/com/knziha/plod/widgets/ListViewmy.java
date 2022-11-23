@@ -53,6 +53,9 @@ public class ListViewmy extends ListView {
 			if (adapter instanceof OnItemClickListener) {
 				setOnItemClickListener((OnItemClickListener) adapter);
 			}
+			if (adapter instanceof OnItemLongClickListener) {
+				setOnItemLongClickListener((OnItemLongClickListener) adapter);
+			}
 		}
 	}
 	

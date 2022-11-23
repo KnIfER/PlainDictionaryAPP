@@ -654,12 +654,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=2, shift=1) public static boolean getTurnPageEnabled() { FirstFlag=FirstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2, shift=1) public static void setTurnPageEnabled(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 
-	@Metaline(flagPos=3) public static boolean getInPeruseMode() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	// 废弃
+//	@Metaline(flagPos=3) public static boolean getInPeruseMode() { FirstFlag=FirstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=3) public static void setInPeruseMode(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 
-	public boolean getInFloatPeruseMode() {
-		return (FirstFlag & 16) == 16;
-	}
+//	public boolean getInFloatPeruseMode() {
+//		return (FirstFlag & 16) == 16;
+//	}
 	public boolean setInFloatPeruseMode(boolean val) {
 		updateFFAt(16,val);
 		return val;
@@ -2794,6 +2795,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=26) public static boolean hideSchTools() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=26) public static void hideSchTools(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=27, flagSize=2) public static int listZhTranslate() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=27, flagSize=2) public static void listZhTranslate(int v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////

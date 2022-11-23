@@ -86,6 +86,11 @@ public class ListViewAdapter extends BasicAdapter {
 			vh.title.setTextColor(a.AppBlack);
 		}
 		
+		int zhTrans = PDICMainAppOptions.listZhTranslate();
+		if (zhTrans != 0) {
+			currentKeyText = a.zhTranslate(currentKeyText, zhTrans);
+		}
+		
 		vh.title.setText(currentKeyText);
 //			if(position==0 && mdict_asset.class==currentDictionary.getClass()) {
 //				vh.subtitle.setText(Html.fromHtml("<font color='#2B4391'> < "+"欢迎使用平典"+packageName()+" ></font >"));
@@ -113,6 +118,9 @@ public class ListViewAdapter extends BasicAdapter {
 				String text = Jsoup.parse(record).text();
 				if (presenter.isMdict() && presenter.getMdict().hasStyleSheets() && text.contains("`")) {
 					text = markerReg.matcher(text).replaceAll("").trim();
+				}
+				if (zhTrans != 0) {
+					text = a.zhTranslate(text, zhTrans);
 				}
 				vh.preview.setText(text);
 				vh.preview.setTextColor(color);
@@ -186,6 +194,34 @@ public class ListViewAdapter extends BasicAdapter {
 		super.onItemClick(parent, view, pos, id);
 	}
 	
+	public String getRowText(int pos) {
+		String lstKey;
+		if (pos==0 && presenter.isWebx)
+			lstKey = a.etSearch.getText().toString();
+		else
+			lstKey = presenter.bookImpl.getEntryAt(pos).trim();
+		return lstKey;
+	}
+	
+	public void enterPeruseMode(int pos) {
+		String lstKey = getRowText(pos);
+		PeruseView pView = a.getPeruseView();
+		pView.searchAll(lstKey, a, true);
+		boolean storeEt = userCLick && a.storeLv1(lstKey);
+		if(!PDICMainAppOptions.storeNothing()  && storeEt) { // 保存输入框历史记录
+			a.addHistory(lstKey, a.schuiMainPeruse, weblistHandler, a.etTools);
+			pView.lstKey = lstKey;
+		} else {
+			pView.lstKey = null;
+			if (storeEt) {
+				a.etTools.addHistory(lstKey);
+			}
+		}
+		a.AttachPeruseView(true);
+		//CMN.Log(PeruseView.data);
+		a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+	}
+	
 	@Override
 	public void onItemClick(int pos) {//lv1
 //		if (a.thisActType == MainActivityUIBase.ActType.PlainDict) {
@@ -198,29 +234,6 @@ public class ListViewAdapter extends BasicAdapter {
 			return;
 		}
 		a.shuntAAdjustment();
-		if(a.PeruseListModeMenu.isChecked()) {
-			String lstKey;
-			if (pos==0 && presenter.isWebx)
-				lstKey = a.etSearch.getText().toString();
-			else
-				lstKey = presenter.bookImpl.getEntryAt(pos).trim();
-			PeruseView pView = a.getPeruseView();
-			pView.searchAll(lstKey, a, true);
-			boolean storeEt = userCLick && a.storeLv1(lstKey);
-			if(!PDICMainAppOptions.storeNothing()  && storeEt) { // 保存输入框历史记录
-				a.addHistory(lstKey, a.schuiMainPeruse, weblistHandler, a.etTools);
-				pView.lstKey = lstKey;
-			} else {
-				pView.lstKey = null;
-				if (storeEt) {
-					a.etTools.addHistory(lstKey);
-				}
-			}
-			a.AttachPeruseView(true);
-			//CMN.Log(PeruseView.data);
-			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-			return;
-		}
 		if(a.DBrowser!=null && !a.isFloatingApp()) return;
 		lastClickedPosBefore = lastClickedPos;
 		super.onItemClick(pos);

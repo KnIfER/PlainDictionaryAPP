@@ -1,17 +1,20 @@
 package com.knziha.plod.plaindict;
 
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
 import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
@@ -22,8 +25,7 @@ import com.knziha.plod.widgets.WebViewmy;
 import java.util.List;
 
 public abstract class BasicAdapter extends BaseAdapter
-    						implements OnItemClickListener, View.OnClickListener
-    {
+		implements OnItemClickListener, AdapterView.OnItemLongClickListener, View.OnClickListener, PopupMenuHelper.PopupMenuListener {
 		WebViewmy mWebView;
 		public final ContentviewBinding contentUIData;
 		public final WebViewListHandler weblistHandler;
@@ -41,6 +43,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
 		protected BookPresenter presenter;
 		//int adelta=0;
+		public int zhTrans;
 
 		public void ClearVOA() {
 			avoyager.clear();
@@ -94,6 +97,71 @@ public abstract class BasicAdapter extends BaseAdapter
 //			weblistHandler.highlightVagranter.AcrArivAcc =0;
 			//ActivedAdapter=this;
 		}
+	
+		public void enterPeruseMode(int pos) {
+		
+		}
+		
+		int pressedRow = 0;
+
+		public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
+			pressedRow = position;
+			MainActivityUIBase a = presenter.a;
+			PopupMenuHelper popupMenu = a.getPopupMenu();
+			popupMenu.initLayout(new int[]{
+					R.layout.poplist_fanyi_sch
+					, R.string.tapSch
+					, R.string.peruse_mode
+					, R.string.page_ucc
+					, R.string.copy
+			}, this);
+			int[] vLocationOnScreen = new int[2];
+			v.getLocationOnScreen(vLocationOnScreen); //todo 校准弹出位置
+			popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+			return true;
+		}
+	
+		public String getRowText(int position) {
+			return "";
+		}
+		
+		@Override
+		public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+			MainActivityUIBase a = presenter.a;
+			if(isLongClick) return false;
+			switch (v.getId()) {
+				case R.id.zh1:
+					PDICMainAppOptions.listZhTranslate(1);
+					notifyDataSetChanged();
+				break;
+				case R.id.zh2:
+					PDICMainAppOptions.listZhTranslate(2);
+					notifyDataSetChanged();
+				break;
+				case R.id.zh0:
+					PDICMainAppOptions.listZhTranslate(0);
+					notifyDataSetChanged();
+				break;
+				case R.string.copy:
+					a.copyText(getRowText(pressedRow));
+				break;
+				case R.string.tapSch:
+				case R.id.page_lnk_tapSch:
+					a.popupWord(getRowText(pressedRow), null, -1, null);
+				break;
+				case R.string.peruse_mode:
+				case R.id.page_lnk_fye:
+					enterPeruseMode(pressedRow);
+				break;
+				case R.string.page_ucc:
+					a.getVtk().setInvoker(null, null, null, getRowText(pressedRow));
+					a.getVtk().onClick(null);
+				break;
+			}
+			popupMenuHelper.postDismiss(175);
+			return true;
+		}
+
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
 			onItemClick(pos);
@@ -123,4 +191,4 @@ public abstract class BasicAdapter extends BaseAdapter
 				onItemClick(vh.position);
 			}
 		}
-	}
+}
