@@ -4366,7 +4366,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					switch ((int)strId) {
 						/* 书签 */
-						case R.string.bmAdd: {
+						case R.string.bmAdd:
+						case R.string.bmSub:
+						{
 							if (isLongClicked) return false;
 							invoker.toggleBookMark(tkWebv, new OnClickListener() {
 								@Override
@@ -4986,6 +4988,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				TwoColumnAdapter RcyAda = new TwoColumnAdapter(shareHelper.getPageItems(this));
 				RcyAda.setOnItemClickListener(this);
 				RcyAda.setOnItemLongClickListener(this);
+				footRcyView.setItemAnimator(null);
 				footRcyView.setAdapter(RcyAda);
 				twoColumnAda = RcyAda;
 				twoColumnView = footRcyView;
@@ -5049,13 +5052,53 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		private void statHasBookmark() {
-			int resId=R.string.bmAdd;
-			//if(getUsingDataV2()) {
-				if(invoker.hasBookmark(mWebView)!=-1){
-					resId=R.string.bmSub;
+			if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+				mWebView.evaluateJavascript("PDFViewerApplication.page", new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						int page = IU.parsint(value, 0);
+						//setHasBookmark(invoker.hasBookmarkAtV2(page)!=-1);
+						setHasBookmark(invoker.hasBookmark(null, ""+page)!=-1);
+						if (twoColumnView!=null)
+						twoColumnView.post(new Runnable() {
+							@Override
+							public void run() {
+								String pageIndex = " (第" + page + "页)";
+								View ca = twoColumnView.getChildAt(0);
+								if (ca!=null && (ca.getId()==R.string.bmSub||ca.getId()==R.string.bmAdd)) {
+									TwoColumnAdapter.ViewHolder vh = (TwoColumnAdapter.ViewHolder) ca.getTag();
+									String text = String.valueOf(vh.title.getText());
+									if (!text.endsWith(pageIndex)) {
+										int idx = text.indexOf(" (");
+										if (idx > 0) text = text.substring(0, idx);
+										vh.title.setText(text + pageIndex);
+									}
+								}
+							}
+						});
+					}
+				});
+			} else {
+				setHasBookmark(invoker.hasBookmark(mWebView, null)!=-1);
+			}
+		}
+		
+		private void setHasBookmark(boolean b) {
+			boolean b1 = b ^ arrayTweakDict[0]==R.string.bmSub;
+			if (!b1 && invoker.getType()!=DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+				try {
+					View ca = twoColumnView.getChildAt(0);
+					if(ca!=null) {
+						TwoColumnAdapter.ViewHolder vh = (TwoColumnAdapter.ViewHolder) ca.getTag();
+						String text = String.valueOf(vh.title.getText());
+						if (text.endsWith(")")) b1 = true;
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
 				}
-			//} else if(!bFromTextView) con = invoker.getCon(false);
-			if (arrayTweakDict[0]!=resId) {
+			}
+			if (b1) {
+				int resId=b?R.string.bmSub:R.string.bmAdd;
 				arrayTweakDict[0] = resId;
 				if (twoColumnAda!=null) {
 					twoColumnAda.notifyItemChanged(0);

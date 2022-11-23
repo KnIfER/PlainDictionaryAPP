@@ -83,9 +83,9 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 		return this;
 	}
 	
-	static class ViewHolder extends RecyclerView.ViewHolder{
+	public static class ViewHolder extends RecyclerView.ViewHolder{
 		int position;
-		TextView title;
+		public TextView title;
 		public ViewHolder(@NonNull View itemView) {
 			super(itemView);
 			itemView.setTag(this);

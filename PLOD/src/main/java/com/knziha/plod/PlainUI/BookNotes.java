@@ -632,7 +632,6 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					String url = cursor.getString(0);
 					weblistHandler.getMergedFrame().setPresenter(invoker);
 					weblistHandler.getMergedFrame().loadUrl(url);
-					return;
 				} catch (Exception e) {
 					CMN.debug(e);
 				}

@@ -41,8 +41,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	//public static final String TABLE_BOOKMARK_v2 = "bookmark";
 	public static final String TABLE_FAVORITE_v2 = "favorite";
 	public static final String TABLE_FAVORITE_FOLDER_v2 = "favfolder";
-	public static final String TABLE_BOOK_NOTE_v2 = "booknote"; // 记录书签以及词条重写 以及单个页面的全部标记
-	public static final String TABLE_BOOK_ANNOT_v2 = "bookmarks"; // 一个一个的文本标记  // 表 bookannot 废弃
+	/** 记录书签以及词条重写 */
+	public static final String TABLE_BOOK_NOTE_v2 = "booknote";
+	/** 记录页面上的文本标记与笔记附注 */
+	public static final String TABLE_BOOK_ANNOT_v2 = "bookmarks";  // 表 bookannot 废弃
 	public static final String TABLE_DATA_v2 = "data";
 	public static final String TABLE_APPID_v2 = "appid";
 	
@@ -164,7 +166,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 //			db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
 //			db.execSQL("DROP INDEX if exists bookannot_time_index");
 			// TABLE_BOOK_ANNOT_v2 记录高亮标记
-			if (!VersionUtils.AnnotOff) {
+if (!VersionUtils.AnnotOff) {
 			String tableBookAnnotv2 = TABLE_BOOK_ANNOT_v2;
 			sqlBuilder = "create table if not exists " +
 					tableBookAnnotv2 +
@@ -172,73 +174,36 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
 					", bid INTEGER NOT NULL"+
 					", pos INTEGER NOT NULL"+
-					", tPos INTEGER DEFAULT 0"+
-					", web INTEGER DEFAULT 0" +
+					", tPos INTEGER DEFAULT 0"+ // 文本位置，用于排序
+					", web INTEGER DEFAULT 0" + /** 用于标识web网页，见 {@link com.knziha.plod.PlainUI.AnnotAdapter.AnnotationReader#web} */
 					", entry LONGVARCHAR" +
 					", lex LONGVARCHAR" +
-					", url LONGVARCHAR" +
-					", annot TEXT"+
+					", url LONGVARCHAR" + // 在线页面的标记  获取虚拟pos
+					", annot TEXT"+ // 标注json，用于恢复高亮/下划线标记
 					", type INTEGER"+ // 下划线/高亮
 					", noteType INTEGER"+ // 正文/气泡/脚注
 					", color INTEGER"+
-					", hue INTEGER"+
-					", hue1 INTEGER"+
+					", hue INTEGER"+ // 主色，暂未使用
 					", notes LONGVARCHAR"+ // 附注笔记
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" + // 零代表书签记录的备份，目前仅用于在线页面的标记
-					", edit_count INTEGER DEFAULT 0 NOT NULL" +
-					", param BLOB" +
+					", edit_count INTEGER DEFAULT 0 NOT NULL" + // 是书签时代表 mark_count
+					", param BLOB" + // 其他页面信息，暂未使用
 					")";
 			db.execSQL(sqlBuilder);
-			if (!columnExists(db, tableBookAnnotv2, "notes")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN notes LONGVARCHAR");
-			}
-			if (!columnExists(db, tableBookAnnotv2, "url")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN url LONGVARCHAR");
-			}
-			if (!columnExists(db, tableBookAnnotv2, "tPos")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN tPos INTEGER DEFAULT 0");
-			}
-			if (!columnExists(db, tableBookAnnotv2, "web")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN web INTEGER DEFAULT 0");
-			}
-			if (!columnExists(db, tableBookAnnotv2, "hue")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN hue INTEGER DEFAULT 0");
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN hue1 INTEGER DEFAULT 0");
-			}
-			if (!columnExists(db, tableBookAnnotv2, "edit_count")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN edit_count INTEGER DEFAULT 0");
-			}
-			if (!columnExists(db, tableBookAnnotv2, "noteType")) {
-				db.execSQL("ALTER TABLE "+ tableBookAnnotv2 +" ADD COLUMN noteType INTEGER DEFAULT 0");
-			}
-//			db.execSQL("DROP INDEX if exists bookmarks_bpt_index");
-//			db.execSQL("DROP INDEX if exists bookmarks_bpp_index");
-//			db.execSQL("DROP INDEX if exists bookmarks_book_index");
-//			db.execSQL("DROP INDEX if exists bookmarks_time_index");
-//			db.execSQL("DROP INDEX if exists bookmarks_bkmk_partial");
 			db.execSQL("CREATE INDEX if not exists bookmarks_bpt_index ON "+ tableBookAnnotv2 +" (bid, pos, last_edit_time, id)"); // 页面笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_bpp_index ON "+ tableBookAnnotv2 +" (bid, pos, tPos, last_edit_time, id)"); // 页面笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_book_index ON "+ tableBookAnnotv2 +" (bid, last_edit_time, id)"); // 词典笔记视图
 			db.execSQL("CREATE INDEX if not exists bookmarks_time_index ON "+ tableBookAnnotv2 +" (last_edit_time, bid, pos, id)"); // 全部笔记视图
-			try {
+			try { // 部分索引
 				db.execSQL("CREATE INDEX if not exists bookmarks_bkmk_partial ON "+ tableBookAnnotv2 +" (url,bid) where url!=0 or last_edit_time==0"); // 书签查询
+				// 还是把书签和页面标记分表记录吧…… db.execSQL("CREATE INDEX if not exists bookmarks_bkmk_partial_1 ON "+ tableBookAnnotv2 +" (last_edit_time, bid, pos, id) where url!=0 or last_edit_time==0"); // 书签查询
 			} catch (SQLException e) {
-				db.execSQL("CREATE INDEX if not exists bookmarks_bkmk_index ON "+ tableBookAnnotv2 +" (url,bid)");
+				db.execSQL("CREATE INDEX if not exists bookmarks_bkmk_index ON "+ tableBookAnnotv2 +" (url)");
 				CMN.debug(e);
 			}
-			}
+}
 
-
-
-//			db.execSQL("DROP INDEX if exists favorite_term_index");
-//			db.execSQL("DROP INDEX if exists favorite_folder_index");
-//			db.execSQL("DROP INDEX if exists booknote_term_index");
-//			db.execSQL("DROP INDEX if exists booknote_book_index");
-//			db.execSQL("DROP INDEX if exists booknote_time_index");
-			
-			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_NOTE_v2);
-			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOKMARK_v2);
 			// TABLE_BOOK_NOTE_v2 记录书签以及词条重写
 			sqlBuilder = "create table if not exists " +
 					TABLE_BOOK_NOTE_v2 +
@@ -256,25 +221,12 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", notes BLOB" +
 					")";
 			db.execSQL(sqlBuilder);
+			db.execSQL("DROP INDEX IF EXISTS booknote_book_index");
+			db.execSQL("DROP INDEX IF EXISTS booknote_time_index");
 			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex, bid, notesType)"); // query view | booknotes view1
-			db.execSQL("CREATE INDEX if not exists booknote_book_index ON booknote (bid, last_edit_time, notesType)"); // booknotes view
-			db.execSQL("CREATE INDEX if not exists booknote_time_index ON booknote (last_edit_time)"); // all view
+			db.execSQL("CREATE INDEX if not exists booknote_book_index1 ON booknote (bid, last_edit_time, id, notesType)"); // booknotes view
+			db.execSQL("CREATE INDEX if not exists booknote_time_index1 ON booknote (last_edit_time, bid, pos, id)"); // all view
 			//db.execSQL("CREATE INDEX if not exists booknote_edit_index ON booknote (edit_count)"); // edit_count view
-			
-			
-			// TABLE_BOOKMARK_v2 记录书签
-//			sqlBuilder = "create table if not exists " +
-//					TABLE_BOOKMARK_v2 +
-//					"(" +
-//					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
-//					", bid INTEGER NOT NULL"+
-//					", pos INTEGER NOT NULL" +
-//					", param BLOB" +
-//					", creation_time INTEGER NOT NULL"+
-//					")";
-//			db.execSQL(sqlBuilder);
-//			db.execSQL("CREATE INDEX if not exists bkmk_index ON bookmark (bid, pos)");
-//			db.execSQL("CREATE INDEX if not exists bkmk_time_index ON bookmark (creation_time)");
 			
 			
 			// TABLE_BOOK_v2 记录书本
@@ -406,9 +358,6 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				preparedHasBookmarkForEntry = db.compileStatement("select id from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=?");
 				preparedHasWebBookmarkForEntry = db.compileStatement("select id from "+TABLE_BOOK_NOTE_v2+" where lex=?");
 				
-				if(!VersionUtils.AnnotOff)
-				preparedHasBookmarkForUrl = db.compileStatement("select id from "+ TABLE_BOOK_ANNOT_v2 +" where url=? and bid=?");
-				
 				preparedGetBookOptions = db.compileStatement("select options from "+TABLE_BOOK_v2+" where id=?");
 				preparedBookIdChecker = db.compileStatement("select id from "+TABLE_BOOK_v2+" where id=?");
 				
@@ -416,25 +365,17 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				preparedGetIsFavoriteWordInFolder = db.compileStatement(sql+" and folder=?");
 				preparedGetIsFavoriteWord = db.compileStatement(sql);
 				
-				if(!VersionUtils.AnnotOff)
+if(!VersionUtils.AnnotOff)
 				try {
+					preparedHasBookmarkForUrl = db.compileStatement("select id from "+ TABLE_BOOK_ANNOT_v2 +" where url=? and bid=?");
+					preparedGetBookmarkForPos = db.compileStatement("select id from "+ TABLE_BOOK_ANNOT_v2 +" where bid=? and pos=? and last_edit_time=?");
 					predictNextBookmarkId = db.compileStatement("select seq from SQLITE_SEQUENCE where name=?");
 					predictNextBookmarkId.bindString(1, TABLE_BOOK_ANNOT_v2);
+					preparedGetBookmarkForPos.bindLong(3, 0);
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
 			}
-		} else {
-			StringBuilder sqlBuilder = new StringBuilder("create table if not exists ")
-					.append(TABLE_MARKS)
-					.append("(")
-					.append(Key_ID).append(" text PRIMARY KEY not null,")
-					.append(Date).append(" integer")
-					.append(")")
-					;
-			db.execSQL(sqlBuilder.toString());
-			String sql = "select rowid from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
-			preparedGetIsFavoriteWord = db.compileStatement(sql);
 		}
     }
 
@@ -987,6 +928,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	SQLiteStatement preparedGetBookNoteForEntry;
 	public SQLiteStatement preparedHasBookmarkForEntry;
 	public SQLiteStatement preparedHasBookmarkForUrl;
+	public SQLiteStatement preparedGetBookmarkForPos;
 	public SQLiteStatement preparedHasWebBookmarkForEntry;
 	public SQLiteStatement preparedGetBookOptions;
 	public SQLiteStatement preparedBookIdChecker;

@@ -4443,20 +4443,34 @@ function debug(e){console.log(e)};
 		return viewsHolderReady;
 	}
 	
-	public long hasBookmark(WebViewmy mWebView) {
+	public long hasBookmark(WebViewmy mWebView, String lex) {
+		String entryName = lex==null?getSaveUrl(mWebView):lex;
+		if (entryName==null) return -1;
+		CMN.debug("hasBookmark::", entryName);
+		SQLiteStatement stat;
+		try {
+			if (mWebView!=null && entryName.startsWith("http") && entryName.indexOf("://")>0) {
+				stat = a.prepareHistoryCon().preparedHasWebBookmarkForEntry;
+				stat.bindString(1, entryName);
+			} else {
+				stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
+				stat.bindString(1, entryName);
+				stat.bindLong(2, getId());
+			}
+			return stat.simpleQueryForLong();
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+	
+	public long hasBookmarkAtV2(int pos) {
 		String entryName = getSaveUrl(mWebView);
 		if (entryName==null) return -1;
 		CMN.Log("hasBookmark::", entryName);
-		SQLiteStatement stat;
-		if (entryName.startsWith("http") && entryName.indexOf("://")>0) {
-			stat = a.prepareHistoryCon().preparedHasWebBookmarkForEntry;
-			stat.bindString(1, entryName);
-		} else {
-			stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
-			stat.bindString(1, entryName);
-			stat.bindLong(2, getId());
-		}
+		SQLiteStatement stat = a.prepareHistoryCon().preparedGetBookmarkForPos;
 		try {
+			stat.bindLong(1, getId());
+			stat.bindLong(2, pos);
 			return stat.simpleQueryForLong();
 		} catch (Exception e) {
 			return -1;
@@ -4527,9 +4541,9 @@ function debug(e){console.log(e)};
 		//String[] where = new String[]{lex};
 		//Cursor c = database.rawQuery(sql, new String[]{lex});
 		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForUrl;
-		stat.bindString(1, lex);
-		stat.bindLong(2, getId());
 		try {
+			stat.bindString(1, lex);
+			stat.bindLong(2, getId());
 			ret = stat.simpleQueryForLong();
 		} catch (Exception e) {
 			//CMN.debug(e);
@@ -4564,12 +4578,41 @@ function debug(e){console.log(e)};
 	public long toggleBookMark(WebViewmy mWebView, OnClickListener notifier, boolean forceAdd) {
 		long id=-1;
 		boolean say = notifier!=a;
+		long bid = bookImpl.getBooKID();
+		if (getType()==PLAIN_TYPE_PDF) {
+			mWebView.evaluateJavascript("PDFViewerApplication.page", new ValueCallback<String>() {
+				@Override
+				public void onReceiveValue(String value) {
+					int pos = IU.parsint(value, 0);
+					//long added = hasBookmarkAtV2(pos);
+					long added = hasBookmark(null, ""+pos);
+					SQLiteDatabase database = a.prepareHistoryCon().getDB();
+					if(forceAdd && added!=-1) {
+						if(say) sayToggleBookMarkResult((int) added, notifier);
+						return;
+					}
+					if (added!=-1) {
+						int ret = database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{added+""})>0?-2:-1;
+						if(say) sayToggleBookMarkResult(ret, notifier);
+					} else {
+						ContentValues values = new ContentValues();
+						values.put("lex", ""+pos);
+						values.put("bid", bid);
+						values.put("pos", pos);
+						values.put("last_edit_time", CMN.now());
+						values.put("creation_time", CMN.now());
+						added = database.insert(TABLE_BOOK_NOTE_v2, null, values);
+						if(say) sayToggleBookMarkResult((int) added, notifier);
+					}
+				}
+			});
+			return -2;
+		}
 		if (mWebView!=null) {
-			long bid = bookImpl.getBooKID();
 			CMN.rt();
 			String lex = getSaveUrl(mWebView);
 			if(lex==null) return id;
-			CMN.Log("toggleBookMark::url::", lex);
+			CMN.debug("toggleBookMark::url::", lex);
 			try {
 				SQLiteDatabase database = a.prepareHistoryCon().getDB();
 				boolean hasNotes=false;
