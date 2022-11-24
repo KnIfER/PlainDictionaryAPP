@@ -127,6 +127,7 @@ import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ScreenListener;
+import com.knziha.plod.widgets.UpdateDebugger;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -3675,7 +3676,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			File lock = new File(target.getPath() + ".lock");
 			if(!target.getParentFile().exists()) target.getParentFile().mkdirs();
 			String finalUrl = url;
-			finalUrl = VersionUtils.UpdateDebugger.fakeDownloadUrl(url);
+			finalUrl = UpdateDebugger.fakeDownloadUrl(url);
 			DownloadInfo info = new DownloadInfo(new URL(finalUrl));
 			Runnable notify = new Runnable() {
 				long prev;
@@ -3733,7 +3734,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							fileRn.run();
 							break;
 						case DOWNLOADING:
-							if(VersionUtils.UpdateDebugger.logProgress) {
+							if(UpdateDebugger.logProgress) {
 								CMN.debug("DOWNLOADING::", info.getCount());
 							}
 							long now = System.currentTimeMillis();
@@ -3761,7 +3762,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			}
 			File cahcedDowloadVersion = new File(getCacheDir(), "ver");
-			cahcedDowloadVersion = VersionUtils.UpdateDebugger.fakeCachedVer(cahcedDowloadVersion);
+			cahcedDowloadVersion = UpdateDebugger.fakeCachedVer(cahcedDowloadVersion);
 			if (cahcedDowloadVersion.exists() && BU.fileToString(cahcedDowloadVersion).equals(target.getName())) {
 				CMN.debug("下载过了!");
 				throw new IllegalStateException();
@@ -3794,14 +3795,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 	
-	public void resolveUpdate(AtomicBoolean task, boolean succ, int buildNo, String name, String desc, String descLnk) {
+	public void resolveUpdate(AtomicBoolean task, boolean succ, int buildNo, String name, String desc, String lnk) {
 		hdl.post(new Runnable() {
 			@Override
 			public void run() {
 				AlertDialog d = drawerFragment.aboutDlg.get();
 				if (succ) {
 					boolean alreadyNewest = BuildConfig.VERSION_CODE >= buildNo;
-					alreadyNewest = VersionUtils.UpdateDebugger.fakeUpdateVerdict(alreadyNewest);
+					alreadyNewest = UpdateDebugger.fakeUpdateVerdict(alreadyNewest);
 					if (alreadyNewest && true) { /* true false */
 						showT("当前已经是最新版本！");
 						if (d != null) {
@@ -3813,9 +3814,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 					else {
 						AtomicBoolean dwnldAbort = new AtomicBoolean();
-						String info = StringEscapeUtils.unescapeJson(desc);
+						String info = desc;
 						info = info.substring(info.indexOf("\n", info.indexOf("==") + 2) + 1);
-						info = "# "+name+"\n" + info + "\n\n[\\[ 手动下载 \\]]("+descLnk+")";
+						info = "# "+name+"\n" + info + "\n\n[\\[ 手动下载 \\]]("+lnk+")";
 						AlertDialog dd = new AlertDialog.Builder(PDICMainActivity.this)
 								.setPositiveButton("取消", new DialogInterface.OnClickListener() {
 									@Override
@@ -3835,7 +3836,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							dd.setCancelable(false);
 							btn.setText("请等待……");
 							btn.setEnabled(false);
-							HashMap<String, String> cachedUpdate = VersionUtils.UpdateDebugger.fakeCachedDownloadStart();
+							HashMap<String, String> cachedUpdate = UpdateDebugger.fakeCachedDownloadStart();
 							if (cachedUpdate != null) {
 								startUpdateDownload(name, cachedUpdate, dd, btn, dwnldAbort);
 							} else {
@@ -3845,7 +3846,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								//wlh.alloydPanel.dismissImmediate();
 								View vg = ViewUtils.getNthParentNonNull(wlh.alloydPanel.settingsLayout, 1);
 								boolean resolve=true;
-								resolve = VersionUtils.UpdateDebugger.fakeShowWebview();
+								resolve = UpdateDebugger.fakeShowWebview();
 								if(resolve) vg.setAlpha(0);
 								WebViewmy randomPage = wlh.getMergedFrame();
 								randomPage.setWebViewClient(new WebViewClient() {
@@ -3885,7 +3886,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										}
 									}
 								});
-								randomPage.loadUrl(descLnk);
+								randomPage.loadUrl(lnk);
 								ViewUtils.ensureTopmost(dd, PDICMainActivity.this, null);
 								if(resolve) hdl.postDelayed(finalRn, 8*1000); // 解析超时
 							}
@@ -3919,7 +3920,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void checkUpdate(AtomicBoolean task) {
 		boolean succ = false;
-		int buildVersionNo=-1;
+		int buildNo=-1;
 		String name = null;
 		String lnk = null;
 		String desc = null;
@@ -3928,7 +3929,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			BookPresenter book = MainActivityUIBase.new_book(defDicts1[1], this);
 			PlainWeb webx = book.getWebx();
 			String result = null;
-			result = VersionUtils.UpdateDebugger.fakeUpdateDetect();
+			result = UpdateDebugger.fakeUpdateDetect();
 			if(result==null) {
 				File cahcedUpdateDetect = new File(getCacheDir(), "up.json");
 				if (cahcedUpdateDetect.exists() && (CMN.now()-cahcedUpdateDetect.lastModified())<60*1000) {
@@ -3937,12 +3938,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				} else {
 					try {
 						String uri = webx.getField("get");
+						final boolean b1 = uri.contains("pgy");
 						HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
-						urlConnection.setRequestMethod("POST");
+						urlConnection.setRequestMethod(b1?"POST":"GET");
 						urlConnection.setConnectTimeout(1000);
 						urlConnection.setUseCaches(true);
 						urlConnection.setDefaultUseCaches(true);
-						try( DataOutputStream wr = new DataOutputStream( urlConnection.getOutputStream())) {
+						if(b1) try( DataOutputStream wr = new DataOutputStream( urlConnection.getOutputStream())) {
 							wr.write(TestHelper.RotateEncrypt(webx.getField("key"), true).getBytes(StandardCharsets.UTF_8));
 						}
 						urlConnection.connect();
@@ -3969,13 +3971,24 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} else {
 				Thread.sleep(500); // 模拟检查耗时
 			}
+			CMN.debug("result::", result);
 			if (task.get()) {
-				JSONObject resp = new JSONObject(result);
-				CMN.debug("result::", resp);
-				JSONObject data = resp.getJSONObject("data");
-				buildVersionNo = data.getInt("buildVersionNo");
-				name = data.getString("buildVersion");
-				desc = data.getString("buildUpdateDescription");
+				if (result.startsWith("{")) {
+					JSONObject resp = new JSONObject(result);
+					JSONObject data = resp.getJSONObject("data");
+					buildNo = data.getInt("buildVersionNo");
+					name = data.getString("buildVersion");
+					desc = StringEscapeUtils.unescapeJson(data.getString("buildUpdateDescription"));
+				} else {
+					int idxbuildVersion = result.indexOf("v");
+					int idxbuildVersionNo = result.indexOf("/");
+					int sepIdx = result.indexOf(" ", idxbuildVersionNo);
+					if (idxbuildVersion>0 && idxbuildVersionNo>idxbuildVersion && sepIdx>0) {
+						name = result.substring(idxbuildVersion+1, idxbuildVersionNo);
+						buildNo = IU.parsint(result.substring(idxbuildVersionNo+1, sepIdx));
+						desc = result.substring(0, idxbuildVersionNo)+result.substring(sepIdx);
+					}
+				}
 				CMN.debug("buildUpdateDescription::", desc);
 				lnk = null;
 				int idx = desc.indexOf("==");
@@ -3986,15 +3999,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				succ = true;
 			}
-			if(buildVersionNo==-1 || lnk==null) {
+			if(buildNo==-1 || lnk==null) {
 				throw new IllegalArgumentException();
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
-		int finalBuild = buildVersionNo;
+		int finalBuild = buildNo;
 		if (name!=null && !name.startsWith("v")) name = "v"+name;
-		lnk = VersionUtils.UpdateDebugger.fakeLanYunUrl(lnk);
-		resolveUpdate(task, succ, buildVersionNo, name, desc, lnk);
+		lnk = UpdateDebugger.fakeLanYunUrl(lnk);
+		resolveUpdate(task, succ, buildNo, name, desc, lnk);
 	}
 }
