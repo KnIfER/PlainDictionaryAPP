@@ -8249,7 +8249,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						mWebView.expectedPos = -100;
 						((WebViewmy) view).isloading = true;
 //						view.evaluateJavascript("location.replace(\"" + url.substring(entryTag.length()) + "\");", null);
-						view.evaluateJavascript("var h='"+url.substring(entryTag.length())+"',d=document;(d.getElementById(h)||d.getElementsByName(h)[0]).scrollIntoView()", null);
+						view.evaluateJavascript("var h='"+url.substring(entryTag.length()+1)+"',d=document;(d.getElementById(h)||d.getElementsByName(h)[0]).scrollIntoView()", null);
 					}
 					else {//TODO 精确之
 						view.evaluateJavascript("var item=document.getElementsByName(\"" + url.substring(entryTag.length() + 1) + "\")[0]; item?item.getBoundingClientRect().top:-1;"

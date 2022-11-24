@@ -265,6 +265,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		mdbr = true;
 		drawRect=false;
 		isloading=true;
+		scrollLck=0;
 	}
 	
 //	@Override
@@ -296,6 +297,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		super.loadUrl(url);
 		drawRect=false;
 		isloading=true;
+		scrollLck=0;
 		recUrl(url);
 	}
 	
