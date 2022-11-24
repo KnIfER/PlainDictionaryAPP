@@ -24,27 +24,26 @@
 <script>
 var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c 子页面 ","color:#333!important;background:#b0f7ce;",t[0],t[1],t[2],t[3],t[4])};
 (function(){
-var contentUrl = location.origin+location.pathname;
-var contentHash = contentUrl+'#';
-var baseEntryUrl = 0;
+var contentUrl = location.origin+location.pathname, contentHash = contentUrl+'#', baseEntryUrl
+	, w=window, pw=parent, _app=w.app;
 debug("frameElement::", frameElement, contentUrl);
 function ge(e){return document.getElementById(e)};
 if(frameElement) {
-	window._merge={};
-	window.edEtJts=function(a, b, c){
+	w._merge={};
+	w.edEtJts=function(a, b, c){
 		if(!_merge[b]) {
-			(b.d?document:window).addEventListener(a, b, c);
+			(b.d?document:w).addEventListener(a, b, c);
 			_merge[b] = 1;
 		}
 	};
 }
-window.shzh=0;
+w.shzh=0;
 var remarked=false;
-window.addEventListener('load',wrappedOnLoadFunc,false);
-window.addEventListener('click',wrappedClickFunc);
-window.addEventListener('mousedown',wrappedDown);
-window.addEventListener('touchstart',wrappedDown);
-//window.addEventListener('scroll',wrappedScroll,true);
+w.addEventListener('load',wrappedOnLoadFunc,false);
+w.addEventListener('click',wrappedClickFunc);
+w.addEventListener('mousedown',wrappedDown);
+w.addEventListener('touchstart',wrappedDown);
+//w.addEventListener('scroll',wrappedScroll,true);
 
 // function wrappedScroll(e){
 // 	debug(e);
@@ -54,7 +53,7 @@ window.addEventListener('touchstart',wrappedDown);
 // }
 function wrappedOnLoadFunc(){
 	debug('wrappedOnLoadFunc');
-	window.addEventListener('click',parent.window.tpshc); //wtf??
+	w.addEventListener('click',pw.tpshc); //wtf??
 	// //document.body.style.fontSize=35+'px';
 	// highlight(null);
 	// //debug('frameAt !! '+frameAt);
@@ -63,13 +62,13 @@ function wrappedOnLoadFunc(){
 	// 	_onloadchecks[i]();
 	// }
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
-	var fe=frameElement, pw=parent.window;
+	var fe=frameElement;
 	if(pw.processPage) pw.processPage(fe);
 	if(fe) {
-		debug('mdpage loaded', fe.dictInfo.name, 'tpshc!=null:'+parent.tpshc!=null);
+		debug('mdpage loaded', fe.dictInfo.name, 'tpshc!=null:'+pw.tpshc!=null);
 		var inf=fe.dictInfo;
 		if(pw) {
-			// window.addEventListener('click',pw.tpshc);
+			// w.addEventListener('click',pw.tpshc);
 			for(var i=0,j;j=pw._merge[i++];) {
 				edEtJts(j[0], j[1], j[2])
 			}
@@ -92,17 +91,17 @@ function wrappedOnLoadFunc(){
 			pw.MarkFrame(fe);
 		}
 		//debug('needs img loader', inf.img, inf.name);
-		if(pw.app && inf.img) {
+		if(_app && inf.img) {
 			pw.LoadIMG(inf);
 		}
-	} else if(pw.app){
-		window.shzh=app.rcsp(sid.get());
+	} else if(_app){
+		w.shzh=_app.rcsp(sid.get());
 	}
 	if(!remarked) {
 		if(fe) {
 			restoreMarks(pw); 
-		} else if(app){
-			loadJs('/MdbR/annot.js', function(){restoreMarks(window)})
+		} else if(_app) { // 暂时仅为app内部开启笔记
+			loadJs('/MdbR/annot.js', function(){restoreMarks(w)})
 		}
 		remarked = true;
 	}
@@ -117,9 +116,9 @@ function loadJs(url,callback){
 	document.body.appendChild(e);
 }
 
-function restoreMarks(pw){
+function restoreMarks(pw) {
 	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
-	var t = app.remarkByUrl(sid.get(), url);
+	var t = _app.remarkByUrl(sid.get(), url);
 	debug('remarkByUrl???', url, t);
 	if(multi) {
 		t = t.split('\t'); // \n\n\n
@@ -144,19 +143,19 @@ function remark(t, rootNode, doc, w){
     w.RestoreMarks(t, rootNode, doc);
 }
 
-window.markPage = function(tcn) {
-	var s = window.getSelection();
+w.markPage = function(tcn) {
+	var s = w.getSelection();
 	if(s && !s.isCollapsed) {
 		var wh = whereSelection();
 		MakeMark(tcn, wh[2], document, wh[0], wh[1])
 	}
 }
 
-window.expUrl = function() {
+w.expUrl = function() {
 	return url.substring(url.lastIndexOf('/',idx));
 }
 
-window.whereSelection = function(){
+w.whereSelection = function(){
 	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
 	var pos, did = did = url.substring(url.lastIndexOf('/',idx)+1, idx), rootNode=document.body;
 	if(multi) {
@@ -170,8 +169,8 @@ window.whereSelection = function(){
 		}
 	} else {
 		//todo handle ? parms
-		pos = window.pos;
-		if(pos==undefined) pos = parent.window.decodePosid(url.substring(idx+1));
+		pos = w.pos;
+		if(pos==undefined) pos = pw.decodePosid(url.substring(idx+1));
 	}
 
 	debug('whereSelection::', pos, did, url.substring(idx+1));
@@ -179,7 +178,7 @@ window.whereSelection = function(){
 
 }
 
-window.loadVI = function(pos){
+w.loadVI = function(pos){
 	//111
 	debug('hi !! loadVI/'+pos);
 	var req=new XMLHttpRequest();
@@ -202,8 +201,7 @@ var audio;
 var regHttp=new RegExp("^https?://");
 var regPdf=new RegExp("^pdf://");
 var regSound=new RegExp("^sound://");
-var nxtEntry;
-var stopLnk;
+var stopLnk, nxtEntry;
 
 function hiPlaySound(e){
 	var cur=e.ur1?e:e.srcElement;
@@ -221,14 +219,14 @@ function popupEntry(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
-	debug('popupEntry', t.href)
+	debug('popupEntry', t)
 	if(t.href.startsWith(contentHash)) {
 		location.href = t.href;
 		return true;
 	}
-	if(window.app && app.shouldPopupEntry()) 
+	if(_app && _app.shouldPopupEntry()) 
 	{
-		app.popupEntry(sid.get(), t.href);
+		_app.popupEntry(sid.get(), t.href);
 		stopLnk = 1;
 		return true;
 	}
@@ -239,28 +237,29 @@ function getId(){
 	return frameElement?frameElement.dictInfo.id:''
 }
 function entryPop(t){
-	if(window.app && app.entryPopup(sid.get(), getId())) {
+	debug("entryPop?", t, t.href);
+	if(_app && _app.entryPopup(sid.get(), getId()) && frameElement) {
 		if(t.onclick!==popupEntry) {
 			t.rawClick=t.onclick;
-			t.onclick=popupEntry;
+			t.onclick=popupEntry; // 选择在新窗口打开！
 		}
-	} else if(t.onclick==popupEntry) {
-		t.onclick=t.rawClick;
+		nxtEntry=0;
+	} else {
+		if(t.onclick==popupEntry) t.onclick=t.rawClick;
+		nxtEntry=t; // 下一刻在此页面打开！
 	}
 }
 
 function baseEntry() {
 	if(!baseEntryUrl) {
-		var tar=contentUrl, tmp=tar.indexOf('_');
-		if(tmp>0) {
+		var tar=contentUrl, tmp=location.pathname.startsWith('/content/');
+		if(tmp) {
 			tar = tar.replace('/content/','/base/');
 			tmp = tar.indexOf('_');
 			if(tmp>0) tar = tar.slice(0, tmp);
-			tar += '/entry/';
 		} else {
 			tmp = tar.indexOf('/entry/');
-			if(tmp>0) tar = tar.slice(0, tmp+7);
-			else tar += '/entry/';
+			if(tmp>0) tar = tar.slice(0, tmp);
 		}
 		baseEntryUrl = tar+'/entry/';
 	}
@@ -273,49 +272,35 @@ function wrappedDown(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
-	if(!parent.window._touchtarget_lck && e.touches && e.touches.length==1){
-		parent.window._touchtarget = e.touches[0].target;
-		parent.window.subw = window;
+	if(!pw._touchtarget_lck && e.touches && e.touches.length==1){
+		pw._touchtarget = e.touches[0].target;
+		pw.subw = w;
 	}
 	if(frameElement && ((e.button||0)==0)) {
-		parent.window.tFrame(frameElement.dictInfo);
+		pw.tFrame(frameElement.dictInfo);
 	}
 	stopLnk = 0;
 	if(t && t.href) { //  && (e.button==1||e.button==0)
 		stopLnk = 1;
 		debug("01! found link : "+t.href+" : "+regSound.test(t.href));
-		var getRawLink=t.href;
-		var patt1 = /\/base\/[0-9]*\/(#.*)/;
-		var m = getRawLink.match(patt1);
-		if(m && m[0].length>0){
-			debug(m[1]);
-			getRawLink=m[1];
-			debug(window.location.href);
-			t.href=window.location.href+getRawLink;
-			return false;
-		}
 		var attr = t.getAttribute('href'), href = t.href;
 		if(attr.startsWith('#')) { // 标准页内跳转
 			t.href=contentUrl+attr; // 转换为contentUrl页内跳转
 			stopLnk = t.href;
 		}
 		else if(attr.startsWith('entry://')) { // entry://跳转
-			var ent=href.substring(8);
-			if(ent.startsWith('#')) { // entry://页内跳转
-				t.href=contentUrl+ent; // 转换为contentUrl页内跳转
-				stopLnk = 0;
-			} else { // 词条跳转
-				t.ent=ent;
-				// 转换为contentUrl词条跳转 "/base/dOED/entry/entryName";
-				t.href=baseEntry()+ent;
-				debug("regEntry", ent, t.href);
-				nxtEntry=t;
+			attr=attr.substring(8);
+			if(attr.startsWith('#')) { // entry://#页内跳转
+				t.href=contentUrl+attr; // 转换为contentUrl页内跳转
+				stopLnk = t.href;
+			} else { // entry://词条名跳转
+				t._ntz=attr;
+				t.href=baseEntry()+attr; // 转换为contentUrl词条跳转 "/base/dOED/entry/词条名";
 				entryPop(t);
 			}
 		} 
-		else if(t.ent) { // 词条跳转
-			nxtEntry=t;
-			entryPop(t);
+		else if(t._ntz) {
+			entryPop(t); // 已缓存的词条跳转
 		}
 		else if(regSound.test(t.href)) {/*拦截 sound 连接*/
 			var link=/* "sound/"+ */t.href.substring(8);
@@ -329,15 +314,15 @@ function wrappedDown(e){
 				return false;
 			}
 		}
-		else if(parent.app && regHttp.test(t.href)){
+		else if(_app && regHttp.test(t.href)){
 			if(!t.getAttribute('href').startsWith('#')) {
 				debug('拦截 http');
 				stopLnk = t.href;
 				return true;
 			}
 		}
-		else if(parent.app && regPdf.test(t.href)){/*拦截 pdf*/
-			parent.app.handlePdfLink(t.href);
+		else if(_app && regPdf.test(t.href)){/*拦截 pdf*/
+			_app.handlePdfLink(t.href);
 			return false;
 		}
 		stopLnk = 0;
@@ -346,36 +331,40 @@ function wrappedDown(e){
 	}
 }
 
-function JumpUrl(nxt){
-	debug('JumpUrl', nxt);
-	var ent=nxt.ent;
-	var h=ent.indexOf('#');
-	debug("entry::", nxt.href, location.href);
-	if(h>0) {
-		parent.window.JumpUrlTag(frameElement, ent.slice(h+1), nxt.href, nxt);
-		//ent=ent.slice(0,h);
-	} else {
-		parent.window.JumpUrlFrame(frameElement);
-	}
-}
-
-
 function wrappedClickFunc(e){
 	debug('wrappedClickFunc', stopLnk)
-	if(parent.app && stopLnk) {
+	if(_app && stopLnk) {
 		if(typeof stopLnk==='string') {
-			if(stopLnk.startsWith(contentHash))
+			if(!frameElement || stopLnk.startsWith(contentHash))
 				location.href = stopLnk;
 			else
-				parent.app.handleWebLink(getId(), stopLnk);
+				_app.handleWebLink(getId(), stopLnk);
 		}
 		e.preventDefault();
 		stopLnk = 0;
 		return;
 	}
 	if(nxtEntry) {
+		e.preventDefault();
 		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
 		nxtEntry=0;
+	}
+}
+
+function JumpUrl(nxt){
+	debug('JumpUrl', nxt);
+	var ent=nxt._ntz;
+	var h=ent.indexOf('#');
+	if(frameElement) {
+		debug("entry::", nxt.href, location.href);
+		if(h>0) {
+			pw.JumpUrlTag(frameElement, ent.slice(h+1), nxt.href, nxt);
+			//ent=ent.slice(0,h);
+		} else {
+			pw.JumpUrlFrame(frameElement);
+		}
+	} else {
+		location.href = nxt.href;
 	}
 }
 
