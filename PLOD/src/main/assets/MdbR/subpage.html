@@ -226,6 +226,7 @@ function hiPlaySound(e){
 }
 
 function popupEntry(e){
+	if(pw._touchtarget_lck) return true;
 	var t;
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
@@ -344,8 +345,13 @@ function wrappedDown(e){
 
 function wrappedClickFunc(e){
 	debug('wrappedClickFunc', stopLnk)
+	if(pw._touchtarget_lck) {
+		stopLnk=nxtEntry=0;
+		e.stopPropagation();
+		e.preventDefault();
+	}
 	if(_app && stopLnk) {
-		if(typeof stopLnk==='string') {
+		if(typeof stopLnk==='string' && !pw._touchtarget_lck) {
 			if(!frameElement || stopLnk.startsWith(contentHash))
 				location.href = stopLnk;
 			else
@@ -363,19 +369,21 @@ function wrappedClickFunc(e){
 }
 
 function JumpUrl(nxt){
-	debug('JumpUrl', nxt);
-	var ent=nxt._ntz;
-	var h=ent.indexOf('#');
-	if(frameElement) {
-		debug("entry::", nxt.href, location.href);
-		if(h>0) {
-			pw.JumpUrlTag(frameElement, ent.slice(h+1), nxt.href, nxt);
-			//ent=ent.slice(0,h);
+	if(!pw._touchtarget_lck) {
+		debug('JumpUrl', nxt);
+		var ent=nxt._ntz;
+		var h=ent.indexOf('#');
+		if(frameElement) {
+			debug("entry::", nxt.href, location.href);
+			if(h>0) {
+				pw.JumpUrlTag(frameElement, ent.slice(h+1), nxt.href, nxt);
+				//ent=ent.slice(0,h);
+			} else {
+				pw.JumpUrlFrame(frameElement);
+			}
 		} else {
-			pw.JumpUrlFrame(frameElement);
+			location.href = nxt.href;
 		}
-	} else {
-		location.href = nxt.href;
 	}
 }
 

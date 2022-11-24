@@ -271,8 +271,7 @@ public class BookPresenter
 				if(fc>0) {
 					w._touchtarget=tt;
 				}
-	 			if(w.subw) w=w.subw;
-				var sel = w.getSelection();
+				var sel = (w.subw||w).getSelection();
 				var range = d.createRange();
 				range.selectNodeContents(t0);
 				sel.empty();
