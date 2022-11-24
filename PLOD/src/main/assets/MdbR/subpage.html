@@ -24,7 +24,10 @@
 <script>
 var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c 子页面 ","color:#333!important;background:#b0f7ce;",t[0],t[1],t[2],t[3],t[4])};
 (function(){
-debug("frameElement::", frameElement);
+var contentUrl = location.origin+location.pathname;
+var contentHash = contentUrl+'#';
+var baseEntryUrl = 0;
+debug("frameElement::", frameElement, contentUrl);
 function ge(e){return document.getElementById(e)};
 if(frameElement) {
 	window._merge={};
@@ -197,7 +200,6 @@ var _onloadchecks;
 var frameAt;
 var audio;
 var regHttp=new RegExp("^https?://");
-var regEntry=new RegExp("^entry://");
 var regPdf=new RegExp("^pdf://");
 var regSound=new RegExp("^sound://");
 var nxtEntry;
@@ -219,7 +221,13 @@ function popupEntry(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
-	if(window.app && app.shouldPopupEntry()) {
+	debug('popupEntry', t.href)
+	if(t.href.startsWith(contentHash)) {
+		location.href = t.href;
+		return true;
+	}
+	if(window.app && app.shouldPopupEntry()) 
+	{
 		app.popupEntry(sid.get(), t.href);
 		stopLnk = 1;
 		return true;
@@ -239,6 +247,24 @@ function entryPop(t){
 	} else if(t.onclick==popupEntry) {
 		t.onclick=t.rawClick;
 	}
+}
+
+function baseEntry() {
+	if(!baseEntryUrl) {
+		var tar=contentUrl, tmp=tar.indexOf('_');
+		if(tmp>0) {
+			tar = tar.replace('/content/','/base/');
+			tmp = tar.indexOf('_');
+			if(tmp>0) tar = tar.slice(0, tmp);
+			tar += '/entry/';
+		} else {
+			tmp = tar.indexOf('/entry/');
+			if(tmp>0) tar = tar.slice(0, tmp+7);
+			else tar += '/entry/';
+		}
+		baseEntryUrl = tar+'/entry/';
+	}
+	return baseEntryUrl;
 }
 
 function wrappedDown(e){
@@ -268,15 +294,26 @@ function wrappedDown(e){
 			t.href=window.location.href+getRawLink;
 			return false;
 		}
-		if(regEntry.test(t.href)) {
-			var ent=t.href.substring(8)
-			t.ent=ent;
-			t.href="entry/"+ent;
-			debug("regEntry", ent, t.href);
-			nxtEntry=t;
-			entryPop(t);
+		var attr = t.getAttribute('href'), href = t.href;
+		if(attr.startsWith('#')) { // 标准页内跳转
+			t.href=contentUrl+attr; // 转换为contentUrl页内跳转
+			stopLnk = t.href;
+		}
+		else if(attr.startsWith('entry://')) { // entry://跳转
+			var ent=href.substring(8);
+			if(ent.startsWith('#')) { // entry://页内跳转
+				t.href=contentUrl+ent; // 转换为contentUrl页内跳转
+				stopLnk = 0;
+			} else { // 词条跳转
+				t.ent=ent;
+				// 转换为contentUrl词条跳转 "/base/dOED/entry/entryName";
+				t.href=baseEntry()+ent;
+				debug("regEntry", ent, t.href);
+				nxtEntry=t;
+				entryPop(t);
+			}
 		} 
-		else if(t.ent) {
+		else if(t.ent) { // 词条跳转
 			nxtEntry=t;
 			entryPop(t);
 		}
@@ -293,21 +330,24 @@ function wrappedDown(e){
 			}
 		}
 		else if(parent.app && regHttp.test(t.href)){
-			//debug('拦截 http');
-			stopLnk = t.href;
-			return true;
+			if(!t.getAttribute('href').startsWith('#')) {
+				debug('拦截 http');
+				stopLnk = t.href;
+				return true;
+			}
 		}
 		else if(parent.app && regPdf.test(t.href)){/*拦截 pdf*/
 			parent.app.handlePdfLink(t.href);
 			return false;
 		}
 		stopLnk = 0;
-		//debug('连接通行！');
+		debug('连接通行！');
 		return true;
 	}
 }
 
 function JumpUrl(nxt){
+	debug('JumpUrl', nxt);
 	var ent=nxt.ent;
 	var h=ent.indexOf('#');
 	debug("entry::", nxt.href, location.href);
@@ -321,9 +361,14 @@ function JumpUrl(nxt){
 
 
 function wrappedClickFunc(e){
+	debug('wrappedClickFunc', stopLnk)
 	if(parent.app && stopLnk) {
-		if(typeof stopLnk==='string')
-			parent.app.handleWebLink(getId(), stopLnk);
+		if(typeof stopLnk==='string') {
+			if(stopLnk.startsWith(contentHash))
+				location.href = stopLnk;
+			else
+				parent.app.handleWebLink(getId(), stopLnk);
+		}
 		e.preventDefault();
 		stopLnk = 0;
 		return;
@@ -338,6 +383,3 @@ function wrappedClickFunc(e){
 
 })()
 </script>
-
-<base href='/base//'/>
-<base target="_self" />

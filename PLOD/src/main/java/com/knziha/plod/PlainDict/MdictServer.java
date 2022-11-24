@@ -531,7 +531,7 @@ public abstract class MdictServer extends NanoHTTPD {
 							}
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-//						CMN.debug("文件", uri, mid);
+						CMN.debug("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							if(decoded==null)
 								decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
@@ -793,41 +793,25 @@ public abstract class MdictServer extends NanoHTTPD {
 		b1=true;
 		if(b1) {
 			StringBuilder MdPageBuilder = new StringBuilder(MdPageLength + record.length() + 5);
-			String MdPage_fragment1 = null, MdPage_fragment2 = null, MdPage_fragment3 = "</html>";
-			int MdPageBaseLen = -1; //rrr
-			if (MdPageBaseLen == -1) {
+			String SubPage = null, MdPage_fragment3 = "</html>";
+			int SubPageLen = -1; //rrr
+			if (SubPageLen == -1) {
 				try {
-					BufferedReader in = new BufferedReader(new InputStreamReader(OpenMdbResourceByName("\\MdbR\\subpage.html")));
-					String line;
-					while ((line = in.readLine()) != null) {
-						MdPageBuilder.append(line).append("\r\n");
-						if (MdPage_fragment1 == null) {
-							if (line.equals("<base href='/base//'/>")) {
-								MdPageBuilder.setLength(MdPageBuilder.length() - 6);
-								MdPage_fragment1 = MdPageBuilder.toString();
-								MdPageBuilder.setLength(0);
-								MdPageBuilder.append("/'/>\r\n");
-							}
-						}
-					}
-					MdPage_fragment2 = MdPageBuilder.toString();
-					MdPageBuilder.setLength(0);
-					MdPageLength = MdPage_fragment1.length() + MdPage_fragment2.length() + MdPage_fragment3.length();
-					MdPageBaseLen = MdPage_fragment1.length();
+					SubPage = BU.StreamToString(OpenMdbResourceByName("\\MdbR\\subpage.html"));
+					SubPageLen = SubPage.length();
 				} catch (IOException e) {
 					SU.Log(e);
 				}
 			}
 			
-			MdPageBuilder.append(MdPage_fragment1);
+			MdPageBuilder.append(SubPage);
+			MdPageBuilder.append("<base target=\"_self\" href=\"/base/")
+					.append(presenter.idStr) // "/base/dOED"
+					.append("/\" />");
 			
-			//作为建议，mdd资源请求应使用相对路径以减少处理过程。
+			//mdd资源请求应使用相对路径以减少处理过程。
 			record = nautyUrlRequest.matcher(record).replaceAll("src=$1");
 			
-			MdPageBuilder
-					//.append(dictIdx)// "/base/0"
-					.append("d").append(IU.NumberToText_SIXTWO_LE(presenter.getId(), null))// "/base/d0"
-					.append(MdPage_fragment2);
 			presenter.plugCssWithSameFileName(MdPageBuilder);
 			MdPageBuilder.append("<script>if(window.app&&!frameElement)app.view(sid.get(),")
 					.append("'").append(presenter.idStr).append("'")

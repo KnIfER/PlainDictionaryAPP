@@ -1443,11 +1443,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	@Override
 	protected void onDismiss() {
 		super.onDismiss();
-		try {
-			throw new RuntimeException();
-		} catch (RuntimeException e) {
-			CMN.debug(e);
-		}
 		if (tapped) {
 			if(invoker!=null) {
 				invoker.postDelayed(clrSelAby, 180);

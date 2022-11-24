@@ -211,7 +211,7 @@ if (!VersionUtils.AnnotOff) {
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
 					", lex LONGVARCHAR" +
 					", bid INTEGER NOT NULL"+
-					", pos INTEGER NOT NULL"+
+					", pos INTEGER NOT NULL"+ // 用于列表定位
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" +
 					", edit_count INTEGER DEFAULT 0 NOT NULL" +
@@ -226,6 +226,7 @@ if (!VersionUtils.AnnotOff) {
 			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex, bid, notesType)"); // query view | booknotes view1
 			db.execSQL("CREATE INDEX if not exists booknote_book_index1 ON booknote (bid, last_edit_time, id, notesType)"); // booknotes view
 			db.execSQL("CREATE INDEX if not exists booknote_time_index1 ON booknote (last_edit_time, bid, pos, id)"); // all view
+			db.execSQL("CREATE INDEX if not exists booknote_pos_index1 ON booknote (bid, pos, id)"); // list decoration view
 			//db.execSQL("CREATE INDEX if not exists booknote_edit_index ON booknote (edit_count)"); // edit_count view
 			
 			

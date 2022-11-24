@@ -3408,7 +3408,7 @@ function debug(e){console.log(e)};
 			CMN.debug("entryPopup", sid, bid);
 			if(presenter!=null) {
 				WebViewmy wv = findWebview(sid);
-				if(wv!=null){
+				if(wv!=null) {
 					return bid.length()==0?PDICMainAppOptions.entryInNewWindowSingle():PDICMainAppOptions.entryInNewWindowMerge();
 					//return true;
 				}

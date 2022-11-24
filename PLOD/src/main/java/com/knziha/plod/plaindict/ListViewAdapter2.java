@@ -125,7 +125,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		int color = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp == 0 ? 0.08f : tmp == 1 ? 0.5f : 0.8f);
 		if (preview != null) {
 			if (PDICMainAppOptions.listZhTranslate() != 0) {
-				preview = a.zhTranslate((SpannableStringBuilder)preview, PDICMainAppOptions.listZhTranslate());
+				preview = a.zhTranslate(preview, PDICMainAppOptions.listZhTranslate());
 			}
 			int maxLines = (set0 ? PDICMainAppOptions.listOverreadMode() : PDICMainAppOptions.listOverreadMode1()) ? Integer.MAX_VALUE : 3;
 			tmp = set0 ? PDICMainAppOptions.listPreviewFont() : PDICMainAppOptions.listPreviewFont1();

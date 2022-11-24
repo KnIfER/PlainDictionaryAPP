@@ -8971,7 +8971,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-						//CMN.debug("文件", uri, mid);
+						CMN.debug("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
 							if(input!=null) {
@@ -11863,5 +11863,35 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		return text;
+	}
+	
+	StringBuilder zhTranslate(StringBuilder text, int zh) {
+		ensureTSHanziSheet(null);
+		SparseArrayMap map=zh==1?jnFanMap:fanJnMap;
+		for (int i = 0; i < text.length(); i++) {
+			char c=text.charAt(i);
+			String cs=map.get(c);
+			if(cs!=null) {
+				for (int j = 0; j < cs.length(); j++) {
+					char c1 = cs.charAt(j);
+					if(c!=c1) {
+						c=c1;
+						text.replace(i, i+1, c+"");
+						break;
+					}
+				}
+			}
+		}
+		return text;
+	}
+	
+	CharSequence zhTranslate(CharSequence text, int zh) {
+		if (text instanceof StringBuilder) {
+			return zhTranslate((StringBuilder)text, zh);
+		}
+		if (text instanceof SpannableStringBuilder) {
+			return zhTranslate((SpannableStringBuilder)text, zh);
+		}
+		return zhTranslate(String.valueOf(text), zh);
 	}
 }
