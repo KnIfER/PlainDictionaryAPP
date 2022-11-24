@@ -1,7 +1,6 @@
 package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
-import android.widget.TextView;
 
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -71,6 +70,9 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 		int size = loadManager.md_size;
 		
+		t = Thread.currentThread();
+		CMN.debug("running...", Thread.currentThread().getId());
+		
 		if(TargetBook==null){
 			for(int i=0;i<size;i++){
 				try {
@@ -81,7 +83,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 			}
 			System.gc();
@@ -93,9 +95,10 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 					TargetBook.findAllTexts(SearchTerm, TargetBook, a.fullSearchLayer);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				CMN.debug(e);
 			}
 		}
+		CMN.debug("出来了");
 		return null;
 	}
 
@@ -153,7 +156,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		//准备页内搜索
 		if(PDICMainAppOptions.schPageAfterFullSch()){
 			a.fullSearchLayer.getBakedPattern();
-			a.prepareInPageSearch(a.fullSearchLayer.getPagePattern(), true);
+			a.autoSchPage(a.fullSearchLayer.getPagePattern(), true);
 		}
 		a.fullSearchLayer.currentThreads=null;
 	}

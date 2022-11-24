@@ -17,6 +17,7 @@
 
 package com.knziha.plod.dictionary;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.CMN;
 
 import com.alibaba.fastjson.JSONObject;
@@ -954,6 +955,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						try {
 							int ret = inf.inflate(currentKeyBlock,0,(int)(infoI.key_block_decompressed_size));
 						} catch (DataFormatException e) {e.printStackTrace();}
+						inf.end();
 					break;
 					case 3:
 						SU.Zstd_decompress(_key_block_compressed, 8, (int)(compressedSize-8), currentKeyBlock, 0, (int)(infoI.key_block_decompressed_size));
@@ -978,7 +980,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	protected int split_recs_thread_number;
 	public void flowerFindAllContents(String key, Object book, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException{
-		//SU.Log("Find In All Contents Started");
+		SU.Log("Find In All Contents Started");
 		if(isResourceFile||getOnlyContainsImg()) return;
 		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
@@ -1041,9 +1043,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			Regex finalJoniregex = Joniregex;
 			byte[][][][][] finalMatcher = matcher;
 			fixedThreadPool.execute(
-					//(
-				new Runnable(){@Override public void run()
-				{
+				new Runnable(){@Override public void run() {
 					if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
 					final byte[] record_block_compressed = new byte[(int) maxComRecSize];//!!!避免反复申请内存
 					final byte[] record_block_ = new byte[(int) maxDecompressedSize];//!!!避免反复申请内存
@@ -1059,9 +1059,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						//	throw new RuntimeException("seek!=seekTarget !!!");
 						int jiaX=0;
 						if(it==split_recs_thread_number-1) jiaX=yuShu;
+						THREAD:
 						for(int i=it*step; i<it*step+step+jiaX; i++)//_num_record_blocks
 						{
-							//if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+							if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); break; }
 							record_info_struct RinfoI = _record_info_struct_list[i];
 
 							int compressed_size = (int) RinfoI.compressed_size;
@@ -1080,6 +1081,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 									Inflater inf = new Inflater();
 									inf.setInput(record_block_compressed,8,compressed_size-8);
 									int ret = inf.inflate(record_block_,0,decompressed_size);
+									inf.end();
 								break;
 								case 3:
 									SU.Zstd_decompress(record_block_compressed, 8, compressed_size-8, record_block_, 0, decompressed_size);
@@ -1099,7 +1101,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							long[] ko; int recordodKeyLen, try_idx;
 							OUT:
 							while(true) {
-								if(SearchLauncher.IsInterrupted  || searchCancled || key_block_id>=_key_block_info_list.length) break;
+								if(SearchLauncher.IsInterrupted  || searchCancled || key_block_id>=_key_block_info_list.length) break THREAD;
 								ko = prepareItemByKeyInfo(null,key_block_id,null).key_offsets;
 								//if(infoI_cacheI.blockID!=key_block_id)
 								//	throw new RuntimeException("bad !!!"+infoI_cacheI.blockID+" != "+key_block_id);
@@ -1137,6 +1139,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										ArrayList<ArrayList<Object>> mpk;
 										ArrayList<Object> mParallelKeys;
 										for (int j = 0; j < finalMatcher.length; j++) { // and group
+											if(SearchLauncher.IsInterrupted || searchCancled) break THREAD;
 											mpk = SearchLauncher.mParallelKeys.get(j);
 											for (int k = 0; k < finalMatcher[j].length; k++) { // or group
 												mParallelKeys = mpk.get(k);
@@ -1154,9 +1157,9 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										try_idx=Jonimatcher.searchInterruptible(start, start+recordodKeyLen, Option.DEFAULT);
 									}
 
-									if(SearchLauncher.IsInterrupted || searchCancled) break;
-
-									//if(GlobalOptions.debug) SU.Log("full res ::", try_idx, key, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), recordodKeyLen, record_block_.length);
+//									if(GlobalOptions.debug) SU.Log("full res ::", try_idx, key, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), recordodKeyLen, record_block_.length);
+									
+									if(SearchLauncher.IsInterrupted || searchCancled) break THREAD;
 
 									if(try_idx!=-1) {
 										//SU.Log("full res ::", try_idx, finalKey, new String(record_block_, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator)+try_idx-100, 200, _charset));
@@ -1177,20 +1180,17 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						} catch (IOException ignored) {  }
 						//BU.printBytes(record_block_compressed,0,4);
 						//CMN.Log(record_block_compressed[0]|record_block_compressed[1]<<8|record_block_compressed[2]<<16|record_block_compressed[3]<<32);
-						SU.Log(e);
+						SU.Log(Thread.currentThread().getId(), e);
 					}
 					SearchLauncher.thread_number_count--;
 					if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
 				}}
-					//)
-				//)
-				);
-			//t.start();
+			);
 		}
 		SearchLauncher.currentThreads=fixedThreadPool;
 		fixedThreadPool.shutdown();
 		try {
-			fixedThreadPool.awaitTermination(5, TimeUnit.MINUTES);
+			fixedThreadPool.awaitTermination(45, TimeUnit.MINUTES);
 		} catch (Exception e1) {
 			SU.Log("Find In Full Text Interrupted!!!");
 			//e1.printStackTrace();
@@ -1290,6 +1290,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										Inflater inf = new Inflater();
 										inf.setInput(record_block_compressed,8,compressed_size-8);
 										int ret = inf.inflate(record_block_,0,decompressed_size);
+										inf.end();
 										break;
 									case 3:
 										SU.Zstd_decompress(record_block_compressed, 8, compressed_size-8, record_block_, 0, decompressed_size);
@@ -2135,7 +2136,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										inf.setInput(_key_block_compressed_many, startI+8, compressedSize-8);
 										try {
 											int ret = inf.inflate(key_block,0,(int)(infoI.key_block_decompressed_size));
-										} catch (DataFormatException e) {e.printStackTrace();}
+										} catch (Exception e) {SU.Log(e);}
+										inf.end();
 									break;
 									case 3:
 										SU.Zstd_decompress(_key_block_compressed_many, startI+8, compressedSize-8, key_block, 0, (int)(infoI.key_block_decompressed_size));
@@ -2402,7 +2404,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							continue;
 						}
 					}
-//					if(debug)SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_, Matched);
+//					if(SU.debug) SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_, Matched);
 					if(!Matched)
 						return -1;
 					seekPos+=lastSeekLetSize;
@@ -2747,6 +2749,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						Inflater inf = new Inflater();
 						inf.setInput(_key_block_compressed,8,(int)compressedSize-8);
 						int ret = inf.inflate(key_block_cache_,0,key_block_cache_.length);
+						inf.end();
 					}
 					key_block_cache=key_block_cache_;
 					key_block_cacheId = blockId;

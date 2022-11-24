@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.View.GONE;
 import static android.view.View.OVER_SCROLL_ALWAYS;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -136,8 +135,6 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
@@ -205,7 +202,6 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
-import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -269,7 +265,6 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -293,7 +288,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1297,7 +1291,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(PeruseViewAttached()) {
 			peruseView.prepareInPageSearch(content, true);
 		} else {
-			prepareInPageSearch(content, true);
+			autoSchPage(content, true);
 		}
 	}
 
@@ -7310,7 +7304,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 	}
 
-	public void prepareInPageSearch(String key, boolean bNeedBringUp) {
+	public void autoSchPage(String key, boolean bNeedBringUp) { // prepareInPageSearch
 		if(weblistHandler.pageSchEdit ==null){
 			weblistHandler.MainPageSearchetSearchStartWord=key;
 		}else{
@@ -7318,7 +7312,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bNeedBringUp=bNeedBringUp&&weblistHandler.pageSchBar.getParent()==null;
 		}
 		if(bNeedBringUp){
-			weblistHandler.togSchPage(0);
+			weblistHandler.togSchPage(-1);
 		}
 	}
 	

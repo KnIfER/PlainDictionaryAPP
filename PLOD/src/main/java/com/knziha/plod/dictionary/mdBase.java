@@ -852,6 +852,7 @@ public abstract class mdBase {
 				} catch (DataFormatException e) {
 					//SU.Log(e);
 				}
+				inf.end();
 			break;
 			case 3:
 				RinfoI_cache.record_block_ = new byte[decompressed_size];
@@ -1122,7 +1123,8 @@ public abstract class mdBase {
 					inf.setInput(_key_block_compressed, +8, compressedSize-8);
 					try {
 						int ret = inf.inflate(key_block, 0, BlockLen);
-					} catch (DataFormatException e) {e.printStackTrace();}
+					} catch (Exception e) { SU.Log(e); }
+					inf.end();
 				break;
 				case 3:
 					key_block = new byte[BlockLen];

@@ -55,7 +55,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.DownloadListener;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -143,7 +142,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -167,7 +165,6 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
 import io.noties.markwon.Markwon;
 import io.noties.markwon.core.spans.LinkSpan;
@@ -360,7 +357,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
 				task.stop(false);
-			}else{
+			} else {
 				task.stop(true);
 				((FullSearchTask)task).harvest(true);
 				mAsyncTask=null;
@@ -370,6 +367,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				showT("强制关闭");
 			}
+			CMN.debug("关闭了……");
 		});
 		for(int i=0;i<loadManager.md_size;i++) {//遍历所有词典
 			BookPresenter presenter = loadManager.md_getAt(i);
@@ -2400,7 +2398,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			fullSearchLayer.currentPattern = null;
 			fullSearchLayer.getBakedPattern();
 			fullSearchLayer.currentPageText = null;
-			prepareInPageSearch(fullSearchLayer.getPagePattern(), false);
+			autoSchPage(fullSearchLayer.getPagePattern(), false);
 		}
 		else if(fuzzySearchLayer!=null){
 			fuzzySearchLayer.currentPattern = null;

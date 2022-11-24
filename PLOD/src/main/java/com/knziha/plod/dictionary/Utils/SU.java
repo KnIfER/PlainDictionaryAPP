@@ -32,7 +32,7 @@ import java.text.Normalizer;
  */
 public class  SU{
 	public static Object UniversalObject;
-    public static boolean debug;//StringUtils
+    public static boolean debug = true;//StringUtils
 	public static byte[] EmptyBytes = new byte[0];
 	public static long mid;
 	

@@ -1,8 +1,5 @@
 package com.knziha.plod.PlainUI;
 
-import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
-import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
-
 import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -28,7 +25,6 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
-import com.knziha.plod.searchtasks.VerbatimSearchTask;
 import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortListView;
@@ -83,7 +79,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 			
 			if(PDICMainAppOptions.schPageAfterFullSch()){
 				// a.fullSearchLayer.getBakedPattern();
-				a.prepareInPageSearch(getPagePattern(), true);
+				a.autoSchPage(getPagePattern(), true);
 			}
 		}
 	}

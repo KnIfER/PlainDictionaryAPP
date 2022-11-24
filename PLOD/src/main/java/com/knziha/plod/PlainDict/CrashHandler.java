@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.dictionary.Utils.SU;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -99,7 +101,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		}
 		info_builder.append("]\n");
 		ApplicationInfo app_info = context.getApplicationInfo();
-		GlobalOptions.debug=(app_info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+		GlobalOptions.debug=SU.debug=(app_info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 		registered=true;
 	}
 
