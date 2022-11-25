@@ -212,6 +212,7 @@ import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
+import com.knziha.plod.settings.BookOptions;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.History;
 import com.knziha.plod.settings.Multiview;
@@ -7968,7 +7969,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							mWebView.evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
 						}
 					}
-					invoker.ApplyPadding(mWebView);
+					invoker.ApplyPadding(mWebView, false);
 				}
 			}
 			
@@ -9650,6 +9651,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					changeToDarkMode();
 				}
 			} break;
+			case BookOptions.requestCode:{
+			} break;
+		}
+	}
+	
+	public void onBookOptionsSet() {
+		if(PDICMainAppOptions.dynamicPadding()){
+			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
+			if (wv!=null) wv.presenter.ApplyPadding(wv, true);
+			PDICMainAppOptions.dynamicPadding(false);
 		}
 	}
 

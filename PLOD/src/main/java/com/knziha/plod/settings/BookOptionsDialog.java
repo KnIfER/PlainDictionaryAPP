@@ -58,7 +58,12 @@ public class BookOptionsDialog extends DialogFragment {
 					a=datum.a;
 				}
 			}
-			// 翻页设置可能变化
+			if (getActivity() instanceof MainActivityUIBase) {
+				a = (MainActivityUIBase) getActivity();
+			}
+			if (a!=null) {
+				a.onBookOptionsSet();
+			}
 		}
 	}
 	

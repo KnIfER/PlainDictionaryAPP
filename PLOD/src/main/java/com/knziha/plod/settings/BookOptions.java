@@ -36,6 +36,7 @@ import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
@@ -48,6 +49,8 @@ import java.util.ArrayList;
 /** 词典详细设置界面。 */
 public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener, Preference.OnGetViewListener {
 	public final static int id = R.xml.pref_book;
+	public final static int requestCode=id&0xFFFF;
+	
 	BookPresenter[] data;
 	private boolean bNeedParseData;
 	private static int mScrollPos;
@@ -515,6 +518,11 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				} break;
 				case "dtm":
 					SearchUI.tapZoomWait = (int) newValue;
+				break;
+				case "GPL":
+				case "GPR":
+				case "GPB":
+					PDICMainAppOptions.dynamicPadding(true);
 				break;
 			}
 			if (key.startsWith("tz")) {

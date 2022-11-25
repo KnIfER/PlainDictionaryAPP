@@ -4866,16 +4866,16 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	public void ApplyPadding(WebViewmy mWebView) {
-		if (PDICMainAppOptions.padLeft() && padLeft()) {
+	public void ApplyPadding(WebViewmy mWebView, boolean reset) {
+		if (PDICMainAppOptions.padLeft() && padLeft() || reset) {
 			if (CMN.GlobalPagePaddingLeft==null)
 				CMN.GlobalPagePaddingLeft = opt.getString("GPL", "3%");
-			mWebView.evaluateJavascript("document.body.style.paddingLeft='"+CMN.GlobalPagePaddingLeft+"'", null);
+			mWebView.evaluateJavascript("document.body.style.paddingLeft='"+(!padLeft()?"":CMN.GlobalPagePaddingLeft)+"'", null);
 		}
-		if (PDICMainAppOptions.padRight() && padRight()) {
+		if (PDICMainAppOptions.padRight() && padRight() || reset) {
 			if (CMN.GlobalPagePaddingRight==null)
 				CMN.GlobalPagePaddingRight = opt.getString("GPR", "3%");
-			mWebView.evaluateJavascript("document.body.style.paddingRight='"+CMN.GlobalPagePaddingRight+"'", null);
+			mWebView.evaluateJavascript("document.body.style.paddingRight='"+(!padRight()?"":CMN.GlobalPagePaddingRight)+"'", null);
 		}
 	}
 	
