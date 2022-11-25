@@ -41,6 +41,7 @@
 					android:layout_height="@dimen/barSize"
 					android:theme="@style/toolbarBaseTheme"
 					app:title="笔记列表"
+					app:titleTextColor="#fff"
 					/>
 			</FrameLayout>
 
@@ -69,14 +70,17 @@
 				<TextView
 					android:text="全部"
 					style="@style/book_note_foot"
+					android:textColor="#fff"
 					/>
 				<TextView
 					android:text="当前词典"
 					style="@style/book_note_foot"
+					android:textColor="#fff"
 					/>
 				<TextView
 					android:text="当前页"
 					style="@style/book_note_foot"
+					android:textColor="#fff"
 					/>
 			</com.knziha.ankislicer.customviews.ShelfLinearLayout>
 

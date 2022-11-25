@@ -218,6 +218,8 @@ public class Drawer extends Fragment implements
 			sw4 = HeaderView.findViewById(R.id.sw4);
 			sw5 = HeaderView.findViewById(R.id.sw5);
 			
+			sw4.setOnClickListener(this);
+			
 			mDrawerList.addHeaderView(HeaderView);
 
 			mDrawerListLayout.addOnLayoutChangeListener(new OnLayoutChangeListener() {
@@ -562,6 +564,10 @@ public class Drawer extends Fragment implements
 		switch(id) {
 			case R.id.server:
 				a.launchSettings(ServerPreference.id, 0);
+			return;
+			case R.id.sw4:
+				GlobalOptions.isSystemDark = sw4.isChecked();
+				CMN.debug("isSystemDark::", GlobalOptions.isSystemDark);
 			return;
 			case R.string.about:
 			case R.id.menu_item_setting:{

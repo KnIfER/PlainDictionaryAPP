@@ -2497,6 +2497,13 @@ function debug(e){console.log(e)};
 		}
 		return bookImpl.getEntryAt(pos);
 	}
+	
+	public String getRowTextAt(int pos) {
+		if (pos<0 || pos>=bookImpl.getNumberEntries() || isWebx && pos<=getWebx().entrance.size()) {
+			return null;
+		}
+		return bookImpl.getEntryAt(pos);
+	}
 
 	public boolean hasCover() {
 		return cover!=null;

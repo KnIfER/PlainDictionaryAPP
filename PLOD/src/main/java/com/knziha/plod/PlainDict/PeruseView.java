@@ -217,7 +217,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	int lastW;
 	// creat dialog -> creat view
-	@SuppressLint("ClickableViewAccessibility")
+	@SuppressLint({"ClickableViewAccessibility", "ResourceType"})
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		//CMN.Log("----->onCreateView");
@@ -608,7 +608,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(content!=null) {
 				root=content;
 			}
-			Toastable_Activity.setStatusBarColor(win, MainBackground);
+			Toastable_Activity.setStatusBarColor(win, GlobalOptions.isDark?Color.BLACK:MainBackground);
 			//win.setStatusBarColor(CMN.MainBackground);
 			View view = win.getDecorView();
 			view.setBackground(null);
@@ -1098,6 +1098,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		weblistHandler.checkUI();
 //		contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
 //		contentUIData.webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
+
+//		contentUIData.webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);
 	}
 
 	float spsubs;
@@ -1649,6 +1651,24 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			return "NoImpl!!!";
 		}
 		
+		public String getRowText(int pos) {
+			String text = null;
+			if(ToD) {
+				cr.moveToPosition(cr.getCount()-pos-1);
+				text = currentDictionary.getRowTextAt(cr.getInt(0));
+			}
+			if (text == null) {
+				return String.valueOf(etSearch.getText());
+			}
+			return text;
+		}
+		
+		public void enterPeruseMode(int pos) {
+			String lstKey = getRowText(pos);
+			PeruseView pView = PeruseView.this;
+			pView.enterPeruseMode(lstKey);
+		}
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			viewholder vh;
@@ -1670,7 +1690,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     		vh.dv.setTag(position);
 			if(ToD) {
 				cr.moveToPosition(cr.getCount()-position-1);
-				vh.tv.setText(currentDictionary.bookImpl.getEntryAt(cr.getInt(0)));//bookmarks.get(position)
+				String text = currentDictionary.bookImpl.getEntryAt(cr.getInt(0));
+				int zhTrans = PDICMainAppOptions.listZhTranslate();
+				if (zhTrans != 0) {
+					text = currentDictionary.a.zhTranslate(text, zhTrans);
+				}
+				vh.tv.setText(text);//bookmarks.get(position)
 				vh.tv.setSingleLine(false);
 			} else {
 				MainActivityUIBase a = (MainActivityUIBase) getActivity();
@@ -1881,7 +1906,21 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		public String getEntry(int pos) {
 			return currentDictionary.getBookEntryAt(pos);
 		}
-	
+		
+		public String getRowText(int pos) {
+			String text = currentDictionary.getRowTextAt(pos);
+			if (text == null) {
+				return String.valueOf(etSearch.getText());
+			}
+			return text;
+		}
+		
+		public void enterPeruseMode(int pos) {
+			String lstKey = getRowText(pos);
+			PeruseView pView = PeruseView.this;
+			pView.enterPeruseMode(lstKey);
+		}
+		
 		@Override
         public View getView(final int position, View convertView, ViewGroup parent) {//length=1046; index=5173
         	String currentKeyText = currentDictionary.getBookEntryAt(position);
@@ -1896,6 +1935,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
                 convertView.setTag(vh);
         	} else {
 				vh = (viewholder) convertView.getTag();
+			}
+			
+			int zhTrans = PDICMainAppOptions.listZhTranslate();
+			if (zhTrans != 0) {
+				currentKeyText = currentDictionary.a.zhTranslate(currentKeyText, zhTrans);
 			}
 	        vh.tv.setText(currentKeyText);
 
@@ -2114,6 +2158,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 			mWebView.webScale=def_zoom;
 		}
+	}
+	
+	private void enterPeruseMode(String lstKey) {
+		MainActivityUIBase a = currentDictionary.a;
+		searchAll(lstKey, a, true);
+		a.AttachPeruseView(true);
+		//CMN.Log(PeruseView.data);
+		a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 	}
 	
 	private void toggleContentVis() {

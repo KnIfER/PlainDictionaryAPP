@@ -7,6 +7,7 @@ import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV_NXT;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_SCH;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_UPD_SCH;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -36,6 +37,7 @@ import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -157,21 +159,27 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public void refresh() {
 		if(mWebView != null)
 		{
-			if (appbar != null) {
-				appbar.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
-			}
-			if(GlobalOptions.isDark){
-				popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-				pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-				popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
-			} else /*if(popIvBack.getTag()!=null)*/{ //???
-				popupContentView.getBackground().setColorFilter(null);
-				pottombar.getBackground().setColorFilter(null);
-				popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
-			}
-			if(indicator !=null) {
-				entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
-				indicator.setTextColor(GlobalOptions.isDark?a.AppBlack:0xff2b43c1);
+			CMN.debug("wordPopup::refresh");
+			if (MainColorStamp != a.MainAppBackground) {
+				if (appbar != null) {
+					appbar.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
+				}
+				if(GlobalOptions.isDark){
+					popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+					pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+					popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
+				} else /*if(popIvBack.getTag()!=null)*/{ //???
+					popupContentView.getBackground().setColorFilter(null);
+					pottombar.getBackground().setColorFilter(null);
+					popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
+				}
+				if(indicator !=null) {
+					entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
+					indicator.setTextColor(GlobalOptions.isDark?a.AppBlack:0xff2b43c1);
+				}
+				MainColorStamp = a.MainAppBackground;
+				int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
+				mWebView.setBackgroundColor(filteredColor);
 			}
 			if (dictPicker.pinned()) {
 				dictPicker.refresh();
@@ -189,6 +197,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				CMN.debug(e);
 			}
 		}
+		refresh();
 	}
 	
 	@Override

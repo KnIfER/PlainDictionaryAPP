@@ -195,12 +195,11 @@ public class ListViewAdapter extends BasicAdapter {
 	}
 	
 	public String getRowText(int pos) {
-		String lstKey;
-		if (pos==0 && presenter.isWebx)
-			lstKey = a.etSearch.getText().toString();
-		else
-			lstKey = presenter.bookImpl.getEntryAt(pos).trim();
-		return lstKey;
+		String text = presenter.getRowTextAt(pos);
+		if (text == null) {
+			return String.valueOf(a.etSearch.getText());
+		}
+		return text;
 	}
 	
 	public void enterPeruseMode(int pos) {

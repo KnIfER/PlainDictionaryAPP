@@ -4,6 +4,7 @@ import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
@@ -12,6 +13,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.ClipData;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.text.Editable;
@@ -46,6 +48,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.ColorUtils;
 
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
@@ -1000,18 +1003,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			a.contentbar_project.bottombar = contentUIData.bottombar2;
 			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
 		}
-		
-		if(ViewUtils.checkSetVersion(versions, 1, a.MainAppBackground)) {
+		boolean b1 = ViewUtils.checkSetVersion(versions, 3, GlobalOptions.isDark?1:0);
+		if(ViewUtils.checkSetVersion(versions, 1, a.MainAppBackground) || b1) {
 			contentUIData.bottombar2.setBackgroundColor(a.MainAppBackground);
 			if (pageSchBar != null) {
 				pageSchBar.setBackgroundColor(a.MainAppBackground);
 			}
 		}
-		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground)) {
+		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground) || b1) {
+			int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
 			//if(widget12.getTag(R.id.image)==null)
-			webSingleholder.setBackgroundColor(a.MainPageBackground);
+			webSingleholder.setBackgroundColor(filteredColor);
 			//contentUIData.webholder.setBackgroundColor(a.MainPageBackground);
-			contentUIData.WHP.setBackgroundColor(a.MainPageBackground);
+			contentUIData.WHP.setBackgroundColor(filteredColor);
 		}
 	}
 	

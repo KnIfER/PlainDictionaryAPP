@@ -75,6 +75,7 @@ public class NightMode extends PlainSettingsFragment implements Preference.OnPre
 		switch (key){
 			case "sys":
 				PDICMainAppOptions.darkSystem((Boolean) newValue);
+				PDICMainAppOptions.systemDarked(false);
 				// CMN.AppColorChangedFlag|=1<< MainActivityUIBase.ActType.PlainDict.ordinal();
 			break;
 			case "dkR":

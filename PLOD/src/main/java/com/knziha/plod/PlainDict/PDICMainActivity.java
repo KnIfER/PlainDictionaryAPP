@@ -255,6 +255,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(mConfiguration.screenWidthDp!=newConfig.screenWidthDp || mConfiguration.screenHeightDp!=newConfig.screenHeightDp) {
 			onSizeChanged();
 		}
+		boolean systemDark1 = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 		if(mConfiguration.orientation!=newConfig.orientation) {
 			mConfiguration.setTo(newConfig);
 			if(root.getTag()!=null) {
@@ -308,7 +309,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		else mConfiguration.setTo(newConfig);
 		if(Build.VERSION.SDK_INT>=29){
 			boolean systemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-			if (systemDark!=GlobalOptions.isSystemDark) {
+			if (systemDark!=systemDark1) {
 				GlobalOptions.isSystemDark = systemDark;
 				if (PDICMainAppOptions.darkSystem()) {
 					GlobalOptions.isDark = systemDark;

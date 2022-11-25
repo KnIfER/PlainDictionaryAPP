@@ -143,7 +143,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		   GlobalOptions.density = dm.density;
 		   //GlobalOptions.densityDpi = dm.densityDpi;
 		   opt.getInDarkMode();
-		   if(Build.VERSION.SDK_INT>=29){
+		   if(Build.VERSION.SDK_INT>=29 && !PDICMainAppOptions.systemDarked()){
+			   PDICMainAppOptions.systemDarked(true);
 			   GlobalOptions.isSystemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 		   }
 	   }

@@ -51,6 +51,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.SessionFlag;
 
 public class PDICMainAppOptions implements MdictServer.AppOptions
 {
+	public static boolean systemDark;
 	public boolean isAudioPlaying;
 	public boolean isAudioActuallyPlaying;
 	public boolean supressAudioResourcePlaying;
@@ -2800,6 +2801,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=27, flagSize=2) public static void listZhTranslate(int v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
+	
+	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36) public static void etHistoryExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
 	//SE
@@ -2976,8 +2982,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=35) public static boolean translatePageTS() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=35) public static void translatePageTS(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=36) public static void etHistoryExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36) public static boolean systemDarked() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36) public static void systemDarked(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	
 	public int getPseudoInitCode(int pseudoInit) {

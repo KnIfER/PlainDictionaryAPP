@@ -1428,6 +1428,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
+		popupMenuRef.clear();
 		if(peruseView !=null) {
 			peruseView.refreshUIColors(MainBackground);
 		}
@@ -1438,7 +1439,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void fix_pw_color() {
 		bottomPlaylist.clear();
 		ChooseFavorDialog.clear();
-		wordPopup.refresh();
 	}
 
 	public void popupWord(final String key, BookPresenter forceStartId, int frameAt, WebViewmy wv) {
@@ -5641,7 +5641,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(DBrowser!=null) {
 				DBrowser.checkColors();
 			}
-			wordPopup.refresh();
+			for(PlainAppPanel pane : settingsPanels) {
+				pane.refresh();
+			}
 			if(adaptermy==null) {
 				return;
 			}
@@ -7049,7 +7051,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private void EnterPeruseModeByContent(boolean isLongClicked) {
-		String nowKey=isLongClicked?null:(ActivedAdapter.currentKeyText());
+		String nowKey=isLongClicked?null:(ActivedAdapter.getRowText(ActivedAdapter.lastClickedPos));
 		boolean proceed=true;
 		WebViewmy currentWebFocus;
 		if(getCurrentFocus() instanceof WebViewmy)
@@ -9638,7 +9640,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case NightMode.requestCode:{
 				boolean dark = GlobalOptions.isDark;
 				opt.getInDarkMode();
-				if(Build.VERSION.SDK_INT>=29){
+				if(Build.VERSION.SDK_INT>=29 && !PDICMainAppOptions.systemDarked()){
 					GlobalOptions.isSystemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 					if (opt.darkSystem()) {
 						GlobalOptions.isDark = GlobalOptions.isSystemDark;
