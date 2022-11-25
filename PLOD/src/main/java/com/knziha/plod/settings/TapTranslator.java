@@ -17,6 +17,7 @@ import java.util.ArrayList;
 public class TapTranslator extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_tapsch;
 	public final static int requestCode=id&0xFFFF;
+	private Preference tapsch_web;
 	
 	//初始化
 	@Override
@@ -83,7 +84,11 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 							init_switch_preference(this, "exempt_translator", PDICMainAppOptions.getTapTreatTranslatorAsDedicated(), null, null, p);
 							break;
 						case "tapsch_web":
+							tapsch_web = p;
 							init_switch_preference(this, "tapsch_web", PDICMainAppOptions.tapschWebStandalone(), null, null, p);
+							break;
+						case "tapsch_webs":
+							init_switch_preference(this, "tapsch_webs", PDICMainAppOptions.tapschWebStandaloneReversed(), null, null, p);
 							break;
 						case "tz":
 							init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null, p);
@@ -117,6 +122,7 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 					p.setOnPreferenceChangeListener(this);
 				}
 			}
+			tapsch_web.setEnabled(!PDICMainAppOptions.tapschWebStandaloneReversed());
 		}
 		
 
@@ -171,6 +177,10 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 			break;
 			case "tapsch_web":
 				PDICMainAppOptions.tapschWebStandalone((Boolean) newValue);
+			break;
+			case "tapsch_webs":
+				PDICMainAppOptions.tapschWebStandaloneReversed((Boolean) newValue);
+				tapsch_web.setEnabled(!(Boolean) newValue);
 			break;
 			case "multi_cs":
 				PDICMainAppOptions.setMultipleClickSearch((Boolean) newValue);

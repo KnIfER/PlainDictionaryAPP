@@ -1512,7 +1512,7 @@ public class DBroswer extends DialogFragment implements
 			
 			ScrollerRecord pPos = null;
 			//if(opt.getRemPos())
-			{
+			try {
 				SparseArray<ScrollerRecord> avoyager = webview.presenter.avoyager;
 				ViewGroup webviewHolder = weblistHandler.getViewGroup();
 				if(System.currentTimeMillis()-a.lastClickTime>300 && webviewHolder.getChildCount()!=0) {
@@ -1542,6 +1542,8 @@ public class DBroswer extends DialogFragment implements
 				
 				pPos = currentDictionary.avoyager.get(idx);
 				//a.showT(""+currentDictionary.expectedPos);
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 			if(pPos!=null) {
 				webview.expectedPos = pPos.y;

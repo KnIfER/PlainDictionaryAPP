@@ -356,6 +356,27 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory
+		android:key="gp_tapsch"
+		android:title="点击翻译"
+		app:icon="@drawable/ic_click_search"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tapsch_web"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="从全局“使用单独webview”开关中排除"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tapsch_webs"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="设置使用单独的webview"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="gp_entry_jump"
 		android:title="词条跳转"
 		app:icon="@drawable/ic_click_search"

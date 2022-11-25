@@ -168,10 +168,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
+					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(GlobalOptions.NEGATIVE);
 				} else /*if(popIvBack.getTag()!=null)*/{ //???
 					popupContentView.getBackground().setColorFilter(null);
 					pottombar.getBackground().setColorFilter(null);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
+					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(null);
 				}
 				if(indicator !=null) {
 					entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
@@ -1339,11 +1341,27 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	private WebViewmy getRenderingWV(BookPresenter webx) {
 		WebViewmy nowView = dictView();
-		WebViewmy standalone = webx == null || !PDICMainAppOptions.tapschWebStandalone() || !webx.tapschWebStandalone() ? mWebView : webx.initViewsHolder(a);
+		WebViewmy standalone = mWebView;
+		if (webx != null) {
+			if (PDICMainAppOptions.tapschWebStandaloneReversed()) {
+				if (webx.tapschWebStandaloneSet())
+					standalone = webx.initViewsHolder(a);
+			} else {
+				if(webx.tapschWebStandalone())
+					standalone = webx.initViewsHolder(a);
+			}
+			if (standalone!=mWebView && ViewUtils.isVisibleV2(standalone)
+					&& standalone.getParent()!=weblistHandler.pageSlider && standalone.weblistHandler.isViewInUse(standalone)) {
+				standalone = mWebView; // 复用失败  todo pooling
+			}
+			if (standalone != mWebView) {
+				standalone.weblistHandler = weblistHandler;
+			}
+		}
 		if (nowView != standalone) {
-			ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1);
 			ViewUtils.removeView(nowView);
 		}
+		ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1);
 		return standalone;
 	}
 	

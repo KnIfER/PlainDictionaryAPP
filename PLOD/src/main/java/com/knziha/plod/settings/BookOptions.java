@@ -275,6 +275,12 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						case "entry_golst":
 							init_switcher("entry_golst", false, 36, p);
 							break;
+						case "tapsch_web":
+							init_switcher("tapsch_web", false, 51, p);
+							break;
+						case "tapsch_webs":
+							init_switcher("tapsch_webs", false, 52, p);
+							break;
 						case "entry_pop":
 							init_switcher("entry_pop", false, 37, p);
 							break;

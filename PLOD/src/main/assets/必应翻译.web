@@ -8,6 +8,10 @@ try {
 	debug('searchJs');
 	var ta=document.getElementById('tta_input_ta');
 	if (ta) {
+		ta.value = '';
+		ta.dispatchEvent(new Event('input', {
+			bubbles: true
+		}));
 		ta.value = '%s';
 		ta.dispatchEvent(new Event('input', {
 			bubbles: true

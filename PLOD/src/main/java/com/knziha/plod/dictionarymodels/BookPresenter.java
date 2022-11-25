@@ -534,6 +534,9 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=51, shift=1) public boolean tapschWebStandalone() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=51, shift=1) public void tapschWebStandalone(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=52) public boolean tapschWebStandaloneSet() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52) public void tapschWebStandaloneSet(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
+	
 	
 	
 	public boolean getSavePageToDatabase(){
@@ -1165,7 +1168,7 @@ function debug(e){console.log(e)};
 				if(len>0) {
 					/* bring in action mode by a fake click on the programmatically  selected text. */
 					if(fakePopHandles) {
-						wv.forbidLoading=true;
+						//wv.forbidLoading=true;
 						//wv.getSettings().setJavaScriptEnabled(false);
 						//wv.getSettings().setJavaScriptEnabled(false);
 						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, wv.lastX, wv.lastY, 0);
@@ -1854,6 +1857,8 @@ function debug(e){console.log(e)};
 			mWebView.presenter = this;
 			mWebView.pBc = this.IBC;
 			//mWebView.History = this.HistoryOOP;
+		} else if(resposibleForThisWeb && mWebView.getParent()!=rl && mWebView.weblistHandler==a.weblistHandler) {
+			ViewUtils.addViewToParent(mWebView, rl, 1);
 		}
 	
 		mWebView.active=true;

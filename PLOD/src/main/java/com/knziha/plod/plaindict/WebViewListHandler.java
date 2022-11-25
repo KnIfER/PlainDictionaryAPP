@@ -610,7 +610,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			int cc=getChildCount();
 			if(cc>0) {
 				for (int i = 0; i < cc; i++) {
-					if (getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
+					View v = getChildAt(i).findViewById(R.id.webviewmy);
+					if (v!=null && v.getVisibility() != View.GONE) {
 						targetVis = View.GONE;
 						break;
 					}
@@ -621,10 +622,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				for (int i = 0; i < cc; i++) {
 					View childAt = getChildAt(i);
 					WebViewmy targetView = childAt.findViewById(R.id.webviewmy);
-					if(targetVis==View.GONE) {
-						targetView.setVisibility(targetVis);
-					} else if(targetView.getVisibility()!=View.VISIBLE){
-						childAt.findViewById(R.id.toolbar_title).performClick();
+					if (targetView != null) {
+						if(targetVis==View.GONE) {
+							targetView.setVisibility(targetVis);
+						} else if(targetView.getVisibility()!=View.VISIBLE){
+							childAt.findViewById(R.id.toolbar_title).performClick();
+						}
 					}
 				}
 			}
@@ -2077,16 +2080,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			View child = webSingleholder.getChildAt(0);
 			if (child!=null) {
 				WebViewmy mWebView = child.findViewById(R.id.webviewmy);
-				BookPresenter prev = mWebView.presenter;
-				if(!prev.isMergedBook() && !mWebView.isloading && System.currentTimeMillis()-a.lastClickTime>300) {
-					if (mWebView.webScale == 0) mWebView.webScale = a.dm.density; //sanity check
-					//CMN.Log("savePagePos::保存位置::", prev.getDictionaryName(), (int) mWebView.currentPos);
-					ScrollerRecord pPos = prev.avoyager.get((int) mWebView.currentPos);
-					if (mWebView.shouldStoreNewPagePos(pPos)) {
-						prev.avoyager.put((int) mWebView.currentPos, pPos = new ScrollerRecord());
-					}
-					if (pPos!=null) {
-						pPos.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
+				if (mWebView!=null) {
+					BookPresenter prev = mWebView.presenter;
+					if(!prev.isMergedBook() && !mWebView.isloading && System.currentTimeMillis()-a.lastClickTime>300) {
+						if (mWebView.webScale == 0) mWebView.webScale = a.dm.density; //sanity check
+						//CMN.Log("savePagePos::保存位置::", prev.getDictionaryName(), (int) mWebView.currentPos);
+						ScrollerRecord pPos = prev.avoyager.get((int) mWebView.currentPos);
+						if (mWebView.shouldStoreNewPagePos(pPos)) {
+							prev.avoyager.put((int) mWebView.currentPos, pPos = new ScrollerRecord());
+						}
+						if (pPos!=null) {
+							pPos.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
+						}
 					}
 				}
 			}
@@ -2421,4 +2426,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			// todo move btns
 		}
 	}
+	
+	public boolean isViewInUse(WebViewmy standalone) {
+		if (standalone.isAttachedToWindow()) {
+			return true;
+		}
+		return false;
+	}
+	
 }

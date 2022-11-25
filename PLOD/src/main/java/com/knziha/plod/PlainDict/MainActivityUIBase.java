@@ -8153,7 +8153,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						return true;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 				boolean ret = webx.hasExcludedUrl && webx.shouldExcludeUrl(url);
 				if(!ret){
@@ -8263,7 +8263,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				/* 书签跳转 */
 				else if (bookMarkEntryPattern.matcher(url).matches()) {
-					//Log.e("chromium inter_ entry3", url);
+					CMN.debug("chromium inter_ entry3", url);
 					try {
 						//CMN.a.ActivedAdapter.onItemClick(lookUp(URLDecoder.decode(url,"UTF-8")));
 						//Log.e("chromium inter entry2",URLDecoder.decode(url,"UTF-8"));
@@ -8293,7 +8293,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				/* 普通的词条跳转 */
 				else {
-					//CMN.Log("chromium inter_ entry2", url);
+					//CMN.debug("chromium inter_ entry2", url);
 					url = url.substring(entryTag.length());
 					try {
 						boolean popup = invoker.getPopEntry();
@@ -8380,7 +8380,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					catch (Exception e) {
 						//TODO !!!
 						msg=e.toString();
-						if(true) CMN.debug(e);
+						CMN.debug(e);
 					}
 				}
 				/* 跳转失败 */
@@ -9176,17 +9176,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {
 		CMN.debug("jumpNaughtyFirstHighlight...");
-		long mJumpNaughtyTimeToken = jumpNaughtyTimeToken = System.currentTimeMillis();
-		NaughtyJumpper=()-> mWebView.evaluateJavascript("window.bOnceHighlighted", value -> {
-			if(mJumpNaughtyTimeToken!=jumpNaughtyTimeToken)
-				return;
-			if(!"true".equals(value)){
-				do_jumpNaughtyFirstHighlight(mWebView);
-			} else {
-				weblistHandler.jumpHighlight(1, false);
-			}
-		});
-		do_jumpNaughtyFirstHighlight(mWebView);
+		if (mWebView!=null) {
+			long mJumpNaughtyTimeToken = jumpNaughtyTimeToken = System.currentTimeMillis();
+			NaughtyJumpper=()-> mWebView.evaluateJavascript("window.bOnceHighlighted", value -> {
+				if(mJumpNaughtyTimeToken!=jumpNaughtyTimeToken)
+					return;
+				if(!"true".equals(value)){
+					do_jumpNaughtyFirstHighlight(mWebView);
+				} else {
+					weblistHandler.jumpHighlight(1, false);
+				}
+			});
+			do_jumpNaughtyFirstHighlight(mWebView);
+		}
 	}
 
 	private void do_jumpNaughtyFirstHighlight(WebViewmy mWebView) {
