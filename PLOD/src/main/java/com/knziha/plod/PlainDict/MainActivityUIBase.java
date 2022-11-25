@@ -7956,13 +7956,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(GlobalOptions.debug)
 					mWebView.evaluateJavascript("window.debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log(\"%c Web \",\"color:#333!important;background:#0FF;\",t[0],t[1],t[2],t[3],t[4])}", null);
 				PlainWeb webx = invoker.getWebx();
-				if (webx!=null && webx.markable) {
-					mWebView.marked = invoker.hasBookmarkV2(mWebView);
-					// CMN.debug("webx::restoring::???", mWebView.marked, invoker);
-					if (mWebView.marked != -1) {
-						mWebView.evaluateJavascript("window.currentPos="+mWebView.marked, null);
-						//mWebView.restoreMarks();
-						mWebView.evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
+				if (webx!=null) {
+					if(webx.markable) {
+						mWebView.marked = invoker.hasBookmarkV2(mWebView);
+						// CMN.debug("webx::restoring::???", mWebView.marked, invoker);
+						if (mWebView.marked != -1) {
+							mWebView.evaluateJavascript("window.currentPos="+mWebView.marked, null);
+							//mWebView.restoreMarks();
+							mWebView.evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
+						}
 					}
 					invoker.ApplyPadding(mWebView);
 				}

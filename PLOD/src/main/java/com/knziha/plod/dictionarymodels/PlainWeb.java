@@ -1352,7 +1352,7 @@ public class PlainWeb extends DictionaryAdapter {
 					}
 					return sb.toString();
 				} else {
-					return TextUtils.equals(url, mWebView.getUrl())?"1":null;
+					return TextUtils.equals(schUrl(url, bookPresenter), mWebView.getUrl())?"1":null;
 				}
 			}
 			return null;
@@ -1640,7 +1640,7 @@ public class PlainWeb extends DictionaryAdapter {
 				ret = vkp.getRecordAt(position);
 				if (ret!=null) {
 					if (ret.startsWith("http")) // 简单处理
-						url = ret;
+						url = schUrl(ret, bookPresenter);
 					else
 						key = ret;
 					break;
@@ -1747,6 +1747,14 @@ public class PlainWeb extends DictionaryAdapter {
 //		}
 		if(GlobalOptions.debug)CMN.Log("加载网页::", url, dopt/*, jsLoader*/);
 		return currentUrl=url;
+	}
+	
+	private String schUrl(String url, BookPresenter bookPresenter) {
+		int idx = url.indexOf("%s");
+		if(idx>0) {
+			url = url.replace("%s", bookPresenter.GetAppSearchKey());
+		}
+		return url;
 	}
 	
 	/** 返回完整网址 */

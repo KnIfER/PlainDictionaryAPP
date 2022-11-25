@@ -162,7 +162,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	 	 sty.innerText = css;
 		 head.appendChild(sty);
 	 }
-	 if(d.body)d._pdkn=1
+	 if(d.body)d._pdkn=1;
 	 */
 	@Metaline
 	public final static String sDarkModeIncantation ="DARK";

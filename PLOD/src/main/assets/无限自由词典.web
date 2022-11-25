@@ -1,0 +1,13 @@
+{
+	"host": "https://www.thefreedictionary.com"
+	,"index": ""
+	,"name": "无限自由词典"
+	,"search": "/"
+	,"keyPattern": "^[a-zA-Z-]{0,38}$"
+	,"markable": "true"
+	,"entrance": "https://www.thefreedictionary.com/%s\r< 自由词典 >
+https://www.freethesaurus.com/%s\r< 同义词查询 >
+https://medical-dictionary.thefreedictionary.com/%s\r< 医学词典 >
+https://encyclopedia.thefreedictionary.com/%s\r< 维基百科 >
+	"
+}
