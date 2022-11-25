@@ -82,6 +82,9 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 						case "exempt_translator":
 							init_switch_preference(this, "exempt_translator", PDICMainAppOptions.getTapTreatTranslatorAsDedicated(), null, null, p);
 							break;
+						case "tapsch_web":
+							init_switch_preference(this, "tapsch_web", PDICMainAppOptions.tapschWebStandalone(), null, null, p);
+							break;
 						case "tz":
 							init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null, p);
 							break;
@@ -165,6 +168,9 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 			break;
 			case "exempt_translator":
 				PDICMainAppOptions.setTapTreatTranslatorAsDedicated((Boolean) newValue);
+			break;
+			case "tapsch_web":
+				PDICMainAppOptions.tapschWebStandalone((Boolean) newValue);
 			break;
 			case "multi_cs":
 				PDICMainAppOptions.setMultipleClickSearch((Boolean) newValue);

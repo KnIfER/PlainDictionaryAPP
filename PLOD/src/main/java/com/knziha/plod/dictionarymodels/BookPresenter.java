@@ -86,7 +86,6 @@ import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.BreakIteratorHelper;
 
 import org.apache.commons.lang3.StringUtils;
@@ -113,7 +112,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.InflaterOutputStream;
 
-import static com.knziha.logger.CMN.formatter;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_ANNOT_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
@@ -533,6 +531,10 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=50) public boolean padBottom() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=50) public void padBottom(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=51, shift=1) public boolean tapschWebStandalone() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public void tapschWebStandalone(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	
 	
 	public boolean getSavePageToDatabase(){
 		return true;
@@ -860,7 +862,7 @@ function debug(e){console.log(e)};
 	public ViewGroup toolbar;
 	ImageView toolbar_cover;
 	private VerseKit ucc;
-	public void initViewsHolder(final MainActivityUIBase a){
+	public WebViewmy initViewsHolder(final MainActivityUIBase a){
 		this.a=a;
 		ucc = a.getVtk(); //todo
 		if(!viewsHolderReady) {
@@ -964,6 +966,7 @@ function debug(e){console.log(e)};
 				mWebView.getSettings().setUseWideViewPort(true);
 			}
 		}
+		return mWebView;
 	}
 	
 	public AppHandler getWebBridge() {

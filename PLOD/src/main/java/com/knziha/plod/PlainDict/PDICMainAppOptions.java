@@ -2800,6 +2800,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=27, flagSize=2) public static int listZhTranslate() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=27, flagSize=2) public static void listZhTranslate(int v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=29, shift=1) public static boolean tapschWebStandalone() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=29, shift=1) public static void tapschWebStandalone(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
 	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}

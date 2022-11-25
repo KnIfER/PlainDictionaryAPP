@@ -157,7 +157,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void refresh() {
-		if(mWebView != null)
+		if(weblistHandler != null)
 		{
 			CMN.debug("wordPopup::refresh");
 			if (MainColorStamp != a.MainAppBackground) {
@@ -179,7 +179,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				}
 				MainColorStamp = a.MainAppBackground;
 				int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
-				mWebView.setBackgroundColor(filteredColor);
+				weblistHandler.dictView.setBackgroundColor(filteredColor);
 			}
 			if (dictPicker.pinned()) {
 				dictPicker.refresh();
@@ -213,7 +213,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		switch (id) {
 			case R.id.cover: {
 				if(v==weblistHandler.pageSlider.page){
-					a.getVtk().setInvoker(CCD, mWebView, null, null);
+					a.getVtk().setInvoker(CCD, dictView(), null, null);
 					a.getVtk().onClick(v);
 				}
 			} break;
@@ -260,7 +260,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			case R.id.popNxtDict:
 			case R.id.popLstDict:{
 				//SearchNxt(id==R.id.popNxtDict, task, taskVer, taskVersion);
-				String url = mWebView.getUrl();
+				String url = dictView().getUrl();
 				if (url!=null) {
 					int schemaIdx = url.indexOf(":");
 					if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
@@ -366,7 +366,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							if(dialog!=null)
 								dialog.dismiss();
 							if (position==0) { // 收藏词条
-								a.keepWordAsFavorite(mWebView.word, weblistHandler);
+								a.keepWordAsFavorite(dictView().word, weblistHandler);
 							}
 							else if (position==1) { // 切换分组
 								dictPicker.onClick(a.anyView(R.id.bundle));
@@ -380,7 +380,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 											a.showT("未实现");
 										} else if (position == 5) { // 工具…
 											MainActivityUIBase.VerseKit tk = a.getVtk();
-											tk.setInvoker(CCD, mWebView, null, String.valueOf(entryTitle.getText()));
+											tk.setInvoker(CCD, dictView(), null, String.valueOf(entryTitle.getText()));
 											tk.onClick(a.anyView(0));
 										} else { // 切换上一词典
 											onClick(a.anyView(R.id.popLstDict));
@@ -415,11 +415,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							previewPageIdx--;
 						} else if(id1 ==android.R.id.button3){
 							previewPageIdx=0; // 重置
-							int dynamicPos = (int) mWebView.currentPos;
+							WebViewmy resetWV = dictView();
+							int dynamicPos = (int) resetWV.currentPos;
 							if (rec == null) {
-								if (mWebView.presenter != CCD && mWebView.presenter != a.EmptyBook) {
+								if (resetWV.presenter != CCD && resetWV.presenter != a.EmptyBook) {
 									previewMidPos = dynamicPos;
-									setTranslator(mWebView.presenter, dynamicPos);
+									setTranslator(resetWV.presenter, dynamicPos);
 								} else {
 									// 回不去啦
 									resetPreviewMidPos();
@@ -645,11 +646,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	};
 	
 	public boolean nav(boolean isGoBack) {
-		if (isGoBack && mWebView.canGoBack()) {
-			mWebView.goBack();
+		WebViewmy navWV = dictView();
+		if (isGoBack && navWV.canGoBack()) {
+			navWV.goBack();
 			return true;
-		} else if (!isGoBack && mWebView.canGoForward()){
-			mWebView.goForward();
+		} else if (!isGoBack && navWV.canGoForward()){
+			navWV.goForward();
 			return true;
 		}
 		resetPreviewIdx();
@@ -1318,14 +1320,16 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				sching = null;
 			}
 			if (currentPos >= 0 && CCD != a.EmptyBook) {
-				weblistHandler.setViewMode(null, 0, mWebView);
-				if(CCD.getIsWebx()) { //todo 合并逻辑
+				boolean isWebx = CCD.getIsWebx();
+				weblistHandler.setViewMode(null, 0, getRenderingWV(isWebx?CCD:null));
+				if(isWebx) { //todo 合并逻辑
+					WebViewmy renderingWV = dictView();
 					weblistHandler.bMergingFrames = 1;
 					indicator.setText(loadManager.md_getName(CCD_ID, -1));
 					popuphandler.setBook(CCD);
-					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
-					weblistHandler.pageSlider.setWebview(mWebView, null);
-					setDisplaying(mWebView.word);
+					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, renderingWV, currentPos);
+					weblistHandler.pageSlider.setWebview(renderingWV, null);
+					setDisplaying(renderingWV.word);
 				} else {
 					loadEntry(0, true);
 				}
@@ -1333,21 +1337,32 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 	}
 	
+	private WebViewmy getRenderingWV(BookPresenter webx) {
+		WebViewmy nowView = dictView();
+		WebViewmy standalone = webx == null || !PDICMainAppOptions.tapschWebStandalone() || !webx.tapschWebStandalone() ? mWebView : webx.initViewsHolder(a);
+		if (nowView != standalone) {
+			ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1);
+			ViewUtils.removeView(nowView);
+		}
+		return standalone;
+	}
+	
 	private void renderMultiRecordAt(int pos) {
 		if (pos < rec.size()) {
 			rec.jointResult = rec.getJointResultAt(pos);
 		}
-		weblistHandler.setViewMode(rec, isMergingFramesNum(), mWebView);
-		mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
-		if (mWebView.wvclient != a.myWebClient) {
-			mWebView.setWebChromeClient(a.myWebCClient);
-			mWebView.setWebViewClient(a.myWebClient);
+		final WebViewmy multiView = mWebView;
+		weblistHandler.setViewMode(rec, isMergingFramesNum(), multiView);
+		multiView.presenter = a.weblistHandler.getMergedBook(); //todo opt
+		if (multiView.wvclient != a.myWebClient) {
+			multiView.setWebChromeClient(a.myWebCClient);
+			multiView.setWebViewClient(a.myWebClient);
 		}
 		if (pos < rec.size()) {
 			rec.renderContentAt(pos, a, null, weblistHandler);
 			setDisplaying(weblistHandler.getMultiRecordKey());
 		}
-		weblistHandler.pageSlider.setWebview(mWebView, null);
+		weblistHandler.pageSlider.setWebview(multiView, null);
 		dictPicker.filterByRec(rec, pos);
 		setTranslator(rec, pos);
 	}
@@ -1358,7 +1373,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	private void setDisplaying(String key) {
 		if (requestAudio)
-			mWebView.bRequestedSoundPlayback=true;
+			dictView().bRequestedSoundPlayback=true;
 		displaying = key;
 		weblistHandler.setStar(key);
 	}
@@ -1367,13 +1382,14 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (rec == null) {
 			if (d!=0)  currentPos=Math.max(0, Math.min(currentPos+d, (int) CCD.bookImpl.getNumberEntries()));
 			int pos = currentPos;
-			mWebView.currentPos = pos;
-			mWebView.presenter = CCD;
+			WebViewmy flippingWV = dictView();
+			flippingWV.currentPos = pos;
+			flippingWV.presenter = CCD;
 			if (CCD.getIsWebx()) { //todo 合并逻辑
 				if (pos==0) {
 					CCD.SetSearchKey(popupKey);
 				}
-				CCD.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, pos);
+				CCD.renderContentAt(-1, RENDERFLAG_NEW, 0, flippingWV, pos);
 			} else {
 				weblistHandler.bMergingFrames = 1;
 				StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
@@ -1402,10 +1418,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					}
 					
 				}
-				mWebView.loadUrl(mergedUrl.toString());
+				flippingWV.loadUrl(mergedUrl.toString());
 			}
-			weblistHandler.resetScrollbar(mWebView, false, false);
-			setDisplaying(mWebView.word=CCD.getBookEntryAt(pos));
+			weblistHandler.resetScrollbar(flippingWV, false, false);
+			setDisplaying(flippingWV.word=CCD.getBookEntryAt(pos));
 		} else {
 			if (d!=0)  currentPos=Math.max(0, Math.min(currentPos+d, (int) rec.size()));
 			renderMultiRecordAt(currentPos);
@@ -1527,16 +1543,17 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void resetScrollbar() {
-		String url = mWebView.getUrl();
+		final WebViewmy scrollView = dictView();
+		String url = scrollView.getUrl();
 		int schemaIdx = url.indexOf(":");
 		if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
 			try {
 				if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
-					weblistHandler.resetScrollbar(mWebView, false, false);
+					weblistHandler.resetScrollbar(scrollView, false, false);
 				}
 				else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
 					weblistHandler.bMergingFrames = 1;
-					weblistHandler.resetScrollbar(mWebView, true, true);
+					weblistHandler.resetScrollbar(scrollView, true, true);
 				}
 			} catch (Exception e) {
 				CMN.debug(e);
@@ -1546,5 +1563,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	public boolean isMaximized() {
 		return moveView.Maximized;
+	}
+	
+	final WebViewmy dictView() {
+		return weblistHandler.dictView != null ? weblistHandler.dictView : mWebView;
 	}
 }

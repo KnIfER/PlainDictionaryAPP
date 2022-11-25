@@ -141,7 +141,7 @@
 
 	<PreferenceCategory
 		android:key="cat_webx"
-		android:title="跳过在线词典"
+		android:title="在线词典设置"
 		app:icon="@drawable/drawer_menu_icon_setting"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -156,6 +156,13 @@
 			android:persistent="false"
 			android:defaultValue="true"
 			android:title="不跳过在线翻译词典"/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tapsch_web"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:summary="提示：这是全局开关，也可每个词典单独设置"
+			android:title="使用单独的webview"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory
