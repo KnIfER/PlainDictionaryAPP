@@ -102,14 +102,33 @@
 				android:orientation="horizontal"
 				>
 				<TextView
+					android:id="@+id/etTitle"
+					style="@style/SearchbarMenuTextStyle1"
+					android:text="创建笔记"
+					/>
+				<TextView
 					android:id="@+id/etClear"
 					android:drawableLeft="@drawable/ic_baseline_clear_24"
 					style="@style/SearchbarMenuTextStyle1"
+					android:visibility="gone"
 					/>
 				<TextView
 					android:id="@+id/etPaste"
 					android:drawableLeft="@drawable/ic_baseline_paste_24"
 					style="@style/SearchbarMenuTextStyle1"
+					android:visibility="gone"
+					/>
+				<TextView
+					android:id="@+id/etUndo"
+					android:drawableLeft="@drawable/ic_baseline_undo_24"
+					style="@style/SearchbarMenuTextStyle1"
+					android:visibility="gone"
+					/>
+				<TextView
+					android:id="@+id/etRedo"
+					android:drawableLeft="@drawable/ic_baseline_redo_24"
+					style="@style/SearchbarMenuTextStyle1"
+					android:visibility="gone"
 					/>
 				<TextView
 					android:id="@+id/bubble"
@@ -128,7 +147,6 @@
 					android:drawableLeft="@drawable/ic_baseline_text_color_24"
 					style="@style/SearchbarMenuTextStyle1"
 					/>
-
 
 				<LinearLayout
 					android:id="@+id/noteTypes"
@@ -158,14 +176,16 @@
 					android:layout_width="wrap_content"
 					android:layout_height="match_parent"
 					android:orientation="horizontal"
-					android:background="@drawable/popup_background4__"
 					android:layout_marginTop="2dp"
 					android:layout_marginBottom="2dp"
 					android:layout_marginLeft="8dp"
 					android:layout_marginRight="8dp"
+					android:visibility="gone"
+					tools:visibility="visible"
+					android:id="@+id/etDone"
+					android:background="@drawable/popup_background4__"
 					>
 					<TextView
-						android:id="@+id/etDone"
 						android:text="完成"
 						style="@style/SearchbarMenuTextStyle1"
 						/>
@@ -188,6 +208,7 @@
 				android:singleLine="false"
 				android:paddingLeft="8dp"
 				android:paddingRight="8dp"
+				android:imeOptions="flagNoExtractUi"
 				/>
 			<FrameLayout
 				android:id="@+id/lnkPanel"
@@ -221,10 +242,64 @@
 					/>
 			</FrameLayout>
 		</FrameLayout>
+		<HorizontalScrollView
+			android:id="@+id/editTools1"
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/_45_"
+			android:background="@color/colorPrimary"
+			>
+			<com.knziha.ankislicer.customviews.ShelfLinearLayout2
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:orientation="horizontal"
+				>
+				<TextView
+					android:id="@+id/etClear"
+					android:drawableLeft="@drawable/ic_baseline_clear_24"
+					style="@style/SearchbarMenuTextStyle1"
+					android:text="清空"
+					/>
+				<TextView
+					android:id="@+id/etPaste"
+					android:drawableLeft="@drawable/ic_baseline_paste_24"
+					style="@style/SearchbarMenuTextStyle1"
+					android:text="粘贴"
+					/>
+				<TextView
+					android:id="@+id/etUndo"
+					android:drawableLeft="@drawable/ic_baseline_undo_24"
+					style="@style/SearchbarMenuTextStyle1"
+					android:text="撤销"
+					/>
+				<TextView
+					android:id="@+id/etRedo"
+					android:drawableLeft="@drawable/ic_baseline_redo_24"
+					style="@style/SearchbarMenuTextStyle1"
+					android:text="重做"
+					/>
+				<LinearLayout
+					android:layout_width="wrap_content"
+					android:layout_height="match_parent"
+					android:orientation="horizontal"
+					android:background="@drawable/popup_background4__"
+					android:layout_marginTop="2dp"
+					android:layout_marginBottom="2dp"
+					android:layout_marginLeft="8dp"
+					android:layout_marginRight="8dp"
+					>
+					<TextView
+						android:id="@+id/etDone"
+						android:text="完成"
+						style="@style/SearchbarMenuTextStyle1"
+						/>
+				</LinearLayout>
+			</com.knziha.ankislicer.customviews.ShelfLinearLayout2>
+		</HorizontalScrollView>
 		<View
 			android:id="@+id/botPad"
 			android:layout_width="match_parent"
 			android:layout_height="4dp"
+			android:visibility="gone"
 			/>
 	</LinearLayout>
 

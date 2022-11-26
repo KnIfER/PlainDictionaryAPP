@@ -44,8 +44,8 @@ android {
 
     lintOptions {
         //tasks.lint.enabled = false
-        //checkReleaseBuilds false
-        //abortOnError false
+        checkReleaseBuilds false
+        abortOnError false
     }
     compileSdkVersion ver_compileSdkVersion
 
@@ -53,8 +53,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 93
-        versionName "6.9.1"
+        versionCode 94
+        versionName "6.9.2"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
 

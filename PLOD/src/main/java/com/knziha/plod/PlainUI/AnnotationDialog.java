@@ -1,16 +1,26 @@
 package com.knziha.plod.PlainUI;
 
 import android.annotation.SuppressLint;
+import android.app.Instrumentation;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.Gravity;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
@@ -56,6 +66,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	public ViewGroup editPanel;
 	public View botPad;
 	public ViewGroup editTools;
+	public ViewGroup editTools1;
+	public TextView etTitle;
+	public boolean uiMergeEtTools;
 	public ShelfLinearLayout2 editToolbar;
 	public EditText edit;
 	public ViewGroup lnkPanel;
@@ -75,6 +88,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	private AnimationSet animationEnter;
 	private AnimationSet animationExit;
 	public long editingNoteId = 0;
+	private boolean keyboardShown;
 	
 	public static class UIData {
 		public int toolIdx;
@@ -112,8 +126,10 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			editPanel = (ViewGroup) ViewUtils.findViewById(cv, R.id.editPanel);
 			edit = (EditText) ViewUtils.findViewById(editPanel, R.id.edit, 1);
 			editTools = (ViewGroup) ViewUtils.findViewById(editPanel, R.id.editTools);
+			editTools1 = (ViewGroup) ViewUtils.findViewById(editPanel, R.id.editTools1);
 			botPad = ViewUtils.findViewById(editPanel, R.id.botPad);
 			editToolbar = (ShelfLinearLayout2) editTools.getChildAt(0);
+			etTitle = (TextView) ViewUtils.findViewById(editToolbar, R.id.etTitle);
 			noteTypes = editToolbar.findViewById(R.id.noteTypes);
 			bubbleBtn = editToolbar.findViewById(R.id.bubble);
 			lnkPanel = editPanel.findViewById(R.id.lnkPanel);
@@ -129,6 +145,25 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			ColorPickerDialog noteDlg = ColorPickerDialog.newInstance(a, uiData.colors[uiData.toolIdx]);
 			noteDlg.setContentView(cv, true);
 			this.noteDlg = noteDlg;
+			noteDlg.rootView.getRootView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+					View root = v.getRootView();
+					int keyBoardHeight = ViewUtils.keyboardHeight(root);
+					if(keyboardShown ^ keyBoardHeight>100) {
+						keyboardShown = !keyboardShown;
+						//CMN.debug("键盘::onLayoutChange::", keyboardShown);
+						boolean show = !(keyboardShown && VU.isVisible(editPanel));
+						if (show ^ VU.isVisible(noteDlg.bottomBar)) {
+							VU.setVisible(noteDlg.bottomBar, show);
+							VU.setVisible(noteDlg.views_holder0, show);
+							cv.requestLayout();
+							
+						}
+					}
+					resetMergeTools();
+				}
+			});
 			
 			btnEditNotes = VU.craftBtn(a, R.id.book_notes_drawer, R.string.edit_yy_note, null);
 			View pad = VU.craftLinearPadding(a, null);
@@ -175,6 +210,25 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		}
 		setEditingNote(-1);
 		//ViewUtils.setVisible(btnEditNotes, true);
+	}
+	
+	public void resetMergeTools() {
+		Display display = ((WindowManager) a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		int angle = display.getRotation();
+		boolean land = angle== Surface.ROTATION_90||angle==Surface.ROTATION_270;
+		boolean merge = GlobalOptions.isSmall || a.mConfiguration.orientation==Configuration.ORIENTATION_LANDSCAPE || land;
+		if (uiMergeEtTools ^ merge) {
+			VU.setVisible(editTools1, !merge);
+			for (int i = 0; i < editToolbar.getChildCount(); i++) {
+				View ca = editToolbar.getChildAt(i);
+				if (editTools1.findViewById(ca.getId())!=null)
+				{
+					VU.setVisible(ca, merge);
+				}
+			}
+			uiMergeEtTools = merge;
+			editTools1.setScaleY(merge?0.75f:1);
+		}
 	}
 	
 	// click
@@ -231,10 +285,10 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				}
 			break;
 			case R.id.editShow:
-				boolean edit = !ViewUtils.isVisible(editPanel);
-				PDICMainAppOptions.editNote(edit);
-				ViewUtils.setVisible(editPanel, edit);
-				if (edit) {
+				boolean show = !ViewUtils.isVisible(editPanel);
+				PDICMainAppOptions.editNote(show);
+				ViewUtils.setVisible(editPanel, show);
+				if (show) {
 					if(animationEnter==null)
 						animationEnter = (AnimationSet) AnimationUtils.loadAnimation(a, R.anim.dp_dialog_enter);
 					animationEnter.getAnimations().get(0).setDuration(200);
@@ -245,6 +299,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 					animationExit.getAnimations().get(0).setDuration(200);
 					editPanel.startAnimation(animationExit);
 				}
+				boolean hide = keyboardShown && VU.isVisible(editPanel);
+				VU.setVisible(noteDlg.bottomBar, !hide);
+				VU.setVisible(noteDlg.views_holder0, !hide);
 			break;
 			case R.id.etDone:
 				noteDlg.btnConfirm.performClick();
@@ -267,11 +324,18 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				}
 				break;
 			case R.id.etPaste:
-				getText().append(a.getFloatBtn().getPrimaryClip());
+				edit.onTextContextMenuItem(android.R.id.paste);
+				//getText().append(a.getFloatBtn().getPrimaryClip());
+			break;
+			case R.id.etUndo:
+			case R.id.etRedo:
+				KeyEvent control = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_Z, 0,
+						KeyEvent.META_CTRL_LEFT_ON);
+				edit.onKeyShortcut(v.getId()==R.id.etUndo?KeyEvent.KEYCODE_Z:KeyEvent.KEYCODE_Y, control);
 			break;
 			case R.id.bubble:
 				if (uiData.noteType!=1) {
-					boolean show = editToolbar.toggleViewChecked(v);
+					show = editToolbar.toggleViewChecked(v);
 					uiData.showBubbles[uiData.noteType] = show;
 					if (uiData.noteType==0) {
 						PDICMainAppOptions.showBubbleForEmbedNote(show);
@@ -622,7 +686,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		menuPopup.setFocusable(false);
 		menuPopup.setOutsideTouchable(true);
 		menuPopup.setBackgroundDrawable(null);
-		menuPopup.showAsDropDown(v, v.getWidth(), 0);
+		menuPopup.showAsDropDown(v, v.getWidth()/2, 0);
 	}
 	
 	@Override
@@ -732,22 +796,28 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	@Override public void onStopTrackingTouch(SeekBar seekBar) { }
 	
 	public void refresh() {
-		//if (MainAppBackground != a.MainAppBackground)
+		//CMN.debug("tc::", Integer.toHexString(edit.getTextColors().getDefaultColor()));
+		if (MainAppBackground != a.MainAppBackground)
 		{
 			// 刷新颜色变化（黑暗模式或者设置更改）
 			MainAppBackground = a.MainAppBackground;
-			editTools.setBackgroundColor(GlobalOptions.isDark ? MainAppBackground : 0xFF03A9F4);
+			final int gray = 0xFF555555;
+			editTools.setBackgroundColor(GlobalOptions.isDark ? gray : 0xFF03A9F4);
+			editTools1.setBackgroundColor(GlobalOptions.isDark ? gray : 0xFF03A9F4);
+			editPanel.getBackground().setColorFilter(GlobalOptions.isDark ? new PorterDuffColorFilter(gray, PorterDuff.Mode.SRC_IN) : null);
 			//editTools.setBackgroundColor(ColorUtils.blendARGB(MainAppBackground, Color.WHITE, 0.1f));
-			int wilte = GlobalOptions.isDark ? Color.GRAY : Color.WHITE;
+			int wilte = GlobalOptions.isDark ? 0xFF555555 : Color.WHITE;
 			btnPanel.setBackgroundColor(wilte);
 			edit.setBackgroundColor(wilte);
+			wilte = GlobalOptions.isDark ? Color.WHITE : 0xde000000;
+			edit.setHintTextColor(wilte);
+			edit.setTextColor(wilte);
 			//editToolbar.setBackgroundColor(MainAppBackground);
 			
-			int gray = 0x55888888;
-			gray = 0x5501374F;
-			editToolbar.setCheckedColor(gray);
+			//gray = 0x55888888;
+			editToolbar.setCheckedColor(GlobalOptions.isDark?0x88bbbbbb:0x5501374F);
 		}
-		boolean landScape = a.dm.heightPixels < a.dm.widthPixels;
+		//boolean landScape = a.dm.heightPixels < a.dm.widthPixels;
 		//((PercentRelativeLayout.LayoutParams)editPanel.getLayoutParams()).getPercentLayoutInfo().heightPercent=landScape?0.8f:0.58f;
 		//botPad.getLayoutParams().height = (int) (GlobalOptions.density*(landScape?10:15));
 	}
@@ -851,6 +921,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		if (editingNoteId!=nid) {
 			editingNoteId = nid;
 			noteDlg.btnConfirm.setText(nid==-1?"创建":"修改");
+			etTitle.setText(nid==-1?"创建笔记":"修改笔记");
 		}
 	}
 	

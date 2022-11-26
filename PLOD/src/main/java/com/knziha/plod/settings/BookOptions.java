@@ -237,6 +237,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		bNeedParseData = false;
 		//init_switcher("use_bgt", false, 9);
 		PlainWeb webx = data[0].getWebx();
+		boolean virtual = data[0].getHasVidx();
 		ArrayList<Preference> preferences = new ArrayList<>(64);
 		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
 		if(screen!=null){
@@ -245,6 +246,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				Preference p = preferences.get(i);
 				if (p instanceof PreferenceGroup) {
 					preferences.addAll(((PreferenceGroup)p).getPreferences());
+					if ("gp_tapsch".equals(p.getKey())) {
+						p.setVisible(virtual);
+					}
 				} else {
 					final String key = p.getKey();
 					switch (key) {

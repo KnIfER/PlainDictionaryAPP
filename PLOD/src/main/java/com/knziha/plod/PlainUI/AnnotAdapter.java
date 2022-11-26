@@ -248,12 +248,6 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	
 	public void rebuildCursor(SQLiteDatabase database, View sortView, @Nullable BookNotes bookNotes, String expUrl) {
 		CMN.debug("rebuildCursor::", "scope="+scope, "url="+expUrl, bookNotes==null?null:bookNotes.invoker);
-		
-		try {
-			throw new RuntimeException("watch stacktrace!");
-		} catch (RuntimeException e) {
-			CMN.debug(e);
-		}
 		try {
 			dataAdapter.close();
 			dataAdapter = DummyReader;
