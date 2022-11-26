@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
@@ -112,6 +113,18 @@ public abstract class BookManagerFragment<T> extends ListFragment {
         //CMN.show("onCreateView");
         return mDslv;
     }
+	
+	PDICMainAppOptions opt;
+	
+	protected PDICMainAppOptions getOpt() {
+		if (opt == null) {
+			if (getActivity() != null) {
+				opt = getBookManager().opt;
+			}
+			opt = new PDICMainAppOptions(getContext());
+		}
+		return opt;
+	}
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -124,6 +137,8 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 
         View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);
         mDslv.addHeaderView(v);
+	
+		opt = getBookManager().opt;
     }
 
     abstract DragSortListView.DropListener getDropListener();

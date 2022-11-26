@@ -153,7 +153,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			//bgView = dialogLayout;
 			this.root = root;
 			pinBtn = bottombar.findViewById(R.id.pinBtn);
-			pinBtn.setChecked(pin());
+			pinBtn_setChecked(pin());
 			
 			autoBtn = bottombar.findViewById(R.id.autoBtn);
 			autoBtn.setChecked(opt.autoSchPDict());
@@ -167,6 +167,11 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				ViewUtils.setVisible(bottombar, false);
 			}
 		}
+	}
+	
+	private void pinBtn_setChecked(boolean pin) {
+		pinBtn.setChecked(pin);
+		pinBtn.setContentDescription(pin?"取消钉住词典列表":"钉住词典列表");
 	}
 	
 	@Override
@@ -259,7 +264,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					//layoutParams.rightMargin=pad;
 				}
 				dataChanged();
-				pinBtn.setChecked(pin);
+				pinBtn_setChecked(pin);
 				refresh();
 			}
 			ViewUtils.setVisible(splitter, pin);
@@ -421,6 +426,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			MyViewHolder ret = new MyViewHolder(LayoutInflater.from(parent.getContext())
 							.inflate(R.layout.diag1_fc_list_item, parent, false), DictPicker.this);
 			ret.tv.bNeedPostLayout = true;
+			ret.tv.earHintAhead = "词典";
+			ret.tv.earHintAfter = "点击切换词典";
 			return ret;
 		}
 		
@@ -462,6 +469,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				holder.cover.setImageDrawable(cover);
 				tv.setText(text);
 			}
+			tv.earHintAheadMode = 2;
+			tv.earHintAfterMode = 1;
 			//else CMN.Log("onBindViewHolder::刷新部分!!!", payloads);
 			if (bid==-1) {
 				bid = loadManager.md_getNoCreate(position, bid).getId();

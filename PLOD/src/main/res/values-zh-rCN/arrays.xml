@@ -1,5 +1,6 @@
 <resources>
 	<string-array name="drawer_hints">
+		<item>无限自由</item>
 		<item>用\'.\'  匹配任意一个字符,  \'*\'  匹配任意长的字符串</item>
 		<item>同上支持通配符</item>
 		<item>@null</item>

@@ -39,7 +39,6 @@ import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.knziha.plod.dictionary.Utils.Bag;
-import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
@@ -123,7 +122,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		imageUrlKeys = new String[imageUrls.length];
 		opt=agent.opt;
 		curPosition = agent.currentImg;
-		agent.clearTdata();
+		agent.clearTmp();
 		
 		startBid = book.getId();
 		startPosition = curPosition;

@@ -84,6 +84,7 @@ import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -332,6 +333,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int schuiList;
 	public List<View> wViews;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
+	public AccessibilityManager accessMan;
 	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
 	SettingsSearcher settingsSearcher;
 	
@@ -864,6 +866,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			showBuildIndexInterface(showBuildIndex);
 		}
+		root.announceForAccessibility("当前词典 "+currentDictionary.getDictionaryName());
+		if (!currentDictionary.isMergedBook()) {
+			String entry = currentDictionary.getRowTextAt(result.lvPos);
+			if (entry != null) {
+				root.announceForAccessibility("当前词条 "+entry);
+			}
+		}
 		return true;
 	}
 	
@@ -1322,6 +1331,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(shunt) return;
 		AgentApplication.activities[thisActType.ordinal()] = new WeakReference<>(this);
 		wordPopup.opt = opt;
+		accessMan = ((AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE));
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
@@ -3298,7 +3308,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(thisActType==ActType.PlainDict) {
 //			ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
 //					.setIcon(!isContentViewAttached()?R.drawable.ic_search_24k:R.drawable.ic_back_material);
-			int id  = isContentViewAttached()?R.id.ivBack:R.id.multiline;
+			int id  = isContentViewAttached()&&!accessMan.isEnabled()?R.id.ivBack:R.id.multiline;
 			if(id!=ivBack.getId()) {
 				ivBack.setImageResource(id==R.id.multiline?R.drawable.ic_menu_material:R.drawable.back_toolbar);
 				ivBack.setId(id);
@@ -3650,7 +3660,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					abort=true;
 				}
 				if(abort){
-					((AgentApplication)getApplication()).clearTdata();
+					((AgentApplication)getApplication()).clearTmp();
 				} else {
 					isBrowsingImgs=true;
 					startActivityForResult(new Intent()

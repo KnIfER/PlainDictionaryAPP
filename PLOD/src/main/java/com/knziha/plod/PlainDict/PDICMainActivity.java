@@ -50,6 +50,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -204,7 +205,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	boolean keyboardShown = false;
 	
 	/** 定制底栏一：<br/>
-	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
+	 * 1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
 	 * 退离程序7 打开侧栏8 随机词条9 上一词典10 下一词典11 调整亮度12 定制底栏13 定制颜色14 管理词典15 进入设置16<br/>*/
 	public final static int[] BottombarBtnIcons = new int[]{
 			R.drawable.book_list,
@@ -583,6 +584,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		SU.UniversalObject = nextPath;
 		UIData.drawerLayout.closeDrawer(GravityCompat.START);
 		showExitDialog(true);
+	}
+	
+	public void closeDrawer() {
+		drawerOpen = false;
+		UIData.drawerLayout.closeDrawer(GravityCompat.START);
 	}
 	
 	private static class MyHandler extends BaseHandler{
@@ -1001,7 +1007,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			return true;
 		});
 		toolbar.mNavButtonView.setOnLongClickListener(this);
-		
+		toolbar.mNavButtonView.setAccessibilityTraversalAfter(R.id.etSearch);
+		//etSearch.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+
 //		ResizeNavigationIcon(toolbar);
 
 		hdl = mHandle = new MyHandler(this);
@@ -1112,6 +1120,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		schuiMainPeruse = SearchUI.MainApp.MAIN|SearchUI.Fye.MAIN;
 		schuiList = SearchUI.MainApp.表;
 		super.findFurtherViews();
+		
+		ivBack.setAccessibilityDelegate(new View.AccessibilityDelegate(){
+			@Override
+			public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+				boolean b1 = host.getId() == R.id.ivBack;
+				host.setContentDescription(b1?"返回":
+						etTools.isVisible()?"收起搜索框工具":"显示搜索框工具");
+				super.onPopulateAccessibilityEvent(host, event);
+			}
+		});
 	}
 	
 	private boolean bottombarHidden;
@@ -1331,7 +1349,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(appproject==null) {
 			appproject = "0|1|2|3|4|5|6";
 		}
-		bottombar_project = new AppUIProject("btmprj", BottombarBtnIcons, appproject, bottombar, BottombarBtns);
+		bottombar_project = new AppUIProject(this, "btmprj", BottombarBtnIcons, R.array.customize_btm, appproject, bottombar, BottombarBtns);
 		RebuildBottombarIcons(this, bottombar_project, mConfiguration);
 		
 		viewPager.setAdapter(pagerAdapter);
@@ -1341,14 +1359,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		UIData.drawerLayout.addDrawerListener(mDrawerToggle);// 按钮动画特效
 		UIData.drawerLayout.addDrawerListener(new DrawerListener() {
 			@Override
-			public void onDrawerOpened(@NonNull View arg0) {
+			public void onDrawerOpened(@NonNull View v) {
 				imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
 				etSearch_ToToolbarMode(1);
 				drawerOpen = true;
+				v.announceForAccessibility("抽屉已打开");
 			}
 
-			@Override public void onDrawerClosed(@NonNull View arg0) {
-				drawerOpen = false;
+			@Override public void onDrawerClosed(@NonNull View v) {
+				if (drawerOpen) {
+					drawerOpen = false;
+					v.announceForAccessibility("抽屉已关闭");
+				}
 			}
 			@Override public void onDrawerSlide(@NonNull View arg0, float arg1) {
 			}
@@ -1831,7 +1853,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//ReadText("I've worked with TTS a couple of years ago and remember, that there were not so much configuration possibilities.，中国网科技1月6日讯 针对近期比特大陆大规模裁员消息。比特大陆创始人、第一大股东詹克团今日下午再发公开信，称坚决反对这样裁员，自己必须要站出来。他认为，比特大陆有足够的金支持现有员工成本，在AI市场可以像矿机一样从零做到世界第一。");
 				//showTTS();
 				//showSoundTweaker();
-				//JumpToPeruseModeWithWord("doctrine");
+//				JumpToPeruseModeWithWord("doctrine");
 				//myWebCClient.onShowCustomView(v, null);
 				
 				//widget12.performLongClick();
@@ -2156,7 +2178,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	public void switchToSearchModeDelta(int i) {
-		int new_curr = CurrentViewPage-i;
+		int new_curr = i==0?1:CurrentViewPage-i;
 		new_curr = new_curr>2?2:new_curr;
 		new_curr = new_curr<0?0:new_curr;
 		if(new_curr==CurrentViewPage)
@@ -2178,10 +2200,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		//etSearch.removeTextChangedListener(tw1);
 		lastKeyword = etSearch.getText().toString();
-		if(i>0){//亮A
+		if(i>0) {//亮A
 			//etSearch.setText(lastFuzzyKeyword);
 			msg=R.string.fuzzyret;
-		}else{//亮B
+		} else {//亮B
 			//etSearch.setText(lastFullKeyword);
 			msg=R.string.fullret;
 		}
@@ -2833,6 +2855,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			else if (b1)
 				getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, anyView(0), UIData.appbar);
 		}
+		
+		weblistHandler.announceContent();
 		
 		return delayedAttaching=false;
 	}

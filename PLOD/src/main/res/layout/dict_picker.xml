@@ -87,6 +87,7 @@
 					android:padding="5dp"
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
+					android:contentDescription="钉住词典列表"
 					/>
 				<TextView
 					android:id="@+id/dictName"

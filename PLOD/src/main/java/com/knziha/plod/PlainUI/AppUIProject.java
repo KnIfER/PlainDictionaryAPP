@@ -1,5 +1,6 @@
 package com.knziha.plod.PlainUI;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -69,20 +70,21 @@ public class AppUIProject {
 	public ViewGroup bottombar;
 	public ImageView[] btns;
 	public int version;
-	int[] icons;
+	final int[] icons;
+	final String[] titles;
 
 	ArrayList<AppIconData> iconData;
-	String[] titles;
 
-	public AppUIProject(String _key, int[] _icons, String customize_str, ViewGroup _bottombar, ImageView[] _btns) {
+	public AppUIProject(Context context, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup _bottombar, ImageView[] _btns) {
 		key = _key;
 		icons = _icons;
 		currentValue = customize_str;
 		bottombar = _bottombar;
 		btns = _btns;
+		titles = context.getResources().getStringArray(titlesRes);
 	}
 	
-	public AppUIProject(int idx, PDICMainAppOptions opt, int[] _icons, ViewGroup _bottombar, ImageView[] _btns) {
+	public AppUIProject(Context context, int idx, PDICMainAppOptions opt, int[] _icons, int titlesRes, ViewGroup _bottombar, ImageView[] _btns) {
 		key = "ctnp#"+idx;
 		type = idx;
 		icons = _icons;
@@ -90,12 +92,10 @@ public class AppUIProject {
 		//CMN.Log("重新读取", key);
 		bottombar = _bottombar;
 		btns = _btns;
+		titles = context.getResources().getStringArray(titlesRes);
 	}
 	
-	public void instantiate(String[] _titles) {
-		if(_titles!=null){
-			titles = _titles;
-		}
+	public void instantiate() {
 		int projectSize = icons.length;
 		ArrayList<AppIconData> _iconData = new ArrayList<>(projectSize);
 		if(currentValue!=null) {
@@ -204,6 +204,7 @@ public class AppUIProject {
 								iv = new ImageView(this_);
 								iv.setImageResource(bid);
 							}
+							iv.setContentDescription(bottombar_project.titles[i]);
 							//iv.setBackgroundResource(R.drawable.surrtrip1);
 							iv.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
 							iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
@@ -221,6 +222,7 @@ public class AppUIProject {
 							ViewGroup svp = (ViewGroup) iv.getParent();
 							iv.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
 							if (svp != null) svp.removeView(iv);
+							iv.setContentDescription(bottombar_project.titles[i]);
 						}
 						bottombar.addView(iv);
 					}

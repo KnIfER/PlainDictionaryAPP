@@ -42,9 +42,9 @@
 	<string name="fuzzyfill">词条搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
 	<string name="fullfill">全文搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
 	<string name="regret">正则搜索</string>
-	<string name="fullret">全文搜索</string>
-	<string name="fuzzyret">词条通配搜索</string>
-	<string name="fuzzyret1">通配搜索</string>
+	<string name="fullret">全文内容搜索</string>
+	<string name="fuzzyret">词条搜索</string>
+	<string name="fuzzyret1">词条内容搜索</string>
 	<string name="warn_exit">再按一次退出！</string>
 
 	<string name="relaunch">重启生效！</string>
@@ -231,5 +231,6 @@
 	<string name="makeSimple">转成简体</string>
 	<string name="tapSelOpt">点选设置</string>
 	<string name="sona">🔊</string>
+	<string name="wuxian_query">无限查词</string>
 	>
 </resources>

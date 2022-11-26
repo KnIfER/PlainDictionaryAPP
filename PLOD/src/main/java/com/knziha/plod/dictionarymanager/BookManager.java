@@ -384,6 +384,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	
 	private void checkAll() {
+		if (opt==null) return;
 		AgentApplication app = ((AgentApplication)getApplication());
 		CMN.debug("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
 		checkF1();
@@ -469,6 +470,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		opt=agent.opt;
 		loadMan = agent.loadManager;
 		mdlibsCon=agent.mdlibsCon;
+		
+		if (opt == null) {
+			finish();
+		}
 		
 		ConfigFile = opt.fileToConfig();
 		
@@ -674,7 +679,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			}
         }
 		setResult(RESULT_OK, intent);
-        agent.clearTdata();
+        agent.clearTmp();
 	}
 	//onCreate结束
 	

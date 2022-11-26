@@ -597,6 +597,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			topsnack.setText(String.valueOf(messageVal));
 			topsnack.setTag(null);
 		}
+		topsnack.announceForAccessibility(topsnack.getText());
 		topsnack.setGravity(gravity<0?Gravity.CENTER:gravity);
 		View snackView = topsnack.getSnackView();
 		if(ViewUtils.addViewToParent(snackView, parentView) || layoutFlags!=layoutFlagStamp) {

@@ -903,6 +903,7 @@ function debug(e){console.log(e)};
 			
 			//toolbarBG.setColors(ColorSolid);
 			mWebView.toolbar_title = toolbar_title = pageData.toolbarTitle;
+			toolbar_title.earHintAhead = "内容标题：";
 			toolbar_cover = pageData.cover;
 			if(cover!=null)
 				toolbar_cover.setImageDrawable(cover);
@@ -1743,6 +1744,7 @@ function debug(e){console.log(e)};
 					a.newTitlebar.setTitlebar(mWebView);
 				}
 			}
+			mWebView.titleBar.setAccessibilityPaneTitle(mWebView.toolbar_title.getText());
 		}
 		mWebView.word = word;
 	}

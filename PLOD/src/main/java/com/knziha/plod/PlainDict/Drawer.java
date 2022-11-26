@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebResourceResponse;
 import android.widget.ArrayAdapter;
@@ -53,6 +54,7 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.PlainUI.AnnotationDialog;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -165,10 +167,12 @@ public class Drawer extends Fragment implements
 			//menu_item_exit.setOnLongClickListener(this); // 测试 fileManager
 			mDrawerList = mDrawerListLayout.findViewById(R.id.left_drawer);
 			
+			// here
 			int[] basicArr;
 			if (GlobalOptions.isLarge) {
 				basicArr = new int[]{
-						R.string.fuzzyret1
+						R.string.wuxian_query
+						, R.string.fuzzyret1
 						, R.string.fullret
 						, 0
 						, R.string.bookmarkH
@@ -192,7 +196,8 @@ public class Drawer extends Fragment implements
 			}
 			else {
 				basicArr = new int[]{
-						R.string.fuzzyret1
+						R.string.wuxian_query
+						, R.string.fuzzyret1
 						, R.string.fullret
 						, 0
 						, R.string.bookmarkH
@@ -368,13 +373,13 @@ public class Drawer extends Fragment implements
 				PDICMainActivity.decorateBackground(vh.itemView);
 				vh.title.setTextColor(a.AppBlack);
 			}
-			if (viewType==2) {
+			if (viewType == 2) {
 				// 设置图标
-				((ImageView)vh.itemView.findViewById(R.id.icon)).setImageResource(id==R.string.settings?R.drawable.drawer_menu_icon_setting
-						:id==R.string.about?R.drawable.info
-						:id==R.string.exit?R.drawable.drawer_menu_icon_exit
+				((ImageView) vh.itemView.findViewById(R.id.icon)).setImageResource(id == R.string.settings ? R.drawable.drawer_menu_icon_setting
+						: id == R.string.about ? R.drawable.info
+						: id == R.string.exit ? R.drawable.drawer_menu_icon_exit
 						:/*id==R.string.clip_board?*/R.drawable.ic_content_paste_black_24dp
-						);
+				);
 			}
 			vh.title.setText(id);
 			vh.itemView.setId(id);
@@ -674,12 +679,15 @@ public class Drawer extends Fragment implements
 				ClipboardList.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (a.root.getHeight()-a.root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_))));
 			} break;
 			//模糊搜索 全文搜索
+			case R.string.wuxian_query:
 			case R.string.fuzzyret1:
 			case R.string.fullret:  {
-				a.switchToSearchModeDelta((id==R.string.fuzzyret1)?100:-100);
-				a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
+				a.switchToSearchModeDelta(id==R.string.wuxian_query?0:id==R.string.fuzzyret1?100:-100);
+				a.closeDrawer();
 				a.etSearch.requestFocus();
+				a.etSearch.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+				//((AccessibilityManager) view.getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).interrupt();
 			} break;
 			//书签历史
 			case R.string.bookmarkH:  {
@@ -1085,7 +1093,7 @@ public class Drawer extends Fragment implements
 										newAdapterIdx = bscAdapterIdx;
 									}
 									if(newAdapterIdx!=-1) {
-										a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
+										a.closeDrawer();
 										a.switch_Dict(newAdapterIdx, true, true, null);
 									}
 								} catch (Exception e) {

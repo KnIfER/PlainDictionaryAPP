@@ -44,6 +44,7 @@ public class DescriptiveImageView extends ImageView {
 		super(context, attrs, defStyleAttr);
 		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DescriptiveImageViewSty);
 		mText = a.getString(R.styleable.DescriptiveImageViewSty_android_text);
+		setContentDescription(mText);
 		offsetY = a.getDimension(R.styleable.DescriptiveImageViewSty_android_layout_y, 0);
 		textPainter = createTextPainter(false);
 		a.recycle();
@@ -138,6 +139,7 @@ public class DescriptiveImageView extends ImageView {
 	public void setText(String text){
 		if(!StringUtils.equals(text, mText)) {
 			mText = text;
+			setContentDescription(text);
 			invalidate();
 		}
 	}

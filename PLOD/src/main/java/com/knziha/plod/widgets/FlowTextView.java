@@ -31,14 +31,15 @@ import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.ArrayList.ArrayListHolder;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 
@@ -730,6 +731,31 @@ public class FlowTextView extends View {
 		if(this.maxLines != maxLines) {
 			this.maxLines = maxLines;
 			invalidate();
+		}
+	}
+	
+	public int earHintAheadMode; // 0=normal 1=hide 2=merge
+	public int earHintAfterMode; // 0=normal 1=hide 2=merge
+	public String earHintAhead;
+	public String earHintAfter;
+	
+	@Override
+	public void onPopulateAccessibilityEvent(AccessibilityEvent event) {
+		super.onPopulateAccessibilityEvent(event);
+		try {
+			CharSequence text = mText.subSequence(mStart, mLength);
+			if(earHintAhead!=null && earHintAheadMode!=1) {
+				if (earHintAheadMode == 0) {
+					event.getText().add(earHintAhead);
+				} else {
+					event.getText().add(earHintAhead+text);
+					text = null;
+				}
+			}
+			if(text!=null) event.getText().add(text);
+			if(earHintAfter !=null && earHintAfterMode!=1) event.getText().add(earHintAfter);
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 }

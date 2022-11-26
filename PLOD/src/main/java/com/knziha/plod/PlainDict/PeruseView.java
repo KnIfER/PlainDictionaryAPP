@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -88,6 +89,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.view.View.FOCUSABLE_AUTO;
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.def_zoom;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
@@ -273,6 +276,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		gv.setHorizontalScroll(true);
 		gv.setStretchMode(GridView.NO_STRETCH);
 		gv.setAdapter(gridAdapter);
+		gv.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
 		gv.setOnItemClickListener(gridAdapter);
 		gv.setScrollbarFadingEnabled(false);
 		gv.setSelector(ViewUtils.littleCat?getResources().getDrawable(R.drawable.listviewselector0):null);
@@ -332,6 +336,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
+		toolbar.mNavButtonView.setContentDescription("退出翻阅模式");
 		ViewUtils.ResizeNavigationIcon(toolbar);
         toolbar.setNavigationOnClickListener(this);
 		toolbar.addNavigationOnClickListener((v,e) -> {
@@ -683,6 +688,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	{
 		public long bid;
 		public int pos;
+		View itemView;
 		FlowTextView tv;
 		ImageView cover;
 		TextView word;
@@ -693,6 +699,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			cover = view.findViewById(R.id.image);
 			word = view.findViewById(R.id.word);
 			view.setTag(this);
+			itemView = view;
 		}
 		
 		public void setTextColor(int ColorInt) {
@@ -710,7 +717,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
 			v.setLayoutParams(lp);
 			((LayerDrawable) v.getBackground()).getDrawable(0).setAlpha(0);
-			new DictTitleHolder(bookIds.get(i), v).pos = recyclerBin.size();
+			DictTitleHolder holder = new DictTitleHolder(bookIds.get(i), v);
+			holder.pos = recyclerBin.size();
+			holder.tv.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
+			v.setFocusableInTouchMode(true);
+			v.setOnClickListener(this);
+			v.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
 			recyclerBin.add(v);
 		}
 		if(!bExpanded)
@@ -768,6 +780,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
 				((MultiShareActivity)a).OnPeruseDetached();
 			}
+			a.accessMan.interrupt();
 		}
 	}
 	
@@ -1443,8 +1456,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 					if(pathname==null) pathname = "空";
 					holder.tv.setText(pathname);
+//					holder.tv.setContentDescription(pathname);
 					holder.cover.setImageDrawable(cover);
 					holder.word.setText(pathname.substring(0,1).toUpperCase());
+					View v = (View) holder.tv.getParent();
+					v.setContentDescription(pathname);
 				}
 			}
 			else if(BuildConfig.DEBUG){
@@ -1483,7 +1499,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(view==null)
 				view = recyclerBin.get(pos);
 			selection = view;
-			((LayerDrawable) view.getBackground()).getDrawable(0).setAlpha(255);
+			try {
+				((LayerDrawable) view.getBackground()).getDrawable(0).setAlpha(255);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
 			
 			TargetRow = position/cc;
 			PositionToSelect = TargetRow*cc;
@@ -2184,6 +2204,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			case R.id.browser_widget7:
 			case R.id.home:
 				hide(getMainActivity());
+			break;
+			case R.id.dictlet:
+				DictTitleHolder holder = (DictTitleHolder) v.getTag();
+				gridAdapter.onItemClick(gridView,v,holder.pos,0);
 			break;
 			case R.id.fyeMenu:
 				showPeruseTweaker();

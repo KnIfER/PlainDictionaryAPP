@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
@@ -1091,7 +1092,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			String appproject = opt.getAppContentBarProject(contentkey);
 			if(appproject==null) appproject="0|1|2|3|4|5|6";
 			if(a.contentbar_project==null) {
-				a.contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, contentUIData.bottombar2, ContentbarBtns);
+				a.contentbar_project = new AppUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
 				a.contentbar_project.type = cbar_key;
 			}
 			a.contentbar_project.bottombar = contentUIData.bottombar2;
@@ -2434,4 +2435,20 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return false;
 	}
 	
+	public void announceContent() {
+		ViewGroup vg = getViewGroup();
+		View view = vg.getChildAt(0);
+		if (view != null) {
+			view = view.findViewById(R.id.toolbar_title);
+		}
+		if (view != null) {
+			View finalView = view;
+			vg.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					finalView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+				}
+			}, 350);
+		}
+	}
 }

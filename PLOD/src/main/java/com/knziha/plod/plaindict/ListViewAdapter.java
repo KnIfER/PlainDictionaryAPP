@@ -324,6 +324,7 @@ public class ListViewAdapter extends BasicAdapter {
 //				prepareInPageSearch(key, true);
 //			} //333
 		a.etSearch_ToToolbarMode(1);
+	//	weblistHandler.announceContent();
 	}
 	
 	@Override

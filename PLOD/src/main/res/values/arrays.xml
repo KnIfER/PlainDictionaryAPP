@@ -31,8 +31,9 @@
 
 
 	<string-array name="drawer_hints">
-		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
-		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
+		<item>This is a free dictionary application</item>
+		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>
+		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>
 		<item>@null</item>
 		<item>Show the latest 20 bookmarks</item>
 		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>
@@ -404,8 +405,8 @@
 	<string-array name="customize_btm">
 		<item>选择词典</item>
 		<item>选择分组</item>
-		<item>全词搜索</item>
-		<item>全文搜索</item>
+		<item>词条内容搜索</item>
+		<item>全文内容搜索</item>
 		<item>收藏夹</item>
 		<item>定制底栏</item>
 		<item>宫格菜单</item>

@@ -141,7 +141,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			int start = ssb.length();
 
 			final BookPresenter magent = getMagentAt(actualPosition);
-			boolean isOnSelected = a.opt.getDictManager1MultiSelecting() && getPlaceSelected(actualPosition);
+			boolean isOnSelected = getOpt().getDictManager1MultiSelecting() && getPlaceSelected(actualPosition);
 			if (isOnSelected) ssb.append("…");
 			ssb.append(magent.getPath());
 			if (isOnSelected) ssb.append("…");
@@ -176,7 +176,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 										properties.root = new File("/");
 										properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
 										properties.offset = magent.f().getParentFile();
-										properties.opt_dir = new File(a.opt.pathToDatabases() + "favorite_dirs/");
+										properties.opt_dir = new File(getOpt().pathToDatabases() + "favorite_dirs/");
 										properties.dedicatedTarget = magent.f().getName();
 										properties.opt_dir.mkdirs();
 										properties.extensions = new HashSet<>();
@@ -272,7 +272,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 											int oldFnLen = oldFn.length();
 
 											File to = new File(magent.f().getParent(), newPath);
-											String toFn = a.opt.tryGetDomesticFileName(to.getPath());
+											String toFn = getOpt().tryGetDomesticFileName(to.getPath());
 											if (to.equals(magent.f())) {//就是自己
 												suc = true;
 											} else if (new File(magent.getPath()).exists()) {//正常重命名
@@ -285,7 +285,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
 													magent.renameFileTo(getActivity(), to);
 													CMN.Log("重命名", magent.getDictionaryName());
-													MagentTransient mdTmp = a.new_MagentTransient(to.getAbsolutePath(), a.opt, null, true);
+													MagentTransient mdTmp = a.new_MagentTransient(to.getAbsolutePath(), getOpt(), null, true);
 													loadMan.md.set(actualPosition, mdTmp);
 													loadMan.lazyMan.placeHolders.set(actualPosition, mdTmp.getPlaceHolder());
 													suc = true;
@@ -340,7 +340,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												if (f3.dataPrepared) {
 													int idx = f3.data.remove(new mFile(oldPath));
 													if (idx != -1) {
-														f3.data.insert(new mFile(to).init(a.opt));
+														f3.data.insert(new mFile(to).init(getOpt()));
 													}
 												}
 											}
@@ -757,7 +757,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		if (mdTmp!=null) {
 			return mdTmp.getPath();
 		}
-		return loadMan.lazyMan.placeHolders.get(position).getPath(getBookManager().opt).toString();
+		return loadMan.lazyMan.placeHolders.get(position).getPath(getOpt()).toString();
 	}
 	
 	public int getPlaceFlagAt(int position) {

@@ -16,6 +16,8 @@ import android.widget.GridView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
+import androidx.core.view.ViewCompat;
 
 import com.jess.ui.TwoWayAbsListView;
 import com.jess.ui.TwoWayAdapterView;
@@ -97,6 +99,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			mainMenuLst.setHorizontalScroll(true);
 			mainMenuLst.setStretchMode(GridView.NO_STRETCH);
 			mainMenuLst.setAdapter(this);
+			mainMenuLst.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 			mainMenuLst.setOnItemClickListener(this);
 			mainMenuLst.setScrollbarFadingEnabled(false);
 			mainMenuLst.setSelector(a.mResource.getDrawable(R.drawable.listviewselector0));
@@ -164,10 +167,10 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				convertView = a.getLayoutInflater().inflate(R.layout.menu_item, parent, false);
 				holder = new MenuItemViewHolder(convertView);
 				holder.tv.textPainter = menu_grid_painter;
+				holder.tv.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 			} else {
 				holder = (MenuItemViewHolder) convertView.getTag();
 			}
-			//convertView.getLayoutParams().width = id==0?1:menu_width;
 			holder.position = position;
 			int tid = menu_ids[position];
 			holder.tv.setText(menuList.get(position));

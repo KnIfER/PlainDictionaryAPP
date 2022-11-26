@@ -353,6 +353,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		} else {
 			browsed =true;
 		}
+//		weblistHandler.announceContent();
 	}
 	
 	

@@ -45,7 +45,6 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	public boolean isDirty;
 	public Drawable switch_landscape;
 	PorterDuffColorFilter darkMask = new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
-	private String[] customize_ctn;
 	private View simView;
 	
 	public BottombarTweakerAdapter(MainActivityUIBase _a, int desiredTab) {
@@ -155,7 +154,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 							opt.linkContentbarProject(currentType, final_Bottombar_copy_from);
 							projectContext.currentValue = opt.getAppContentBarProject(currentType);
 							isDirty = false;
-							projectContext.instantiate(customize_ctn);
+							projectContext.instantiate();
 							notifyDataSetChanged();
 							a.showX(opt.getLinkContentBarProj()?R.string.linkedft:R.string.copyedft, Toast.LENGTH_LONG, copy_to, copy_from);
 						}, R.string.warn_copyconfrom, copy_from);
@@ -186,7 +185,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						}
 					}
 					projectContext.clear(a);
-					projectContext.instantiate(null);
+					projectContext.instantiate();
 					notifyDataSetChanged();
 				}, R.string.warn_reconf);
 				
@@ -219,10 +218,10 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						PDICMainActivity aa = (PDICMainActivity) a;
 						projectContext = aa.bottombar_project;
 						if(projectContext==null){
-							aa.bottombar_project = projectContext = new AppUIProject("btmprj", aa.BottombarBtnIcons, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
+							aa.bottombar_project = projectContext = new AppUIProject(a, "btmprj", aa.BottombarBtnIcons, R.array.customize_btm, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
 						}
 						if(projectContext.iconData==null){
-							projectContext.instantiate(aa.mResource.getStringArray(R.array.customize_btm));
+							projectContext.instantiate();
 						}
 					}
 					else {
@@ -241,7 +240,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 									a.contentbar_project:null;
 					
 					if(projectContext==null) {
-						projectContext = new AppUIProject(bottombar_from, a.opt, ContentbarBtnIcons, null, null);
+						projectContext = new AppUIProject(a, bottombar_from, a.opt, ContentbarBtnIcons, R.array.customize_ctn, null, null);
 						if(bottombar_from==1){
 							/* fyms */
 							a.peruseview_project = projectContext;
@@ -257,9 +256,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 					}
 
 					if(projectContext.iconData==null){
-						if(customize_ctn==null)
-							customize_ctn=a.getResources().getStringArray(R.array.customize_ctn);
-						projectContext.instantiate(customize_ctn);
+						projectContext.instantiate();
 					}
 					bottombar_from++;
 				}

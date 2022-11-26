@@ -152,7 +152,7 @@ public class AgentApplication extends Application {
 		System.exit(0);
 	}
 
-	public void clearTdata() {
+	public void clearTmp() {
 		mdict_cache=null;
 		mdlibsCon=null;
 		opt=null;
