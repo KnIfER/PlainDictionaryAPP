@@ -1308,7 +1308,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	private void evalJsAtAllFrames(String exp) {
+	public void evalJsAtAllFrames(String exp) {
 		if (bDataOnly) {
 			getMergedFrame().evaluateJavascript(exp, null);
 		} else {
@@ -1321,9 +1321,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		for (int index = 0; index < vg.getChildCount(); index++) {
 			if(vg.getChildAt(index) instanceof LinearLayout){
 				ViewGroup webHolder = (ViewGroup) vg.getChildAt(index);
-				if(webHolder.getChildAt(1) instanceof WebView){
-					((WebView)webHolder.getChildAt(1))
-							.evaluateJavascript(exp,null);
+				View child = webHolder.getChildAt(1);
+				if(child instanceof WebViewmy){
+					((WebViewmy) child).evaluateJavascript(exp,null);
 				}
 			}
 		}

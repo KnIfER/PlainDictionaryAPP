@@ -2587,6 +2587,16 @@ function debug(e){console.log(e)};
 		}
 		
 		@JavascriptInterface
+		public void tintBackground(int sid) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					presenter.tintBackground(wv);
+				}
+			}
+		}
+		
+		@JavascriptInterface
 		public void scrollLck(int sid, int scrollLck) {
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);

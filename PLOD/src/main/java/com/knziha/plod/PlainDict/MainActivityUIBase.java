@@ -1421,26 +1421,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean isDark = GlobalOptions.isDark;
 		boolean nii=contentUIData.browserWidget12.getTag(R.id.image)==null;
 		ViewGroup[] holders = new ViewGroup[]{webSingleholder, weblistHandler.getViewGroup()};
-		for (ViewGroup hI : holders) {
-			for (int i = 0; i < hI.getChildCount(); i++) {
-				Object tag = hI.getChildAt(i).getTag();
-				if(tag instanceof Integer){
-					int selfAtIdx = (int) tag;
-					if(selfAtIdx>=0&&selfAtIdx<loadManager.md_size) {
-						BookPresenter mdTmp = loadManager.md_getAt(selfAtIdx);
-						if (mdTmp!=null) {
-							WebViewmy wv = mdTmp.mWebView;
-							if(wv!=null) {
-								wv.evaluateJavascript(isDark ? opt.DarkModeIncantation(this) : DeDarkModeIncantation, null);
-								mdTmp.tintBackground(wv);
-							}
-						}
-					}
-				}
-			}
-		}
+		String js = isDark ? opt.DarkModeIncantation(this) : DeDarkModeIncantation;
+		weblistHandler.evalJsAtAllFrames(js+";app.tintBackground(sid.get())");
 		popupMenuRef.clear();
-		if(peruseView !=null) {
+		if(peruseView!=null) {
 			peruseView.refreshUIColors(MainBackground);
 		}
 	}
