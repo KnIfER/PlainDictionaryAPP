@@ -2,6 +2,7 @@ package com.knziha.plod.dictionary;
 
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
@@ -27,6 +28,9 @@ public interface UniversalDictionaryInterface {
 	File getFile();
 	String getDictionaryName();
 	boolean hasVirtualIndex();
+	void onPageFinished(BookPresenter invoker, WebViewmy mWebView, String url, boolean b);
+	
+	
 	StringBuilder AcquireStringBuffer(int capacity);
 	
 	boolean hasMdd();
@@ -82,7 +86,6 @@ public interface UniversalDictionaryInterface {
 	String getField(String fieldName);
 	
 	void setPerThreadKeysCaching(ConcurrentHashMap<Long, Object> keyBlockOnThreads);
-	
 	
 	interface DoForAllRecords{
 		void doit(Object parm, Object tParm, String entry, long position, String text, byte[] data, int from, int len, Charset _charset);

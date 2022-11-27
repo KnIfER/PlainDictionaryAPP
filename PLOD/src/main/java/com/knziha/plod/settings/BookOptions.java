@@ -354,6 +354,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						case "reload":
 							p.setOnPreferenceClickListener(this);
 							break;
+						case "p_df":
+							init_switch_preference(this, key, PDICMainAppOptions.debugPDFFont(), null, null, p);
+							break;
 						case "online":
 							p.setVisible(webx != null);
 							break;
@@ -442,9 +445,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			//CMN.Log("onPreferenceChange", preference, key, newValue);
 			if (preference instanceof SwitchPreference) {
 				int flagPos = preference.getExtras().getInt("flagPos", -1);
-				if (flagPos>=0) {
-					long mask = 1L<<flagPos;
-					for (BookPresenter datum:data) {
+				if (flagPos >= 0) {
+					long mask = 1L << flagPos;
+					for (BookPresenter datum : data) {
 						datum.setFirstFlag(setBooleanFlagAt(datum, mask, preference.getExtras().getBoolean("def", false), (Boolean) newValue));
 					}
 				}
@@ -533,6 +536,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "GPR":
 				case "GPB":
 					PDICMainAppOptions.dynamicPadding(true);
+				break;
+				case "p_df":
+					PDICMainAppOptions.debugPDFFont((boolean)newValue);
 				break;
 			}
 			if (key.startsWith("tz")) {

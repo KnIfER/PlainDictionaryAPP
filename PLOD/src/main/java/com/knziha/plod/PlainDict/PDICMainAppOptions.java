@@ -2806,6 +2806,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=30) public static boolean tapschWebStandaloneReversed() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=30) public static void tapschWebStandaloneReversed(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=31) public static boolean debugPDFFont() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31) public static void debugPDFFont(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	
 	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=36) public static void etHistoryExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}

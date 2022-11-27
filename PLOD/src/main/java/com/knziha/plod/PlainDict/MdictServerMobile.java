@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -171,44 +172,56 @@ public class MdictServerMobile extends MdictServer {
 		return mTifConfig;
 	}
 	
+	public static String remoteDebugServer;
+	
 	public static InputStream getRemoteServerRes(String key, boolean check) {
 		InputStream ret = null;
 		if(hasRemoteDebugServer/* && PDICMainAppOptions.debug()*/) {
 			try {
-				if(check) {
-					StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-					StrictMode.setThreadPolicy(policy);
-				}
-				if(check)
-					CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3" + key.replace("\\", "/"));
-				String uri = "http://192.168.0.100:8080/base/3" + URLEncoder.encode(key.replace("\\", "/"));
-				HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
-				if (urlConnection instanceof HttpsURLConnection) {
-					((HttpsURLConnection) urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
-				}
-				urlConnection.setRequestProperty("Accept-Charset", "utf-8");
-				urlConnection.setRequestProperty("connection", "Keep-Alive");
-				urlConnection.setRequestMethod("GET");
-				urlConnection.setConnectTimeout(500);
-				urlConnection.setUseCaches(true);
-				urlConnection.setDefaultUseCaches(true);
-				//if(host!=null) urlConnection.setRequestProperty("Host", host);
-				urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
-				urlConnection.connect();
-				final InputStream input = urlConnection.getInputStream();
-//				String val = BU.StreamToString(input);
-//				//input = new AutoCloseNetStream(input, urlConnection);
-//				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
-//				CMN.debug("请求的是本机调试资源…", key);
-				return input;
+				return testDebugServer(check?"192.168.0.100":remoteDebugServer, key, check);
 			} catch (Exception e) {
 				if (check) {
-					CMN.debug("getRemoteServerRes failed::"+e);
-					hasRemoteDebugServer = false;
+					try {
+						return testDebugServer("192.168.0.105", key, check);
+					} catch (IOException ex) {
+						CMN.debug("getRemoteServerRes failed::"+e);
+						hasRemoteDebugServer = false;
+					}
 				}
 			}
 		}
 		return ret;
+	}
+	
+	private static InputStream testDebugServer(String ipAddress, String key, boolean check) throws IOException {
+		if(check) {
+			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+			StrictMode.setThreadPolicy(policy);
+		}
+		if(check)
+			CMN.Log("OpenMdbResourceByName   http://"+ipAddress+"/base/3" + key.replace("\\", "/"));
+		String uri = "http://"+ipAddress+":8080/base/3" + URLEncoder.encode(key.replace("\\", "/"));
+		HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
+		if (urlConnection instanceof HttpsURLConnection) {
+			((HttpsURLConnection) urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+		}
+		urlConnection.setRequestProperty("Accept-Charset", "utf-8");
+		urlConnection.setRequestProperty("connection", "Keep-Alive");
+		urlConnection.setRequestMethod("GET");
+		urlConnection.setConnectTimeout(500);
+		urlConnection.setUseCaches(true);
+		urlConnection.setDefaultUseCaches(true);
+		//if(host!=null) urlConnection.setRequestProperty("Host", host);
+		urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+		urlConnection.connect();
+		final InputStream input = urlConnection.getInputStream();
+//				String val = BU.StreamToString(input);
+//				//input = new AutoCloseNetStream(input, urlConnection);
+//				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
+//				CMN.debug("请求的是本机调试资源…", key);
+		if(check)
+			remoteDebugServer=ipAddress;
+		return input;
 	}
 	
 	

@@ -202,6 +202,12 @@
 			android:title="电脑模式"
 			app:isPreferenceVisible="false"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="p_df"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="显示PDF字体层"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

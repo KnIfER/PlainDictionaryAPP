@@ -675,4 +675,9 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	public void saveConfigs(Object book) {
 	
 	}
+	
+	@Override
+	public void onPageFinished(BookPresenter invoker, WebViewmy mWebView, String url, boolean b) {
+	
+	}
 }

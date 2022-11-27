@@ -30,6 +30,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.key_info_struct;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.Utils.record_info_struct;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
@@ -244,7 +245,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	public boolean hasVirtualIndex() {
 		return virtualIndex!=null;
 	}
-
+	
 	public InputStream getResourceByKey(String key) {
 		//SU.Log("getResourceByKey", _Dictionary_fName, ftd);
 		try {
@@ -3255,6 +3256,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	@Override
 	public int guessRootWord(UniversalDictionaryInterface d, String keyword){
 		return -1;
+	}
+	
+	@Override
+	public void onPageFinished(BookPresenter invoker, WebViewmy mWebView, String url, boolean b) {
+	
 	}
 }
 

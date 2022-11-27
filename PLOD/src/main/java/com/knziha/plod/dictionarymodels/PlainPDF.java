@@ -1,5 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.os.Build;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import com.alibaba.fastjson.JSONObject;
@@ -10,6 +12,7 @@ import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MdictServer;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.knziha.metaline.Metaline;
@@ -60,6 +63,21 @@ public class PlainPDF extends DictionaryAdapter {
 	 */
 	@Metaline
 	final static String parseCatalogue = "CONTENTS";
+	
+	/**
+	var _df=document.getElementById('_df');
+	if(!_df.tx) _df.tx = _df.innerText;
+	_df.innerText = '';
+	 */
+	@Metaline
+	public final static String debugFontOff = "";
+	
+	/**
+	var _df=document.getElementById('_df');
+	if(_df.tx) _df.innerText = _df.tx;
+	 */
+	@Metaline
+	public final static String debugFontOn = "";
 
 	private int targetPage;
 
@@ -68,7 +86,7 @@ public class PlainPDF extends DictionaryAdapter {
 		super(fn, _a);
 		try {
 			INTERNAL_RES=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			CMN.debug("fail to init PlainPDF::", e);
 		}
 		_num_entries = 1;
@@ -220,5 +238,10 @@ public class PlainPDF extends DictionaryAdapter {
 	@Override
 	public String getVirtualTextEffectJs(long[] positions) {
 		return null;
+	}
+	
+	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
+		CMN.debug("PDF", "web  - onPageFini_NWPshed", url, getDictionaryName());
+		mWebView.evaluateJavascript(PDICMainAppOptions.debugPDFFont()?debugFontOn:debugFontOff, null);
 	}
 }

@@ -573,7 +573,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		return presenter.bookImpl.getBooKID();
 	}
 	
-	public Runnable postFinishedAbility = () -> wvclient.onPageFinished(this, getUrl());
+	public Runnable postFinishedAbility = () -> wvclient.onPageFinished(this, url);
 	
 	boolean bPostedFinish;
 	

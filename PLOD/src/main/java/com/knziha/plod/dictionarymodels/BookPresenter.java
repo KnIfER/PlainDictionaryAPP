@@ -967,7 +967,7 @@ function debug(e){console.log(e)};
 			}
 			if (getType()==PLAIN_TYPE_PDF) {
 				mWebView.getSettings().setMinimumFontSize(1);
-				mWebView.getSettings().setUseWideViewPort(true);
+				mWebView.getSettings().setTextZoom(100);
 			}
 		}
 		return mWebView;

@@ -7989,9 +7989,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.evaluateJavascript("document.body.style.paddingBottom='"+CMN.GlobalPagePadding+"'", null);
 			}
 			
-			if(invoker.getIsWebx())
+			if(invoker.getHasVidx())
 			{
-				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
+				invoker.bookImpl.onPageFinished(invoker, mWebView, url, true);
 			}
 			/* 优先级： #页面锚点， 页内搜索🔍， 记忆位置🧲 */
 			else if(mWebView.isloading){
@@ -11302,6 +11302,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	/* 自动播放声音自动播报 */
 	private void readEntry(WebViewmy mWebView) {
+		DictionaryAdapter.PLAIN_BOOK_TYPE typ = mWebView.presenter.getType();
+		if (typ==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF
+			|| typ==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT) {
+			return; // nothing to read
+		}
 		mWebView.bRequestedSoundPlayback=false;
 		weblist = mWebView.weblistHandler;
 		
