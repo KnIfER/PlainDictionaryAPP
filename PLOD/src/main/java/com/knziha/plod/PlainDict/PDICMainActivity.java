@@ -56,6 +56,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.DownloadListener;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -3624,15 +3625,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	/**function auto() {
 	 	var d=document, b=d.getElementById('submit');
 	 	if(b) {
-            b.style.width='100%'; b.style.height='100%';
+            //b.style.width='100%'; b.style.height='100%';
 	 		var rc = b.getBoundingClientRect();
 	 		app.knock2(sid.get(), d.documentElement.scrollLeft+rc.left+rc.width*2/3, d.documentElement.scrollTop+rc.top+rc.height/2);
           // setTimeout(()=>{ b.click()}, 123);
 	 	}
-	 console.log('auto!!!');
+	// console.log('fatal auto!!!');
 	 }
 	 //document.addEventListener('click', function(e){console.log(e.target); console.log(e);});
-	 setTimeout(function(){setInterval(auto, 64)}, 200)
+	 setTimeout(function(){setInterval(auto, 250)}, 64)
 	 */
 	@Metaline()
 	String autoUpdateScript = "";
@@ -3754,7 +3755,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							break;
 						case RETRYING:
 							CMN.Log("fail::", info.getState(), info.getException());
-							fileRn.run();
+							hdl.post(fileRn);
 							break;
 						case DOWNLOADING:
 							if(UpdateDebugger.logProgress) {
@@ -3872,7 +3873,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								resolve = UpdateDebugger.fakeShowWebview();
 								if(resolve) vg.setAlpha(0);
 								WebViewmy randomPage = wlh.getMergedFrame();
+								//randomPage.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 								randomPage.setWebViewClient(new WebViewClient() {
+									@Override
+									public boolean shouldOverrideUrlLoading(WebView view, String url) {
+										//CMN.debug("shouldOverrideUrlLoading::", view, url);
+										return false;
+									}
 									@Override
 									public void onPageFinished(WebView view, String url) {
 										view.evaluateJavascript(autoUpdateScript, null);

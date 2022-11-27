@@ -594,7 +594,7 @@ public class Drawer extends Fragment implements
 						btn.setText(btn.getText()+"……");
 					});
 					//a.mDrawerLayout.closeDrawer(GravityCompat.START);
-					String infoStr = getString(R.string.infoStr, BuildConfig.VERSION_NAME+(BuildConfig.isDebug?"工程调试版":""));
+					String infoStr = getString(R.string.infoStr, BuildConfig.VERSION_NAME+(BuildConfig.DEBUG?"工程调试版":""));
 					if (mdict.error_input!=null) {
 						infoStr += "\n出错信息：" + mdict.error_input;
 					}

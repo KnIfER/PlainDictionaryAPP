@@ -93,7 +93,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 							break;
 						case "debug":
 							init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null, p)
-									.setVisible(BuildConfig.isDebug);
+									.setVisible(BuildConfig.DEBUG);
 							break;
 						case "neo1":
 							init_switch_preference(this, "neo1", PDICMainAppOptions.entryInNewWindowSingle(), null, null, p);

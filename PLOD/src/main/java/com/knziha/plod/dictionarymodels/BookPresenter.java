@@ -1743,8 +1743,8 @@ function debug(e){console.log(e)};
 				if(mWebView.weblistHandler == a.weblistHandler && a.newTitlebar.isActived) {
 					a.newTitlebar.setTitlebar(mWebView);
 				}
+				//mWebView.titleBar.setAccessibilityPaneTitle(mWebView.toolbar_title.getText());
 			}
-			mWebView.titleBar.setAccessibilityPaneTitle(mWebView.toolbar_title.getText());
 		}
 		mWebView.word = word;
 	}
@@ -3644,33 +3644,29 @@ function debug(e){console.log(e)};
 //					@Override
 //					public void run() {
 					long time = CMN.now();
-					float lastX = (float) (x*wv.webScale - wv.getScrollX() + Math.random()*20);
-					float lastY = (float) (y*wv.webScale - wv.getScrollY() + Math.random()*15);
-					lastX+=20;
-					lastY+=35;
+					float lastX = (float) (x*wv.webScale - wv.getScrollX() + Math.random()*10);
+					float lastY = (float) (y*wv.webScale - wv.getScrollY() + Math.random()*7);
+					lastX+=1;
+					lastY+=2;
 					CMN.debug("knock2", wv.webScale, x, y, lastX, lastY);
 					MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
-					
-					evt.setAction(MotionEvent.ACTION_DOWN);
 					view.dispatchTouchEvent(evt);
+					evt.recycle();
 			
-			time+=200;
-			
-			float finalLastX = (float) (lastX+Math.random()*20);
-			float finalLastY = (float) (lastY+Math.random()*15);
+			float finalLastX = (float) (lastX+Math.random()*10);
+			float finalLastY = (float) (lastY+Math.random()*7);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
 					long time1 = CMN.now();
-					MotionEvent evt1 = MotionEvent.obtain(time, time1-10, MotionEvent.ACTION_DOWN, finalLastX-10, finalLastY, 0);
+//					MotionEvent evt1 = MotionEvent.obtain(time, time1-10, MotionEvent.ACTION_DOWN, finalLastX-10, finalLastY, 0);
+//
+//					evt1.setAction(MotionEvent.ACTION_MOVE);
+//					view.dispatchTouchEvent(evt1);
 					
-					evt1.setAction(MotionEvent.ACTION_MOVE);
-					view.dispatchTouchEvent(evt1);
-					
-					MotionEvent evt2 = MotionEvent.obtain(time, time1, MotionEvent.ACTION_DOWN, finalLastX, finalLastY, 0);
-					
-					evt2.setAction(MotionEvent.ACTION_UP);
+					MotionEvent evt2 = MotionEvent.obtain(time, time1, MotionEvent.ACTION_UP, finalLastX, finalLastY, 0);
 					view.dispatchTouchEvent(evt2);
+					evt2.recycle();
 //					}
 //				}, (long) (299+Math.random()*99));
 		}

@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.HashMap;
 
 public class VersionUtils {
-	public static final boolean AnnotOff = true && !BuildConfig.isDebug;
+	public static final boolean AnnotOff = true && !BuildConfig.DEBUG;
 	public static final int UpgradeCode = 1024;
 	
 	public static void checkVersion(PDICMainAppOptions opt) {

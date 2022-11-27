@@ -270,7 +270,7 @@ public class CMN{
 	}
 	
 	public static String debug(Object...o) {
-		if (BuildConfig.isDebug) return Log(o);
+		if (BuildConfig.DEBUG) return Log(o);
 		return null;
 	}
 	

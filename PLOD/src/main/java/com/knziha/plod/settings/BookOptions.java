@@ -413,7 +413,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 							a.showT("已重新加载"+cc+"本词典");
 						}
 					};
-					if (a.opt.getIgnoreReloadWarning() || BuildConfig.isDebug) {
+					if (a.opt.getIgnoreReloadWarning() || BuildConfig.DEBUG) {
 						optprc.processOptionChanged(null, null, 1, 0);
 					} else {
 						final String[] DictOpt = new String[]{"重启前不再提示", "重新加载视图"};

@@ -47,7 +47,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 			}
 		}
 		_treeBuilder.clear();
-		if (BuildConfig.isDebug) {
+		if (BuildConfig.DEBUG) {
 			CMN.stst = CMN.now();
 		}
 	}
