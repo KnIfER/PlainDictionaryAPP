@@ -516,6 +516,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				etSearch.setText("");
 				a.imm.showSoftInput(etSearch, 0);
 			} break;
+			case R.id.etEnter:{
+				new WordCamera(a).show();
+			} break;
 			case R.id.etPaste:{
 				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
 				if(cm!=null) {

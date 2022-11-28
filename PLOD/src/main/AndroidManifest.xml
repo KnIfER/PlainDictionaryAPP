@@ -56,25 +56,25 @@
 			android:launchMode="standard"
 			android:theme="@style/AppTheme"
 			>
-<!--			<intent-filter>-->
-<!--				<action android:name="android.intent.action.MAIN"/>-->
-<!--				<category android:name="android.intent.category.LAUNCHER"/>-->
-<!--			</intent-filter>-->
-		</activity>
-
-		<activity
-			android:name="com.knziha.plod.tesseraction.QRActivity"
-			android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|locale|layoutDirection"
-			android:hardwareAccelerated="true"
-			android:launchMode="standard"
-			android:theme="@style/AppTheme"
-			android:exported="true"
-			>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
+
+<!--		<activity-->
+<!--			android:name="com.knziha.plod.tesseraction.QRActivity"-->
+<!--			android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|locale|layoutDirection"-->
+<!--			android:hardwareAccelerated="true"-->
+<!--			android:launchMode="standard"-->
+<!--			android:theme="@style/AppTheme"-->
+<!--			android:exported="true"-->
+<!--			>-->
+<!--			<intent-filter>-->
+<!--				<action android:name="android.intent.action.MAIN"/>-->
+<!--				<category android:name="android.intent.category.LAUNCHER"/>-->
+<!--			</intent-filter>-->
+<!--		</activity>-->
 
 		<activity android:name=".CuteFileManager"
 			android:configChanges="keyboardHidden|orientation|screenSize"
