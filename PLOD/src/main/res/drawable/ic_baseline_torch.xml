@@ -1,0 +1,4 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:drawable="@drawable/ic_baseline_torch_light" />
+	<item android:drawable="@drawable/ic_baseline_torch_handle" />
+</layer-list>

@@ -548,6 +548,14 @@
 		<item name="android:windowSoftInputMode">adjustResize</item>
 	</style>
 
+	<style name="QRActionBarItem">
+		<item name="android:layout_height">55dp</item>
+		<item name="android:layout_width">50dp</item>
+		<item name="android:background">?android:attr/actionBarItemBackground</item>
+		<item name="android:padding">5dp</item>
+		<item name="android:layout_margin">8dp</item>
+	</style>
+
 </resources>
 
 

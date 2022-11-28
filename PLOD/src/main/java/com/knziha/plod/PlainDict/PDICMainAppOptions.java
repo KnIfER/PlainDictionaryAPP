@@ -146,6 +146,26 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public boolean auto_seach_on_switch=true;
 	protected boolean bShouldUseExternalBrowserApp=true;
 	
+	public boolean getQRFrameDrawLaser() {
+		return true;
+	}
+	
+	public boolean getQRFrameDrawLocations() {
+		return true;
+	}
+	
+	public boolean getOneShotAndReturn() {
+		return false;
+	}
+	
+	public boolean getSensorAutoFocus() {
+		return true;
+	}
+	
+	public boolean getLoopAutoFocus() {
+		return true;
+	}
+	
 	public static class NightModeConfig{
 		public int InvertFilter;
 		public int PageColor;
