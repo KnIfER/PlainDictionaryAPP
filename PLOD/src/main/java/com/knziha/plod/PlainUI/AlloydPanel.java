@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -17,7 +16,6 @@ import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -26,9 +24,9 @@ import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
-import java.util.ArrayList;
 import java.util.List;
 
+ /** 用于弹出显示词典内容（新窗口） */
 public class AlloydPanel extends PlainAppPanel {
 	public final WebViewListHandler handler;
 	public Toolbar toolbar;

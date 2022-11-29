@@ -28,6 +28,7 @@ import com.knziha.plod.tesseraction.Manager;
 import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 
+/** 相机取词 */
 public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	
 	QuCiQiBinding UIData;

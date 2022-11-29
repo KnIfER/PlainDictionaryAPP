@@ -4320,7 +4320,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				iv_switch.setColorFilter(mResource.getColor(val?R.color.colorAccent:R.color.ThinAccent), PorterDuff.Mode.SRC_IN);
 			}
 			if(twoColumnAda!=null) {
-				twoColumnAda.putImage(val||!bFromWebView?2:-1, R.drawable.voice_ic_big);
+				twoColumnAda.putImage(val||bFromTextView?2:-1, R.drawable.voice_ic_big);
 				twoColumnAda.setItems(shareHelper.getPageItems(this));
 			}
 		}
@@ -4970,7 +4970,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (!hasText()) return 8;
 						if (shareHelper.page > 1) return 4;
 						if (lstPos == 0) return 8;
-						if (shareHelper.page==1||!bFromWebView) {
+						if (shareHelper.page==1||bFromTextView) {
 							if (lstPos==2) return 1;
 							if (lstPos==3) return 3;
 						}
@@ -4996,7 +4996,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			//twoColumnAda.page = toText?1:0;
 			if (hasText()) {
-				twoColumnAda.putImage(shareHelper.page==1||!bFromWebView?2:-1, R.drawable.voice_ic_big);
+				twoColumnAda.putImage(shareHelper.page==1||bFromTextView?2:-1, R.drawable.voice_ic_big);
 				twoColumnAda.setItems(shareHelper.getPageItems(this));
 			} else {
 				twoColumnAda.putImage(-1, 0);

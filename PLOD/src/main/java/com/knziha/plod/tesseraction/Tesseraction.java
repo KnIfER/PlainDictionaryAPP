@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+ /** 桥阶层，反射调用插件代码 */
 public class Tesseraction {
 	private Object plugin;
 	private Context pluginContext;
