@@ -5,6 +5,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
 public class PlainDialog extends Dialog {
@@ -21,7 +22,9 @@ public class PlainDialog extends Dialog {
 	@Override
 	public void onBackPressed() {
 		if (mBackPrevention==null || !mBackPrevention.onBackPressed()) {
+			CMN.debug("super.onBackPressed");
 			super.onBackPressed();
 		}
 	}
+	
 }

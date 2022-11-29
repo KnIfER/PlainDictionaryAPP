@@ -237,13 +237,22 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	
 	@Override
 	public boolean onBackPressed() {
+		CMN.debug("a.settingsPanels.indexOf(this)::");
 		if (a.settingsPanel != this) {
-			int idx = a.settingsPanels.indexOf(this);
+			int idx = a.settingsPanels.indexOf(this);;
 			if (idx < a.settingsPanels.size()-1) {
 				a.onBackPressed();
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	public void onResume() {
+	
+	}
+	
+	public void onPause() {
+	
 	}
 }

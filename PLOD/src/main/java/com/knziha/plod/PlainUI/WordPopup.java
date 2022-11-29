@@ -202,11 +202,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		refresh();
 	}
 	
-	@Override
-	public void dismiss() {
-		super.dismiss();
-	}
-	
 	@SuppressLint("ResourceType")
 	@Override
 	// click

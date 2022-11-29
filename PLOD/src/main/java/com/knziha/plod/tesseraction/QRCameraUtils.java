@@ -21,6 +21,8 @@ import android.hardware.Camera;
 
 import com.knziha.plod.plaindict.CMN;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -226,6 +228,19 @@ public final class QRCameraUtils {
 		//else { CMN.Log( "Negative effect already set"); }
 	}
 
+	
+	public static List<Camera.Size> allPreviewSizeValue(Camera.Parameters parameters) {
+		List<Camera.Size> rawSupportedSizes = parameters.getSupportedPreviewSizes();
+		if (rawSupportedSizes != null) {
+			// Sort by size, descending
+			List<Camera.Size> supportedPreviewSizes = new ArrayList<>(rawSupportedSizes);
+			Collections.sort(supportedPreviewSizes, (a, b) -> Integer.compare(b.height * b.width, a.height * a.width));
+			return supportedPreviewSizes;
+		}
+		return new ArrayList<>();
+	}
+
+	
 	public static void findBestPreviewSizeValue(Camera.Parameters parameters, Point cameraResolution, Point screenResolution) {
 		List<Camera.Size> rawSupportedSizes = parameters.getSupportedPreviewSizes();
 		if (rawSupportedSizes == null) {

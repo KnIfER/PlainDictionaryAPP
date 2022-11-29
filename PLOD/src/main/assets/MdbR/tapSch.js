@@ -76,7 +76,7 @@
 				if(!p && e.composedPath) p=e.composedPath();
 				if(p) for(var i=0,t,n;(t=p[i])&&i++<5;) {
 					n=t.tagName;
-					if(n==='A'||n==='BUTTON') {tar=0;break;}
+					if(n==='A'&&n.href||n==='BUTTON') {tar=0;break;}
 					else if(n==='TEXTAREA'||n==='INPUT') if(!t.readOnly) {tar=0;break;}
 				}
 				// merge _NWP & _YWPC

@@ -6,7 +6,6 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,15 +35,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 
+import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.databinding.ActivityQrBinding;
+import com.knziha.plod.plaindict.databinding.QuCiQiBinding;
+import com.knziha.plod.widgets.ViewUtils;
+
 import static com.knziha.plod.tesseraction.DecodeManager.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 
 /** Main Menu :   <br>
  * QR Scanner <br>
@@ -57,7 +60,6 @@ import java.io.InputStream;
 public class Manager implements View.OnClickListener {
 	private final static String[] permissions = new String[]{Manifest.permission.CAMERA};
 	
-	Context context;
 	Activity activity;
 	public DisplayMetrics dm;
 	
@@ -65,20 +67,22 @@ public class Manager implements View.OnClickListener {
 	public boolean isPortrait=true;
 	public int screenRotation;
 	public boolean suspensed = true;
-	ActivityQrBinding UIData;
-	QRCameraManager cameraManager;
+	QuCiQiBinding UIData;
+	public QRCameraManager cameraManager;
 	public QRActivityHandler handler;
 	
 	public View root;
 	
 	RectF framingRect=new RectF();
 	
-	final DecodeManager dMan;
+	public final DecodeManager dMan;
 	int lastType=-1;
+	boolean lastRealTime=false;
 	private DecodeThread handlerThread;
 	private boolean requestedResetHints;
 	
-	private int lastRequestCode;
+	public int permissionCode;
+	public int openCode;
 	boolean viewingImg;
 	
 	public Manager(PDICMainAppOptions opt) {
@@ -97,26 +101,24 @@ public class Manager implements View.OnClickListener {
 		dMan.setScrOrient(screenRotation, isPortrait);
 	}
 	
-	/** @param context the plugin context
+	/** @param activity the host activity
 	 * @param parentView if null, then activity must not be null and setContentView will be called.
 	 *                      otherwise the manager views will be inflated to it. */
-	public void init(Context context, Activity activity, ViewGroup parentView) {
-		this.context = context;
+	public void init(Activity activity, ViewGroup parentView, QuCiQiBinding UIData) {
 		this.activity = activity;
 		if(UIData==null) {
 			if(parentView==null) {
-				UIData = DataBindingUtil.setContentView(activity, R.layout.activity_qr);
+				UIData = DataBindingUtil.setContentView(activity, R.layout.qu_ci_qi);
 			} else {
-				UIData = ActivityQrBinding.inflate(LayoutInflater.from(context), parentView, true);
+				UIData = QuCiQiBinding.inflate(LayoutInflater.from(activity), parentView, true);
 			}
-			postInit();
 		}
-	}
-	
-	private void postInit() {
-		dm = context.getResources().getDisplayMetrics();
+		this.UIData = UIData;
+		//postInit();
+		
+		dm = opt.dm;
 		root = UIData.getRoot();
-		readScreenOrientation(getContext(), false);
+		readScreenOrientation(activity, false);
 		
 		UIData.frameView.setViewDelegation(UIData.photoView);
 		
@@ -125,63 +127,24 @@ public class Manager implements View.OnClickListener {
 		
 		setOnClickListenersOneDepth(UIData.toolbarContent, this, 1);
 		setOnClickListenersOneDepth(UIData.toast, this, 1);
-		setOnClickListenersOneDepth(UIData.navHorBtns, this, 1);
+		setOnClickListenersOneDepth(UIData.fltTools, this, 999);
 		UIData.frameView.setOnClickListener(this);
 	}
 	
-	AlertDialog MainMenuDlg;
+	private void postInit() {
+	}
 	
-	public void showMainMenu(Activity activity, int requestCode) {
-		if(MainMenuDlg==null) {
-			MainMenuDlg = new AlertDialog.Builder(context)
-				.setSingleChoiceItems(new CharSequence[]{
-						 "文本识别"
-						, "文本识别（实时模式）"
-						, "文本识别（管理模型）"
-						,"二维码"
-						, "二维码（实时模式）"
-						, "二维码与其他条码"
-				}, -1, (dialog, which) -> {
-					switch (which) {
-						case 0:
-							tryOpenCamera(0, activity, requestCode);
-						break;
-						case 1:
-							tryOpenCamera(0|(0x1<<8), activity, requestCode);
-						break;
-						case 2:
-						break;
-						case 3:
-							tryOpenCamera(1, activity, requestCode);
-						break;
-						case 4:
-							tryOpenCamera(1|(0x1<<8), activity, requestCode);
-						break;
-						case 5:
-							tryOpenCamera(1, activity, requestCode);
-						break;
-					}
-					MainMenuDlg.dismiss();
-				})
-				.setTitle("主菜单")
-				.setCancelable(true)
-				.setNegativeButton("退出", (dialog, which) -> dialog.cancel())
-				.show();
-			MainMenuDlg.getWindow().setBackgroundDrawableResource(R.drawable.menu_backgroud);
-			MainMenuDlg.setOnDismissListener(dialog -> {
-				tada(UIData.title);
-				resumeCamera();
-			});
+	public void showMainMenu(Activity a, int requestCode) {
+		permissionCode = requestCode;
+		if (mWordCamera != null) {
+			mWordCamera.onClick(UIData.title);
 		}
-		else MainMenuDlg.show();
-		pauseCamera();
-		//MainMenuDlg.setCanceledOnTouchOutside(false);
 	}
 	
 	public boolean onBack() {
 		if(viewingImg && lastType!=-1) {
 			viewingImg = false;
-			tryOpenCamera(lastType, activity, lastRequestCode);
+			tryOpenCamera(lastType, lastRealTime, activity, permissionCode);
 			return true;
 		}
 		return false;
@@ -210,11 +173,11 @@ public class Manager implements View.OnClickListener {
 	
 	public void resetBtns() {
 		int decodeType = dMan.decodeType;
-		setVisible(UIData.cropBtn, true);
-		setVisible(UIData.playBtn, viewingImg);
-		setVisible(UIData.cameraBtn, !viewingImg);
-		setVisible(UIData.rectsBtn, decodeType==0 && (viewingImg||cameraManager.realtime));
-		setVisible(UIData.laserBtn, decodeType==1 && !viewingImg && cameraManager.realtime);
+//		setVisible(UIData.cropBtn, true);
+//		setVisible(UIData.playBtn, viewingImg);
+//		setVisible(UIData.cameraBtn, !viewingImg);
+//		setVisible(UIData.rectsBtn, decodeType==0 && (viewingImg||cameraManager.realtime));
+//		setVisible(UIData.laserBtn, decodeType==1 && !viewingImg && cameraManager.realtime);
 	}
 	
 	public void refreshUI() {
@@ -225,11 +188,8 @@ public class Manager implements View.OnClickListener {
 		}
 		int decodeType = dMan.decodeType;
 		int realTime_QROCR = Math.max(0, decodeType) | ((cameraManager.realtime?1:0)<<1);
-		if(UIStates[1]!=realTime_QROCR) {
-			UIData.title.setText(decodeType==0?"OCR":"|||| ||||");
-			UIData.toast.setVisibility(cameraManager.realtime?View.VISIBLE:View.GONE);
-			UIStates[1]=realTime_QROCR;
-			
+		if (ViewUtils.checkSetVersion(UIStates, 1, realTime_QROCR)) {
+			UIData.title.setText(decodeType==0?"文本识别":"条码识别");
 		}
 		int ui_pr=decodeType<<1|(cameraManager.realtime?1:0);
 		UIData.frameView.preset(ui_pr);
@@ -240,22 +200,27 @@ public class Manager implements View.OnClickListener {
 	}
 	
 	
+	// click
 	@SuppressLint("NonConstantResourceId")
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()) {
+		final int id = v.getId();
+		switch (id) {
 //			case R.id.tv1:{
 ////					ui_camera_btn_vis(2);
 ////					opt.setRememberedLaunchCamera(true);
 //				resumeCamera();
 //				refreshUI();
 //			} break;
+			default:{
+				if (mWordCamera != null) mWordCamera.onClick(v);
+			} break;
 			case R.id.folder: {
 				if(activity!=null) {
 					Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 					intent.setType("image/*");
 					try {
-						activity.startActivityForResult(intent, 3);
+						activity.startActivityForResult(intent, openCode);
 					} catch (Exception e) {
 						CMN.Log(e);
 						Toast.makeText(activity, "打开失败", Toast.LENGTH_SHORT).show();
@@ -264,6 +229,7 @@ public class Manager implements View.OnClickListener {
 			} break;
 			case R.id.frame_view: {
 				CMN.Log("click!!!", UIData.frameView.lastX, UIData.frameView.lastY);
+				cameraManager.autoFocus();
 //				new Thread(new Runnable() {
 //					@Override
 //					public void run() {
@@ -303,26 +269,30 @@ public class Manager implements View.OnClickListener {
 						cameraManager.camera.enableShutterSound(false);
 					}
 				} catch (Exception ignored) { }
-				cameraManager.camera.takePicture(new Camera.ShutterCallback() {
-					@Override
-					public void onShutter() {
-						suspensed = true;
-					}
-				}, null, null, new Camera.PictureCallback() {
-					@Override
-					public void onPictureTaken(byte[] data, Camera camera) {
-						Bitmap bm = BitmapFactory.decodeStream(new ByteArrayInputStream(data));
-						int bw=bm.getWidth(),bh=bm.getHeight();
-						if(bw>0 && bh>0) {
-							if(bw>bh ^ sWidth>sHeight) {
-								Matrix matrix = new Matrix();
-								matrix.postRotate(90);
-								bm = Bitmap.createBitmap(bm, 0, 0, bw, bh, matrix, true);
-							}
+				try {
+					cameraManager.camera.takePicture(new Camera.ShutterCallback() {
+						@Override
+						public void onShutter() {
+							suspensed = true;
 						}
-						setImage(bm, true);
-					}
-				});
+					}, null, null, new Camera.PictureCallback() {
+						@Override
+						public void onPictureTaken(byte[] data, Camera camera) {
+							Bitmap bm = BitmapFactory.decodeStream(new ByteArrayInputStream(data));
+							int bw=bm.getWidth(),bh=bm.getHeight();
+							if(bw>0 && bh>0) {
+								if(bw>bh ^ sWidth>sHeight) {
+									Matrix matrix = new Matrix();
+									matrix.postRotate(90);
+									bm = Bitmap.createBitmap(bm, 0, 0, bw, bh, matrix, true);
+								}
+							}
+							setImage(bm, true);
+						}
+					});
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			} break;
 			case R.id.playBtn:{
 				decode();
@@ -339,9 +309,6 @@ public class Manager implements View.OnClickListener {
 					cameraManager.decorateCameraSettings();
 					refreshUI();
 				}
-			} break;
-			case R.id.title: {
-				showMainMenu(null, lastRequestCode);
 			} break;
 //			case R.id.tools:{
 //				pauseCamera();
@@ -401,7 +368,7 @@ public class Manager implements View.OnClickListener {
 	}
 	
 	public boolean checkPermission(Activity activity, int requestCode) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context.checkPermission(Manifest.permission.CAMERA, Process.myPid(), Process.myUid()) != PackageManager.PERMISSION_GRANTED) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && activity.checkPermission(Manifest.permission.CAMERA, Process.myPid(), Process.myUid()) != PackageManager.PERMISSION_GRANTED) {
 			activity.requestPermissions(permissions, requestCode);
 			return false;
 		}
@@ -410,13 +377,14 @@ public class Manager implements View.OnClickListener {
 	
 	/** try with camera permission.
 	 * @param decodeType  see {@link DecodeManager#decodeType} */
-	public void tryOpenCamera(int decodeType, Activity activity, int requestCode) {
+	public void tryOpenCamera(int decodeType, boolean realTime, Activity activity, int requestCode) {
+		CMN.debug("tryOpenCamera", decodeType, activity, requestCode);
 		lastType = decodeType;
 		dMan.decodeType = decodeType & 0xF;
-		this.lastRequestCode = requestCode;
-		boolean rl=cameraManager.realtime=((decodeType>>8)&1)!=0;
+		this.permissionCode = requestCode;
+		cameraManager.realtime = lastRealTime = realTime;
 		UIData.frameView.textRects =null;
-		if(!viewingImg ||rl) {
+		if(!viewingImg || realTime) {
 			if(activity==null) activity=this.activity;
 			if(activity==null) {
 				openCamera();
@@ -425,8 +393,12 @@ public class Manager implements View.OnClickListener {
 					openCamera();
 				}
 			}
-			if(rl) {
-				startPreview();
+			if(realTime) {
+				try {
+					startPreview(null);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			}
 			if(viewingImg) {
 				UIData.imageView.setVisibility(View.GONE);
@@ -448,19 +420,19 @@ public class Manager implements View.OnClickListener {
 			// The prefs can't change while the thread is running, so pick them up once here.
 			//dMan.tess.resetZxingArgs();
 			if (UIData.previewView.isAvailable()) {
-				startPreview();
+				startPreview(null);
 			} else {
 				UIData.previewView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
 					@Override
 					public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
-						startPreview();
+						startPreview(surface);
 					}
 					@Override
 					public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {
 					}
 					@Override
 					public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
-						CMN.Log("onSurfaceTextureDestroyed");
+						CMN.debug("onSurfaceTextureDestroyed");
 						return false;
 					}
 					@Override
@@ -498,7 +470,7 @@ public class Manager implements View.OnClickListener {
 					cameraManager.close();
 				}
 			}
-			startPreview();
+			startPreview(null);
 			UIData.frameView.resume();
 		}
 	}
@@ -506,7 +478,9 @@ public class Manager implements View.OnClickListener {
 	public void pauseCamera() {
 		//if(surfaceView!=null)
 		{
-			cameraManager.pause();
+			if (cameraManager != null) {
+				cameraManager.pause();
+			}
 			if(handler!=null) {
 				handler.pause();
 			}
@@ -559,7 +533,7 @@ public class Manager implements View.OnClickListener {
 		UIData.toastTv.setTextSize(PostResultDisplay.length()>25?14:17);
 		UIData.toastTv.setText(PostResultDisplay);
 		if(tada==null) {
-			tada=tada(UIData.fltTools);
+			tada=tada(UIData.cameraBtn);
 		}
 		//tada.pause();
 		//tada.setCurrentPlayTime(0);
@@ -569,18 +543,18 @@ public class Manager implements View.OnClickListener {
 		}
 	};
 	
-	public void startPreview() {
+	public void startPreview(SurfaceTexture surface) {
 		if(!cameraManager.isOpen()) {
 			try {
 				cameraManager.open();
 			} catch (Exception e) {
-				CMN.Log(e);
-				//showError();
+				CMN.debug(e);
 			}
 		}
+		CMN.debug("startPreview::相机已经打开！", UIData.previewView.getSurfaceTexture());
 		if(cameraManager.isOpen()) {
 			//cameraManager.startPreview(null);
-			cameraManager.startPreview(UIData.previewView.getSurfaceTexture());
+			cameraManager.startPreview(surface!=null?surface:UIData.previewView.getSurfaceTexture());
 			if(handler != null) {
 				handler.ready();
 				cameraManager.requestPreviewFrame();
@@ -639,7 +613,7 @@ public class Manager implements View.OnClickListener {
 			params.gravity= Gravity.START|Gravity.TOP;
 			params.height=-1;
 			params.width=-1;
-			dm = context.getResources().getDisplayMetrics();
+			dm = opt.dm;
 			int w = dm.widthPixels;
 			int h = dm.heightPixels;
 			
@@ -765,10 +739,6 @@ public class Manager implements View.OnClickListener {
 		}
 	}
 	
-	public Context getContext() {
-		return context;
-	}
-	
 	public void onDestroy() {
 		//if(surfaceView!=null)
 		{
@@ -790,7 +760,7 @@ public class Manager implements View.OnClickListener {
 		try {
 			suspensed = true;
 			pauseCamera();
-			bitmap = decodeBitmap(context, data, -1, -1);
+			bitmap = decodeBitmap(activity, data, -1, -1);
 			//bitmap = decodeBitmap(context, data, DEFAULT_REQ_WIDTH, DEFAULT_REQ_HEIGHT);
 		} catch (Exception e) {
 			//CMN.Log(e);
@@ -808,8 +778,8 @@ public class Manager implements View.OnClickListener {
 		UIData.frameView.setOutsideTouchMode(1);
 		setRect(getFramingRect(true));
 		UIData.toast.setVisibility(View.VISIBLE);
-		UIData.cameraBtn.setVisibility(View.GONE);
-		UIData.playBtn.setVisibility(View.VISIBLE);
+//		UIData.cameraBtn.setVisibility(View.GONE);
+//		UIData.playBtn.setVisibility(View.VISIBLE);
 		viewingImg = true;
 	}
 	
@@ -844,7 +814,38 @@ public class Manager implements View.OnClickListener {
 		return ret;
 	}
 	
+	public boolean toggleRealTime() {
+		if (cameraManager != null) {
+			boolean val = cameraManager.realtime = !cameraManager.realtime;
+			//UIData.frameView.possibleResultPoints = null;
+			if (cameraManager.isPreviewing()) {
+				if (val) {
+					startPreview(null);
+				}
+				UIData.frameView.drawLocations = val;
+				UIData.frameView.textRects = null;
+				UIData.frameView.postInvalidate();
+			}
+			return val;
+		}
+		return false;
+	}
 	
+	public final boolean isRealTime() {
+		return cameraManager!=null && cameraManager.realtime;
+	}
+	
+	public interface OnSetViewRect{
+		boolean onSetViewRect(RectF rect);
+	}
+	
+	OnSetViewRect mOnSetViewRect;
+	public WordCamera mWordCamera;
+	
+	public void setWordCamera(WordCamera wordCamera) {
+		this.mOnSetViewRect = wordCamera;
+		this.mWordCamera = wordCamera;
+	}
 	
 	/** Calculates the framing rect which the UI should draw to show the user
 	 * where to place the barcode. This target helps with alignment as well as
@@ -853,13 +854,13 @@ public class Manager implements View.OnClickListener {
 	 *
 	 * @return The rectangle to draw on screen in window coordinates. */
 	public synchronized RectF getFramingRect(boolean recalculate) {
-		if (recalculate) {
+		if (recalculate && (mOnSetViewRect==null || !mOnSetViewRect.onSetViewRect(framingRect))) {
 			int width = (int) (Math.min(dm.widthPixels, dm.heightPixels)*0.7);
 			int height = (int) (Math.min(dm.widthPixels, dm.heightPixels)*0.7);
 			int leftOffset = (dm.widthPixels - width) / 2;
 			int topOffset = (dm.heightPixels - height) / ((isPortrait)?3:2);
 			framingRect.set(leftOffset, topOffset, leftOffset + width, topOffset + height);
-			//CMN.Log("Calculated framing rect: " + framingRect);
+			CMN.debug("Calculated framing rect: " + framingRect);
 		}
 		return framingRect;
 	}
@@ -884,9 +885,15 @@ public class Manager implements View.OnClickListener {
 		//CMN.Log("Calculated manual framing rect: " + framingRect);
 	}
 	
-	public void stopTessRealTimeDecoding() {
-		CMN.Log("中断解析……");
-		CMN.Log("中断解析成功");
+	public void stopTessRealTimeDecoding() throws Exception {
+		//CMN.debug("中断解析……");
+		dMan.tess.stop();
+		//CMN.debug("中断解析成功");
+	}
+	
+	public void setRequestCode(int permissionCode, int openCode) {
+		this.permissionCode = permissionCode;
+		this.openCode = openCode;
 	}
 }
 

@@ -163,7 +163,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public boolean getLoopAutoFocus() {
-		return true;
+		return false;
 	}
 	
 	public static class NightModeConfig{
@@ -2828,6 +2828,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=31) public static boolean debugPDFFont() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=31) public static void debugPDFFont(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=32) public static boolean wordCameraRealtime() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static void wordCameraRealtime(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=33) public static boolean wordCameraAutoSch() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static void wordCameraAutoSch(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
 	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}

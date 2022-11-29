@@ -182,6 +182,7 @@ import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.SettingsSearcher;
 import com.knziha.plod.PlainUI.ShareHelper;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.PlainUI.JsonNames;
 import com.knziha.plod.db.LexicalDBHelper;
@@ -3363,6 +3364,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void onResume() {
 		super.onResume();
 		foreground|=(1<<thisActType.ordinal());
+		for (int i = 0; i < settingsPanels.size(); i++) {
+			settingsPanels.get(i).onResume();
+		}
 	}
 
 	@Override
@@ -3382,6 +3386,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(systemIntialized && currentDictionary!=null)
 			currentDictionary.checkFlag(this);
 		ViewUtils.sNestScrollHelper.setCurrentView(null);
+		for (int i = 0; i < settingsPanels.size(); i++) {
+			settingsPanels.get(i).onPause();
+		}
 	}
 
 	@Override
@@ -9618,7 +9625,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			hideTTS();
 		}
 	}
-
+	
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if(requestCode==10) {
+			boolean hasPermission=false;
+			for (int i=0; i<grantResults.length; i++) {
+				if(grantResults[i]==0) {
+					hasPermission=true;
+					break;
+				}
+			}
+			if(hasPermission) {
+				try {
+					if (settingsPanel instanceof WordCamera) {
+						((WordCamera) settingsPanel).mManager.openCamera();
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
+		}
+	}
+	
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		//CMN.debug("onActivityResult::", requestCode, resultCode);
@@ -9626,6 +9657,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		switch (requestCode) {
 			case 0: {
 				isBrowsingImgs = false;
+			} break;
+			case 10: {
+				if(resultCode==Activity.RESULT_OK && data!=null) {
+					try {
+						if (settingsPanel instanceof WordCamera) {
+							((WordCamera) settingsPanel).mManager.openImage(data.getData());
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
 			} break;
 			case TapTranslator.requestCode:{
 				wordPopup.set(resultCode==requestCode);

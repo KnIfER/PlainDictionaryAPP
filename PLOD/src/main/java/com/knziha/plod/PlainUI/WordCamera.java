@@ -2,28 +2,45 @@ package com.knziha.plod.PlainUI;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.databinding.ActivityQrBinding;
-import com.knziha.plod.tesseraction.QRActivity;
+import com.knziha.plod.plaindict.databinding.QuCiQiBinding;
+import com.knziha.plod.tesseraction.Manager;
+import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 
-public class WordCamera extends PlainAppPanel {
-	ActivityQrBinding UIData;
+public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
+	
+	QuCiQiBinding UIData;
+	public final Manager mManager;
 	public WordCamera(MainActivityUIBase a) {
 		super(a, false);
 		this.a = a;
 		bAnimate=false;
 		bAutoRefresh=false;
-		showType=1;
+		showType=2;
 		bottomPadding=0;
 		resizeDlg = true;
+		mManager = new Manager(opt);
 	}
 	
 	public void show() {
@@ -36,11 +53,187 @@ public class WordCamera extends PlainAppPanel {
 	
 	@Override
 	public void init(Context context, ViewGroup root) {
-		if (settingsLayout == null && a!=null) {
-			settingsLayout = (ViewGroup) LayoutInflater.from(context).inflate(R.layout.word_camera, a.root, false);
+		if (UIData == null && a!=null) {
+			UIData = QuCiQiBinding.inflate(LayoutInflater.from(context), a.root, false);
+			settingsLayout = (ViewGroup) UIData.getRoot();
+			
+			int type = 1;//mManager.opt.getLaunchCameraType();
+			mManager.init(a, null, UIData);
+			mManager.setRequestCode(10, 11);
+			mManager.setWordCamera(this);
+			
+			if (PDICMainAppOptions.wordCameraRealtime()) {
+				mManager.toggleRealTime();
+				setViewChecked(UIData.realtime, true);
+			}
+			if (PDICMainAppOptions.wordCameraAutoSch()) {
+				setViewChecked(UIData.autoSch, true);
+			}
+			
+			mManager.tryOpenCamera(0, realtime(), a, mManager.permissionCode);
+			
+			//mManager.showMainMenu(a, 10);
+			
+//			try {
+//				mManager.dMan.getTess();
+//			} catch (Exception e) {
+//				CMN.debug(e);
+//			}
+			
+			updateOrientation();
 			
 		}
 	}
+	
+	private void setViewChecked(TextView v, boolean checked) {
+		if(checked ^ v.isActivated()) {
+			LayerDrawable ld;
+			v.setActivated(checked);
+			if (checked) {
+				ld = (LayerDrawable) v.getTag();
+				if (ld == null) {
+					Drawable d = a.mResource.getDrawable(R.drawable.frame_checked);
+					d.setAlpha(127);
+					v.setTag(ld = new LayerDrawable(new Drawable[]{d, v.getBackground()}));
+				}
+				v.setBackground(ld);
+			} else {
+				ld = (LayerDrawable) v.getTag();
+				v.setBackground(ld.getDrawable(1));
+			}
+			v.setTextColor(checked?Color.WHITE:0xff3B7DB1);
+		}
+	}
+	
+	private void updateOrientation() {
+//		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+//		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+	}
+	
+	@Override
+	protected void onShow() {
+	
+	}
+	
+	@Override
+	protected void onDismiss() {
+		super.onDismiss();
+		mManager.pauseCamera();
+	}
+	
+	public void onResume() {
+		mManager.resumeCamera();
+	}
+	
+	public void onPause() {
+		mManager.pauseCamera();
+	}
+	
+	public PopupMenuHelper popupMenu;
+	int[] mainMenus = new int[]{
+			R.string.ocr
+			, R.string.qr
+	};
+	
+	@SuppressLint("ResourceType")
+	@Override
+	// click
+	public void onClick(View v) {
+		int id = v.getId();
+		switch (id) {
+//			case R.string.qr: {
+//			} break;
+			case R.id.realtime: {
+				boolean val = mManager.toggleRealTime();
+				PDICMainAppOptions.wordCameraRealtime(val);
+				setViewChecked((TextView) v, val);
+			} break;
+			case R.id.autoSch: {
+				//setViewChecked(v, true);
+			} break;
+			case R.string.qr:
+			case R.string.ocr:
+			{
+				if (id == R.string.ocr) {
+					mManager.tryOpenCamera(0, realtime(), a, mManager.permissionCode);
+				}
+				if (id == R.string.qr) {
+					mManager.tryOpenCamera(1, realtime(), a, mManager.permissionCode);
+				}
+				//tryOpenCamera(1, activity, requestCode);
+				if (popupMenu != null) {
+					popupMenu.dismiss();
+				}
+			} break;
+			case R.id.title: {
+				boolean init = popupMenu==null;
+				if(init) {
+					popupMenu = new PopupMenuHelper(a, null, null);
+					ListView lv = new AlertController.RecycleListView(a);
+					popupMenu.lv.addView(lv);
+					View.AccessibilityDelegate acess = new View.AccessibilityDelegate() {
+						@Override
+						public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+							super.onPopulateAccessibilityEvent(host, event);
+						}
+					};
+					lv.setAdapter(new BaseAdapter() {
+						@Override
+						public int getCount() {
+							return 2;
+						}
+						@Override
+						public Object getItem(int position) {
+							return null;
+						}
+						@Override
+						public long getItemId(int position) {
+							return 0;
+						}
+						@Override
+						public View getView(int position, View convertView, ViewGroup parent) {
+							TextMenuView tv;
+							if (convertView == null) {
+								int padding = (int) (11 * GlobalOptions.density);
+								int padding1 = (int) (32.8 * GlobalOptions.density);
+								Context context = parent.getContext();
+								tv = new TextMenuView(context);
+								tv.setPadding(padding1, padding, padding1, padding);
+								tv.setGravity(Gravity.CENTER_VERTICAL);
+								tv.setSingleLine(true);
+								tv.setOnClickListener(WordCamera.this);
+								//tv.setOnLongClickListener(this);
+								tv.setBackground(ViewUtils.getThemeDrawable(context, R.attr.listChoiceBackgroundIndicator));
+								convertView = tv;
+								convertView.setAccessibilityDelegate(acess);
+							} else {
+								tv = (TextMenuView) convertView;
+							}
+							tv.setTextColor(GlobalOptions.isDark? Color.WHITE: Color.BLACK);
+							tv.setId(mainMenus[position]);
+							tv.setText(mainMenus[position]);
+							return convertView;
+						}
+					});
+					popupMenu.tag1 = lv;
+				}
+				mManager.pauseCamera();
+				popupMenu.dismiss();
+				popupMenu.showAt(UIData.title, 0, 0, Gravity.TOP);
+				popupMenu.sv.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE_1:null);
+				AlertController.RecycleListView lv = (AlertController.RecycleListView) popupMenu.tag1;
+				lv.getLayoutParams().width = opt.dm.widthPixels/2;
+				lv.getLayoutParams().height = opt.dm.heightPixels/2;
+				if(init) popupMenu.mPopupWindow.setOnDismissListener(() -> {
+					mManager.tada(UIData.title);
+					mManager.resumeCamera();
+				});
+			} break;
+		}
+	}
+	
 	
 	public void refresh() {
 //		if(weblistHandler != null)
@@ -76,23 +269,41 @@ public class WordCamera extends PlainAppPanel {
 	}
 	
 	@Override
-	protected void onShow() {
-		super.onShow();
+	public void resize() {
+		super.resize();
+		mManager.readScreenOrientation(a, true);
 	}
 	
 	@Override
-	public void dismiss() {
-		super.dismiss();
-	}
-	
-	@SuppressLint("ResourceType")
-	@Override
-	// click
-	public void onClick(View v) {
-		int id = v.getId();
-		switch (id) {
-			case R.id.cover: {
-			} break;
+	public boolean onSetViewRect(RectF rect) {
+		//rect.set(0,0,100,100);
+		DisplayMetrics dm = opt.dm;
+		if (mManager.isPortrait) {
+			int width = (int) (Math.min(dm.widthPixels, dm.heightPixels)*0.92);
+			int height = (int) (Math.min(dm.widthPixels, dm.heightPixels)*0.45);
+			int leftOffset = (dm.widthPixels - width) / 2;
+			int topOffset = (int) (dm.density * 90);
+			rect.set(leftOffset, topOffset, leftOffset + width, topOffset + height);
+		} else {
+			int width = (int) (Math.min(dm.widthPixels, dm.heightPixels)*0.7);
+			int height = (int) (Math.min(dm.widthPixels, dm.heightPixels)*0.7);
+			int leftOffset = (dm.widthPixels - width) / 2;
+			int topOffset = (dm.heightPixels - height) / 2;
+			rect.set(leftOffset, topOffset, leftOffset + width, topOffset + height);
 		}
+		CMN.debug("Calculated framing rect: " + rect);
+		return true;
+	}
+	
+	@Override
+	public boolean onBackPressed() {
+		if (mManager.onBack()) {
+			return true;
+		}
+		return super.onBackPressed();
+	}
+	
+	private boolean realtime() {
+		return mManager.isRealTime();
 	}
 }

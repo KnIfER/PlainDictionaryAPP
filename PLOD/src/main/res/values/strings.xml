@@ -265,4 +265,6 @@
 	<string name="tapSelOpt">点选设置</string>
 	<string name="sona">🔊</string>
 	<string name="wuxian_query">无限查词</string>
+	<string name="ocr">文本识别</string>
+	<string name="qr">二维码扫描</string>
 </resources>

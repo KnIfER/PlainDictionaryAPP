@@ -1,5 +1,6 @@
 package com.knziha.plod.tesseraction;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 
 public class Tesseraction {
 	private Object plugin;
+	private Context pluginContext;
 	public boolean inited;
 	
 	private static Method mOcrInit;
@@ -21,6 +23,7 @@ public class Tesseraction {
 	private static Method mRectangle;
 	private static Method mHOCRText;
 	private static Method mUTF8Text;
+	private static Method mStop;
 	
 	private static Method mQrBitmap;
 	private static Method mQrData;
@@ -35,11 +38,9 @@ public class Tesseraction {
 					| Context.CONTEXT_IGNORE_SECURITY
 					| Context.CONTEXT_RESTRICTED
 			);
-			CMN.debug("融合图文之心……", context.getPackageName());
-			PluginClazz = context.getClassLoader().loadClass("com.googlecode.tesseract.android.Tesseraction");
+			Class clazz = context.getClassLoader().loadClass("com.googlecode.tesseract.android.Tesseraction");
 			
-			Class clazz = PluginClazz;
-			mOcrInit = clazz.getMethod("initTessdata", String.class, String.class);
+			mOcrInit = clazz.getMethod("initTessdata", Context.class, Activity.class, String.class, String.class);
 			mOcrData = clazz.getMethod("setImage", byte[].class, int.class, int.class, int.class, int.class);
 			mOcrBitmap = clazz.getMethod("setImage", Bitmap.class);
 			
@@ -47,21 +48,26 @@ public class Tesseraction {
 			mRectangle = clazz.getMethod("setRectangle", int.class, int.class, int.class, int.class);
 			mHOCRText = clazz.getMethod("getHOCRText", int.class);
 			mUTF8Text = clazz.getMethod("getUTF8Text");
+			mStop = clazz.getMethod("stop");
 			
 			mQrBitmap = clazz.getMethod("decodeQrBitmap", Bitmap.class);
 			mQrData = clazz.getMethod("decodeQrData", byte[].class, int.class, int.class, int.class, int.class, int.class, int.class, boolean.class, boolean.class, boolean.class);
 			mQrReset = clazz.getMethod("resetQrDecoder");
+			
+			PluginClazz = clazz;
+			CMN.debug("融合图文之心成功……", context.getPackageName());
+			
+			pluginContext = context;
 		}
 		plugin = PluginClazz.getConstructors()[0].newInstance();
-		inited = true;
 	}
 	
-	public void initTessdata(String path, String languages) throws InvocationTargetException, IllegalAccessException {
-		mOcrInit.invoke(plugin, path, languages);
+	public void initTessdata(Activity activity, String path, String languages) throws InvocationTargetException, IllegalAccessException {
+		mOcrInit.invoke(plugin, pluginContext, activity, path, languages);
 	}
 	
 	public void setImage(byte[] data, int w, int h, int bpp, int bpl) throws InvocationTargetException, IllegalAccessException {
-		mOcrData.invoke(plugin, data, w, h, bpl, bpl);
+		mOcrData.invoke(plugin, data, w, h, bpp, bpl);
 	}
 	
 	public void setImage(Bitmap bitmap) throws InvocationTargetException, IllegalAccessException {
@@ -94,6 +100,10 @@ public class Tesseraction {
 	
 	public void resetQrDecoder() throws InvocationTargetException, IllegalAccessException {
 		mQrReset.invoke(plugin);
+	}
+	
+	public void stop() throws InvocationTargetException, IllegalAccessException {
+		mStop.invoke(plugin);
 	}
 	
 	public void resetZxingArgs() {

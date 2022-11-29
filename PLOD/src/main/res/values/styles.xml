@@ -556,6 +556,16 @@
 		<item name="android:layout_margin">8dp</item>
 	</style>
 
+	<style name="fye_dict_title">
+		<item name="android:textSize">22dp</item>
+		<item name="android:gravity">center</item>
+		<item name="android:textColor">#ffffff</item>
+		<item name="android:shadowColor">#9f000000</item>
+		<item name="android:shadowDx">3.5</item>
+		<item name="android:shadowDy">3.5</item>
+		<item name="android:shadowRadius">2</item>
+	</style>
+
 </resources>
 
 

@@ -46,7 +46,7 @@
 	<dimen name="idealdpdp">450dp</dimen>
 	<dimen name="barSize">54dp</dimen>
 
-	<dimen name="_65_">65dp</dimen>
+
 	<dimen name="_90_">90dp</dimen>
 	<dimen name="etSchPadSt">0dp</dimen>
 	<dimen name="etBotPadSt">-10dp</dimen>
@@ -54,4 +54,7 @@
 	<dimen name="_43_">43dp</dimen>
 	<dimen name="dragHeight">36dp</dimen>
 	<dimen name="popBtnWid">34dp</dimen>
+
+	<dimen name="_55_">55dp</dimen>
+	<dimen name="_65_">65dp</dimen>
 </resources>

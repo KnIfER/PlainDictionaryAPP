@@ -158,6 +158,7 @@ public class CropView extends View {
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
 		if(changed) {
+			CMN.debug("初始化布局");
 			viewFrame.right = getWidth();
 			viewFrame.bottom = getHeight();
 			//初始化四个边的坐标
@@ -229,21 +230,19 @@ public class CropView extends View {
 		}
 		
 		// 画词框
-		{
-			if(textRects !=null) {
-				if(!cropping) {
-					viewFrame.left = mView.getTranslationX();
-					viewFrame.top = mView.getTranslationY();
-				}
-				for (Rect rect : textRects) {
-					float scale = /*a.scale * */mView.getScaleY();
-					canvas.drawRect(
-							frame.left+rect.left*scale
-							,frame.top+rect.top*scale
-							,frame.left+rect.right*scale
-							,frame.top+rect.bottom*scale
-							, rectPaint);
-				}
+		if(drawLocations && textRects !=null) {
+			if(!cropping) {
+				viewFrame.left = mView.getTranslationX();
+				viewFrame.top = mView.getTranslationY();
+			}
+			for (Rect rect : textRects) {
+				float scale = /*a.scale * */mView.getScaleY();
+				canvas.drawRect(
+						frame.left+rect.left*scale
+						,frame.top+rect.top*scale
+						,frame.left+rect.right*scale
+						,frame.top+rect.bottom*scale
+						, rectPaint);
 			}
 		}
 		

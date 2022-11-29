@@ -53,7 +53,7 @@ public final class QRCameraManager implements SensorEventListener {
 	private boolean previewing;
 	
 	/** false=save battery power, take a static photo then recognize! */
-	public boolean realtime = true;
+	public boolean realtime = false;
 	
 	private int requestedCameraId = -1;
 	private int requestedFramingRectWidth;
@@ -89,7 +89,7 @@ public final class QRCameraManager implements SensorEventListener {
 	public QRCameraManager(Manager manager, View rootView) {
 		this.mManager=manager;
 		imageListener = new ImageListener(rootView);
-		sensorManager = (SensorManager) manager.getContext().getSystemService(Context.SENSOR_SERVICE);
+		sensorManager = (SensorManager) manager.activity.getSystemService(Context.SENSOR_SERVICE);
 		directionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		manager.getFramingRect(true);
 	}
@@ -159,7 +159,7 @@ public final class QRCameraManager implements SensorEventListener {
 	}
 	
 	private boolean getContinuousFocus() {
-		return true;
+		return false;
 	}
 	
 	private boolean getSensorAutoFocus() {
@@ -172,22 +172,26 @@ public final class QRCameraManager implements SensorEventListener {
 	
 	//todo opt
 	public void decorateCameraSettings() {
-		Camera decor_camera = camera;
-		if(decor_camera!=null) {
-			Camera.Parameters params = parameters;
-			if(params==null) {
-				params = parameters = decor_camera.getParameters();
+		try {
+			Camera decor_camera = camera;
+			if(decor_camera!=null) {
+				Camera.Parameters params = parameters;
+				if(params==null) {
+					params = parameters = decor_camera.getParameters();
+				}
+				setBestExposure(params, true);
+				setTorch(params, getTorchLight());
+				//setBestPreviewFPS(params);
+				//setBarcodeSceneMode(params);
+				decor_camera.setParameters(params);
+	//			if(!previewing) {
+	//				// it's a feature!
+	//				decor_camera.startPreview();
+	//				decor_camera.stopPreview();
+	//			}
 			}
-			setBestExposure(params, true);
-			setTorch(params, getTorchLight());
-			//setBestPreviewFPS(params);
-			//setBarcodeSceneMode(params);
-			decor_camera.setParameters(params);
-//			if(!previewing) {
-//				// it's a feature!
-//				decor_camera.startPreview();
-//				decor_camera.stopPreview();
-//			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -249,14 +253,16 @@ public final class QRCameraManager implements SensorEventListener {
 		mManager=null;
 	}
 	
+	SurfaceTexture _texture;
+	
 	/** Asks the camera hardware to begin drawing preview frames to the screen. */
 	public void startPreview(SurfaceTexture texture) {
 		Camera preview_camera = camera;
-		if (preview_camera != null && !previewing) {
+		if (preview_camera != null && (!previewing || texture!=_texture)) {
 			previewing = true;
 			if(texture!=null) {
 				try {
-					preview_camera.setPreviewTexture(texture);
+					preview_camera.setPreviewTexture(_texture=texture);
 				} catch (IOException e) {
 					CMN.Log(e);
 				}
@@ -281,13 +287,14 @@ public final class QRCameraManager implements SensorEventListener {
 		pauseSensor();
 	}
 	
-	public boolean isPreviewing() {
+	public final boolean isPreviewing() {
 		return previewing;
 	}
 	
 	/** A single preview frame will be returned to the handler supplied. The data will arrive as byte[] in the message.obj field */
 	public synchronized void requestPreviewFrame() {
 		if (previewing && realtime && camera!=null) {
+			//CMN.debug("requestPreviewFrame", realtime);
 			camera.setOneShotPreviewCallback(imageListener.ready(mManager.handler));
 		}
 	}
@@ -324,26 +331,30 @@ public final class QRCameraManager implements SensorEventListener {
 		//CMN.Log("onSensorChanged");
 		/*if(ContinuousFocusing) {
 			pauseSensor();
-		} else */if(camera!=null) {
+		} else */if(camera!=null && isPreviewing()) {
 			float x = event.values[0];
 			float y = event.values[1];
 			float z = event.values[2];
-			float theta=0.23f;
+			float theta=0.8f;
 			if ((Math.abs(mLastX - x) > theta || Math.abs(mLastY - y) > theta || Math.abs(mLastZ - z) > theta)) {
-				//CMN.Log("onSensorChanged");
+				//CMN.debug("onSensorChanged", focusing, Math.abs(mLastX - x), Math.abs(mLastY - y), Math.abs(mLastZ - z));
 				
-				if (!focusing) {
+				//if (!focusing)
+				{
 					autoFocus();
+					imageListener.postAutoFocus(200);
 				}
 				
 				mLastX = x;
 				mLastY = y;
 				mLastZ = z;
-
-				try {
-					mManager.stopTessRealTimeDecoding();
-				} catch (Exception e) {
-					CMN.Log(e);
+				
+				if (realtime) {
+					try {
+						mManager.stopTessRealTimeDecoding();
+					} catch (Exception e) {
+						CMN.Log(e);
+					}
 				}
 			}
 		}
@@ -394,17 +405,17 @@ public final class QRCameraManager implements SensorEventListener {
 			focusing=false;
 			if(useAutoFocus) {
 				if(mManager.opt.getLoopAutoFocus()) {
-					postAutoFocus();
+					postAutoFocus(-1);
 				}
 			}
 		}
 		
-		private void postAutoFocus() {
+		private void postAutoFocus(int tm) {
 			View root=this.root;
 			if(root!=null) {
 				root.removeCallbacks(FocusRunnable);
 				if(previewing && !ContinuousFocusing) {
-					root.postDelayed(FocusRunnable, 1200L);
+					root.postDelayed(FocusRunnable, tm==-1?1200:tm);
 				}
 			}
 		}
@@ -416,13 +427,13 @@ public final class QRCameraManager implements SensorEventListener {
 					focusing=true;
 				} catch (Exception e) {
 					CMN.Log(e);
-					postAutoFocus();
+					postAutoFocus(-1);
 				}
 			}
 		}
 		
 		public synchronized void stop() {
-			postAutoFocus();
+			postAutoFocus(-1);
 			if (useAutoFocus) {
 				// Doesn't hurt to call this even if not focusing
 				try {

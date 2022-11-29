@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FrameLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools">
 
+<FrameLayout
 	android:id="@+id/root"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:background="#000"
+	android:fitsSystemWindows="true"
 	>
 	<FrameLayout
 		android:id="@+id/video_surface_frame"
@@ -25,7 +26,6 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				/>
-
 			<ImageView
 				android:id="@+id/imageView"
 				android:layout_width="match_parent"
@@ -72,7 +72,6 @@
 			android:src="@drawable/ic_baseline_camera_enhance_24"
 			style="@style/QRActionBarItem"
 			/>
-
 		<ImageView
 			android:id="@+id/torch"
 			android:src="@drawable/ic_baseline_torch"
@@ -107,10 +106,10 @@
 		android:layout_height="75dp"
 		android:background="@drawable/frame_toast"
 		android:layout_gravity="bottom"
-		android:layout_marginBottom="30dp"
+		android:layout_marginBottom="95dp"
 		android:layout_marginLeft="25dp"
 		android:layout_marginRight="25dp"
-		android:alpha="0.1"
+		android:alpha="0.5"
 		>
 		<ImageView
 			android:id="@+id/copy"
@@ -153,16 +152,19 @@
 	<RelativeLayout
 		android:id="@+id/fltTools"
 		android:layout_width="match_parent"
-		android:layout_height="60dp"
+		android:layout_height="80dp"
 		android:layout_gravity="bottom"
+		android:paddingBottom="15dp"
+		android:clipChildren="false"
+		android:clipToPadding="false"
 		>
 		<HorizontalScrollView
 			android:layout_width="wrap_content"
-			android:layout_height="45dp"
+			android:layout_height="@dimen/_55_"
 			android:layout_toLeftOf="@+id/cameraBtn"
 			android:layout_alignParentBottom="true"
 			>
-			<LinearLayout
+			<com.knziha.plod.tesseraction.GradList
 				android:layout_width="wrap_content"
 				android:layout_height="match_parent"
 				android:orientation="horizontal"
@@ -170,50 +172,66 @@
 				android:showDividers="middle"
 				android:clipChildren="false"
 				android:clipToPadding="false"
-				android:background="@color/colorPrimary"
+				android:paddingRight="8dp"
+				android:background="@color/colorPrimaryDark"
 				tools:background="#fff"
 				>
-				<android.widget.ImageView
-					android:layout_width= "50dp"
+				<TextView
+					android:id="@+id/realtime"
+					android:layout_width= "@dimen/_55_"
 					android:layout_height="match_parent"
 					android:background="@drawable/listviewselector0"
 					android:src="@drawable/ic_baseline_crop_24"
+					android:text="取"
 					android:clickable="true"
 					android:tint="#3B7DB1"
-					android:padding="10dp"
+					android:textColor="#3B7DB1"
 					android:contentDescription="实时取词"
+					style="@style/fye_dict_title"
 					/>
-				<android.widget.ImageView
-					android:layout_width="50dp"
-					android:layout_height="match_parent"
+				<TextView
+					android:id="@+id/autoSch"
+					android:layout_width="@dimen/_55_"
+					android:layout_height="@dimen/_55_"
 					android:background="@drawable/listviewselector0"
 					android:src="@drawable/ic_baseline_play_arrow_24"
+					android:text="查"
 					android:clickable="true"
 					android:tint="#3B7DB1"
-					android:padding="10dp"
+					android:textColor="#3B7DB1"
 					android:contentDescription="实时查词"
+					style="@style/fye_dict_title"
 					/>
-			</LinearLayout>
+			</com.knziha.plod.tesseraction.GradList>
 		</HorizontalScrollView>
+		<View
+			android:layout_width="@dimen/_65_"
+			android:layout_height="@dimen/_65_"
+			android:layout_alignLeft="@+id/cameraBtn"
+			android:layout_alignRight="@+id/cameraBtn"
+			android:layout_alignParentBottom="true"
+			android:background="@color/colorPrimaryDark"
+			/>
+
 		<android.widget.ImageView
 			android:id="@+id/cameraBtn"
-			android:layout_width= "60dp"
-			android:layout_height="match_parent"
-			android:background="@drawable/item_selector_circle1"
-			android:src="@drawable/ic_baseline_photo_camera_24"
-			android:clickable="true"
-			android:tint="#3B7DB1"
-			android:padding="10dp"
+			android:layout_width="@dimen/_65_"
+			android:layout_height="@dimen/_65_"
+			android:layout_alignParentBottom="true"
 			android:layout_centerInParent="true"
+			android:background="@drawable/item_selector_circle1"
+			android:clickable="true"
 			android:contentDescription="拍照"
-			/>
+			android:padding="10dp"
+			android:src="@drawable/ic_baseline_photo_camera_24"
+			android:tint="#3B7DB1" />
 		<HorizontalScrollView
 			android:layout_width="wrap_content"
-			android:layout_height="45dp"
+			android:layout_height="@dimen/_55_"
 			android:layout_toRightOf="@+id/cameraBtn"
 			android:layout_alignParentBottom="true"
 			>
-			<LinearLayout
+			<com.knziha.plod.tesseraction.GradList
 				android:layout_width="wrap_content"
 				android:layout_height="match_parent"
 				android:orientation="horizontal"
@@ -221,30 +239,34 @@
 				android:showDividers="middle"
 				android:clipChildren="false"
 				android:clipToPadding="false"
-				android:background="@color/colorPrimary"
+				android:background="@color/colorPrimaryDark"
 				tools:background="#fff"
+				android:paddingLeft="8dp"
 				>
 				<android.widget.ImageView
-					android:layout_width= "50dp"
+					android:layout_width= "@dimen/_55_"
 					android:layout_height="match_parent"
 					android:background="@drawable/listviewselector0"
 					android:src="@drawable/ic_baseline_crop_24"
 					android:clickable="true"
 					android:tint="#3B7DB1"
 					android:padding="10dp"
+					android:contentDescription="取景框"
 					/>
 				<android.widget.ImageView
-					android:layout_width= "50dp"
+					android:layout_width= "@dimen/_55_"
 					android:layout_height="match_parent"
 					android:background="@drawable/listviewselector0"
 					android:src="@drawable/ic_baseline_play_arrow_24"
 					android:clickable="true"
 					android:tint="#3B7DB1"
 					android:padding="10dp"
+					android:contentDescription="分析"
 					/>
-			</LinearLayout>
+			</com.knziha.plod.tesseraction.GradList>
 		</HorizontalScrollView>
 	</RelativeLayout>
 
 </FrameLayout>
 
+</layout>

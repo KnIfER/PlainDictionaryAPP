@@ -41,7 +41,7 @@ public /*final*/ class QRActivity extends Toastable_Activity {
 		
 		int type = 1;//mManager.opt.getLaunchCameraType();
 		mManager = new Manager(opt);
-		mManager.init(this, this, null);
+		mManager.init(this, null, null);
 		mManager.showMainMenu(this, 1);
 		
 		

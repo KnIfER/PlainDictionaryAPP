@@ -26,6 +26,7 @@ public class DecodeManager {
 	public boolean flipX;
 	public boolean flipY;
 	Tesseraction tess = new Tesseraction();
+	private boolean tess_inited;
 	final Manager mManager;
 	
 	/** 0=ocr; 1=qr; */
@@ -234,19 +235,14 @@ public class DecodeManager {
 		}
 	}
 	
-	private Tesseraction getTess() throws Exception {
-		if(!tess.inited) {
-			Manager m = mManager;
+	public Tesseraction getTess() throws Exception {
+		if(!tess_inited) {
+			CMN.pt("初始化0::");
 			CMN.rt();
-			tess.init(m.context);
-			tess.initTessdata(null, "chi_sim+eng"); //chi_sim +chi_sim
-			CMN.pt("初始化1::");CMN.rt();
-//					tess = new TessBaseAPI();
-//					tess.init(null, "eng+chi_sim"); //chi_sim
-//					CMN.pt("初始化2::");
-//					tess.init(dataPath, "chi_sim"); //chi_sim
-			//setImage(data, width, height, );
-			//String text = tess.getUTF8Text();
+			tess.init(mManager.activity);
+			tess.initTessdata( mManager.activity, null, "chi_sim+eng"); //chi_sim +chi_sim
+			CMN.pt("初始化1::");
+			tess_inited = true;
 		}
 		return tess;
 	}
