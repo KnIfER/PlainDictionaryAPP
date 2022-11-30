@@ -6,16 +6,19 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
+import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
 public class PopupTouchMover implements View.OnTouchListener {
+	private final WordPopup wordPopup;
 	public float lastX;
 	public float lastY;
 	public float OrgY;
 	public float lastTY;
+	public boolean bottomGravity;
 	private boolean doubleTapDetected;
 	public boolean moveTriggered=false;
 	public boolean wantsMaximize=false;
@@ -34,10 +37,11 @@ public class PopupTouchMover implements View.OnTouchListener {
 	private boolean ruinedDoubleClick;
 	MainActivityUIBase a;
 
-	public PopupTouchMover(MainActivityUIBase a, View _textView){
+	public PopupTouchMover(MainActivityUIBase a, View _textView, PopupGuarder popupGuarder, WordPopup wordPopup){
 		this.a = a;
 		_50_ = a.getResources().getDimension(R.dimen._50_)*a.dm.density;
-		popupGuarder=a.wordPopup.popupGuarder;
+		this.popupGuarder=popupGuarder;
+		this.wordPopup=wordPopup;
 		textView=_textView;
 		topgesture=new GestureDetector(a.getBaseContext(), new GestureDetector.SimpleOnGestureListener(){
 			@Override
@@ -76,18 +80,18 @@ public class PopupTouchMover implements View.OnTouchListener {
 	}
 	
 	public void togMax() {
-		ViewGroup popupContentView = (ViewGroup) popupGuarder.popupToGuard;
-		ViewGroup.MarginLayoutParams lpmy = (ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams();
 		if(Maximized){
-			popupContentView.setTranslationY(FVTY);
-			lpmy.height=FVH_UNDOCKED;
-			popupContentView.setLayoutParams(lpmy);
-			Maximized=FVDOCKED=false;
+			Dedock();
 		}
 		else{
+			ViewGroup popupContentView = (ViewGroup) popupGuarder.popupToGuard;
+			if(popupContentView==null) return;
+			
 			FVTY=popupContentView.getTranslationY();
 			popupContentView.setTranslationY(0);
 			onMaximised();
+			
+			ViewGroup.MarginLayoutParams lpmy = (ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams();
 			FVH_UNDOCKED=popupContentView.getHeight();
 			lpmy.height=calcMaxedH(lpmy);
 			popupContentView.setLayoutParams(lpmy);
@@ -145,16 +149,23 @@ public class PopupTouchMover implements View.OnTouchListener {
 					if(doubleTapDetected){
 						ruinedDoubleClick=true;
 					}
-					Maximized=false;
+					if (Maximized) {
+						Maximized=false;
+						onDedock();
+						if (bottomGravity) {
+							popupContentView.setTranslationY(0);
+						}
+					}
 					//opt.setFVDocked(FVDOCKED = false);
 				}
 				if(bProceed)
 				if (!FVDOCKED && DedockTheta>0) {//未停靠
 					bProceed = false;
-					popupContentView.setTranslationY(Math.min(popupGuarder.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader), Math.max(popupContentView.getTranslationY() + dy, PDICMainAppOptions.getTopSnapMaximizeClickSearch()?0:-popupContentView.getHeight()*2/3)));
+					final int d = bottomGravity?popupGuarder.getHeight() - popupContentView.getHeight():0;
+					popupContentView.setTranslationY(clampTransY(d, popupContentView, popupContentView.getTranslationY() + dy));
 					DedockAcc = 0;
 					if(PDICMainAppOptions.getTopSnapMaximizeClickSearch())
-						if (!doubleTapDetected && popupContentView.getTranslationY() <= 1.45) {
+						if (!doubleTapDetected && popupContentView.getTranslationY()+d <= 1.45) {
 							wantsMaximize = true;
 							if (!wantedMaximize) {
 								lpmy.height = (int) (lpmy.height + _50_);
@@ -178,8 +189,7 @@ public class PopupTouchMover implements View.OnTouchListener {
 					popupContentView.setTranslationY(0);
 					lpmy.height=calcMaxedH(lpmy);
 					popupContentView.setLayoutParams(lpmy);
-					wantsMaximize=
-					wantedMaximize=false;
+					wantsMaximize = wantedMaximize = false;
 					onMaximised();
 					//opt.setFVDocked(FVDOCKED=true);
 				}
@@ -202,25 +212,39 @@ public class PopupTouchMover implements View.OnTouchListener {
 		return ret;
 	}
 	
+	private float clampTransY(int d, ViewGroup popupContentView, float v) {
+		float min = (PDICMainAppOptions.getTopSnapMaximizeClickSearch()?0:-popupContentView.getHeight()*2/3) - d
+				,max = popupGuarder.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader) - d;
+		return v > max ? max : v < min ? min : v;
+	}
+	
 	private void onMaximised() {
-		Maximized=FVDOCKED=true;
+		Maximized = FVDOCKED = true;
 		if(a.ucc!=null) { // todo opt
 			a.ucc.clearTextFocus();
 		}
+		wordPopup.onClick(null);
 	}
 	
-	private int calcMaxedH(ViewGroup.MarginLayoutParams lpmy) {
-		return popupGuarder.getHeight()-lpmy.topMargin-lpmy.bottomMargin-(PDICMainAppOptions.isFullScreen()?0: CMN.getStatusBarHeight(popupGuarder.getContext()));
-	}
-
+	
 	public void Dedock() {
-		Maximized=false;
-		FVDOCKED = false;
+		Maximized = FVDOCKED = false;
+		
 		ViewGroup popupContentView = (ViewGroup) popupGuarder.popupToGuard;
 		if(popupContentView==null) return;
+		
 		ViewGroup.LayoutParams lpmy = popupContentView.getLayoutParams();
 		lpmy.height = FVH_UNDOCKED;
 		popupContentView.setLayoutParams(lpmy);
 		popupContentView.setTranslationY(FVTY);
+		onDedock();
+	}
+	
+	private void onDedock() {
+		wordPopup.onClick(null);
+	}
+	
+	private int calcMaxedH(ViewGroup.MarginLayoutParams lpmy) {
+		return popupGuarder.getHeight()-lpmy.topMargin-lpmy.bottomMargin-(PDICMainAppOptions.isFullScreen()?0: CMN.getStatusBarHeight(popupGuarder.getContext()));
 	}
 }

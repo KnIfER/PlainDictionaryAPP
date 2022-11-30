@@ -88,6 +88,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongClickListener {
 	public /*final*/ WebViewListHandler weblistHandler;
 	public String popupKey;
+	public WordCamera wordCamera;
 	int popupFrame;
 	BookPresenter popupForceId;
 	public TextView entryTitle;
@@ -175,7 +176,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
 					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(null);
 				}
-				if(indicator !=null) {
+				if(indicator != null) {
 					entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
 					indicator.setTextColor(GlobalOptions.isDark?a.AppBlack:0xff2b43c1);
 				}
@@ -186,6 +187,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (dictPicker.pinned()) {
 				dictPicker.refresh();
 			}
+		}
+		if (wordCamera != null) {
+			popupContentView.setAlpha(isMaximized() ? 1 : 0.8f);
 		}
 	}
 	
@@ -206,6 +210,17 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	@Override
 	// click
 	public void onClick(View v) {
+		if (v == null) {
+			if (wordCamera != null) {
+				if (isMaximized()) {
+					wordCamera.onPause();
+				} else {
+					wordCamera.onResume();
+				}
+				refresh();
+			}
+			return;
+		}
 		int id = v.getId();
 		switch (id) {
 			case R.id.cover: {
@@ -564,7 +579,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public final boolean pin() {
-		return a.mDialogType==WindowManager.LayoutParams.TYPE_APPLICATION
+		return bForcePin || a.mDialogType==WindowManager.LayoutParams.TYPE_APPLICATION
 				&& (invoker==null||invoker.weblistHandler!=a.randomPageHandler)
 				&& (popupChecker==null?PDICMainAppOptions.getPinTapTranslator():popupChecker.isChecked());
 	}
@@ -770,7 +785,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			//popupGuarder.setBackgroundColor(Color.BLUE);
 			a.root.addView(popupGuarder, new FrameLayout.LayoutParams(-1, -1));
 			// 弹窗搜索移动逻辑， 类似于浮动搜索。
-			moveView = new PopupTouchMover(a, entryTitle);
+			moveView = new PopupTouchMover(a, entryTitle, popupGuarder, this);
 			for (int i = 0; i < toolbar.getChildCount(); i++) {
 				toolbar.getChildAt(i).setOnTouchListener(moveView);
 			}
@@ -843,7 +858,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		reInit();
 		
 		boolean bPeruseViewAttached = a.PeruseViewAttached();
-		ViewGroup targetRoot = bPeruseViewAttached? a.peruseView.root:a.root;
+		ViewGroup targetRoot = forcePinTarget!=null? forcePinTarget : bPeruseViewAttached? a.peruseView.root:a.root;
 		if(lastTargetRoot != targetRoot) {
 			if(lastTargetRoot!=null) dismiss();
 			lastTargetRoot = targetRoot;
@@ -952,6 +967,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		
 		if (isNewHolder) {
 			mWebView.fromCombined = 2;
+			MainColorStamp = 0;
 			refresh();
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
@@ -961,16 +977,22 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				//int h=mPopupContentView.getLayoutParams().height;
 				//if (h>0) lp.height = h;
 			}
+			if (wordCamera != null) {
+				moveView.bottomGravity = true;
+				((FrameLayout.LayoutParams) popupContentView.getLayoutParams()).gravity = Gravity.BOTTOM;
+			}
 		}
 	}
 	
 	ViewGroup lastTargetRoot;
+	private boolean bForcePin;
+	private ViewGroup forcePinTarget;
 	
 	private void AttachViews() {
 		// 初次添加请指明方位
 		if (!pin() && !isVisible()) {
 			ViewGroup targetRoot = lastTargetRoot;
-			if (moveView.FVDOCKED && moveView.Maximized && PDICMainAppOptions.getResetMaxClickSearch()) {
+			if (moveView.FVDOCKED && moveView.Maximized && wordCamera==null && PDICMainAppOptions.getResetMaxClickSearch()) {
 				moveView.Dedock();
 			}
 //			CMN.Log("poping up ::: ", a.ActivedAdapter);
@@ -1580,5 +1602,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	final WebViewmy dictView() {
 		return weblistHandler.dictView != null ? weblistHandler.dictView : mWebView;
+	}
+	
+	public void forcePin(ViewGroup forcePinTarget) {
+		this.forcePinTarget = forcePinTarget;
+		this.bForcePin = forcePinTarget!=null;
 	}
 }

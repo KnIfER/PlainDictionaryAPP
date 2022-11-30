@@ -12,8 +12,17 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
+import com.knziha.plod.PlainUI.WordCamera;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.text.BreakIteratorHelper;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -166,11 +175,6 @@ public class DecodeManager {
 					return null;
 				}
 
-//				Pix pix = words.getPix(boxIdx);
-//				CMN.Log("decoding_ocr_rect::", pix.getData().length);
-//				handler.setImage(pix);
-//				pix.recycle();
-				
 				final int pad = 20;
 				int wordWidth = rc.width()+pad*2;
 				int wordHeight = rc.height()+pad*2;
@@ -179,21 +183,79 @@ public class DecodeManager {
 				if(left<0) left=0; if(top<0) top=0;
 				if(left+wordWidth>=widthwidth) wordWidth=widthwidth-left-1;
 				if(top+wordHeight>=heightheight) wordHeight=heightheight-top-1;
-//				byte[] wordData = new byte[wordWidth*wordHeight];
-//				for(int i=0; i<wordWidth; i++ )
-//				{
-//					for(int j=0; j<wordHeight; j++ )
-//					{
-//						wordData[i+wordWidth*j] = rotatedData[(left+i)+widthwidth*(top+j)];
-//					}
-//				}
-//				setImage(wordData, wordWidth, wordHeight, 1, wordWidth);
+				
 				if(wordWidth>0 && wordHeight>0) {
+					boolean debugTime = false;
 					tess.setRectangle(left, top, wordWidth, wordHeight);
+					Rect rcW = new Rect();
+					CMN.rt();
 					String hoc = tess.getHOCRText(0);
+					if(debugTime)CMN.pt("hoc 时间::"); CMN.rt();
 					String utf8 = tess.getUTF8Text();
-					if (!TextUtils.isEmpty(utf8)) {
-						return utf8;
+					if(debugTime)CMN.pt("utf8 时间::"); CMN.rt();
+					//CMN.debug("hoc::", utf8);
+					Document nodes = Jsoup.parse(hoc);
+					StringBuilder sb = new StringBuilder();
+					ArrayList<Elements> all = new ArrayList();
+					all.add(nodes.children());
+					Elements els;
+					boolean findCenter = true;
+					int centerIdx = -1;
+					String centerWord="";
+					while(all.size() > 0) {
+						els = all.remove(0);
+						for (Element el:els) {
+							if (el.childrenSize()>0) {
+								all.add(el.children());
+							}
+							if ("ocrx_word".equals(el.className())) {
+								//sb.append(el.text());
+								String bbox = el.attr("title");
+								if (bbox.startsWith("bbox")) {
+//									sb.append(el.text());
+									String[] bbx = bbox.split(" ");
+									if (bbx.length==7) {
+										int conf = IU.parsint(bbx[6]);
+										if (conf >= 45) {
+											sb.append(el.text());
+											if (findCenter) {
+												rcW.set(IU.parsint(bbx[1]), IU.parsint(bbx[2]), IU.parsint(bbx[3]), IU.parsint(bbx[4]));
+												//CMN.debug("conf::", el.text(), conf, rcW);
+												if (rcW.contains(cX, cY)) {
+													CMN.debug("命中::", el.text());
+													//findCenter = false;
+													centerIdx = sb.length();
+													centerWord = el.text();
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					if(debugTime) CMN.pt("拼接 时间::");
+					//CMN.debug("hoc::", hoc);
+					String text = sb.toString();
+					
+					if (centerIdx > 0) {
+						BreakIteratorHelper wordIterator = new BreakIteratorHelper();
+						wordIterator.setText(text);
+						int st = wordIterator.preceding(centerIdx);
+						int ed = wordIterator.following(st);
+						//CMN.debug("词组修正::", st, centerIdx, ed);
+						if (ed > st) {
+							centerWord = text.substring(st, ed);
+							CMN.debug("词组修正::", centerWord);
+						}
+					}
+					
+					if (true) {
+						mManager.mWordCamera.popupWord(centerWord);
+					}
+					
+					if (!TextUtils.isEmpty(text)) {
+						return text;
 					}
 				}
 			}

@@ -16,8 +16,10 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -27,6 +29,8 @@ import com.knziha.plod.plaindict.databinding.QuCiQiBinding;
 import com.knziha.plod.tesseraction.Manager;
 import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
+
+import org.apache.lucene.analysis.util.CharacterUtils;
 
 /** 相机取词 */
 public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
@@ -42,6 +46,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		bottomPadding=0;
 		resizeDlg = true;
 		mManager = new Manager(opt);
+		wordPopup = new WordPopup(a);
 	}
 	
 	public void show() {
@@ -306,5 +311,39 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	
 	private boolean realtime() {
 		return mManager.isRealTime();
+	}
+	
+	WordPopup wordPopup;
+	
+	public boolean isRelevantWord(String text) {
+		if (text.length() == 0) {
+			return false;
+		}
+		if (text.length() == 1) {
+			char c0 = text.charAt(0);
+			int gc = Character.getType(c0);
+			if (gc>=Character.NON_SPACING_MARK&&gc<=Character.COMBINING_SPACING_MARK) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public void popupWord(@NonNull String centerWord) {
+		centerWord = centerWord.trim();
+		if (isRelevantWord(centerWord)) {
+			if (wordPopup.loadManager == null) {
+				a.hdl.post(() -> {
+					wordPopup.wordCamera = this;
+					wordPopup.init();
+					wordPopup.forcePin(UIData.root);
+					ViewUtils.setVisible(wordPopup.popupChecker, false);
+					wordPopup.refresh();
+				});
+				wordPopup.loadManager = a.loadManager;
+			} else if (wordPopup.mWebView != null && !centerWord.equalsIgnoreCase(wordPopup.popupKey)) {
+				wordPopup.popupWord(null, centerWord, null, 0);
+			}
+		}
 	}
 }
