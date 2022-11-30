@@ -1864,7 +1864,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				
 				// newTitlebar.Activate(); - 横屏时合并主界面标题栏、搜索工具栏、词典标题栏。
 				
-				new WordCamera(this).show();
+				//new WordCamera(this).show();
 				
 			}, 350);
 			//showAppTweaker();

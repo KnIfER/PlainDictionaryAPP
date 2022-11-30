@@ -531,11 +531,14 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=50) public boolean padBottom() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=50) public void padBottom(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=51, shift=1) public boolean tapschWebStandalone() { firstFlag=firstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=51, shift=1) public void tapschWebStandalone(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51) public boolean tapschWebStandaloneDeprecated() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51) public void tapschWebStandaloneDeprecated(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=52) public boolean tapschWebStandaloneSet() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52) public void tapschWebStandaloneSet(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=53, debug=1) public boolean tapschWebStandalone() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=53, debug=1) public void tapschWebStandalone(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
 	
 	
 	
@@ -1306,7 +1309,7 @@ function debug(e){console.log(e)};
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
 			json.put("isWeb", 1);
-			if(webx.hasField("synthesis"))
+			if(webx.hasField("synthesis") && PDICMainAppOptions.allowMergeSytheticalPage())
 				json.put("synth", 1);
 			String sch = webx.getSearchUrl();
 			if(!sch.contains("%s")) sch=sch+"%s";
@@ -4108,6 +4111,7 @@ function debug(e){console.log(e)};
 			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
 			tfgColor = opt.getTitlebarForegroundColor();
 		}
+		tapschWebStandaloneDeprecated(false); // todo remove
 		if ((firstVersionFlag&0x1)==0)
 		{
 			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();

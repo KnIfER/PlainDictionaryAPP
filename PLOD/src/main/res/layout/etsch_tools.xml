@@ -48,8 +48,8 @@
 			/>
 		<TextView
 			android:id="@+id/etEnter"
-			android:text="扫描"
-			android:drawableLeft="@drawable/abc_ic_go_search_api_material"
+			android:text="相机"
+			android:drawableLeft="@drawable/ic_baseline_camera_enhance_24"
 			style="@style/SearchbarMenuTextStyle"
 			android:longClickable="true"
 			/>

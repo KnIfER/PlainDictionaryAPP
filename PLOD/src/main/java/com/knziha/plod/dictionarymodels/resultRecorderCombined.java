@@ -280,7 +280,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
 					if(webx!=null) {
 						mergedUrl.append("_")
-							.append(webx.hasField("synthesis")?"0":"");
+							.append(webx.hasField("synthesis")&&PDICMainAppOptions.allowMergeSytheticalPage()?"0":"");
 					} else {
 						for (long val:displaying) {
 							mergedUrl.append("_");
