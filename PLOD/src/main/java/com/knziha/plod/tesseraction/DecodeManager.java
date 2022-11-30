@@ -190,6 +190,7 @@ public class DecodeManager {
 					Rect rcW = new Rect();
 					CMN.rt();
 					String hoc = tess.getHOCRText(0);
+					if (hoc == null) return null;
 					if(debugTime)CMN.pt("hoc 时间::"); CMN.rt();
 					String utf8 = tess.getUTF8Text();
 					if(debugTime)CMN.pt("utf8 时间::"); CMN.rt();

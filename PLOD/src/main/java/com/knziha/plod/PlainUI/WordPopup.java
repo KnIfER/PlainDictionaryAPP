@@ -977,9 +977,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				//int h=mPopupContentView.getLayoutParams().height;
 				//if (h>0) lp.height = h;
 			}
-			if (wordCamera != null) {
-				moveView.bottomGravity = true;
-				((FrameLayout.LayoutParams) popupContentView.getLayoutParams()).gravity = Gravity.BOTTOM;
+			lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
+			if (moveView.bottomGravity = wordCamera != null) {
+				lp.gravity = Gravity.BOTTOM;
+			} else {
+				lp.gravity = Gravity.TOP;
 			}
 		}
 	}
@@ -1464,7 +1466,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
-		CMN.debug("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
+		CMN.debug("popupWord::frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;
@@ -1607,5 +1609,18 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public void forcePin(ViewGroup forcePinTarget) {
 		this.forcePinTarget = forcePinTarget;
 		this.bForcePin = forcePinTarget!=null;
+		if (popupChecker != null) {
+			ViewUtils.setVisible(popupChecker, !bForcePin);
+			if (popupContentView!=null) {
+				FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
+				if (moveView.bottomGravity = wordCamera != null) {
+					lp.gravity = Gravity.BOTTOM;
+					popupContentView.setAlpha(isMaximized()?1:0.8f);
+				} else {
+					lp.gravity = Gravity.TOP;
+					popupContentView.setAlpha(1);
+				}
+			}
+		}
 	}
 }

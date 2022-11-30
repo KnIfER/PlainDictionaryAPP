@@ -46,7 +46,8 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		bottomPadding=0;
 		resizeDlg = true;
 		mManager = new Manager(opt);
-		wordPopup = new WordPopup(a);
+		wordPopup = a.wordPopup;
+		//wordPopup = new WordPopup(a);
 	}
 	
 	public void show() {
@@ -67,6 +68,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			mManager.init(a, null, UIData);
 			mManager.setRequestCode(10, 11);
 			mManager.setWordCamera(this);
+			wordPopup.forcePin(UIData.root);
 			
 			if (PDICMainAppOptions.wordCameraRealtime()) {
 				mManager.toggleRealTime();
@@ -120,13 +122,20 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	
 	@Override
 	protected void onShow() {
-	
+		if (wordPopup == a.wordPopup) {
+			wordPopup.wordCamera = this;
+			wordPopup.forcePin(UIData.root);
+		}
 	}
 	
 	@Override
 	protected void onDismiss() {
 		super.onDismiss();
 		mManager.pauseCamera();
+		if (wordPopup == a.wordPopup) {
+			wordPopup.wordCamera = null;
+			wordPopup.forcePin(null);
+		}
 	}
 	
 	public void onResume() {
@@ -332,16 +341,19 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	public void popupWord(@NonNull String centerWord) {
 		centerWord = centerWord.trim();
 		if (isRelevantWord(centerWord)) {
-			if (wordPopup.loadManager == null) {
-				a.hdl.post(() -> {
-					wordPopup.wordCamera = this;
-					wordPopup.init();
-					wordPopup.forcePin(UIData.root);
-					ViewUtils.setVisible(wordPopup.popupChecker, false);
-					wordPopup.refresh();
-				});
-				wordPopup.loadManager = a.loadManager;
-			} else if (wordPopup.mWebView != null && !centerWord.equalsIgnoreCase(wordPopup.popupKey)) {
+			if (wordPopup.loadManager == null || wordPopup.mWebView==null) {
+				if (wordPopup.mWebView == null) {
+					a.hdl.post(() -> {
+						wordPopup.wordCamera = this;
+						wordPopup.init();
+						wordPopup.forcePin(UIData.root);
+						wordPopup.refresh();
+					});
+				}
+				if (wordPopup.loadManager == null) {
+					wordPopup.loadManager = a.loadManager;
+				}
+			} else if (!wordPopup.isVisible() || !centerWord.equalsIgnoreCase(wordPopup.popupKey)) {
 				wordPopup.popupWord(null, centerWord, null, 0);
 			}
 		}
