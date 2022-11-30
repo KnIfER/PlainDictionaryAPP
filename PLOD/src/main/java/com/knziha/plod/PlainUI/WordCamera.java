@@ -146,9 +146,6 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			wordPopup.forcePin(null);
 			wordPopup.wordCamera = null;
 		}
-		if (mManager.failed) {
-			//dispose();
-		}
 	}
 	
 	private void dispose() {

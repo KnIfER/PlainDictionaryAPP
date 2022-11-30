@@ -615,7 +615,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		ViewUtils.setVisible(seekBar, vis);
 		ViewUtils.setVisible(value, vis);
 		name.setText(pBc?"不透明度":"字体大小");
-		pickName.setText(pBc?"修改气泡颜色":"修改笔记文本的字体颜色");
+		pickName.setText(pBc?"点击修改气泡颜色":"点击修改笔记文本的字体颜色");
 
 		final boolean enabled = !pBc&&uiData.fontColorEnabled[k] || pBc&&uiData.bubbleColorsEnabled[k];
 		boolean visible = true;
@@ -747,6 +747,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		a.Annot(mWebView, k, this);
 		if(tkShow!=null) tkShow = null;
 		onDialogDismissed(null, 0);
+		getText().clear();
 		return true;
 	}
 	

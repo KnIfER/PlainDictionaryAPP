@@ -160,7 +160,7 @@
 			android:key="tapsch_web"
 			android:persistent="false"
 			android:defaultValue="true"
-			android:summary="提示：这是全局开关，也可每个词典单独排除，或单独设置"
+			android:summary="提示：这是全局开关，开启后，默认所有在线词典都使用自己的网页控件，可逐一排除。"
 			android:title="全局使用单独的webview"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference

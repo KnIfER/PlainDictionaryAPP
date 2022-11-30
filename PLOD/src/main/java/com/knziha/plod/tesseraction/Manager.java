@@ -890,9 +890,15 @@ public class Manager implements View.OnClickListener {
 	}
 	
 	public void dispose() {
+		pauseCamera();
 		try {
 			cameraManager.pauseSensor();
 			cameraManager.camera.stopPreview();
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		try {
+			cameraManager.camera.release();
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

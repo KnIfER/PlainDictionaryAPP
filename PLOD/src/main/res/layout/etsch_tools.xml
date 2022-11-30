@@ -50,6 +50,7 @@
 			android:id="@+id/etCamera"
 			android:text="相机"
 			android:drawableLeft="@drawable/ic_baseline_camera_enhance_24"
+			android:drawableTint="#fff"
 			style="@style/SearchbarMenuTextStyle"
 			/>
 	</LinearLayout>

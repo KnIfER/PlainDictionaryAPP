@@ -388,14 +388,14 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 								if (rec == null) base--;
 								if (previewPageIdx == 0) {
 									if (position % 2 != 0) {
-										if (position == 3) { // 编辑搜索词
-											a.showT("未实现");
+										if (position == 3) { // 切换上一词典
+											onClick(a.anyView(R.id.popLstDict));
 										} else if (position == 5) { // 工具…
 											MainActivityUIBase.VerseKit tk = a.getVtk();
 											tk.setInvoker(CCD, dictView(), null, String.valueOf(entryTitle.getText()));
 											tk.onClick(a.anyView(0));
-										} else { // 切换上一词典
-											onClick(a.anyView(R.id.popLstDict));
+										} else { // 编辑搜索词
+											a.showT("未实现");
 										}
 										return;
 									}
@@ -624,11 +624,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if(rec == null) base--;
 			if(previewPageIdx==0) {
 				previewEntryData[2] = previewEntryAt(base);
-				previewEntryData[3] = "编辑搜索词";
+				previewEntryData[3] = "切换上一词典";
 				previewEntryData[4] = previewEntryAt(base+1);
 				previewEntryData[5] = "工具…";
 				previewEntryData[6] = previewEntryAt(base+2);
-				previewEntryData[7] = "切换上一词典";
+				previewEntryData[7] = "编辑搜索词";
 			} else {
 				if(previewPageIdx<0) base+=previewPageIdx*6;
 				else base+=3+(previewPageIdx-1)*6;

@@ -551,7 +551,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					}
 					wordCamera = new WordCamera(a, this);
 				}
-				//wordCamera.show();
+				wordCamera.show();
 			} break;
 			case R.id.etPaste:{
 				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
