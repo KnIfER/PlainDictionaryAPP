@@ -526,20 +526,17 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				if (wordCamera == null) {
 					// 检查插件是否安装
 					if (!ViewUtils.isInstalled(a, Tesseraction.pluginPkg)) {
-						String url = "https://www.imdodo.com/channel/157568/889299/385849130804637696";
+						final String url = "https://www.imdodo.com/channel/157568/889299/385849130804637696";
 						new AlertDialog.Builder(a)
 								.setTitle("插件安装指引")
 								.setMessage("请使用浏览器安装插件：图文之心.apk，安装后将获得ocr光学识别能力，可从相机或图片拾取单词。\n安装插件需要消耗流量，之后可完全离线使用。")
-								.setNegativeButton("立即前往安装", new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										try {
-											Intent intent = new Intent(Intent.ACTION_VIEW)
-													.setData(Uri.parse(url));
-											a.startActivity(intent);
-										} catch (Exception e) {
-											CMN.debug(e);
-										}
+								.setNegativeButton("立即前往安装", (dialog, which) -> {
+									try {
+										Intent intent = new Intent(Intent.ACTION_VIEW)
+												.setData(Uri.parse(url));
+										a.startActivity(intent);
+									} catch (Exception e) {
+										CMN.debug(e);
 									}
 								})
 								.setNeutralButton("复制网址", (dialog, which) -> {
@@ -554,7 +551,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					}
 					wordCamera = new WordCamera(a, this);
 				}
-				wordCamera.show();
+				//wordCamera.show();
 			} break;
 			case R.id.etPaste:{
 				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);

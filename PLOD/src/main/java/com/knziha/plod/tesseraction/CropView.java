@@ -236,7 +236,7 @@ public class CropView extends View {
 				viewFrame.top = mView.getTranslationY();
 			}
 			for (Rect rect : textRects) {
-				float scale = /*a.scale * */mView.getScaleY();
+				float scale = 1;///*a.scale * */mView.getScaleY();
 				canvas.drawRect(
 						frame.left+rect.left*scale
 						,frame.top+rect.top*scale

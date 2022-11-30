@@ -24,6 +24,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -299,11 +300,11 @@ public class DecodeManager {
 	
 	public Tesseraction getTess() throws Exception {
 		if(!tess_inited) {
-			CMN.pt("初始化0::");
-			CMN.rt();
+			CMN.pt("初始化0::"); CMN.rt();
 			tess.init(mManager.activity);
+			//File path = new File();
 			tess.initTessdata( mManager.activity, null, "chi_sim+eng"); //chi_sim +chi_sim
-			CMN.pt("初始化1::");
+			CMN.pt("初始化时间::");
 			tess_inited = true;
 		}
 		return tess;

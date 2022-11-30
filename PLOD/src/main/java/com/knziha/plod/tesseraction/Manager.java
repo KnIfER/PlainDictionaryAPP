@@ -148,12 +148,11 @@ public class Manager implements View.OnClickListener {
 	
 	public boolean onBack() {
 		if(viewingImg && lastType!=-1) {
+			applyImageSize(false); // ??? todo fix 打开图片后文本方框偏移
 			suspensed = false;
-			if(viewingImg) {
-				applyPreviewSize();
-				viewingImg = false;
-			}
 			resumeCamera();
+			applyPreviewSize();
+			viewingImg = false;
 			//tryOpenCamera(lastType, lastRealTime, activity, permissionCode);
 			return true;
 		}
