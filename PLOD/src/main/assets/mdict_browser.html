@@ -2711,7 +2711,7 @@
 		
 		function setTitle(t, upd){
 			ge("entryName").innerText = args.q = t;
-			if(upd) document.title = t + ' - 平典搜索';
+			if(upd) document.title = t + ' - 无限词典';
 		}
 		
 		function loookup(){
@@ -2721,7 +2721,7 @@
 		function search(upd){
 			tmp.enter=1;
 			args.q=etSearch.value;
-			if(upd) document.title = args.q + ' - 平典搜索';
+			if(upd) document.title = args.q + ' - 无限词典';
 			lookup(args.q);
 		}
 	
@@ -2954,7 +2954,7 @@
 				ge("entryName").innerText = args.q;
 			}
 			if(args.q || args.s)  {
-				document.title = (args.q || args.s) + ' - 平典搜索';
+				document.title = (args.q || args.s) + ' - 无限词典';
 			}
 			// $("#jsonid").load
 			loadJson("/dicts.json", function(e) {
@@ -4018,7 +4018,7 @@
 	</script>
 	
 	
-	<title>平典搜索 · MDict Browser</title>
+	<title>无限词典 · MDict Browser</title>
 
 </head>
 <body id="body_" onload="Initialize()" scroll="no">

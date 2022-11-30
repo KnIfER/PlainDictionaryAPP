@@ -88,6 +88,7 @@ public class Manager implements View.OnClickListener {
 	boolean viewingImg;
 	
 	public boolean autoSch = false;
+	public boolean failed;
 	
 	public Manager(PDICMainAppOptions opt) {
 		dMan = new DecodeManager(this);
@@ -571,13 +572,21 @@ public class Manager implements View.OnClickListener {
 		}
 		CMN.debug("startPreview::相机已经打开！", UIData.previewView.getSurfaceTexture());
 		if(cameraManager.isOpen()) {
-			//cameraManager.startPreview(null);
-			cameraManager.startPreview(surface!=null?surface:UIData.previewView.getSurfaceTexture());
-			if(handler != null) {
-				handler.ready();
-				cameraManager.requestPreviewFrame();
+			try {
+				cameraManager.startPreview(UIData.previewView.getSurfaceTexture());
+				if(handler != null) {
+					handler.ready();
+					cameraManager.requestPreviewFrame();
+				}
+				cameraManager.resumeSensor();
+			} catch (Exception e) {
+				CMN.debug("预览失败！", UIData.previewView.getSurfaceTexture(), e);
+				//failed = true;
+				if (surface != null) { // 我说开启就开启
+					pauseCamera();
+					mWordCamera.settingsLayout.postDelayed(() -> resumeCamera(), 100);
+				}
 			}
-			cameraManager.resumeSensor();
 			//qr_frame.setBitmap(null);
 		}
 	}
@@ -749,6 +758,7 @@ public class Manager implements View.OnClickListener {
 	}
 	
 	private void setImage(Bitmap bitmap, boolean center) {
+		pauseCamera();
 		this.bitmap = bitmap;
 		UIData.imageView.setImageBitmap(bitmap);
 		applyImageSize(center);
@@ -878,6 +888,15 @@ public class Manager implements View.OnClickListener {
 	public void setRequestCode(int permissionCode, int openCode) {
 		this.permissionCode = permissionCode;
 		this.openCode = openCode;
+	}
+	
+	public void dispose() {
+		try {
+			cameraManager.pauseSensor();
+			cameraManager.camera.stopPreview();
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 }
 

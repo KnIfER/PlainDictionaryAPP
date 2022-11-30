@@ -1079,7 +1079,7 @@ function debug(e){console.log(e)};
 						mWebView.evaluateJavascript("window._touchtarget?window._touchtarget.innerText:''", new ValueCallback<String>() {
 							@Override
 							public void onReceiveValue(String value) {
-								a.copyText(StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1)));
+								a.copyText(StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1)), true);
 							}
 						});
 					}

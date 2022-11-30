@@ -203,7 +203,7 @@
 		android:entries="@array/backup"
 		android:persistent="false"
 		android:title="备份设置"
-		app:wiki="需要存储卡的读写权限。备份至/sdcard/平典搜索_备份.json，不包括词典配置；恢复后需完全重启APP方可生效。"
+		app:wiki="需要存储卡的读写权限。备份至/sdcard/无限词典_备份.json，不包括词典配置；恢复后需完全重启APP方可生效。"
 		/>
 
 		<PreferenceCategory> </PreferenceCategory>

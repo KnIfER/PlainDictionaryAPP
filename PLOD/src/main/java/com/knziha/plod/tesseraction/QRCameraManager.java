@@ -436,7 +436,7 @@ public final class QRCameraManager implements SensorEventListener {
 					camera.cancelAutoFocus();
 				} catch (Exception re) {
 					// Have heard RuntimeException reported in Android 4.0.x+; continue?
-					CMN.Log("Unexpected exception while cancelling focusing", re);
+					CMN.debug("Unexpected exception while cancelling focusing", re);
 				}
 			}
 			ready(null);

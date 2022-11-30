@@ -282,7 +282,7 @@
 				android:layout_height="wrap_content"
 				android:gravity="right"
 				android:textColor="#F9F4F4"
-				android:text="平典搜索"
+				android:text="无限词典"
 				tools:text="简明英汉汉英词典"
 				android:textFontWeight="750"
 				android:textSize="12sp"

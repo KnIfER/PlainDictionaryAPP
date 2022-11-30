@@ -8,7 +8,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -143,7 +142,7 @@ public abstract class BasicAdapter extends BaseAdapter
 					notifyDataSetChanged();
 				break;
 				case R.string.copy:
-					a.copyText(getRowText(pressedRow));
+					a.copyText(getRowText(pressedRow), true);
 				break;
 				case R.string.tapSch:
 				case R.id.page_lnk_tapSch:

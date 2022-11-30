@@ -6905,7 +6905,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.presenter.toggleBookMark(mWebView, null, true);
 				break;
 			case R.string.page_fuzhi:
-				copyText(mWebView.word);
+				copyText(mWebView.word, true);
 				break;
 			case R.string.page_rukou:
 				if(pageMenuHelper.lnk_href!=null) {
@@ -11816,11 +11816,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			showT(word + " 已收藏");
 	}
 	
-	public void copyText(String text) {
+	public void copyText(String text, boolean toast) {
 		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 		if(cm!=null){
 			cm.setPrimaryClip(ClipData.newPlainText(null, text));
-			showT(text);
+			if(toast) showT(text);
 		}
 	}
 	

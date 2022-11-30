@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">平典搜索</string>
+	<string name="app_name">无限词典</string>
 	<string name="wenj_fugai">文件已存在，覆盖保存？</string>
 	<string name="warn_delete">确认删除选中的  %d 项内容?</string>
 	<string name="warnDelete">确认删除分组 %s?</string>

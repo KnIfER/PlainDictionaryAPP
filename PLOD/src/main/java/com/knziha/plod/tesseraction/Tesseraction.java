@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
  /** 桥阶层，反射调用插件代码 */
 public class Tesseraction {
+	public final static String pluginPkg = "com.googlecode.tesseraction";
 	private Object plugin;
 	private Context pluginContext;
 	public boolean inited;
@@ -33,7 +34,6 @@ public class Tesseraction {
 	public static Class<?> PluginClazz;
 	
 	public void init(Context context) throws Exception {
-		String pluginPkg = "com.googlecode.tesseraction";
 		if (PluginClazz == null) {
 			context = context.createPackageContext(pluginPkg, Context.CONTEXT_INCLUDE_CODE
 					| Context.CONTEXT_IGNORE_SECURITY

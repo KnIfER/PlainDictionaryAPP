@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Canvas;
@@ -14,6 +16,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.net.Uri;
 import android.os.CancellationSignal;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -31,6 +34,7 @@ import android.widget.TextView;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -43,6 +47,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.tesseraction.Tesseraction;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
@@ -520,8 +525,34 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			case R.id.etCamera:{
 				if (wordCamera == null) {
 					// 检查插件是否安装
-					
-					wordCamera = new WordCamera(a);
+					if (!ViewUtils.isInstalled(a, Tesseraction.pluginPkg)) {
+						String url = "https://www.imdodo.com/channel/157568/889299/385849130804637696";
+						new AlertDialog.Builder(a)
+								.setTitle("插件安装指引")
+								.setMessage("请使用浏览器安装插件：图文之心.apk，安装后将获得ocr光学识别能力，可从相机或图片拾取单词。\n安装插件需要消耗流量，之后可完全离线使用。")
+								.setNegativeButton("立即前往安装", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										try {
+											Intent intent = new Intent(Intent.ACTION_VIEW)
+													.setData(Uri.parse(url));
+											a.startActivity(intent);
+										} catch (Exception e) {
+											CMN.debug(e);
+										}
+									}
+								})
+								.setNeutralButton("复制网址", (dialog, which) -> {
+									a.copyText(url, false);
+									a.showT("已复制网址！");
+								})
+								.setPositiveButton("取消", null)
+								.show()
+								;
+						a.showT("未安装图文之心.apk，无法启动相机取词服务！");
+						break;
+					}
+					wordCamera = new WordCamera(a, this);
 				}
 				wordCamera.show();
 			} break;

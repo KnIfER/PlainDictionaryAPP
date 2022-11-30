@@ -97,7 +97,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	String magicStr;
 	
 	public void backup() throws IOException {
-		File file = new File(Environment.getExternalStorageDirectory(), "平典搜索_备份.json");
+		File file = new File(Environment.getExternalStorageDirectory(), "无限词典_备份.json");
 		Map<String, ?> all = defaultReader.getAll();
 		com.alibaba.fastjson.JSONObject json = new com.alibaba.fastjson.JSONObject();
 		for(String key:all.keySet()) {
@@ -112,7 +112,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public void restore() throws IOException {
-		File file = new File(Environment.getExternalStorageDirectory(), "平典搜索_备份.json");
+		File file = new File(Environment.getExternalStorageDirectory(), "无限词典_备份.json");
 		Editor preferences = defaultReader.edit();
 		com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(BU.FileToString(file));
 		for(String key:json.keySet()) {

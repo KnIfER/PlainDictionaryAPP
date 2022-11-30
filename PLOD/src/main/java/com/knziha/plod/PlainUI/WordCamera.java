@@ -37,9 +37,10 @@ import org.apache.lucene.analysis.util.CharacterUtils;
 /** 相机取词 */
 public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	
+	private final SearchbarTools schTools;
 	QuCiQiBinding UIData;
 	public final Manager mManager;
-	public WordCamera(MainActivityUIBase a) {
+	public WordCamera(MainActivityUIBase a, SearchbarTools searchbarTools) {
 		super(a, false);
 		this.a = a;
 		bAnimate=false;
@@ -49,6 +50,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		resizeDlg = true;
 		mManager = new Manager(opt);
 		wordPopup = a.wordPopup;
+		this.schTools = searchbarTools;
 		//wordPopup = new WordPopup(a);
 	}
 	
@@ -144,6 +146,16 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			wordPopup.forcePin(null);
 			wordPopup.wordCamera = null;
 		}
+		if (mManager.failed) {
+			//dispose();
+		}
+	}
+	
+	private void dispose() {
+		if (schTools != null) {
+			schTools.wordCamera = null;
+		}
+		mManager.dispose();
 	}
 	
 	public void onResume() {
