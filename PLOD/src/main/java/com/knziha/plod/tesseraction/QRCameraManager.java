@@ -166,10 +166,6 @@ public final class QRCameraManager implements SensorEventListener {
 		return true;
 	}
 	
-	private boolean getTorchLight() {
-		return false;
-	}
-	
 	//todo opt
 	public void decorateCameraSettings() {
 		try {
@@ -180,7 +176,7 @@ public final class QRCameraManager implements SensorEventListener {
 					params = parameters = decor_camera.getParameters();
 				}
 				setBestExposure(params, true);
-				setTorch(params, getTorchLight());
+				setTorch(params, mManager.getTorchLight());
 				//setBestPreviewFPS(params);
 				//setBarcodeSceneMode(params);
 				decor_camera.setParameters(params);
@@ -306,7 +302,7 @@ public final class QRCameraManager implements SensorEventListener {
 		requestedCameraId = cameraId;
 	}
 	
-	public void autoFocus() {
+	public final void autoFocus() {
 		imageListener.start();
 	}
 	
@@ -339,7 +335,7 @@ public final class QRCameraManager implements SensorEventListener {
 			if ((Math.abs(mLastX - x) > theta || Math.abs(mLastY - y) > theta || Math.abs(mLastZ - z) > theta)) {
 				//CMN.debug("onSensorChanged", focusing, Math.abs(mLastX - x), Math.abs(mLastY - y), Math.abs(mLastZ - z));
 				
-				//if (!focusing)
+				//if (previewing)
 				{
 					autoFocus();
 					imageListener.postAutoFocus(200);

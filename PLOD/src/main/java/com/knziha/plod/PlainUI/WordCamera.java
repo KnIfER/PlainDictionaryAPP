@@ -2,10 +2,12 @@ package com.knziha.plod.PlainUI;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -66,15 +68,17 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			
 			int type = 1;//mManager.opt.getLaunchCameraType();
 			mManager.init(a, null, UIData);
-			mManager.setRequestCode(10, 11);
+			mManager.setRequestCode(10, 10);
 			mManager.setWordCamera(this);
 			wordPopup.forcePin(UIData.root);
+			
 			
 			if (PDICMainAppOptions.wordCameraRealtime()) {
 				mManager.toggleRealTime();
 				setViewChecked(UIData.realtime, true);
 			}
 			if (PDICMainAppOptions.wordCameraAutoSch()) {
+				mManager.toggleAutoSch();
 				setViewChecked(UIData.autoSch, true);
 			}
 			
@@ -116,8 +120,10 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	private void updateOrientation() {
 //		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 //		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-//		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 //		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+		if (a != null) {
+			a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		}
 	}
 	
 	@Override
@@ -126,6 +132,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			wordPopup.wordCamera = this;
 			wordPopup.forcePin(UIData.root);
 		}
+		UIData.frameView.resume(); // todo
 	}
 	
 	@Override
@@ -133,8 +140,9 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		super.onDismiss();
 		mManager.pauseCamera();
 		if (wordPopup == a.wordPopup) {
-			wordPopup.wordCamera = null;
+			wordPopup.stopTask();
 			wordPopup.forcePin(null);
+			wordPopup.wordCamera = null;
 		}
 	}
 	
@@ -166,7 +174,9 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 				setViewChecked((TextView) v, val);
 			} break;
 			case R.id.autoSch: {
-				//setViewChecked(v, true);
+				boolean val = mManager.toggleAutoSch();
+				PDICMainAppOptions.wordCameraAutoSch(val);
+				setViewChecked((TextView) v, val);
 			} break;
 			case R.string.qr:
 			case R.string.ocr:
@@ -340,7 +350,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	
 	public void popupWord(@NonNull String centerWord) {
 		centerWord = centerWord.trim();
-		if (isRelevantWord(centerWord)) {
+		if (isRelevantWord(centerWord) && isVisible()) {
 			if (wordPopup.loadManager == null || wordPopup.mWebView==null) {
 				if (wordPopup.mWebView == null) {
 					a.hdl.post(() -> {
@@ -357,5 +367,9 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 				wordPopup.popupWord(null, centerWord, null, 0);
 			}
 		}
+	}
+	
+	public void openImage(Uri data) {
+		mManager.openImage(data);
 	}
 }

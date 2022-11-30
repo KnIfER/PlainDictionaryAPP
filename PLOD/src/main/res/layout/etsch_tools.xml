@@ -47,11 +47,10 @@
 			style="@style/SearchbarMenuTextStyle"
 			/>
 		<TextView
-			android:id="@+id/etEnter"
+			android:id="@+id/etCamera"
 			android:text="相机"
 			android:drawableLeft="@drawable/ic_baseline_camera_enhance_24"
 			style="@style/SearchbarMenuTextStyle"
-			android:longClickable="true"
 			/>
 	</LinearLayout>
 	<View

@@ -712,6 +712,7 @@ public class CropView extends View {
 	
 	/** 0=static ocr; 1=dynamic ocr; 2=static qr; 3=dynamic qr;  */
 	public void preset(int preset) {
+		//CMN.debug("preset", "preset = [" + preset + "]");
 		if(mPreset!=preset) {
 			mPreset = preset;
 			fixed = preset==3;
@@ -720,19 +721,19 @@ public class CropView extends View {
 				drawCrossSight = true;
 				drawLocations = true;
 			}
-			if(preset==2) {
+			else if(preset==2) {
 				drawLaser = false;
 				drawCrossSight = false;
 				drawLocations = false;
 			}
-			if(preset==3) {
+			else if(preset==3) {
 				drawLaser = true;
 				drawCrossSight = false;
 				drawLocations = true;
 			}
 			invalidate();
 		}
-		CMN.Log("preset::", preset, fixed);
+		CMN.Log("preset::", preset, fixed, drawLaser);
 	}
 	
 	public void setCropping(boolean cropping) {

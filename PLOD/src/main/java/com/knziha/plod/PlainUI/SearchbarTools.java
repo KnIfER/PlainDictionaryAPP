@@ -79,6 +79,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	private View RvTools;
 	private FrameLayout.LayoutParams lpRvTools;
 	private FrameLayout.LayoutParams lpRv;
+	WordCamera wordCamera;
 	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {
@@ -516,8 +517,13 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				etSearch.setText("");
 				a.imm.showSoftInput(etSearch, 0);
 			} break;
-			case R.id.etEnter:{
-				new WordCamera(a).show();
+			case R.id.etCamera:{
+				if (wordCamera == null) {
+					// 检查插件是否安装
+					
+					wordCamera = new WordCamera(a);
+				}
+				wordCamera.show();
 			} break;
 			case R.id.etPaste:{
 				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);

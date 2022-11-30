@@ -16,16 +16,16 @@
 		android:background="#000"
 		tools:background="#fff"
 		>
+		<TextureView
+			android:id="@+id/preview_view"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			/>
 		<com.knziha.plod.tesseraction.PhotoView
 			android:id="@+id/photo_view"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			>
-			<TextureView
-				android:id="@+id/preview_view"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				/>
 			<ImageView
 				android:id="@+id/imageView"
 				android:layout_width="match_parent"
@@ -254,6 +254,7 @@
 					android:contentDescription="取景框"
 					/>
 				<android.widget.ImageView
+					android:id="@+id/playBtn"
 					android:layout_width= "@dimen/_55_"
 					android:layout_height="match_parent"
 					android:background="@drawable/listviewselector0"

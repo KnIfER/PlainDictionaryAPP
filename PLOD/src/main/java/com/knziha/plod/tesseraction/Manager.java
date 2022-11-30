@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
@@ -43,6 +44,7 @@ import com.knziha.plod.plaindict.databinding.QuCiQiBinding;
 import com.knziha.plod.widgets.ViewUtils;
 
 import static com.knziha.plod.tesseraction.DecodeManager.*;
+import static com.knziha.plod.widgets.ViewUtils.setOnClickListenersOneDepth;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -85,6 +87,8 @@ public class Manager implements View.OnClickListener {
 	public int openCode;
 	boolean viewingImg;
 	
+	public boolean autoSch = false;
+	
 	public Manager(PDICMainAppOptions opt) {
 		dMan = new DecodeManager(this);
 		dMan.framingRect = framingRect;
@@ -125,9 +129,9 @@ public class Manager implements View.OnClickListener {
 		cameraManager = new QRCameraManager(this, UIData.getRoot());
 		setRect(UIData.frameView.getFrameRect());
 		
-		setOnClickListenersOneDepth(UIData.toolbarContent, this, 1);
-		setOnClickListenersOneDepth(UIData.toast, this, 1);
-		setOnClickListenersOneDepth(UIData.fltTools, this, 999);
+		setOnClickListenersOneDepth(UIData.toolbarContent, this, 1, null);
+		setOnClickListenersOneDepth(UIData.toast, this, 1, null);
+		setOnClickListenersOneDepth(UIData.fltTools, this, 999, null);
 		UIData.frameView.setOnClickListener(this);
 	}
 	
@@ -143,8 +147,13 @@ public class Manager implements View.OnClickListener {
 	
 	public boolean onBack() {
 		if(viewingImg && lastType!=-1) {
-			viewingImg = false;
-			tryOpenCamera(lastType, lastRealTime, activity, permissionCode);
+			suspensed = false;
+			if(viewingImg) {
+				applyPreviewSize();
+				viewingImg = false;
+			}
+			resumeCamera();
+			//tryOpenCamera(lastType, lastRealTime, activity, permissionCode);
 			return true;
 		}
 		return false;
@@ -191,7 +200,7 @@ public class Manager implements View.OnClickListener {
 		if (ViewUtils.checkSetVersion(UIStates, 1, realTime_QROCR)) {
 			UIData.title.setText(decodeType==0?"文本识别":"条码识别");
 		}
-		int ui_pr=decodeType<<1|(cameraManager.realtime?1:0);
+		int ui_pr=decodeType<<1|(isRealTime()?1:0);
 		UIData.frameView.preset(ui_pr);
 		resetBtns();
 //		LayerDrawable ld = (LayerDrawable) UIData.torch.getDrawable();
@@ -229,7 +238,9 @@ public class Manager implements View.OnClickListener {
 			} break;
 			case R.id.frame_view: {
 				CMN.Log("click!!!", UIData.frameView.lastX, UIData.frameView.lastY);
-				cameraManager.autoFocus();
+				if (cameraManager.isPreviewing()) {
+					cameraManager.autoFocus();
+				}
 //				new Thread(new Runnable() {
 //					@Override
 //					public void run() {
@@ -305,7 +316,7 @@ public class Manager implements View.OnClickListener {
 			} break;
 			case R.id.torch: {
 				if(cameraManager.isOpen()) {
-					//111opt.toggleTorchLight();
+					lightOn = !lightOn;
 					cameraManager.decorateCameraSettings();
 					refreshUI();
 				}
@@ -333,6 +344,12 @@ public class Manager implements View.OnClickListener {
 		}
 	}
 	
+	boolean lightOn = false;
+	
+	public boolean getTorchLight() {
+		return lightOn;
+	}
+	
 	private void decode() {
 		Message message = getHandler().ready().obtainMessage(R.id.decode, bitmap);
 		message.arg1=R.id.decode2;
@@ -356,8 +373,8 @@ public class Manager implements View.OnClickListener {
 	}
 	
 	private void syncQRFrameSettings(boolean inval) {
-		UIData.frameView.drawLaser = suspensed || opt.getQRFrameDrawLaser();
-		UIData.frameView.drawLocations = opt.getQRFrameDrawLocations();
+		UIData.frameView.drawLaser = !suspensed && lastType == 1 && lastRealTime;
+		UIData.frameView.drawLocations = lastRealTime;
 		if(inval) {
 			if(suspensed) {
 				UIData.frameView.invalidate();
@@ -378,12 +395,12 @@ public class Manager implements View.OnClickListener {
 	/** try with camera permission.
 	 * @param decodeType  see {@link DecodeManager#decodeType} */
 	public void tryOpenCamera(int decodeType, boolean realTime, Activity activity, int requestCode) {
-		CMN.debug("tryOpenCamera", decodeType, activity, requestCode);
+		CMN.debug("tryOpenCamera", decodeType, realTime, activity, requestCode);
 		lastType = decodeType;
 		dMan.decodeType = decodeType & 0xF;
 		this.permissionCode = requestCode;
 		cameraManager.realtime = lastRealTime = realTime;
-		UIData.frameView.textRects =null;
+		UIData.frameView.textRects = null;
 		if(!viewingImg || realTime) {
 			if(activity==null) activity=this.activity;
 			if(activity==null) {
@@ -471,6 +488,7 @@ public class Manager implements View.OnClickListener {
 				}
 			}
 			startPreview(null);
+			UIData.frameView.drawLocations = isRealTime();
 			UIData.frameView.resume();
 		}
 	}
@@ -685,46 +703,6 @@ public class Manager implements View.OnClickListener {
 		}
 	}
 	
-	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, int depth) {
-		int cc = vg.getChildCount();
-		View ca;
-		boolean longClickable = clicker instanceof View.OnLongClickListener;
-		boolean touhable = clicker instanceof View.OnTouchListener;
-		if(vg.isClickable()) {
-			click(vg, clicker, longClickable, touhable);
-		}
-		for (int i = 0; i < cc; i++) {
-			ca = vg.getChildAt(i);
-			//CMN.Log("setOnClickListenersOneDepth", ca, (i+1)+"/"+(cc));
-			if(ca instanceof ViewGroup) {
-				if(--depth>0) {
-					if(ca.isClickable()) {
-						click(ca, clicker, longClickable, touhable);
-					} else {
-						setOnClickListenersOneDepth((ViewGroup) ca, clicker, depth);
-					}
-				}
-			} else {
-				int id = ca.getId();
-				if(ca.getId()!=View.NO_ID){
-					if(!(ca instanceof EditText) && ca.isEnabled()) {
-						click(ca, clicker, longClickable, touhable);
-					}
-				}
-			}
-		}
-	}
-	
-	private static void click(View ca, View.OnClickListener clicker, boolean longClickable, boolean touhable) {
-		ca.setOnClickListener(clicker);
-		if(longClickable&&ca.isLongClickable()) {
-			ca.setOnLongClickListener((View.OnLongClickListener) clicker);
-		}
-		if(touhable) {
-			ca.setOnTouchListener((View.OnTouchListener) clicker);
-		}
-	}
-	
 	public void onDecodeSuccess(String text) {
 //		Intent intent = new Intent();
 //		intent.putExtra(Intent.EXTRA_TEXT, text);
@@ -776,6 +754,8 @@ public class Manager implements View.OnClickListener {
 		applyImageSize(center);
 		//UIData.imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		UIData.frameView.setOutsideTouchMode(1);
+		UIData.frameView.drawLocations = false;
+		UIData.frameView.textRects = null;
 		setRect(getFramingRect(true));
 		UIData.toast.setVisibility(View.VISIBLE);
 //		UIData.cameraBtn.setVisibility(View.GONE);
@@ -829,6 +809,10 @@ public class Manager implements View.OnClickListener {
 			return val;
 		}
 		return false;
+	}
+	
+	public boolean toggleAutoSch() {
+		return autoSch = !autoSch;
 	}
 	
 	public final boolean isRealTime() {

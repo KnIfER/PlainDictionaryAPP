@@ -194,39 +194,42 @@ public class DecodeManager {
 					if(debugTime)CMN.pt("hoc 时间::"); CMN.rt();
 					String utf8 = tess.getUTF8Text();
 					if(debugTime)CMN.pt("utf8 时间::"); CMN.rt();
-					//CMN.debug("hoc::", utf8);
-					Document nodes = Jsoup.parse(hoc);
-					StringBuilder sb = new StringBuilder();
-					ArrayList<Elements> all = new ArrayList();
-					all.add(nodes.children());
-					Elements els;
-					boolean findCenter = true;
-					int centerIdx = -1;
-					String centerWord="";
-					while(all.size() > 0) {
-						els = all.remove(0);
-						for (Element el:els) {
-							if (el.childrenSize()>0) {
-								all.add(el.children());
-							}
-							if ("ocrx_word".equals(el.className())) {
-								//sb.append(el.text());
-								String bbox = el.attr("title");
-								if (bbox.startsWith("bbox")) {
+					String text = utf8;
+					if (mManager.autoSch) {
+						//CMN.debug("hoc::", utf8);
+						Document nodes = Jsoup.parse(hoc);
+						StringBuilder sb = new StringBuilder();
+						ArrayList<Elements> all = new ArrayList();
+						all.add(nodes.children());
+						Elements els;
+						boolean findCenter = true;
+						int centerIdx = -1;
+						String centerWord="";
+						while(all.size() > 0) {
+							els = all.remove(0);
+							for (Element el:els) {
+								if (el.childrenSize()>0) {
+									all.add(el.children());
+								}
+								if ("ocrx_word".equals(el.className())) {
+									//sb.append(el.text());
+									String bbox = el.attr("title");
+									if (bbox.startsWith("bbox")) {
 //									sb.append(el.text());
-									String[] bbx = bbox.split(" ");
-									if (bbx.length==7) {
-										int conf = IU.parsint(bbx[6]);
-										if (conf >= 45) {
-											sb.append(el.text());
-											if (findCenter) {
-												rcW.set(IU.parsint(bbx[1]), IU.parsint(bbx[2]), IU.parsint(bbx[3]), IU.parsint(bbx[4]));
-												//CMN.debug("conf::", el.text(), conf, rcW);
-												if (rcW.contains(cX, cY)) {
-													CMN.debug("命中::", el.text());
-													//findCenter = false;
-													centerIdx = sb.length();
-													centerWord = el.text();
+										String[] bbx = bbox.split(" ");
+										if (bbx.length==7) {
+											int conf = IU.parsint(bbx[6]);
+											if (conf >= 45) {
+												sb.append(el.text());
+												if (findCenter) {
+													rcW.set(IU.parsint(bbx[1]), IU.parsint(bbx[2]), IU.parsint(bbx[3]), IU.parsint(bbx[4]));
+													//CMN.debug("conf::", el.text(), conf, rcW);
+													if (rcW.contains(cX, cY)) {
+														CMN.debug("命中::", el.text());
+														//findCenter = false;
+														centerIdx = sb.length();
+														centerWord = el.text();
+													}
 												}
 											}
 										}
@@ -234,26 +237,22 @@ public class DecodeManager {
 								}
 							}
 						}
-					}
-					if(debugTime) CMN.pt("拼接 时间::");
-					//CMN.debug("hoc::", hoc);
-					String text = sb.toString();
-					
-					if (centerIdx > 0) {
-						BreakIteratorHelper wordIterator = new BreakIteratorHelper();
-						wordIterator.setText(text);
-						int st = wordIterator.preceding(centerIdx);
-						int ed = wordIterator.following(st);
-						//CMN.debug("词组修正::", st, centerIdx, ed);
-						if (ed > st) {
-							centerWord = text.substring(st, ed);
-							CMN.debug("词组修正::", centerWord);
+						if(debugTime) CMN.pt("拼接 时间::");
+						//String text = sb.toString();
+						if (centerIdx > 0) {
+							BreakIteratorHelper wordIterator = new BreakIteratorHelper();
+							wordIterator.setText(text);
+							int st = wordIterator.preceding(centerIdx);
+							int ed = wordIterator.following(st);
+							//CMN.debug("词组修正::", st, centerIdx, ed);
+							if (ed > st) {
+								centerWord = text.substring(st, ed);
+								CMN.debug("词组修正::", centerWord);
+							}
 						}
-					}
-					
-					if (true) {
 						mManager.mWordCamera.popupWord(centerWord);
 					}
+					//CMN.debug("hoc::", hoc);
 					
 					if (!TextUtils.isEmpty(text)) {
 						return text;

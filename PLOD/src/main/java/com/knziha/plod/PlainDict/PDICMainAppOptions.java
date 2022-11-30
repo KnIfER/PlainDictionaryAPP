@@ -2829,15 +2829,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=31) public static boolean debugPDFFont() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=31) public static void debugPDFFont(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=32) public static boolean wordCameraRealtime() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=32) public static void wordCameraRealtime(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32, shift=1) public static boolean wordCameraRealtime() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32, shift=1) public static void wordCameraRealtime(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=33) public static boolean wordCameraAutoSch() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33) public static void wordCameraAutoSch(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static boolean wordCameraAutoSch() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static void wordCameraAutoSch(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=34) public static boolean allowMergeSytheticalPage() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=34) public static void allowMergeSytheticalPage(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
-	
 	
 	@Metaline(flagPos=36) public static boolean etHistoryExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=36) public static void etHistoryExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}

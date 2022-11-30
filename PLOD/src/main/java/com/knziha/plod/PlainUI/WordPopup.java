@@ -688,25 +688,27 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 	}
 	
-	public void setTranslator(BookPresenter ccd, int pos) {
-		if (CCD!=ccd) {
-			CCD=ccd;
-			currentPos = pos;
-			resetPreviewMidPos();
-			if(pos<0) pos=-1-pos;
-			displaying=ccd.bookImpl.getEntryAt(pos);
-			entryTitle.setText(displaying);
-			//popupWebView.SelfIdx = CCD_ID = record.value[0];
-			indicator.setText(ccd.getDictionaryName());
-			popuphandler.setBook(ccd);
-			dictPicker.dataChanged();
-			dictPicker.scrollThis();
-		} else if(currentPos!=pos) {
-			currentPos = pos;
-			resetPreviewMidPos();
-			if(pos<0) pos=-1-pos;
-			displaying=ccd.bookImpl.getEntryAt(pos);
-			entryTitle.setText(displaying);
+	public void setTranslator(@NonNull BookPresenter ccd, int pos) {
+		if (ccd != null) { // todo
+			if (CCD!=ccd) {
+				CCD=ccd;
+				currentPos = pos;
+				resetPreviewMidPos();
+				if(pos<0) pos=-1-pos;
+				displaying=ccd.bookImpl.getEntryAt(pos);
+				entryTitle.setText(displaying);
+				//popupWebView.SelfIdx = CCD_ID = record.value[0];
+				indicator.setText(ccd.getDictionaryName());
+				popuphandler.setBook(ccd);
+				dictPicker.dataChanged();
+				dictPicker.scrollThis();
+			} else if(currentPos!=pos) {
+				currentPos = pos;
+				resetPreviewMidPos();
+				if(pos<0) pos=-1-pos;
+				displaying=ccd.bookImpl.getEntryAt(pos);
+				entryTitle.setText(displaying);
+			}
 		}
 	}
 	
@@ -994,8 +996,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		// 初次添加请指明方位
 		if (!pin() && !isVisible()) {
 			ViewGroup targetRoot = lastTargetRoot;
-			if (moveView.FVDOCKED && moveView.Maximized && wordCamera==null && PDICMainAppOptions.getResetMaxClickSearch()) {
-				moveView.Dedock();
+			if (moveView.FVDOCKED && moveView.Maximized && PDICMainAppOptions.getResetMaxClickSearch()) {
+				if (wordCamera==null || true)
+				{
+					moveView.Dedock();
+				}
 			}
 //			CMN.Log("poping up ::: ", a.ActivedAdapter);
 			if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !moveView.FVDOCKED) {
@@ -1084,12 +1089,13 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					break;
 				
 				if (CCD!=a.EmptyBook) {
-					if(CCD.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-//						PlainWeb webx = (PlainWeb) CCD.bookImpl;
-//						if(webx.takeWord(key)) {
-//							CCD.SetSearchKey(key);
-//							idx=0;
-//						}
+					if(CCD.getIsWebx()){
+						PlainWeb webx = (PlainWeb) CCD.bookImpl;
+						if(webx.takeWord(key)) {
+							CCD.SetSearchKey(key);
+							idx=0;
+							break;
+						}
 						continue;
 					} else  {
 						idx=CCD.bookImpl.lookUp(key, true);
@@ -1328,9 +1334,16 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void SearchDone() {
+		final boolean b1 = wordCamera!=null && !wordCamera.isVisible();
+		if (b1) {
+			return;
+		}
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
 		//CMN.Log("SearchDone::", rec, currentPos, CCD);
 		if (rec != null) {
+			if(b1 && isMaximized()){
+				wordCamera.onPause();
+			}
 			renderMultiRecordAt(0);
 		}
 		else {
@@ -1341,9 +1354,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				sching = null;
 			}
 			if (currentPos >= 0 && CCD != a.EmptyBook) {
+				if(b1 && isMaximized()){ // ??? 无效
+					wordCamera.onPause();
+				}
 				boolean isWebx = CCD.getIsWebx();
-				weblistHandler.setViewMode(null, 0, getRenderingWV(isWebx?CCD:null));
-				if(isWebx) { //todo 合并逻辑
+				weblistHandler.setViewMode(null, 0, getRenderingWV(isWebx ? CCD : null));
+				if (isWebx) { //todo 合并逻辑
 					WebViewmy renderingWV = dictView();
 					weblistHandler.bMergingFrames = 1;
 					indicator.setText(loadManager.md_getName(CCD_ID, -1));
@@ -1354,6 +1370,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				} else {
 					loadEntry(0, true);
 				}
+			} else if(b1 && isMaximized()){
+				dismiss();
 			}
 		}
 	}
@@ -1514,6 +1532,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
 			((MultiShareActivity)a).OnPeruseDetached();
 		}
+		if (wordCamera!=null && isMaximized() && wordCamera.isVisible()) {
+			wordCamera.onResume();
+		}
 	}
 	
 	// sync from naved webview
@@ -1614,6 +1635,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (popupContentView!=null) {
 				FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
 				if (moveView.bottomGravity = wordCamera != null) {
+					popupContentView.setTranslationY(0);
 					lp.gravity = Gravity.BOTTOM;
 					popupContentView.setAlpha(isMaximized()?1:0.8f);
 				} else {

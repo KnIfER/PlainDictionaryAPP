@@ -9652,7 +9652,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		//CMN.debug("onActivityResult::", requestCode, resultCode);
+		CMN.debug("onActivityResult", requestCode, resultCode, data);
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
 			case 0: {
@@ -9662,7 +9662,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(resultCode==Activity.RESULT_OK && data!=null) {
 					try {
 						if (settingsPanel instanceof WordCamera) {
-							((WordCamera) settingsPanel).mManager.openImage(data.getData());
+							((WordCamera) settingsPanel).openImage(data.getData());
 						}
 					} catch (Exception e) {
 						CMN.debug(e);
@@ -9671,7 +9671,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case TapTranslator.requestCode:{
 				wordPopup.set(resultCode==requestCode);
-				
 			} break;
 			case Multiview.requestCode:{
 				resetMerge(-1, false);
