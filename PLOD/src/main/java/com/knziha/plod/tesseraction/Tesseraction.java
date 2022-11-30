@@ -63,8 +63,8 @@ public class Tesseraction {
 		plugin = PluginClazz.getConstructors()[0].newInstance();
 	}
 	
-	public void initTessdata(Activity activity, String path, String languages) throws InvocationTargetException, IllegalAccessException {
-		mOcrInit.invoke(plugin, pluginContext, activity, path, languages);
+	public boolean initTessdata(Activity activity, String path, String languages) throws InvocationTargetException, IllegalAccessException {
+		return (boolean) mOcrInit.invoke(plugin, pluginContext, activity, path, languages);
 	}
 	
 	public void setImage(byte[] data, int w, int h, int bpp, int bpl) throws InvocationTargetException, IllegalAccessException {

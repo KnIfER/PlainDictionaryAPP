@@ -810,7 +810,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			int wilte = GlobalOptions.isDark ? 0xFF555555 : Color.WHITE;
 			btnPanel.setBackgroundColor(wilte);
 			edit.setBackgroundColor(wilte);
-			wilte = GlobalOptions.isDark ? Color.WHITE : 0xde000000;
+			wilte = GlobalOptions.isDark ? Color.WHITE : 0xde888888;
 			edit.setHintTextColor(wilte);
 			edit.setTextColor(wilte);
 			//editToolbar.setBackgroundColor(MainAppBackground);

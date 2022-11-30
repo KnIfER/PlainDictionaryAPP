@@ -909,7 +909,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																});
 															}
 															else if(tv.getText().length()==2 && tv.getText().toString().equals("笔记")){
-																//CMN.Log("yes!!! 高亮");
+																//CMN.Log("yes!!! 笔记");
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
 																	public boolean onLongClick(View v) {
@@ -925,7 +925,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																	@Override
 																	public boolean onLongClick(View v) {
 																		MainActivityUIBase a = presenter.a;
-																		a.annotText(WebViewmy.this, -1, false);
+																		a.annotMarkUI(WebViewmy.this, -1);
 																		/* 📕📕📕 微空间内爆术 📕📕📕 */
 //																		Context c = getContext();
 //																		//CMN.Log(c);

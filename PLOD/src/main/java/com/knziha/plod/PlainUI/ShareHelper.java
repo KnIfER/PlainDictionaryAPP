@@ -292,7 +292,7 @@ public class ShareHelper {
 			, R.string.highlight
 			, R.string.annote
 			, R.string.underline
-			, R.string.deunderline
+			, R.string.undernote
 			, R.string.send_dot
 			, R.string.send_dot
 			, R.string.send_dot

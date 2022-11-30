@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.text.ParcelableSpan;
 import android.text.TextPaint;
 import android.text.style.CharacterStyle;
+import android.text.style.UnderlineSpan;
 import android.text.style.UpdateAppearance;
 
 import androidx.annotation.ColorInt;
@@ -17,8 +18,8 @@ import java.lang.reflect.Method;
 /**
  * Base annotation span class
  */
-public class ColoredTextSpan extends CharacterStyle
-        implements UpdateAppearance, ParcelableSpan {
+public class ColoredTextSpan extends UnderlineSpan
+        implements UpdateAppearance {
     public int mColor;
     public int type;
     public float thickness;

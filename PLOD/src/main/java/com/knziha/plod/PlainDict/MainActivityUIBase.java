@@ -4620,7 +4620,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							break;
 						/* 高亮 */
 						case R.string.highlight: {
-							Annot(mWebView, 0, null);
+							if (isLongClicked) {
+								annotMarkUI(mWebView, 0);
+							} else {
+								Annot(mWebView, 0, null);
+							}
 						}
 						break;
 						/* 高亮笔记 */
@@ -4636,13 +4640,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						break;
 						/* 下划线 */
 						case R.string.underline: {
-							Annot(mWebView, 1, null);
+							if (isLongClicked) {
+								annotMarkUI(mWebView, 1);
+							} else {
+								Annot(mWebView, 1, null);
+							}
 						}
 						break;
-						/* 清除下划线 */
-						case R.string.deunderline: {
+						/* 下划线笔记 */
+						case R.string.undernote: {
 							//mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
-							annotText(mWebView, 1, false);
+							mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
+								@Override
+								public void onReceiveValue(String value) {
+									annotText(mWebView, 1, false);
+								}
+							});
 						}
 						break;
 						case R.string.search_dot:
@@ -11766,6 +11779,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bookNotes.toggle(root, null, -1);
 		}
 		else bookNotes.refresh();
+	}
+	
+	
+	public void annotMarkUI(WebViewmy mWebView, int type) {
+		
+		annotText(mWebView, type, false);
+		
 	}
 	
 	/** type: 0=下划线  1=高亮 -1=保持不变   */

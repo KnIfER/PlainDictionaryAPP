@@ -145,9 +145,7 @@ public class BookPresenter
 	public final String idStr10;
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
-	/**</style><script class="_PDict" src="//mdbr/SUBPAGE.js"></script>*/
-	@Metaline()
-	public final static String js="SUBPAGE";
+	public final static String js="</style><script class=\"_PDict\" src=\"//mdbr/SUBPAGE.js\"></script>";
 	
 	/**
 	 var imgs = document.getElementsByTagName('IMG');
@@ -2222,11 +2220,6 @@ function debug(e){console.log(e)};
 	/** Let's call and call and call and call!!! */
 	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean mIsolateImages) {
     	//CMN.Log("MakeRCSP(opt)??", MakeRCSP(opt),MakeRCSP(opt)>>5);
-		if (getType()==PLAIN_TYPE_MDICT) {
-			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
-			htmlBuilder.append("</div>");
-		}
 		boolean styleOpened=false;
 		if (mWebView.weblistHandler.bDataOnly) {
 			htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
@@ -2284,10 +2277,19 @@ function debug(e){console.log(e)};
 	}
 
 	public void LoadPagelet(WebViewmy mWebView, StringBuilder htmlBuilder, String records) {
-		mWebView.loadDataWithBaseURL(mBaseUrl,
-				htmlBuilder.append(htmlHeadEndTag)
-						.append(records)
-						.append(htmlEnd).toString(), null, "UTF-8", null);
+//		if (getType()==PLAIN_TYPE_MDICT) {
+//			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
+//			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
+//			htmlBuilder.append("</div>");
+//		}
+		htmlBuilder.append(htmlHeadEndTag).append(records);
+		if (getType()==PLAIN_TYPE_MDICT) {
+			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
+			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
+			htmlBuilder.append("</div>");
+		}
+		htmlBuilder.append(htmlEnd);
+		mWebView.loadDataWithBaseURL(mBaseUrl, htmlBuilder.toString(), null, "UTF-8", null);
 	}
 
 	public static int MakePageFlag(WebViewListHandler wlh, PDICMainAppOptions opt) {

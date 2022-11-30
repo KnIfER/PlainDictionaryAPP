@@ -204,7 +204,7 @@
 	<string name="highlight">高亮标注</string>
 	<string name="annote">高亮笔记 🖌</string>
 	<string name="underline">下划线标注</string>
-	<string name="deunderline">下划线笔记</string>
+	<string name="undernote">下划线笔记</string>
 	<string name="send_inpage">页内搜索</string>
 	<string name="tts">TTS 播放\t</string>
 	<string name="pop_sch">点译查询</string>

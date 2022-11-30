@@ -605,6 +605,7 @@
             try{
                 range.setStart(start[0], start[1]);
                 range.setEnd(end[0], end[1]);
+				//tcn.check = 0;
                 if(tcn && tcn.check) {
                     var k=tcn.check, k1 = '', s1=tcn.d?2:4, b1=k.length==s1;
                     try{
@@ -618,11 +619,22 @@
                     if(p) {
                         //log('check range restore 直接验证！ ', k1);
                     } else {
-                        log('check range restore 曲折验证！ ', k1);
-                        var text = range.toString();
-                        k1 = text[0];
-                        if(!tcn.d) k1 += text[text.length-1];
-                        p = pass(k1);
+						range.setStart(start[0], Math.max(0, start[1]-1));
+						range.setEnd(end[0], Math.max(0, end[1]-1));
+						try{
+							k1 = range.startContainer.data[range.startOffset];
+							if(!tcn.d) k1+=range.endContainer.data[range.endOffset-1];
+						} catch(e) {
+							k1='';
+						}
+						p = k1&&pass(k1);
+						if(!p) {
+							log('check range restore 曲折验证！ ', k1);
+							var text = range.toString();
+							k1 = text[0];
+							if(!tcn.d) k1 += text[text.length-1];
+							p = pass(k1);
+						}
                     }
                     log('check range restore --- ', p?'pass':'验证失败!', k1+'=='+k, !p&&app.annotRaw(sid.get(), ''+tcn.nid));
                     if(!p) return 0;
@@ -797,6 +809,7 @@
                 if(k1==k2) k2='';
             tcn.check = k1 + k2;
             log('tPos='+tPos, 'stored='+r, "check="+tcn.check)
+            //app.log('tPos='+tPos+' stored='+r+" check="+tcn.check)
             if(pos==undefined)
                 pos = window.currentPos || 0; 
             tcn = packRow(tcn);

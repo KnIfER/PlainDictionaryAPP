@@ -48,6 +48,8 @@ public class DecodeManager {
 	}
 	
 	public String decodeOCR(byte[] data, int sWidth, int sHeight) throws Exception {
+		getTess();
+		if (!tess_inited) return null;
 		RectF rect = framingRect;
 		// 源图像显示后的缩放比，比如0.5、0.9
 		FrameLayout view = mManager.UIData.photoView;
@@ -302,10 +304,12 @@ public class DecodeManager {
 		if(!tess_inited) {
 			CMN.pt("初始化0::"); CMN.rt();
 			tess.init(mManager.activity);
-			//File path = new File();
-			tess.initTessdata( mManager.activity, null, "chi_sim+eng"); //chi_sim +chi_sim
+			String path = mManager.activity.getExternalFilesDir(null).getPath().replace(mManager.activity.getPackageName(), Tesseraction.pluginPkg);
+			if (!new File(path).exists()) {
+				path = null;
+			}
+			tess_inited = tess.initTessdata( mManager.activity, path, "chi_sim+eng"); //chi_sim +chi_sim
 			CMN.pt("初始化时间::");
-			tess_inited = true;
 		}
 		return tess;
 	}
@@ -321,6 +325,8 @@ public class DecodeManager {
 	}
 	
 	void decodeWord() throws Exception {
+		getTess();
+		if(!tess_inited) return;
 		Bitmap bitmap = mManager.bitmap;
 		int sWidth=bitmap.getWidth();
 		int sHeight=bitmap.getHeight();
@@ -433,8 +439,9 @@ public class DecodeManager {
 			CMN.pt("识别::", wds.size());
 		}
 		else if(decodeType==1) {
+			if(!tess_inited) return;
 			try {
-				res = tess.decodeQrBitmap(bitmap);
+				res = getTess().decodeQrBitmap(bitmap);
 				//CMN.Log(bitmap);
 			} catch (Exception e) {
 				CMN.Log(e);
