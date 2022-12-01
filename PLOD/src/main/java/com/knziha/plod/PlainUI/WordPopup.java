@@ -694,7 +694,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				currentPos = pos;
 				resetPreviewMidPos();
 				if(pos<0) pos=-1-pos;
-				displaying=ccd.bookImpl.getEntryAt(pos);
+				displaying=ccd.getRowTextAt(pos);
+				if(displaying==null) displaying = popupKey;
 				entryTitle.setText(displaying);
 				//popupWebView.SelfIdx = CCD_ID = record.value[0];
 				indicator.setText(ccd.getDictionaryName());
@@ -705,7 +706,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				currentPos = pos;
 				resetPreviewMidPos();
 				if(pos<0) pos=-1-pos;
-				displaying=ccd.bookImpl.getEntryAt(pos);
+				displaying=ccd.getRowTextAt(pos);
+				if(displaying==null) displaying = popupKey;
 				entryTitle.setText(displaying);
 			}
 		}
