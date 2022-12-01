@@ -1607,6 +1607,10 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 	}
 	
+	@Override
+	public String getVirtualTextEffectJs(Object presenter, long[] positions) {
+		return null;
+	}
 	
 	/** 返回目标网址 */
 	@Override

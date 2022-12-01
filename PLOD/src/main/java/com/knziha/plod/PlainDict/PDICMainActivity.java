@@ -1009,7 +1009,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			return true;
 		});
 		toolbar.mNavButtonView.setOnLongClickListener(this);
-		toolbar.mNavButtonView.setAccessibilityTraversalAfter(R.id.etSearch);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+			toolbar.mNavButtonView.setAccessibilityTraversalAfter(R.id.etSearch);
+		}
 		//etSearch.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
 
 //		ResizeNavigationIcon(toolbar);
@@ -1051,7 +1053,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		if (PDICMainAppOptions.getNotificationEnabled())
 		{
-			startService(new Intent(this, ServiceEnhancer.class));
+			try {
+				startService(new Intent(this, ServiceEnhancer.class));
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
 //			locationReceiver = new EnchanterReceiver();
 //			IntentFilter filter = new IntentFilter();
 //			filter.addAction("plodlock");
@@ -2901,7 +2907,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		} else {
 			boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 			UIData.main.setVisibility(View.VISIBLE);
-			bottombar.setVisibility(View.VISIBLE);
+			ViewUtils.setVisible(bottombar, !keyboardShown);
 
 			//xxroot.removeView(contentview);
 			if(contentviewDetachType==0) {

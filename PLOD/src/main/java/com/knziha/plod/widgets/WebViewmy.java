@@ -925,7 +925,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																	@Override
 																	public boolean onLongClick(View v) {
 																		MainActivityUIBase a = presenter.a;
-																		a.annotMarkUI(WebViewmy.this, -1);
+																		a.annotMarkUI(WebViewmy.this, 3);
 																		/* 📕📕📕 微空间内爆术 📕📕📕 */
 //																		Context c = getContext();
 //																		//CMN.Log(c);

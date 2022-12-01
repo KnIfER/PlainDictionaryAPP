@@ -54,6 +54,7 @@ import androidx.core.graphics.ColorUtils;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -151,6 +152,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	/** 取词模式 1=wordToday  2=wordPopup */
 	public int fetchWord;
 	public int lastFetchWord = 2;
+	public TextView etSearch;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
@@ -243,6 +245,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
 		tapSel = opt.getInt("tapSel", 0);
 		shezhi = BookPresenter.MakePageFlag(this, opt);
+		zhTrans = PDICMainAppOptions.webZhTranslate();
 	}
 	
 	public final Runnable entrySeekRn = new Runnable() {
@@ -1292,6 +1295,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		} else {
 			mWebView.evaluateJavascript(js, null);
 		}
+		if (this==a.weblistHandler) {
+			PDICMainAppOptions.webZhTranslate(zhTrans);
+		}
 	}
 	
 	public void updateTapSel(int value) {
@@ -1592,6 +1598,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		boolean b1=bar.getParent()==null||forceShow==1;
 		if (b1) {
+			CMN.debug("添加到视图中去");
 			boolean bottom = PDICMainAppOptions.schpageAtBottom() && a.thisActType == MainActivityUIBase.ActType.PlainDict;
 			int idx =  bottom ? 1 : 0;
 			if(contentUIData.webcontentlister.indexOfChild(bar)!=idx)
@@ -1609,6 +1616,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			bar.setTag(pageSchEdit.getText());
 			SearchOnPage(null);
+			bar.getLayoutParams().height = a.actionBarSize;
 		}
 		else {
 			if (ViewUtils.removeView(bar)) {
@@ -2450,5 +2458,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				}
 			}, 350);
 		}
+	}
+	
+	public String getSearchKey() {
+		if (etSearch != null) {
+			return etSearch.getText().toString();
+		}
+		return a.getSearchTerm();
 	}
 }

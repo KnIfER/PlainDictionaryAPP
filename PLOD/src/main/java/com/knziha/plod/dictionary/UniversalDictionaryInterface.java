@@ -66,7 +66,7 @@ public interface UniversalDictionaryInterface {
 	
 	String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position);
 	
-	String getVirtualTextEffectJs(long[] positions);
+	String getVirtualTextEffectJs(Object presenter, long[] positions);
 	
 	long getBooKID();
 	

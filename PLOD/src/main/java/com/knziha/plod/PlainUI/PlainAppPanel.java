@@ -19,11 +19,15 @@ import androidx.annotation.CallSuper;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrevention{
+	public /*final*/ WebViewListHandler weblistHandler;
 	protected MainActivityUIBase a;
 	protected boolean bShouldInterceptClickListener = true;
 	protected boolean showPopOnAppbar = true;
@@ -235,13 +239,27 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 		}
 	}
 	
+	
+	
 	@Override
 	public boolean onBackPressed() {
-		CMN.debug("a.settingsPanels.indexOf(this)::");
-		if (a.settingsPanel != this) {
-			int idx = a.settingsPanels.indexOf(this);;
+		if (lastShowType==2 && a!=null && a.settingsPanel != this) { // todo ???
+			int idx = a.settingsPanels.indexOf(this);
 			if (idx < a.settingsPanels.size()-1) {
 				a.onBackPressed();
+				return true;
+			}
+		}
+		if (weblistHandler!=null && PDICMainAppOptions.getUseBackKeyClearWebViewFocus()) {
+			WebViewmy wv = weblistHandler.dictView;
+			//CMN.debug("onBackPressed::wv==", wv);
+			if (wv!=null && (wv.bIsActionMenuShown||ViewUtils.isVisibleV2(weblistHandler.toolsBtn))) {
+				wv.clearFocus();
+				if (wv.bIsActionMenuShown) {
+					wv.evaluateJavascript("getSelection().collapseToStart()", null);
+				} else {
+					wv.weblistHandler.initQuickTranslatorsBar(false, false);
+				}
 				return true;
 			}
 		}

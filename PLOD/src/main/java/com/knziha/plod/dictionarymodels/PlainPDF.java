@@ -236,7 +236,7 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getVirtualTextEffectJs(long[] positions) {
+	public String getVirtualTextEffectJs(Object presenter, long[] positions) {
 		return null;
 	}
 	

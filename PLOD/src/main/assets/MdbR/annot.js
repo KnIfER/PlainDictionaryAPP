@@ -619,16 +619,20 @@
                     if(p) {
                         //log('check range restore 直接验证！ ', k1);
                     } else {
-						range.setStart(start[0], Math.max(0, start[1]-1));
-						range.setEnd(end[0], Math.max(0, end[1]-1));
-						try{
-							k1 = range.startContainer.data[range.startOffset];
-							if(!tcn.d) k1+=range.endContainer.data[range.endOffset-1];
-						} catch(e) {
-							k1='';
+						if(true) { // 修复 <div> 放到 <head> 造成偏移一位的BUG
+							range.setStart(start[0], Math.max(0, start[1]-1));
+							range.setEnd(end[0], Math.max(0, end[1]-1));
+							try{
+								k1 = range.startContainer.data[range.startOffset];
+								if(!tcn.d) k1+=range.endContainer.data[range.endOffset-1];
+							} catch(e) {
+								k1='';
+							}
+							p = k1&&pass(k1);
 						}
-						p = k1&&pass(k1);
 						if(!p) {
+							range.setStart(start[0], start[1]);
+							range.setEnd(end[0], end[1]);
 							log('check range restore 曲折验证！ ', k1);
 							var text = range.toString();
 							k1 = text[0];

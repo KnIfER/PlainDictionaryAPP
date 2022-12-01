@@ -143,8 +143,8 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		mManager.pauseCamera();
 		if (wordPopup == a.wordPopup) {
 			wordPopup.stopTask();
-			wordPopup.forcePin(null);
 			wordPopup.wordCamera = null;
+			wordPopup.forcePin(null);
 		}
 	}
 	
@@ -331,6 +331,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	
 	@Override
 	public boolean onBackPressed() {
+		weblistHandler = wordPopup.isVisible()?wordPopup.weblistHandler:null;
 		if (mManager.onBack()) {
 			return true;
 		}

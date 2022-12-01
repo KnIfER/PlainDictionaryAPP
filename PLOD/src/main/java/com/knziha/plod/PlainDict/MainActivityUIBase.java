@@ -702,10 +702,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean checkWebSelection() {
 		WebViewmy wv = null;
 		boolean doCheck = false;
-		if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
-			wv = wordPopup.mWebView;
-			doCheck = opt.getUseBackKeyClearWebViewFocus();
-		} else {
+//		if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
+//			wv = wordPopup.mWebView;
+//			doCheck = opt.getUseBackKeyClearWebViewFocus();
+//		} else {
 			View view = getCurrentFocus();
 			if(view != null) {
 				if (view.getId()==R.id.webviewmy) {
@@ -721,7 +721,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
-		}
+//		}
 		if(doCheck) {
 			wv.clearFocus();
 			if (wv.bIsActionMenuShown) {
@@ -2434,6 +2434,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		if(contentview==null) {
 			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
+			weblist.etSearch = etSearch;
 			if (bottombar!=null) {
 				bottombar.setTag(weblist);
 			}
@@ -3477,7 +3478,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(settingsPanel!=null) {
 			if(settingsPanel instanceof AlloydPanel) {
-				if(findHolder) parentView = ((AlloydPanel)settingsPanel).handler.contentUIData.PageSlider;
+				if(findHolder) parentView = ((AlloydPanel)settingsPanel).weblistHandler.contentUIData.PageSlider;
 				bottom = 0;//(AlloydPanel)settingsPanel).contentUIData.bottombar2.getHeight();
 			} else {
 				if(findHolder) parentView = (ViewGroup)settingsPanel.settingsLayout.getParent();
@@ -6184,6 +6185,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 全文朗读 */
 			case R.drawable.ic_fulltext_reader:{
 				showMT("  全文朗读  ");
+				findWebList(v);
 				performReadContent(getCurrentWebContext());
 			} break;
 			/* 上一词典信息 */
@@ -6250,11 +6252,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 				}
-				if (wv==null) {
-					if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
-						wv = wordPopup.mWebView;
-					}
-				}
+//				if (wv==null) {
+//					if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
+//						wv = wordPopup.mWebView;
+//					}
+//				}
 				if (wv==null) {
 					wv = weblist.getWebContext();
 				}
@@ -8229,14 +8231,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			else if (url.startsWith(soundTag)) {
 				try {
 					if (invoker.bookImpl.hasMdd()) {
-						//CMN.Log("hijacked sound playing : ",url);
+						CMN.debug("hijacked sound playing : ",url);
 						String soundUrl = URLDecoder.decode(url.substring(soundTag.length()), "UTF-8");
 						if(PDICMainAppOptions.getCacheSoundResInAdvance()){
 							playCachedSoundFile(mWebView, soundUrl, invoker, false);
 							return true;
 						}
-						String Incan = playsoundscript + ("('" + soundUrl + "')");
-						view.evaluateJavascript(Incan, null);
+						view.evaluateJavascript(playsoundscript + ("('" + soundUrl + "')"), null);
 					} else
 						view.evaluateJavascript("var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value=='" + URLDecoder.decode(url, "UTF-8") + "'){ hrefs[i].removeAttribute('href'); hrefs[i].click(); break; } } }", null);
 					return true;
@@ -9937,7 +9938,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	private void performReadContent(WebViewmy mWebView) {
-		CMN.debug("bThenReadContent");
+		CMN.debug("performReadContent::bThenReadContent", mWebView);
+		try {
+			throw new RuntimeException("watch stacktrace!");
+		} catch (RuntimeException e) {
+			CMN.debug(e);
+		}
 		if(mWebView!=null){
 			mWebView.evaluateJavascript("document.documentElement.innerText", value -> {
 				value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
@@ -9947,6 +9953,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public WebViewmy getCurrentWebContext() {
+		if (weblist!=null) {
+			return weblist.getWebContext();
+		}
 		return null;
 	}
 
@@ -9968,6 +9977,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private String WebviewSoundJS=StringUtils.EMPTY;
 
 	private void requestSoundPlayBack(String finalTarget, BookPresenter invoker, WebViewmy wv) {
+		CMN.debug("requestSoundPlayBack", finalTarget, invoker, wv);
 		String soundKey = null;
 		try {
 			soundKey = URLEncoder.encode(finalTarget, "UTF-8");
@@ -9981,7 +9991,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			opt.supressAudioResourcePlaying=false;
 			soundKey=soundsTag+soundKey; /* CMN.Log("发音任务丢给资源拦截器", soundKey); */
-			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")") , null);
+			wv.getSettings().setMediaPlaybackRequiresUserGesture(false);
+			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")"), new ValueCallback<String>() {
+				@Override
+				public void onReceiveValue(String value) {
+					wv.getSettings().setMediaPlaybackRequiresUserGesture(true);
+				}
+			});
 		}
 	}
 
@@ -10569,7 +10585,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				bIsFirstLaunch=false;
 			}
-			if(normal_idx<0 && !fastPreview) {
+			if(normal_idx<0 && !fastPreview && isContentViewAttached()) {
 				DetachContentView(false);
 			}
 		} catch (Exception e) { CMN.debug(e); }
@@ -10890,16 +10906,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
+		if(settingsPanel!=null /*&& settingsPanel!=wordPopup*/) {
+			if (settingsPanel.onBackPressed()) {
+				return true;
+			}
+			CMN.debug("PerFormBackPrevention", settingsPanel);
+			hideSettingsPanel(settingsPanel);
+			CMN.debug("PerFormBackPrevention done", settingsPanel);
+			return true;
+		}
 		if(!bBackBtn && checkWebSelection())
 			return true;
 		if(!AutoBrowsePaused || bRequestingAutoReading){
 			stopAutoReadProcess();
-			return true;
-		}
-		if(settingsPanel!=null && settingsPanel!=wordPopup) {
-			CMN.debug("PerFormBackPrevention", settingsPanel);
-			hideSettingsPanel(settingsPanel);
-			CMN.debug("PerFormBackPrevention done", settingsPanel);
 			return true;
 		}
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
@@ -11783,9 +11802,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void annotMarkUI(WebViewmy mWebView, int type) {
-		
-		annotText(mWebView, type, false);
-		
+		annotText(mWebView, type>=0?-2-type:type, false);
 	}
 	
 	/** type: 0=下划线  1=高亮 -1=保持不变   */

@@ -28,16 +28,15 @@ import java.util.List;
 
  /** 用于弹出显示词典内容（新窗口） */
 public class AlloydPanel extends PlainAppPanel {
-	public final WebViewListHandler handler;
 	public Toolbar toolbar;
 	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> RandomMenu;
 	public List<MenuItemImpl> PopupMenu;
 	public MenuItemImpl fetchWordMenu;
 	
-	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler handler) {
+	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler weblistHandler) {
 		super(a, true);
-		this.handler=handler;
+		this.weblistHandler = weblistHandler;
 		this.bottomPadding = 0;
 		this.bPopIsFocusable = true;
 		this.bFadeout = -2;
@@ -52,8 +51,8 @@ public class AlloydPanel extends PlainAppPanel {
 			mBackgroundColor = 0;
 			setShowInDialog();
 		}
-		if (settingsLayout==null && handler!=null) {
-			SplitView linearView = handler.contentUIData.webcontentlister;
+		if (settingsLayout==null && weblistHandler !=null) {
+			SplitView linearView = weblistHandler.contentUIData.webcontentlister;
 			Toolbar toolbar = this.toolbar = new Toolbar(context);
 			linearView.addView(toolbar, 0);
 			toolbar.getLayoutParams().height = (int) (GlobalOptions.density * 45);
@@ -61,13 +60,13 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.inflateMenu(R.xml.menu_popup_content);
 			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
-			AllMenus.tag = handler;
+			AllMenus.tag = weblistHandler;
 			AllMenus.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked);
 			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
 			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach
 			//AllMenus.getItems().set(4, a.getMenuSTd(R.id.translator));
-			if(handler.tapSch) {
+			if(weblistHandler.tapSch) {
 				ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
 			}
 			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 8, 5);
@@ -78,7 +77,7 @@ public class AlloydPanel extends PlainAppPanel {
 			fetchWordMenu = (MenuItemImpl) ViewUtils.findInMenu(RandomMenu, R.id.fetchWord);
 			settingsLayout = linearView;
 			//refresh();
-			if (handler.fetchWord>0) {
+			if (weblistHandler.fetchWord>0) {
 				fetchWordMenu.setChecked(true);
 			}
 		}
@@ -122,7 +121,7 @@ public class AlloydPanel extends PlainAppPanel {
 //		mScrollY = settingsLayout.getScrollY();
 		//if (opt.getRemPos())
 		{
-			WebViewmy mWebView = handler.dictView;
+			WebViewmy mWebView = weblistHandler.dictView;
 			if (mWebView!=null && mWebView.isViewSingle()/* && mWebView.currentRendring.length==1*/) {
 				BookPresenter book = mWebView.presenter;
 				if (!book.getIsWebx()) {

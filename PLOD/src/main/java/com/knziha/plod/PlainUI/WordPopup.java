@@ -86,7 +86,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongClickListener {
-	public /*final*/ WebViewListHandler weblistHandler;
 	public String popupKey;
 	public WordCamera wordCamera;
 	int popupFrame;
@@ -750,7 +749,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			pottombar.setTag(weblist);
 			popupChecker = pottombar.findViewById(R.id.popChecker);
 			popupChecker.setChecked(PDICMainAppOptions.getPinTapTranslator());
-			entryTitle = toolbar.findViewById(R.id.popupText1);
+			weblist.etSearch = entryTitle = toolbar.findViewById(R.id.popupText1);
 			if (Build.VERSION.SDK_INT < 27) {
 				entryTitle.setPadding(0, 0, 0, 0);
 			}
@@ -860,7 +859,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		reInit();
 		
 		boolean bPeruseViewAttached = a.PeruseViewAttached();
-		ViewGroup targetRoot = forcePinTarget!=null? forcePinTarget : bPeruseViewAttached? a.peruseView.root:a.root;
+		ViewGroup targetRoot = bPeruseViewAttached? a.peruseView.root:a.root;
+		if (forcePinTarget != null) {
+			targetRoot = forcePinTarget;
+		} else if (invoker!=null && invoker.weblistHandler.isPopupShowing()) {
+			targetRoot = invoker.weblistHandler.alloydPanel.settingsLayoutHolder;
+		}
 		if(lastTargetRoot != targetRoot) {
 			if(lastTargetRoot!=null) dismiss();
 			lastTargetRoot = targetRoot;

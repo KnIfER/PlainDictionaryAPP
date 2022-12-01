@@ -234,7 +234,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getVirtualTextEffectJs(long[] positions) {
+	public String getVirtualTextEffectJs(Object presenter, long[] positions) {
 		return null;
 	}
 	

@@ -1719,14 +1719,15 @@ function debug(e){console.log(e)};
 		mWebView.setPresenter(this);
 		String word = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
 		if(bookImpl.hasVirtualIndex()){
-			if (idx==0 && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB && searchKey!=null) {
-				word = searchKey;
+			if (isWebx && idx<=getWebx().entrance.size()) {
+				word = mWebView.weblistHandler.getSearchKey();
 			} else {
 				int tailIdx=word.lastIndexOf(":");
 				if(tailIdx>0)
 					word=word.substring(0, tailIdx);
 			}
 		}
+		//CMN.debug("setCurrentDis", word);
 		if (mWebView.weblistHandler==a.weblistHandler) {
 			currentDisplaying = word;
 		}
@@ -2031,10 +2032,15 @@ function debug(e){console.log(e)};
 							public void onReceiveValue(String value) {
 //								CMN.Log("validifier::onReceiveValue::", value);
 								if ("1".equals(value) || "true".equals(value)) {
-									String effectJs = bookImpl.getVirtualTextEffectJs(position);
+									String effectJs = bookImpl.getVirtualTextEffectJs(BookPresenter.this, position);
 									if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
 									//a.showT("免重新加载生效！");
 									vartakelayaTowardsDarkMode(mWebView);
+									try {
+										bookImpl.getVirtualRecordAt(BookPresenter.this, position[0]);
+									} catch (IOException e) {
+										CMN.debug(e);
+									}
 									// 注意，这里会多次调用OPF中eval的脚本！
 									mWebView.bPageStarted=true;
 									mWebView.postFinishedAbility.run();
@@ -2163,7 +2169,7 @@ function debug(e){console.log(e)};
 			public void onReceiveValue(String value) {
 				//CMN.Log("validifier::onReceiveValue::1", value);
 				if ("1".equals(value) || "true".equals(value)) {
-					String effectJs = bookImpl.getVirtualTextEffectJs(mWebView.currentRendring);
+					String effectJs = bookImpl.getVirtualTextEffectJs(BookPresenter.this, mWebView.currentRendring);
 					if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
 					//a.showT("免重新加载生效！");
 					vartakelayaTowardsDarkMode(mWebView);

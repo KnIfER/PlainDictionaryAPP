@@ -119,6 +119,11 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			uiData = new UIData();
 			readUIData();
 		}
+		final boolean b1 = type < -1;
+		if (b1) {
+			type = -2-type;
+			if (type>1) type=-1;
+		}
 		if (edit==null) {
 			ViewGroup cv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.create_note_view, a.root, false);
 			lnkToAdapter = new ArrayAdapter<>(a, R.layout.popup_list_item, new String[]{a.mResource.getString(R.string.lnk_note)});
@@ -192,7 +197,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			noteTypes.setTag(null);
 		}
 		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLockVisible());
-		ViewUtils.setVisible(editPanel, !showAnteNotes && (PDICMainAppOptions.editNote()||true));
+		ViewUtils.setVisible(editPanel, !b1 && !showAnteNotes && (PDICMainAppOptions.editNote()||true));
 		if (!noteDlg.isAdded()) {
 			noteDlg.show(a.getSupportFragmentManager(), "note-dlg");
 		}
@@ -209,6 +214,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			mWebView.evaluateJavascript("NidsInRange(1)", value -> ViewUtils.setVisible(btnEditNotes, "1".equals(value)));
 		}
 		setEditingNote(-1);
+		if (b1) {
+			btnTypes[type<0?uiData.toolIdx:type].performClick();
+		}
 		//ViewUtils.setVisible(btnEditNotes, true);
 	}
 	

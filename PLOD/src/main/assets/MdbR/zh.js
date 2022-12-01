@@ -120,10 +120,10 @@
 		}
 	}
 	function zh_tran(t) {
-		debug('zh_tran111', window.pages);
+		debug('zh_tran111', window._merge);
 		choice = t;
 		prepareMap(t);
-		if(window.pages) {
+		if(window._merge && !window.frameElement) {
 			window.processPage = function(fx){try{if(fx)zhTran(choice, fx.contentWindow.document.body)}catch(e){debug(e)}};
 			for(var i=0;i<pages.length;i++) {
 				processPage(pages[i].item);

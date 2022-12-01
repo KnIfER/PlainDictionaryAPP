@@ -98,6 +98,7 @@ import static com.knziha.plod.plaindict.Toastable_Activity.LONG_DURATION_MS;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
+import static com.knziha.plod.widgets.ViewUtils.getNthParentNullable;
 
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/>  代号：fye
  * This view makes it easier to read among or read against entries of various books. */
@@ -780,7 +781,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
 				((MultiShareActivity)a).OnPeruseDetached();
 			}
-			a.accessMan.interrupt();
+			try {
+				if (a.accessMan.isEnabled()) {
+					a.accessMan.interrupt();
+				}
+			} catch (Exception e) {
+				CMN.debug();
+			}
 		}
 	}
 	
@@ -952,7 +959,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public void initViews(MainActivityUIBase a) {
 		contentUIData = ContentviewBinding.inflate(a.getLayoutInflater(), root,false);
-		weblistHandler = new WebViewListHandler(a, contentUIData, SearchUI.Fye.MAIN);
+		dummyPanel.weblistHandler = weblistHandler = new WebViewListHandler(a, contentUIData, SearchUI.Fye.MAIN);
+		weblistHandler.etSearch = etSearch;
 		//CMN.debug("inflateContentView", CMN.idStr(weblistHandler), this);
 		lv1.setAdapter(ActivedAdapter = entryAdapter = new LeftViewAdapter());
 		lv2.setAdapter(bmsAdapter = new RightViewAdapter());
@@ -1206,31 +1214,22 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		MainActivityUIBase a = getMainActivity();
 		if(a != null) {
 			if(a.settingsPanel!=null && a.settingsPanel!=dummyPanel) {
+				if (a.settingsPanel.onBackPressed()) return;
 				a.hideSettingsPanel(a.settingsPanel);
 				return;
 			}
-			if(!a.AutoBrowsePaused || a.bRequestingAutoReading){
-				a.stopAutoReadProcess();
-				return;
-			}
+			if (dummyPanel.onBackPressed()) return;
 			if(mDialog!=null) {
 				View view = mDialog.getCurrentFocus();
-				if (view instanceof WebViewmy) {
-					if (((WebViewmy) view).bIsActionMenuShown) {
-						view.clearFocus();
-						return;
-					}
-				}
-				else if (view instanceof TextView) {
+				if (view instanceof TextView) {
 					if (((TextView) view).hasSelection()) {
 						view.clearFocus();
 						return;
 					}
 				}
 			}
-			if(ViewUtils.removeIfParentBeOrNotBe(a.wordPopup.popupContentView, root, true)){
-				a.wordPopup.popupContentView = null;
-				a.wordPopup.popupGuarder.setVisibility(View.GONE);
+			if(!a.AutoBrowsePaused || a.bRequestingAutoReading){
+				a.stopAutoReadProcess();
 				return;
 			}
 			if(DBrowser!=null){
