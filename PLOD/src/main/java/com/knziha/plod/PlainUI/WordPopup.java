@@ -446,6 +446,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					dd.tag=rv;
 					v.setTag(new WeakReference<>(dd));
 				}
+				if (wordCamera!=null) {
+					wordCamera.onPause();
+				}
 				dd.show();
 				dd.getWindow().setDimAmount(0);
 				refillPreviewEntries(dd, true);

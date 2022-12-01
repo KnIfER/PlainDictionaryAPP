@@ -40,6 +40,8 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	private final SearchbarTools schTools;
 	QuCiQiBinding UIData;
 	public final Manager mManager;
+	public boolean paused;
+	
 	public WordCamera(MainActivityUIBase a, SearchbarTools searchbarTools) {
 		super(a, false);
 		this.a = a;
@@ -134,6 +136,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			wordPopup.wordCamera = this;
 			wordPopup.forcePin(UIData.root);
 		}
+		a.wordCamera = this;
 		UIData.frameView.resume(); // todo
 	}
 	
@@ -146,6 +149,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 			wordPopup.wordCamera = null;
 			wordPopup.forcePin(null);
 		}
+		a.wordCamera = null;
 	}
 	
 	private void dispose() {
@@ -156,10 +160,17 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	}
 	
 	public void onResume() {
-		mManager.resumeCamera();
+		if(isVisible()) {
+			if (!(UIData!=null && wordPopup.isMaximized()
+					&& ViewUtils.getNthParentNullable(wordPopup.popupContentView, 1)==UIData.root)) {
+				mManager.resumeCamera();
+			}
+		}
+		paused = false;
 	}
 	
 	public void onPause() {
+		paused = true;
 		mManager.pauseCamera();
 	}
 	

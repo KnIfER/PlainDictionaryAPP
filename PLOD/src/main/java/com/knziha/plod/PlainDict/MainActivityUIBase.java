@@ -4760,7 +4760,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							dissmisstype = 1;
 						}
 						break;
-						/* 搜索框 */
+						/* 发送到搜索框 */
 						case R.string.send_etsch: {
 							if (isLongClicked) return false;
 							if (thisActType == ActType.MultiShare) {
@@ -4779,6 +4779,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								checkMultiVSTGO();
 							} else {
 								if (bFromTextView) {
+									PlainAppPanel pv = peruseView == null ? null : peruseView.dummyPanel;
+									for (int i = settingsPanels.size()-1; i >= 0; i--) {
+										PlainAppPanel pane = settingsPanels.get(i);
+										hideSettingsPanel(pane);
+										if (pane == pv) {
+											break;
+										}
+									}
 									if (CurrentSelected.length() > 0)
 										HandleSearch(CurrentSelected);
 								} else {
@@ -10944,6 +10952,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean mInterceptorListenerHandled;
 	
 	public SearchbarTools etTools;
+	public WordCamera wordCamera;
 	
 	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
 		if(settingsPanel==panel) {
@@ -10953,7 +10962,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(settingsPanel==panel) {
 					settingsPanels.remove(settingsPanel);
 					settingsPanel = ViewUtils.getLast(settingsPanels);
-					if(settingsPanel!=null) settingsPopup = settingsPanel.pop;
+					if(settingsPanel!=null) {
+						settingsPopup = settingsPanel.pop;
+						settingsPanel.onResume();
+					}
 				}
 			}
 			else if(settingsPopup!=null) settingsPopup = null;

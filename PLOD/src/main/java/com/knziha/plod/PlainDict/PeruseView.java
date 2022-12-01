@@ -648,6 +648,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if (!dummyPanel.isVisible()) {
 			dummyPanel.toggleDummy(a);
 		}
+		if (a.wordCamera!=null) {
+			a.wordCamera.onPause();
+		}
 		hidden.clear();
 		this.invoker=a.weblist;
 		ViewUtils.ensureTopmost(mDialog, a, null);
@@ -721,7 +724,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			DictTitleHolder holder = new DictTitleHolder(bookIds.get(i), v);
 			holder.pos = recyclerBin.size();
 			holder.tv.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
-			v.setFocusableInTouchMode(true);
 			v.setOnClickListener(this);
 			v.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
 			recyclerBin.add(v);
@@ -777,6 +779,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			
 			if (dummyPanel.isVisible()) {
 				dummyPanel.toggleDummy(a);
+			}
+			if (a.wordCamera!=null && a.settingsPanels.indexOf(a.wordCamera)>=a.settingsPanels.size()-2) {
+				a.wordCamera.onResume();
 			}
 			if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
 				((MultiShareActivity)a).OnPeruseDetached();
@@ -1465,6 +1470,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			else if(BuildConfig.DEBUG){
 				((MainActivityUIBase)getActivity()).showT("越界!"+position+"/"+ bookIds.size());
 			}
+			ItemView.setClickable(getMainActivity().accessMan.isEnabled());
 	        return ItemView;
         }
 		@Override

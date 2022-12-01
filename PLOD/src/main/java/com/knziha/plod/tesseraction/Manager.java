@@ -241,6 +241,9 @@ public class Manager implements View.OnClickListener {
 				if (cameraManager.isPreviewing()) {
 					cameraManager.autoFocus();
 				}
+				if (mWordCamera.paused) {
+					mWordCamera.onResume();
+				}
 //				new Thread(new Runnable() {
 //					@Override
 //					public void run() {

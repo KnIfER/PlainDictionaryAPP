@@ -84,7 +84,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	private View RvTools;
 	private FrameLayout.LayoutParams lpRvTools;
 	private FrameLayout.LayoutParams lpRv;
-	WordCamera wordCamera;
+	public WordCamera wordCamera;
 	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {

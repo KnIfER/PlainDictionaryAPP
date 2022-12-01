@@ -133,5 +133,15 @@ public class AlloydPanel extends PlainAppPanel {
 				}
 			}
 		}
+		if (a.wordCamera!=null && a.settingsPanels.indexOf(a.wordCamera)>=a.settingsPanels.size()-2) {
+			a.wordCamera.onResume();
+		}
 	}
-}
+	
+	 @Override
+	 protected void onShow() {
+		 if (a.wordCamera!=null) {
+			 a.wordCamera.onPause();
+		 }
+	 }
+ }
