@@ -8241,16 +8241,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else if (url.startsWith(soundTag)) {
 				try {
-					if (invoker.bookImpl.hasMdd()) {
-						CMN.debug("hijacked sound playing : ",url);
+					if (invoker.maybeHasSoundResourceOnPage()) {
+						CMN.debug("mdx hijacked sound playing : ",url);
 						String soundUrl = URLDecoder.decode(url.substring(soundTag.length()), "UTF-8");
 						if(PDICMainAppOptions.getCacheSoundResInAdvance()){
 							playCachedSoundFile(mWebView, soundUrl, invoker, false);
 							return true;
 						}
-						view.evaluateJavascript(playsoundscript + ("('" + soundUrl + "')"), null);
-					} else
-						view.evaluateJavascript("var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value=='" + URLDecoder.decode(url, "UTF-8") + "'){ hrefs[i].removeAttribute('href'); hrefs[i].click(); break; } } }", null);
+						mWebView.setAutoPlay(true);
+						mWebView.evaluateJavascript(playsoundscript + ("('" + soundUrl + "')"), null);
+					} else {
+						mWebView.setAutoPlay(true); // todo wtf???
+						mWebView.evaluateJavascript("var lnks = document.links; for(var i=0;i<lnks.length;i++){ if(lnks[i].attributes['href']){ if(links[i].attributes['href'].value=='" + URLDecoder.decode(url, "UTF-8") + "'){ links[i].click(); break; } } }", null);
+					}
 					return true;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -9904,7 +9907,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewmy wv = weblist.scrollFocus;
 		BookPresenter reader = wv==null?EmptyBook:wv.presenter;
 		String target = wlh.displaying;
-		// CMN.debug("performReadEntry PRE "+reader.getDictionaryName()+"-"+wv+"-"+target);
+		CMN.debug("performReadEntry PRE "+reader.getDictionaryName()+"-"+wv+"-"+target);
 		if(reader!=EmptyBook && wv!=null && target!=null) {
 			if (reader.isMddResource() && target.length() > 1) {
 				int end = target.lastIndexOf(".");
@@ -9915,7 +9918,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
 				requestSoundPlayBack(finalTarget, reader, wv);
 			}
-			else if (AutoBrowsePaused /*自动读时绕过*/ && reader.bookImpl.hasMdd()) {
+			else if (AutoBrowsePaused /*自动读时绕过*/ && reader.maybeHasSoundResourceOnPage()) {
 				/* 倾向于已经制定发音按钮 */
 				BookPresenter finalMCurrentDictionary = reader;
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
@@ -10002,13 +10005,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			opt.supressAudioResourcePlaying=false;
 			soundKey=soundsTag+soundKey; /* CMN.Log("发音任务丢给资源拦截器", soundKey); */
-			wv.getSettings().setMediaPlaybackRequiresUserGesture(false);
-			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")"), new ValueCallback<String>() {
+			wv.setAutoPlay(true);
+			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")"), invoker.getIsWebx()?new ValueCallback<String>() {
 				@Override
 				public void onReceiveValue(String value) {
 					wv.getSettings().setMediaPlaybackRequiresUserGesture(true);
 				}
-			});
+			}:null);
 		}
 	}
 

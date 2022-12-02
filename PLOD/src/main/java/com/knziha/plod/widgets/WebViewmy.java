@@ -671,6 +671,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			setInitialScale(0);//opt.dm.density
 		}
 	}
+	
+	public void setAutoPlay(boolean allow) {
+		getSettings().setMediaPlaybackRequiresUserGesture(!allow);
+	}
 
 //	/**  reset overshot */
 //	public void calcScroll() {

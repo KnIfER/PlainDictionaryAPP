@@ -716,7 +716,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			c++;
 		}
 		sb.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-		if(mdd!=null && mdd.size()>0) sb.append("<p class='MddExist'/>");
+		if(mdd!=null && mdd.size()>0) sb.append("<p class='MddExist' id='MddExist'/>");
 		sb.append("</div>");
 		return processStyleSheet(sb.toString(), positions[0]);
 	}

@@ -268,6 +268,7 @@ public class DecodeManager {
 						}
 					}
 					//CMN.debug("hoc::", hoc);
+					// hoc::|popupWord……
 					
 					if (!TextUtils.isEmpty(text)) {
 						return text;

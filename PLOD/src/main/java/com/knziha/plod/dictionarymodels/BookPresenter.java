@@ -2291,7 +2291,7 @@ function debug(e){console.log(e)};
 		htmlBuilder.append(htmlHeadEndTag).append(records);
 		if (getType()==PLAIN_TYPE_MDICT) {
 			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
+			if(bookImpl.hasMdd()) htmlBuilder.append("<p class=''/>");
 			htmlBuilder.append("</div>");
 		}
 		htmlBuilder.append(htmlEnd);
@@ -2599,6 +2599,16 @@ function debug(e){console.log(e)};
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
 					presenter.tintBackground(wv);
+				}
+			}
+		}
+		
+		@JavascriptInterface
+		public void maySound(int sid, boolean maybe) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					presenter.bMaybeHasSoundOnPage = maybe;
 				}
 			}
 		}
@@ -4913,5 +4923,11 @@ function debug(e){console.log(e)};
 			getWebx().setMirroredHost(val?-2:-1);
 			a.registerWebx(this);
 		}
+	}
+	
+	boolean bMaybeHasSoundOnPage;
+	
+	public boolean maybeHasSoundResourceOnPage() {
+		return bMaybeHasSoundOnPage || bookImpl.hasMdd();
 	}
 }

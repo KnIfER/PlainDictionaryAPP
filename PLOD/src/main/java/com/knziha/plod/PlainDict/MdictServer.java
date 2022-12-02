@@ -832,7 +832,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			;
 			SU.Log("new_id::", presenter.getId(), IU.NumberToText_SIXTWO_LE(presenter.getId(), null));
 			MdPageBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-			if(presenter.bookImpl.hasMdd()) MdPageBuilder.append("<p class='MddExist'/>");
+			if(presenter.bookImpl.hasMdd()) MdPageBuilder.append("<p class='MddExist' id='MddExist'/>");
 			MdPageBuilder.append("</div>");
 			return MdPageBuilder.toString();
 		}

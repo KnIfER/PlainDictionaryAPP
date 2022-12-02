@@ -24,7 +24,7 @@
 <script>
 var debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c 子页面 ","color:#333!important;background:#b0f7ce;",t[0],t[1],t[2],t[3],t[4])};
 (function(){
-var contentUrl = location.origin+location.pathname, contentHash = contentUrl+'#', baseEntryUrl
+var contentUrl = location.origin+location.pathname, contentHash = contentUrl+'#', baseEntryUrl, baseSoundUrl
 	, w=window, pw=parent, _app=w.app;
 debug("frameElement::", frameElement, contentUrl);
 function ge(e){return document.getElementById(e)};
@@ -273,6 +273,7 @@ function baseEntry() {
 			tmp = tar.indexOf('/entry/');
 			if(tmp>0) tar = tar.slice(0, tmp);
 		}
+		baseSoundUrl = tar+'/sound/';
 		baseEntryUrl = tar+'/entry/';
 	}
 	return baseEntryUrl;
@@ -294,7 +295,7 @@ function wrappedDown(e){
 	stopLnk = 0;
 	if(t && t.href) { //  && (e.button==1||e.button==0)
 		stopLnk = 1;
-		debug("01! found link : "+t.href+" : "+regSound.test(t.href));
+		debug("01! found link : "+t.href+" : testSound="+regSound.test(t.href));
 		var attr = t.getAttribute('href'), href = t.href;
 		if(attr.startsWith('#')) { // 标准页内跳转
 			t.href=contentUrl+attr; // 转换为contentUrl页内跳转
@@ -314,10 +315,11 @@ function wrappedDown(e){
 		else if(t._ntz) {
 			entryPop(t); // 已缓存的词条跳转
 		}
-		else if(regSound.test(t.href)) {/*拦截 sound 连接*/
-			var link=/* "sound/"+ */t.href.substring(8);
-			t.href=link;
+		else if(regSound.test(attr)) {/*拦截 sound 连接*/
+			baseEntry();
+			var link=baseSoundUrl+attr.substring(8);
 			if(t.onclick==undefined){
+				t.href=link;
 				//debug("1! found internal sound link : "+cur.href);
 				t.ur1=t.href;
 				t.removeAttribute("href");
@@ -325,9 +327,11 @@ function wrappedDown(e){
 				hiPlaySound(t)
 				return false;
 			}
+			stopLnk = 1;
+			return true;
 		}
 		else if(_app && regHttp.test(t.href)){
-			if(!t.getAttribute('href').startsWith('#')) {
+			if(!attr.startsWith('#') && attr && attr.trim()) {
 				debug('拦截 http');
 				stopLnk = t.href;
 				return true;

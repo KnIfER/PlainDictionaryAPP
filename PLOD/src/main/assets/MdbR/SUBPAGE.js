@@ -5,19 +5,26 @@ window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.lengt
 var _log = debug;
 //function _log(...e){console.log('fatal web::'+e)};
 w.addEventListener('load',function(e){
-    //_log('wrappedOnLoadFunc...');
-    var ws = d.body.style;
     d.body.contentEditable=!1;
     _highlight(null);
-    var vi = d.getElementsByTagName('video');
-    function f(e){
-        //_log('begin fullscreen!!! wrappedFscrFunc');
-        var se = e.srcElement;
-        //if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
-        if(app)se.webkitDisplayingFullscreen?app.onRequestFView(se.videoWidth, se.videoHeight):app.onExitFView()
-    }
-    for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", f, false);vi[i]._fvwhl=1;}}
+    var lnks = document.links;
+	for(var i=0;i<lnks.length;i++) {
+		if(lnks[i].href.startsWith("sound")) {
+			lnks=1; break;
+		}
+	} 
+	app.maySound(sid.get(), lnks===1);
+    _log('mdx::wrappedOnLoadFunc...');
 },false);
+function wrappedFscrFunc(e){
+	//_log('begin fullscreen!!! wrappedFscrFunc');
+	e = e.target;
+	if(app)e.webkitDisplayingFullscreen?app.onRequestFView(e.videoWidth, e.videoHeight)
+		:app.onExitFView()
+}
+w.addEventListener('fullscreenchange', wrappedFscrFunc);
+w.addEventListener('webkitfullscreenchange', wrappedFscrFunc);
+w.addEventListener('mozfullscreenchange', wrappedFscrFunc);
 function _highlight(keyword){
     var b1=keyword==null;
     if(b1)
