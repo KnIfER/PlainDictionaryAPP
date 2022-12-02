@@ -1003,7 +1003,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	private void AttachViews() {
 		// 初次添加请指明方位
-		if (!pin() && !isVisible()) {
+		if (/*!pin() && */!isVisible()) {
 			ViewGroup targetRoot = lastTargetRoot;
 			if (moveView.FVDOCKED && moveView.Maximized && PDICMainAppOptions.getResetMaxClickSearch()) {
 				if (wordCamera==null || true)
@@ -1629,7 +1629,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public boolean isMaximized() {
-		return moveView.Maximized;
+		return moveView!=null && moveView.Maximized;
 	}
 	
 	final WebViewmy dictView() {

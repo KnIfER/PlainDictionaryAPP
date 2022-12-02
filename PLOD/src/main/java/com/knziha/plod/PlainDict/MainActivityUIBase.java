@@ -3440,6 +3440,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (floatBtn!=null) {
 				floatBtn.close();
 			}
+			if (etTools!=null && etTools.wordCamera!=null) {
+				etTools.wordCamera.dispose();
+			}
 		}
 		super.onDestroy();
 	}

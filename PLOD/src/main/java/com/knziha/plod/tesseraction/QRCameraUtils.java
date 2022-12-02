@@ -288,14 +288,14 @@ public final class QRCameraUtils {
 			}
 		}
 		
-		if (true) {
-			// 1920, 1088,
-			// 1920, 1080,
-			// 1600, 1200,
-			// 1440, 1080,
-			cameraResolution.set(1600, 1200);
-			return;
-		}
+//		if (true) {
+//			// 1920, 1088,
+//			// 1920, 1080,
+//			// 1600, 1200,
+//			// 1440, 1080,
+//			cameraResolution.set(1600, 1200);
+//			return;
+//		}
 
 		// If no exact match, use largest preview size. This was not a great
 		// idea on older devices because

@@ -152,10 +152,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		a.wordCamera = null;
 	}
 	
-	private void dispose() {
-		if (schTools != null) {
-			schTools.wordCamera = null;
-		}
+	public void dispose() {
 		mManager.dispose();
 	}
 	

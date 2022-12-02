@@ -122,7 +122,7 @@ public final class QRCameraManager implements SensorEventListener {
 			screenResolution.y = dm.widthPixels;
 		}
 		findBestPreviewSizeValue(reset_camera.getParameters(), cameraResolution, screenResolution);
-		//CMN.Log("Camera_resolution: " + cameraResolution, dm.widthPixels+"x"+dm.heightPixels);
+		CMN.debug("Camera_resolution: " + cameraResolution, dm.widthPixels+"x"+dm.heightPixels);
 		
 		if (requestedFramingRectWidth > 0 && requestedFramingRectHeight > 0) {
 			mManager.applyManualFramingRect(requestedFramingRectWidth, requestedFramingRectHeight);
