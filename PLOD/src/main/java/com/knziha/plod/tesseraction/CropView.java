@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
@@ -43,6 +44,8 @@ public class CropView extends View {
 	private static final int CURRENT_POINT_OPACITY = 0xA0;
 	private static final int MAX_RESULT_POINTS = 20;
 	private static final int POINT_SIZE = 6;
+	public float previewScale;
+	public float previewTopOffset;
 	private int density = (int) this.getResources().getDisplayMetrics().density;  //屏幕像素密度
 	/** 设置方框的宽度，默认200dp */
 	private float mFrameSizeX = 0;
@@ -91,6 +94,7 @@ public class CropView extends View {
 //	private final List<ResultPoint> possibleResultPoints = new ArrayList<>(5);
 	private ArrayList<Rect> textRects_ = new ArrayList<>(1);
 	public List<Rect> textRects;
+	public int wordRectIdx;
 //	private final List<ResultPoint> lastPossibleResultPoints = new ArrayList<>(5);
 //	private ResultPointCollector mResultPointCollector;
 	
@@ -235,14 +239,22 @@ public class CropView extends View {
 				viewFrame.left = mView.getTranslationX();
 				viewFrame.top = mView.getTranslationY();
 			}
-			for (Rect rect : textRects) {
-				float scale = 1;///*a.scale * */mView.getScaleY();
+			List<Rect> rcs = textRects;
+			for (int i = 0; i < rcs.size(); i++) {
+				Rect rect = rcs.get(i);
+				float scale = previewScale;///*a.scale * */mView.getScaleY();
+				float top = 0, pad=0;
+				if(i==wordRectIdx) {
+					rectPaint.setStrokeWidth(2f);
+					pad = GlobalOptions.isLarge ? 2 : 1;
+				}
 				canvas.drawRect(
-						frame.left+rect.left*scale
-						,frame.top+rect.top*scale
-						,frame.left+rect.right*scale
-						,frame.top+rect.bottom*scale
+						frame.left + rect.left * scale - pad
+						, frame.top + rect.top * scale + top - pad
+						, frame.left + rect.right * scale + pad
+						, frame.top + rect.bottom * scale + top + pad
 						, rectPaint);
+				if(i==wordRectIdx) rectPaint.setStrokeWidth(1.3f);
 			}
 		}
 		
@@ -252,14 +264,16 @@ public class CropView extends View {
 		float x,y;
 		// 画准星
 		if(drawCrossSight) {
-			framePaint.setStrokeWidth(mCornerStrokeWidth/3);
-			int tmp = mCornerSize / 2;
+			framePaint.setStrokeWidth(mCornerStrokeWidth/2);
+			int len = GlobalOptions.isLarge?mCornerSize*2:mCornerSize, tmp = len / 2;
 			x = frameOffsets.left + frameOffsets.width() / 2 - tmp;
 			y = frameOffsets.top + frameOffsets.height() / 2;
-			canvas.drawLine(x, y, x+mCornerSize, y, framePaint);
+			//framePaint.setColor(0xb0FFFFFF);
+ 			canvas.drawLine(x, y, x+len, y, framePaint);
 			x += tmp;
 			y -= tmp;
-			canvas.drawLine(x, y, x, y+mCornerSize, framePaint);
+			canvas.drawLine(x, y, x, y+len, framePaint);
+			//framePaint.setColor(Color.WHITE);
 		}
 		// 画角
 		if(!fixed) {

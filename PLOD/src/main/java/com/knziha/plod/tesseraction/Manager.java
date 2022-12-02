@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
@@ -29,7 +28,6 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -49,7 +47,6 @@ import static com.knziha.plod.widgets.ViewUtils.setOnClickListenersOneDepth;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 
 /** Main Menu :   <br>
  * QR Scanner <br>
@@ -241,6 +238,7 @@ public class Manager implements View.OnClickListener {
 				if (cameraManager.isPreviewing()) {
 					cameraManager.autoFocus();
 				}
+				stopTessRealTimeDecoding();
 				if (mWordCamera.paused) {
 					mWordCamera.onResume();
 				}
@@ -611,7 +609,7 @@ public class Manager implements View.OnClickListener {
 	private final static boolean videoMode=false;
 	
 	public void fitPreview(int width, int height, boolean rotate, boolean fitCenter, boolean isPhoto) {
-		CMN.Log("onNewVideoViewLayout", width, height, isPortrait);
+		CMN.debug("fitPreview", "width = [" + width + "], height = [" + height + "], rotate = [" + rotate + "], fitCenter = [" + fitCenter + "], isPhoto = [" + isPhoto + "]");
 		if(rotate && isPortrait) {
 			int tmp = width;
 			width = height;
@@ -653,6 +651,7 @@ public class Manager implements View.OnClickListener {
 			pendingMatchType = -1;
 			int type=Match_Auto;
 			type=Match_Width;
+			UIData.frameView.previewTopOffset = 0;
 			switch(type){
 				case Match_Auto:
 					pendingMatchType=3;
@@ -669,6 +668,7 @@ public class Manager implements View.OnClickListener {
 						}
 						if(fitCenter)
 							transY = -(newH - h) / 2;
+						//UIData.frameView.previewTopOffset = -(newH - h) / 2;
 						pendingMatchType=Match_Width;
 						break;
 					}
@@ -694,6 +694,13 @@ public class Manager implements View.OnClickListener {
 			sWidth=width;
 			sHeight=height;
 			dMan.fitScale=params.width*1.0f/width;
+			if (!isPhoto)
+			{
+				UIData.previewView.setLayoutParams(params);
+				UIData.previewView.setTranslationX(transX);
+				UIData.previewView.setTranslationY(transY);
+				UIData.frameView.previewScale=dMan.fitScale; // 词框更准确
+			}
 		}
 		mVideoWidthReq=false;
 		//}
@@ -881,10 +888,17 @@ public class Manager implements View.OnClickListener {
 		//CMN.Log("Calculated manual framing rect: " + framingRect);
 	}
 	
-	public void stopTessRealTimeDecoding() throws Exception {
-		//CMN.debug("中断解析……");
-		dMan.tess.stop();
-		//CMN.debug("中断解析成功");
+	public void stopTessRealTimeDecoding() {
+		if (dMan.tess_inited) {
+			try {
+				//CMN.debug("中断解析……");
+				handler.abort();
+				dMan.tess.stop();
+				//CMN.debug("中断解析成功");
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
 	}
 	
 	public void setRequestCode(int permissionCode, int openCode) {

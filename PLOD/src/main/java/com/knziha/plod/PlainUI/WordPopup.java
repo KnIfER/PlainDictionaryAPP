@@ -484,7 +484,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tkMultiV.getTag());
 		if (tkSingle) {
 			AlertDialog dlg = dd!=null?(AlertDialog)dd.tag:null;
-			if (dlg==null) {
+			if (dlg==null || dd.isDark!=GlobalOptions.isDark) {
 				dlg = new AlertDialog.Builder(a)
 						.setTitle("单本词典查询模式 :")
 						.setWikiText("亦可长按打开此对话框", null)
@@ -498,16 +498,18 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 									modeBtn.setImageResource(R.drawable.ic_btn_siglemode);
 									startTask(WordPopupTask.TASK_POP_SCH);
 								}
+								dictPicker.filterByRec(null, 0);
 								dialog.dismiss();
 							}
 						}).create();
+				dlg.isDark = GlobalOptions.isDark;
 				if (dd!=null) dd.tag = dlg;
 			}
 			ViewUtils.ensureWindowType(dlg, a, null);
 			dlg.show();
 			dlg.getWindow().setDimAmount(0);
 		} else {
-			if(dd==null) {
+			if(dd==null || dd.isDark!=GlobalOptions.isDark) {
 				String[] items = new String[]{
 						"单本词典搜索 >> "
 						, "联合搜索，屏风模式"
@@ -528,6 +530,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					if (which>=0) {
 						// 设置搜索模式
 						opt.tapSchMode(schMode = which%3);
+						if(schMode==0) dictPicker.filterByRec(null, 0);
 						modeBtn.setImageResource(schMode==0?R.drawable.ic_btn_siglemode:R.drawable.ic_btn_multimode);
 						startTask(WordPopupTask.TASK_POP_SCH);
 						dialog.dismiss();
@@ -573,6 +576,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						return false;
 					}
 				});
+				dd.isDark = GlobalOptions.isDark;
 			}
 			ViewUtils.ensureWindowType(dd, a, null);
 			dd.show();
@@ -1392,9 +1396,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (PDICMainAppOptions.tapschWebStandaloneReversed()) {
 				if (webx.tapschWebStandaloneSet())
 					standalone = webx.initViewsHolder(a);
-			} else {
-				if(webx.tapschWebStandalone())
-					standalone = webx.initViewsHolder(a);
+			} else if(PDICMainAppOptions.tapschWebStandalone() && webx.tapschWebStandalone()){
+				standalone = webx.initViewsHolder(a);
 			}
 			if (standalone!=mWebView && ViewUtils.isVisibleV2(standalone)
 					&& standalone.getParent()!=weblistHandler.pageSlider && standalone.weblistHandler.isViewInUse(standalone)) {

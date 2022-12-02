@@ -392,10 +392,11 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		if (rec!=null) {
 			ArrayList<Long> ids = pos>=0&&pos<rec.size()?rec.getBooksAt(null, pos):new ArrayList<>();
 			filtered = new ArrayList<>(ids);
-		} else {
+			dataChanged();
+		} else if (filtered != null) {
 			filtered = null;
+			dataChanged();
 		}
-		dataChanged();
 	}
 	
 	public int adapterIdx() {

@@ -6,17 +6,18 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.SparseIntArray;
 import android.view.Surface;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
-import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.text.BreakIteratorHelper;
 
 import org.jsoup.Jsoup;
@@ -36,7 +37,7 @@ public class DecodeManager {
 	public boolean flipX;
 	public boolean flipY;
 	Tesseraction tess = new Tesseraction();
-	private boolean tess_inited;
+	public boolean tess_inited;
 	final Manager mManager;
 	
 	/** 0=ocr; 1=qr; */
@@ -52,7 +53,7 @@ public class DecodeManager {
 		if (!tess_inited) return null;
 		RectF rect = framingRect;
 		// 源图像显示后的缩放比，比如0.5、0.9
-		FrameLayout view = mManager.UIData.photoView;
+		View view = mManager.UIData.previewView; // 不是 photoView
 		float scale = fitScale * 1;//view.getScaleX();
 		int left=(int)((rect.left - view.getTranslationX())/scale);
 		int top=(int)((rect.top - view.getTranslationY())/scale);
@@ -144,22 +145,26 @@ public class DecodeManager {
 		}
 		
 		setImage(rotatedData, widthwidth, heightheight, 1, widthwidth);
-		
+		//CMN.debug("decodeOCR::ratio=", widthwidth, heightheight, widthwidth/heightheight);
 		try {
 			ArrayList<Rect> word_rects = tess.getWordRects();
 			if(word_rects!=null && word_rects.size()>0) {
 				Manager m = mManager;
 				m.UIData.frameView.textRects = word_rects;
 //				m.UIData.qrFrame.postInvalidate();
-				int cX=widthwidth/2, cY=heightheight/2, dist=Integer.MAX_VALUE, boxIdx=-1, boxDist;
+				int cX=widthwidth/2, cY=heightheight/2, dist=Integer.MAX_VALUE, boxIdx=-1, boxMax=widthwidth*heightheight-10;
 				boolean aggressive=false;
 				Rect rc;
-				for (int i = 0; i < word_rects.size(); i++) {
+				for (int i = 0, zs; i < word_rects.size(); i++) {
 					rc = word_rects.get(i);
 					if(rc.contains(cX, cY)) {
-						boxIdx = i;
+						zs = rc.width() * rc.height();
+						if (zs < boxMax) {
+							boxIdx = i;
+							//CMN.debug("boxIdx::", boxIdx, zs, );
+							break;
+						}
 						//m.UIData.qrFrame.possibleTextRects = Collections.singletonList(rc);
-						break;
 					}
 					if(aggressive) {
 						int d = distSQ(rc.centerX()-cX, rc.centerY()-cY);
@@ -169,6 +174,7 @@ public class DecodeManager {
 						}
 					}
 				}
+				m.UIData.frameView.wordRectIdx = boxIdx;
 				
 				if(boxIdx<0)
 					return null;
@@ -178,7 +184,7 @@ public class DecodeManager {
 					return null;
 				}
 
-				final int pad = 20;
+				final int pad = 2;
 				int wordWidth = rc.width()+pad*2;
 				int wordHeight = rc.height()+pad*2;
 				left = rc.left-pad;
@@ -188,13 +194,14 @@ public class DecodeManager {
 				if(top+wordHeight>=heightheight) wordHeight=heightheight-top-1;
 				
 				if(wordWidth>0 && wordHeight>0) {
-					boolean debugTime = false;
+					boolean debugTime = true;
+					//if(true) return null;
 					tess.setRectangle(left, top, wordWidth, wordHeight);
 					Rect rcW = new Rect();
 					CMN.rt();
 					String hoc = tess.getHOCRText(0);
 					if (hoc == null) return null;
-					if(debugTime)CMN.pt("hoc 时间::"); CMN.rt();
+					if(debugTime) CMN.pt("hoc 时间::"); CMN.rt();
 					String utf8 = tess.getUTF8Text();
 					if(debugTime)CMN.pt("utf8 时间::"); CMN.rt();
 					String text = utf8;
@@ -202,11 +209,12 @@ public class DecodeManager {
 						//CMN.debug("hoc::", utf8);
 						Document nodes = Jsoup.parse(hoc);
 						StringBuilder sb = new StringBuilder();
+						SparseIntArray scores = new SparseIntArray(text.length() / 2);
 						ArrayList<Elements> all = new ArrayList();
 						all.add(nodes.children());
 						Elements els;
 						boolean findCenter = true;
-						int centerIdx = -1;
+						int centerIdx = -1, avg=0;
 						String centerWord="";
 						while(all.size() > 0) {
 							els = all.remove(0);
@@ -223,17 +231,19 @@ public class DecodeManager {
 										if (bbx.length==7) {
 											int conf = IU.parsint(bbx[6]);
 											if (conf >= 45) {
-												sb.append(el.text());
 												if (findCenter) {
 													rcW.set(IU.parsint(bbx[1]), IU.parsint(bbx[2]), IU.parsint(bbx[3]), IU.parsint(bbx[4]));
 													//CMN.debug("conf::", el.text(), conf, rcW);
-													if (rcW.contains(cX, cY)) {
-														CMN.debug("命中::", el.text());
+													if (rcW.contains(cX, cY) && conf > 60) {
+														avg = conf;
+														CMN.debug("命中::", el.text(), "avg=" + avg);
 														//findCenter = false;
 														centerIdx = sb.length();
 														centerWord = el.text();
 													}
 												}
+												scores.put(sb.length(), conf);
+												sb.append(el.text());
 											}
 										}
 									}
@@ -241,19 +251,21 @@ public class DecodeManager {
 							}
 						}
 						if(debugTime) CMN.pt("拼接 时间::");
-						//String text = sb.toString();
+						text = sb.toString(); // 跳过一些可能性小的
 						if (centerIdx > 0) {
 							BreakIteratorHelper wordIterator = new BreakIteratorHelper();
 							wordIterator.setText(text);
-							int st = wordIterator.preceding(centerIdx);
-							int ed = wordIterator.following(st);
+							int ed = wordIterator.following(centerIdx);
+							int st = wordIterator.preceding(ed);
 							//CMN.debug("词组修正::", st, centerIdx, ed);
 							if (ed > st) {
 								centerWord = text.substring(st, ed);
 								CMN.debug("词组修正::", centerWord);
 							}
 						}
-						mManager.mWordCamera.popupWord(centerWord);
+						if(mManager.autoSch) {
+							mManager.mWordCamera.popupWord(centerWord);
+						}
 					}
 					//CMN.debug("hoc::", hoc);
 					
@@ -262,7 +274,6 @@ public class DecodeManager {
 					}
 				}
 			}
-			//Pix.createFromPix(wordData, wordWidth, wordHeight)
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -319,6 +330,7 @@ public class DecodeManager {
 	}
 	
 	public void setScrOrient(int screenRotation, boolean isPortrait) {
+		CMN.debug("setScrOrient::screenRotation = [" + screenRotation + "], isPortrait = [" + isPortrait + "]");
 		this.screenRotation = screenRotation;
 		this.isPortrait = isPortrait;
 		flipX = flipY = screenRotation==Surface.ROTATION_180||screenRotation==Surface.ROTATION_270;
@@ -451,7 +463,7 @@ public class DecodeManager {
 			mManager.onDecodeSuccess(res);
 			//CMN.Log("fatal poison", "Found_barcode_in " + (end - start) + " ms");
 		}
-		mManager.cameraManager.requestPreviewFrame(); // fast restart
+		//mManager.cameraManager.requestPreviewFrame(); // fast restart
 	}
 	
 	/**Build and decode the appropriate LuminanceSource object.
@@ -480,6 +492,7 @@ public class DecodeManager {
 
 //		flipX = true;
 //		flipY = true;
+		CMN.debug("decodeQR flipX"+flipX, flipY);
 		if(flipX) { // x轴是经过翻转的
 			left = sWidth - left - widthwidth;
 		}
@@ -492,8 +505,9 @@ public class DecodeManager {
 	
 	/** Decode the data within the viewfinder rectangle, and time how long it
 	 * took. For efficiency, reuse the same reader object.
+	 * @param msg
 	 * @param data The YUV preview frame.  */
-	private void decode(byte[] data) throws Exception {
+	private void decode(Message msg, byte[] data) throws Exception {
 		Manager m = mManager;
 		int width=m.sWidth;
 		int height=m.sHeight;
@@ -546,6 +560,8 @@ public class DecodeManager {
 	static class QRActivityHandler extends Handler {
 		public final WeakReference<Manager> manager;
 		private boolean running = true;
+		private long frontTime;
+		
 		//构造
 		public QRActivityHandler(Manager manager) {
 			//super(Looper.myLooper());
@@ -572,14 +588,30 @@ public class DecodeManager {
 				stop();
 				return;
 			}
+			if (msg.getWhen() < frontTime) {
+				CMN.debug("取消了!", msg.getWhen() , frontTime);
+				if (msg.arg1==0) {
+					m.cameraManager.requestPreviewFrame();
+				}
+				return;
+			}
 			DecodeManager d = m.dMan;
 			if(msg.arg1==R.id.decode2) {
 				d.decodeBitmap((Bitmap) msg.obj);
 			} else if(msg.arg1==R.id.decode3){
 				d.decodeWord();
 			} else {
-				d.decode((byte[]) msg.obj);
+				d.decode(msg, (byte[]) msg.obj);
 			}
+		}
+		
+		public void abort() {
+			frontTime = SystemClock.uptimeMillis();
+			removeMessages(R.id.decode);
+//			Manager m = manager.get();
+//			if(m!=null) {
+//				m.cameraManager.requestPreviewFrame(null);
+//			}
 		}
 		
 		public void stop() {

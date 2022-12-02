@@ -85,6 +85,7 @@ public final class QRCameraManager implements SensorEventListener {
 	
 	/** 摄像机参数 */
 	Camera.Parameters parameters;
+	private float previewScale = 1;
 	
 	public QRCameraManager(Manager manager, View rootView) {
 		this.mManager=manager;
@@ -122,7 +123,9 @@ public final class QRCameraManager implements SensorEventListener {
 			screenResolution.y = dm.widthPixels;
 		}
 		findBestPreviewSizeValue(reset_camera.getParameters(), cameraResolution, screenResolution);
-		CMN.debug("Camera_resolution: " + cameraResolution, dm.widthPixels+"x"+dm.heightPixels);
+		previewScale = cameraResolution.x == 0 ? 1 : screenResolution.x * 1.0f / cameraResolution.x;
+		CMN.debug("Camera resolution=" + cameraResolution, "screen resolution="+screenResolution.x+"x"+screenResolution.y, "scale="+previewScale);
+		mManager.UIData.frameView.previewScale = previewScale;
 		
 		if (requestedFramingRectWidth > 0 && requestedFramingRectHeight > 0) {
 			mManager.applyManualFramingRect(requestedFramingRectWidth, requestedFramingRectHeight);
@@ -287,7 +290,7 @@ public final class QRCameraManager implements SensorEventListener {
 		return previewing;
 	}
 	
-	/** A single preview frame will be returned to the handler supplied. The data will arrive as byte[] in the message.obj field */
+	/** A single preview frame will be returned to the handler supplied. The data will arrive as byte[] in the message.obj field  */
 	public synchronized void requestPreviewFrame() {
 		if (previewing && realtime && camera!=null) {
 			//CMN.debug("requestPreviewFrame", realtime);
@@ -346,11 +349,7 @@ public final class QRCameraManager implements SensorEventListener {
 				mLastZ = z;
 				
 				if (realtime) {
-					try {
-						mManager.stopTessRealTimeDecoding();
-					} catch (Exception e) {
-						CMN.Log(e);
-					}
+					mManager.stopTessRealTimeDecoding();
 				}
 			}
 		}

@@ -98,6 +98,7 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
+import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
@@ -1870,7 +1871,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				
 				// newTitlebar.Activate(); - 横屏时合并主界面标题栏、搜索工具栏、词典标题栏。
 				
-				//new WordCamera(this).show();
+//				new WordCamera(this, etTools).show();
 				
 			}, 350);
 			//showAppTweaker();

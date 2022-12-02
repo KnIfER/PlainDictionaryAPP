@@ -367,15 +367,18 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 	}
 	
 	public void popupWord(@NonNull String centerWord) {
+		CMN.debug("popupWord……", centerWord);
 		centerWord = centerWord.trim();
 		if (isRelevantWord(centerWord) && isVisible()) {
 			if (wordPopup.loadManager == null || wordPopup.mWebView==null) {
 				if (wordPopup.mWebView == null) {
+					String finalWord = centerWord;
 					a.hdl.post(() -> {
 						wordPopup.wordCamera = this;
 						wordPopup.init();
 						wordPopup.forcePin(UIData.root);
 						wordPopup.refresh();
+						wordPopup.popupWord(null, finalWord, null, 0);
 					});
 				}
 				if (wordPopup.loadManager == null) {
