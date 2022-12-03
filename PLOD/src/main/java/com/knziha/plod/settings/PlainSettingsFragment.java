@@ -88,6 +88,7 @@ public class PlainSettingsFragment extends SettingsFragmentBase implements Toolb
 								MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, -100, -100, 0);
 								child.dispatchTouchEvent(evt);
 								mList.postDelayed(() -> ViewUtils.preventDefaultTouchEvent(child, -100, -100), 800);
+								evt.recycle();
 							}
 						}, 180);
 					});

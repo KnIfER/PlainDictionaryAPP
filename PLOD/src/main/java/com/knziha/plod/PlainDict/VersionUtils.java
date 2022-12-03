@@ -1,9 +1,17 @@
 package com.knziha.plod.plaindict;
 
+import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.os.Build;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.widgets.RomUtils;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -14,6 +22,7 @@ import java.util.HashMap;
 
 public class VersionUtils {
 	public static final boolean AnnotOff = false;
+	public static boolean firstInstall = false;
 	public static final int UpgradeCode = 1024;
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
@@ -34,6 +43,7 @@ public class VersionUtils {
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
 			CMN.debug("初始化版本!!!");
+			firstInstall = true;
 			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
 			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
 			PDICMainAppOptions.uncheckVersionBefore_5_0(true);
@@ -99,5 +109,59 @@ public class VersionUtils {
 //		opt.setPageTurn2(true);
 //		opt.setPageTurn3(true);
 //		opt.setTurnPageEnabled(true);
+	}
+	
+	@SuppressLint("ResourceType")
+	public static void openIntro(PDICMainActivity a) {
+		ActivityMainBinding UIData = a.UIData;
+		a.root.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				UIData.drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+					MotionEvent evt;
+					View view;
+					@Override public void onDrawerSlide(@NonNull View drawerView, float slideOffset) { }
+					@Override
+					public void onDrawerOpened(@NonNull View drawerView) {
+						Runnable fin = () -> {
+							UIData.drawerLayout.close();
+							if (evt!=null) evt.recycle();
+							if (view != null) {
+								try {
+									((TextView) view.findViewById(R.id.subtext)).setText("无限打开 MDX/DSL.DZ/PDF");
+								} catch (Exception e) {
+									CMN.debug(e);
+								}
+							}
+						};
+						UIData.drawerLayout.removeDrawerListener(this);
+						view = a.drawerFragment.mDrawerList.findViewById(R.string.addd);
+						View view1 = a.drawerFragment.mDrawerList.findViewById(R.string.pick_main);
+						evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, -100, -100, 0);
+						if (view1 != null) {
+							view1.dispatchTouchEvent(evt);
+							view1.postDelayed(() -> ViewUtils.preventDefaultTouchEvent(view1, -100, -100), 1000);
+						}
+						if (view != null) {
+							view1.postDelayed(() -> {
+								view.dispatchTouchEvent(evt);
+								view.postDelayed(() -> ViewUtils.preventDefaultTouchEvent(view, -100, -100), 1233);
+							}, view1==null?0:1233);
+						}
+						a.root.postDelayed(() -> {
+							ObjectAnimator td = ViewUtils.tada(a.drawerFragment.menu_item_setting, 2);
+							if (td != null) {
+								td.start();
+								td.setDuration(1233);
+							}
+						}, 2000);
+						a.root.postDelayed(fin::run, view1==null?2700:4500);
+					}
+					@Override public void onDrawerClosed(@NonNull View drawerView) { }
+					@Override public void onDrawerStateChanged(int newState) { }
+				});
+				UIData.drawerLayout.open();
+			}
+		}, 500);
 	}
 }

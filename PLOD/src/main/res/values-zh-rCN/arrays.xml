@@ -4,8 +4,8 @@
 		<item>用\'.\'  匹配任意一个字符,  \'*\'  匹配任意长的字符串</item>
 		<item>同上支持通配符</item>
 		<item>@null</item>
-		<item>显示最近添加的20条书签</item>
-		<item>点击内容页左上角图标, 在弹出对话框中添加书签</item>
+		<item>在内容页面，选择文本后可添加页面标记与附注</item>
+		<item>点击内容页标题, 在弹出对话框中添加书签</item>
 		<item>@null</item>
 		<item>打开设置</item>
 		<item>@null</item>

@@ -10,6 +10,7 @@ import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
+import static com.knziha.plod.plaindict.VersionUtils.firstInstall;
 import static com.knziha.polymer.wget.info.URLInfo.States.DONE;
 
 import android.animation.Animator;
@@ -42,6 +43,7 @@ import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -1871,11 +1873,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				// newTitlebar.Activate(); - 横屏时合并主界面标题栏、搜索工具栏、词典标题栏。
 				
 //				new WordCamera(this, etTools).show();
-				
+			
 			}, 350);
 			//showAppTweaker();
 			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
+		}
+		
+		if (firstInstall)
+		{
+			VersionUtils.openIntro(this);
 		}
 
 		//JumpToWord("crayon", 1);
@@ -3527,7 +3534,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				try {
 					getMdictServer().start(this);
 					showDrawerSnack("服务器启动成功");
-				} catch (IOException e) {
+				} catch (Exception e) {
 					CMN.debug(e);
 				}
 			}

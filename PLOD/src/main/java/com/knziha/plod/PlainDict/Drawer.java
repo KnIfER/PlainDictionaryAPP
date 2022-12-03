@@ -122,7 +122,7 @@ public class Drawer extends Fragment implements
 	AlertDialog d;
 
 	String[] hints;
-	private ListView mDrawerList;
+	ListView mDrawerList;
 	View mDrawerListLayout;
 	MyAdapter myAdapter;
 
@@ -144,7 +144,7 @@ public class Drawer extends Fragment implements
 	private ViewGroup swRow;
 	private boolean toPDF;
 	private int basicArrLen;
-	private ViewGroup menu_item_setting;
+	public ViewGroup menu_item_setting;
 	private ViewGroup menu_item_exit;
 	
 	@Override
@@ -175,7 +175,7 @@ public class Drawer extends Fragment implements
 						, R.string.fuzzyret1
 						, R.string.fullret
 						, 0
-						, R.string.bookmarkH
+						, R.string.book_notes
 						, R.string.lastmarks
 						, 0
 						, R.string.settings
@@ -200,7 +200,7 @@ public class Drawer extends Fragment implements
 						, R.string.fuzzyret1
 						, R.string.fullret
 						, 0
-						, R.string.bookmarkH
+						, R.string.book_notes
 						, R.string.lastmarks
 						, 0
 						, R.string.settings
@@ -689,8 +689,16 @@ public class Drawer extends Fragment implements
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 				//((AccessibilityManager) view.getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).interrupt();
 			} break;
-			//书签历史
-			case R.string.bookmarkH:  {
+			//笔记列表
+			case R.string.book_notes:{
+				a.showBookNotes(0);
+			} break;
+			case R.string.bookmarkH:
+			{
+				if(true) {
+					a.showT("功能升级中");
+					return;
+				}
 				String BKHistroryVagranter = a.opt.getString("bkHVgrts", "");// must 0<..<20
 				//CMN.Log(BKHistroryVagranter);
 				String[] items = BKHistroryVagranter.split(";");
@@ -792,6 +800,10 @@ public class Drawer extends Fragment implements
 			} break;
 			//书签
 			case R.string.lastmarks:  {
+				if(true) {
+					a.showT("功能升级中");
+					return;
+				}
 				String BKHistroryVagranter = a.opt.getString("bkHVgrts", "");// must 0<..<20
 				retrieveBnPos(bnPos, BKHistroryVagranter);
 				BookPresenter markedBook = a.getBookById(bnPos[0]);
@@ -1318,16 +1330,16 @@ public class Drawer extends Fragment implements
 		int id = v.getId();
 		if(id==R.string.addd) {
 			toPDF=true;
-			((TextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
+			((TextView)v.findViewById(R.id.subtext)).setText("无限打开任意位置的文件 !");
 			return false;
 		} else if(id==R.string.pick_main) {
-			try { // MLSN
-				a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-						.addCategory(Intent.CATEGORY_OPENABLE)
-						.setType("*/*"), Constants.OpenBooksRequset);
-			} catch (Exception e) {
-				a.showT(e.getMessage());
-			}
+//			try { // MLSN
+//				a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+//						.addCategory(Intent.CATEGORY_OPENABLE)
+//						.setType("*/*"), Constants.OpenBooksRequset);
+//			} catch (Exception e) {
+//				a.showT(e.getMessage());
+//			}
 			return true;
 		} else if(id==R.id.sw4) {
 			a.launchSettings(NightMode.id, NightMode.requestCode);
