@@ -222,14 +222,16 @@ var regSound=new RegExp("^sound://");
 var stopLnk, nxtEntry;
 
 function hiPlaySound(e){
-	var cur=e.ur1?e:e.srcElement;
-	//debug("hijacked sound playing : "+cur.ur1);
-	if(audio)
-		audio.pause();
-	else
-		audio = new Audio();
-	audio.src = cur.ur1;
-	audio.play();
+	e=e.target;
+	while(e && !e._pd_vc) e=e.parentNode;
+	if(e) {
+		var vc = baseSoundUrl+e.getAttribute('href').substring(8);
+		debug("subpage hijacked sound playing : ", vc);
+		if(audio) audio.pause();
+		else audio = new Audio();
+		audio.src = vc;
+		audio.play();
+	}
 }
 
 function popupEntry(e){
@@ -280,14 +282,14 @@ function baseEntry() {
 			tmp = tar.indexOf('/entry/');
 			if(tmp>0) tar = tar.slice(0, tmp);
 		}
-		baseSoundUrl = tar+'/sound/';
+		baseSoundUrl = tar+'/';
 		baseEntryUrl = tar+'/entry/';
 	}
 	return baseEntryUrl;
 }
 
 function wrappedDown(e){
-	//debug(e);
+	debug('wrappedDown', e);
 	var t;
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
@@ -324,16 +326,12 @@ function wrappedDown(e){
 		}
 		else if(regSound.test(attr)) {/*拦截 sound 连接*/
 			baseEntry();
-			var link=baseSoundUrl+attr.substring(8);
 			if(t.onclick==undefined){
-				t.href=link;
-				//debug("1! found internal sound link : "+cur.href);
-				t.ur1=t.href;
-				t.removeAttribute("href");
+				debug("1! found internal sound link : "+attr);
 				t.onclick=hiPlaySound;
-				hiPlaySound(t)
-				return false;
+				//t.addEventListener('click', hiPlaySound)
 			}
+			t._pd_vc = 1;
 			stopLnk = 1;
 			return true;
 		}
@@ -353,6 +351,8 @@ function wrappedDown(e){
 		return true;
 	}
 }
+
+w._pd_d = wrappedDown;
 
 function wrappedClickFunc(e){
 	debug('wrappedClickFunc', stopLnk)

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.database.Cursor;
@@ -30,6 +29,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.AnyThread;
@@ -46,6 +46,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.tesseraction.Tesseraction;
 import com.knziha.plod.widgets.ViewUtils;
@@ -101,11 +102,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				int hash = (ln<<(32-IU.bitCnt(ln)))|text.hashCode();
 				int cnt = hIdx.get(hash);
 				if (cnt<0) {
-					hIdx.put(hash, 1);
+					hIdx.put(hash, 1); // 铁定收录
 				} else {
 					rmIdx = history.lastIndexOf(text);
 					if(rmIdx<0)
-						hIdx.put(hash, 1);
+						hIdx.put(hash, cnt+1); // 撞hash了
 					else if(rmIdx==history.size()-1) {
 						CMN.debug("一毛一样！");
 						return;
@@ -136,19 +137,60 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	private void untrackDp() {
-		int idx=history.size()-historyMax;
+		int pos=history.size()-historyMax; // 你要出去
+		if (pos>=0) {
+			untrackText(history.get(pos), false);
+		}
+	}
+	
+	private void untrackText(String text, boolean del) {
+		int ln=text.length();
+		int hash = (ln<<(32-IU.bitCnt(ln)))|text.hashCode();
+		int idx = hIdx.indexOfKey(hash);
+		if (idx>=0) {
+			int cnt = hIdx.valueAt(idx)-1;
+			if (cnt>0)
+				hIdx.put(hash, cnt); // 苟延残喘
+			else
+				hIdx.removeAt(idx);
+		}
+		if (del && true) {
+			a.prepareHistoryCon().getDB().delete(LexicalDBHelper.TABLE_HISTORY_v2, "lex=?", new String[]{text});
+			a.prepareHistoryCon().incrementDBHistory();
+		}
+	}
+	
+	private void retrackDp() {
+		int idx=history.size()-historyMax; // 你要进来
 		if (idx>=0) {
 			String text = history.get(idx);
 			int ln=text.length();
 			int hash = (ln<<(32-IU.bitCnt(ln)))|text.hashCode();
 			idx = hIdx.indexOfKey(hash);
-			if (idx>0) {
-				int cnt = hIdx.valueAt(idx)-1;
-				if (cnt>0)
-					hIdx.put(hash, cnt);
-				else
-					hIdx.removeAt(idx);
+			if (idx < 0) {
+				hIdx.put(hash, 1); // 死灰复燃
+			} else {
+				hIdx.put(hash, hIdx.valueAt(idx)+1); // 东山再起
 			}
+		}
+	}
+	
+	private void deleteAt(int pos, boolean deleteAll) {
+		try {
+			pos = history.size()-pos-1;
+			if (pos >= 0) {
+				if (deleteAll) {
+					for (int i = pos; i >= 0; i--) {
+						retrackDp();
+						untrackText(history.remove(i), true);
+					}
+				} else {
+					retrackDp();
+					untrackText(history.remove(pos), true);
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -224,7 +266,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
 			expandBtn = lv.findViewById(R.id.more);
 			ViewUtils.setOnClickListenersOneDepth((ViewGroup) expandBtn.getParent(), this, 1, 0, null);
-			int spanSz = 3; GridLayoutManager lm;
+			int spanSz = PDICMainAppOptions.schHistorySpanSize(); GridLayoutManager lm;
 			if(scrollHideIM) {
 				lm = new GridLayoutManager(a, spanSz) {
 					@Override
@@ -261,6 +303,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
 					//int rows = (int) Math.ceil(a.schHistory.size()*1.f/spanSz)-1;
 					if (mDivider != null) {
+						int spanSz = PDICMainAppOptions.schHistorySpanSize();
 						final int childCount = parent.getChildCount();
 						final int width = parent.getWidth();
 						final int height = parent.getHeight();
@@ -286,6 +329,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					if (true){//shouldDrawDividerBelow(view, parent)) {
 						outRect.bottom = mDividerHeight;
 					}
+					int spanSz = PDICMainAppOptions.schHistorySpanSize();
 					if ((pos+1)%spanSz!=0){
 						outRect.right = mDividerHeight/2;
 					}
@@ -298,7 +342,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					return 1;
 				}
 			});
-			int pad = (int) (9.5*GlobalOptions.density);
+			final int pad = (int) (9.5*GlobalOptions.density);
 			View.OnClickListener vc = v -> {
 				RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) v.getTag(R.id.views_holder);
 				String text = getHistoryAt(vh.getLayoutPosition());
@@ -308,6 +352,92 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					hideIM();
 					dismiss();
 				}
+			};
+			View.OnLongClickListener vc1 = v -> {
+				RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) v.getTag(R.id.views_holder);
+				int pos = vh.getLayoutPosition();
+				//String text = getHistoryAt(pos);
+				boolean b1 = a.keyboardShown;
+				PopupMenuHelper popupMenu = a.getPopupMenu();
+				int[] vLocationOnScreen = new int[2];
+				popupMenu.initLayout(new int[]{
+						R.layout.page_lieshu
+						//,R.string.page_history_scope
+						,R.string.page_del_this
+						,R.string.page_del_prev
+						, R.layout.page_lnk_fanyi1
+				}, new PopupMenuHelper.PopupMenuListener() {
+					long deleting;
+					@Override
+					public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
+						final int id = view.getId();
+						boolean changed = true;
+						switch (id) {
+							case R.id.btn1:
+							case R.id.btn2:
+							case R.id.btn3:
+								GridLayoutManager lm = (GridLayoutManager) rv.getLayoutManager();
+								PDICMainAppOptions.schHistorySpanSize(id == R.id.btn1 ? 1 : id == R.id.btn2 ? 2 : 3);
+								lm.setSpanCount(PDICMainAppOptions.schHistorySpanSize());
+							break;
+							case R.string.page_del_this: // 删除此项
+								deleteAt(pos, false);
+							break;
+							case R.string.page_del_prev:
+								if (CMN.now() - deleting > 350) {
+									deleting = CMN.now();
+									PopupMenuHelper pop = new PopupMenuHelper(a, null, null);
+									pop.initLayout(new int[]{
+											R.string.page_del_conf
+									}, (popupMenuHelper1, v1, isLongClick1) -> {
+										deleteAt(pos, true);
+										rv.getAdapter().notifyDataSetChanged();
+										popupMenuHelper.dismiss();
+										popupMenuHelper1.dismiss();
+										return true;
+									});
+									int[] x = new int[2];
+									view.getLocationOnScreen(x);
+									pop.showAt(v, vLocationOnScreen[0], x[1]+view.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+								}
+							return true;
+							case R.id.page_lnk_fye:
+								PeruseView pView = a.getPeruseView();
+								pView.searchAll(getHistoryAt(pos), a, true);
+								changed = false;
+								break;
+							case R.id.page_lnk_pop:
+								a.popupWord(getHistoryAt(pos), null, 0, null);
+								changed = false;
+								break;
+							case R.id.page_lnk_share:
+								a.getVtk().setInvoker(null, null, null, getHistoryAt(pos));
+								a.getVtk().onClick(null);
+								changed = false;
+								break;
+						}
+						if (changed) {
+							rv.getAdapter().notifyDataSetChanged();
+						}
+						popupMenuHelper.dismiss();
+						return true;
+					}
+				});
+				v.getLocationOnScreen(vLocationOnScreen); //todo 校准弹出位置
+				popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+				popupMenu.mPopupWindow.setOnDismissListener(a.keyboardShown?new PopupWindow.OnDismissListener() {
+					@Override
+					public void onDismiss() {
+						etSearch.postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								etSearch.requestFocus();
+								a.imm.showSoftInput(etSearch, 0);
+							}
+						}, 64);
+					}
+				}:null);
+				return true;
 			};
 			rv.setAdapter(mAdapter=new RecyclerView.Adapter() {
 				@NonNull @Override
@@ -323,7 +453,6 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					tv.setTextColor(Color.WHITE);
 					RecyclerView.ViewHolder ret = new ViewHolder(tv);
 					tv.setBackground(draw.getConstantState().newDrawable());
-					tv.setClickable(true);
 					tv.setTag((Runnable) () -> {
 						if (tv.getLineCount()>1)
 							tv.setTextSize(GlobalOptions.isLarge?17:15);
@@ -332,12 +461,16 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					});
 					tv.setTag(R.id.views_holder, ret);
 					tv.setOnClickListener(vc);
+					tv.setOnLongClickListener(vc1);
 					return ret;
 				}
 				@Override
 				public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 					TextView tv = ((TextView)holder.itemView);
 					tv.setText(getHistoryAt(position));
+					int spanSz = PDICMainAppOptions.schHistorySpanSize();
+					int padLeft = spanSz == 1 ? pad*3 : spanSz == 2 ? pad*3/2 : pad;
+					tv.setPadding(padLeft, 0, pad/4, 0);
 					if(spanSz>3)
 						tv.post((Runnable) tv.getTag());
 				}

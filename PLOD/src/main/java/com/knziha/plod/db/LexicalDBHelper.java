@@ -64,6 +64,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	private final AssetManager assets;
 	HashMap<Long, Long> versions = new HashMap<>();
 	public boolean lastAdded;
+	public void incrementDBHistory() {
+		incrementDBVersion(-1L);
+	}
 	void incrementDBVersion(Long fid) {
 		Long ver = versions.get(fid);
 		versions.put(fid, (ver==null?1L:(ver+1)));

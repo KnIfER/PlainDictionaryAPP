@@ -378,7 +378,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
 	public int textFlag =0;
 	public Drawable mNavBtnDrawable;
-	boolean keyboardShown = false;
+	public boolean keyboardShown = false;
 	final public TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
 			if (isContentViewAttached() && ActivedAdapter!=null && (textFlag &0x4)!=0) {
@@ -9973,10 +9973,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 
-	/**var lnks = (window.scrollFocus?scrollFocus.item.contentWindow.document:document).links;
+	/**var b1=window.scrollFocus, lnks = (b1?scrollFocus.item.contentWindow.document:document).links;
 	 //console.log("fatal lnks ???", lnks);
 	 for(var i=0,max=Math.min(lnks.length,10);i<max;i++){
 		 if(lnks[i].getAttribute('href').startsWith('sound')){
+	 		if(b1) scrollFocus.item.contentWindow._pd_d({path:[lnks[i]]});
 			lnks[i].click();
 			10;
 			break;
@@ -10024,7 +10025,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 
-	PeruseView getPeruseView() {
+	public PeruseView getPeruseView() {
 		if(peruseView ==null) {
 			peruseView = new PeruseView(MainBackground);
 			peruseView.spsubs = opt.getFloat("spsubs", 0.706f);
