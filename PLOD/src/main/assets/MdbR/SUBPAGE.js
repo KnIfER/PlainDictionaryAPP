@@ -8,7 +8,7 @@ w.addEventListener('load',function(e){
     d.body.contentEditable=!1;
     _highlight(null);
     var lnks = document.links;
-	for(var i=0;i<lnks.length;i++) {
+	for(var i=0,max=Math.min(lnks.length,10);i<max;i++) {
 		if(lnks[i].href.startsWith("sound")) {
 			lnks=1; break;
 		}

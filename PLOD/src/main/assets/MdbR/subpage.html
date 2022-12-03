@@ -96,6 +96,13 @@ function wrappedOnLoadFunc(){
 		}
 	} else if(_app){
 		w.shzh=_app.rcsp(sid.get());
+		var lnks = document.links;
+		for(var i=0,max=Math.min(lnks.length,10);i<max;i++) {
+			if(lnks[i].href.startsWith("sound")) {
+				lnks=1; break;
+			}
+		} 
+		_app.maySound(sid.get(), lnks===1);
 	}
 	if(!remarked) {
 		if(fe) {

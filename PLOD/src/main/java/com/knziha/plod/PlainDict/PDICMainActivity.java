@@ -205,7 +205,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public ActivityMainBinding UIData;
 	KeyboardHeightPopupListener keyboardHeightPopupListener;
-	boolean keyboardShown = false;
 	
 	/** 定制底栏一：<br/>
 	 * 1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>

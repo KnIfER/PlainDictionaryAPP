@@ -334,7 +334,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int schuiList;
 	public List<View> wViews;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
-	public AccessibilityManager accessMan;
 	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
 	SettingsSearcher settingsSearcher;
 	
@@ -379,6 +378,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
 	public int textFlag =0;
 	public Drawable mNavBtnDrawable;
+	boolean keyboardShown = false;
 	final public TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
 			if (isContentViewAttached() && ActivedAdapter!=null && (textFlag &0x4)!=0) {
@@ -3509,7 +3509,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
-		topsnack.setBottomMargin(bottom);
+		topsnack.setBottomMargin(keyboardShown?0:bottom);
 		return parentView;
 	}
 	
@@ -8241,7 +8241,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else if (url.startsWith(soundTag)) {
 				try {
-					if (invoker.maybeHasSoundResourceOnPage()) {
+					if (mWebView.maybeHasSoundResourceOnPage()) {
 						CMN.debug("mdx hijacked sound playing : ",url);
 						String soundUrl = URLDecoder.decode(url.substring(soundTag.length()), "UTF-8");
 						if(PDICMainAppOptions.getCacheSoundResInAdvance()){
@@ -8251,12 +8251,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						mWebView.setAutoPlay(true);
 						mWebView.evaluateJavascript(playsoundscript + ("('" + soundUrl + "')"), null);
 					} else {
+						CMN.debug("page hijacked sound playing : ",url);
 						mWebView.setAutoPlay(true); // todo wtf???
-						mWebView.evaluateJavascript("var lnks = document.links; for(var i=0;i<lnks.length;i++){ if(lnks[i].attributes['href']){ if(links[i].attributes['href'].value=='" + URLDecoder.decode(url, "UTF-8") + "'){ links[i].click(); break; } } }", null);
+						mWebView.evaluateJavascript("var lnks = document.links; for(var i=0;i<lnks.length;i++){ if(lnks[i].getAttribute('href')=='" + URLDecoder.decode(url, "UTF-8") + "'){ links[i].click(); break; } }", null);
 					}
 					return true;
 				} catch (Exception e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 				return true;
 			}
@@ -9904,11 +9905,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewListHandler wlh = weblist;
 		mThenReadEntryCount--;
 		
-		WebViewmy wv = weblist.scrollFocus;
-		BookPresenter reader = wv==null?EmptyBook:wv.presenter;
+		WebViewmy wv = weblist.getWebContext();
 		String target = wlh.displaying;
-		CMN.debug("performReadEntry PRE "+reader.getDictionaryName()+"-"+wv+"-"+target);
-		if(reader!=EmptyBook && wv!=null && target!=null) {
+		CMN.debug("performReadEntry PRE "+(wv==null?EmptyBook:wv.presenter)+"-"+wv+"-"+target);
+		if(wv!=null && target!=null) {
+			BookPresenter reader = wv.presenter;
 			if (reader.isMddResource() && target.length() > 1) {
 				int end = target.lastIndexOf(".");
 				if (end < target.length() - 6) end = -1;
@@ -9918,13 +9919,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
 				requestSoundPlayBack(finalTarget, reader, wv);
 			}
-			else if (AutoBrowsePaused /*自动读时绕过*/ && reader.maybeHasSoundResourceOnPage()) {
+			else if (AutoBrowsePaused /*自动读时绕过*/ && (wv.maybeHasSoundResourceOnPage() || reader.isMergedBook())) {
 				/* 倾向于已经制定发音按钮 */
-				BookPresenter finalMCurrentDictionary = reader;
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
 					//CMN.Log("WebviewSoundJS", value);
 					if (!"10".equals(value)) {
-						requestSoundPlayBack(finalTarget, finalMCurrentDictionary, wv);
+						requestSoundPlayBack(finalTarget, reader, wv);
 					}
 				});
 			} else {
@@ -9973,20 +9973,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 
-	/**
-	 //console.log("fatal "+"???");
-	 var hrefs = document.getElementsByTagName('a');
-	 for(var i=0;i<hrefs.length;i++){
-		 if(hrefs[i].attributes['href']){
-			 if(hrefs[i].attributes['href'].value.indexOf('sound')==0){
-	 			// console.log("fatal "+"!!!");
-				 hrefs[i].click();
-				 10;
-	 			 break;
-			 }
+	/**var lnks = (window.scrollFocus?scrollFocus.item.contentWindow.document:document).links;
+	 //console.log("fatal lnks ???", lnks);
+	 for(var i=0,max=Math.min(lnks.length,10);i<max;i++){
+		 if(lnks[i].getAttribute('href').startsWith('sound')){
+			lnks[i].click();
+			10;
+			break;
 		 }
-	 }
-	 */
+	 }*/
 	@Metaline
 	private String WebviewSoundJS=StringUtils.EMPTY;
 
@@ -11772,27 +11767,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(ActivedAdapter!=null) invoker = ActivedAdapter.getPresenter();
 		}
 		else if(weblist!=null) {
-			WebViewmy wv = weblist.getWebContextNonNull();
-			invoker = wv.presenter; // todo 111  x打开 空
-			if (wv.merge) {
-				wv.evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String val) {
-						CMN.debug("onReceiveValue::", val);
-						BookPresenter book = EmptyBook;
-						try {
-							val = val.substring(1, val.length() - 1);
-							String[] arr=val.split("_");
-							val = arr[0];
-							long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
-							book = getBookById(id);
-						} catch (Exception e) {
-							CMN.debug(e);
+			if (weblist==weblistHandler && !isContentViewAttached()) {
+				// intentionally blank
+			} else {
+				WebViewmy wv = weblist.getWebContextNonNull();
+				invoker = wv.presenter; // todo 111  x打开 空
+				if (wv.merge) {
+					wv.evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String val) {
+							CMN.debug("onReceiveValue::", val);
+							BookPresenter book = EmptyBook;
+							try {
+								val = val.substring(1, val.length() - 1);
+								String[] arr=val.split("_");
+								val = arr[0];
+								long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
+								book = getBookById(id);
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+							showBookNotes(book);
 						}
-						showBookNotes(book);
-					}
-				});
-				return;
+					});
+					return;
+				}
 			}
 		}
 		showBookNotes(invoker);

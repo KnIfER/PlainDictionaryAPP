@@ -79,6 +79,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式。*/
 	public int fromCombined;
 	public int scrollLck;
+	public boolean bMaybeHasSoundOnPage;
 	private String useragent;
 	
 	//public boolean fromPeruseview;
@@ -1558,5 +1559,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		} else {
 			evaluateJavascript(MainActivityUIBase.RESTORE_MARKS, null);
 		}
+	}
+	
+	public boolean maybeHasSoundResourceOnPage() {
+		return bMaybeHasSoundOnPage || presenter.bookImpl.hasMdd();
 	}
 }

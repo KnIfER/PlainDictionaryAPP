@@ -2608,7 +2608,7 @@ function debug(e){console.log(e)};
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
-					presenter.bMaybeHasSoundOnPage = maybe;
+					wv.bMaybeHasSoundOnPage = maybe;
 				}
 			}
 		}
@@ -4923,11 +4923,5 @@ function debug(e){console.log(e)};
 			getWebx().setMirroredHost(val?-2:-1);
 			a.registerWebx(this);
 		}
-	}
-	
-	boolean bMaybeHasSoundOnPage;
-	
-	public boolean maybeHasSoundResourceOnPage() {
-		return bMaybeHasSoundOnPage || bookImpl.hasMdd();
 	}
 }

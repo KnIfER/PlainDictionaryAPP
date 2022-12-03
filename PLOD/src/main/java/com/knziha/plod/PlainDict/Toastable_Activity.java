@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -488,7 +489,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		
 		scanSettings();
 	}
-   
+	
+	public AccessibilityManager accessMan;
 	Toast m_currentToast;
 	TextView toastTv;
 	View toastV;
@@ -597,7 +599,9 @@ public class Toastable_Activity extends AppCompatActivity {
 			topsnack.setText(String.valueOf(messageVal));
 			topsnack.setTag(null);
 		}
-		topsnack.announceForAccessibility(topsnack.getText());
+		if (accessMan!=null && accessMan.isEnabled()) {
+			topsnack.announceForAccessibility(topsnack.getText());
+		}
 		topsnack.setGravity(gravity<0?Gravity.CENTER:gravity);
 		View snackView = topsnack.getSnackView();
 		if(ViewUtils.addViewToParent(snackView, parentView) || layoutFlags!=layoutFlagStamp) {
