@@ -152,16 +152,21 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			} else {
 				jointResult = weblistHandler.jointResult;
 			}
+			if (jointResult==null) {
+				pos = viewingPos;
+				if(firstItemIdx>0) pos = RemapPos((int) pos);
+				jointResult = data_get((int) pos);
+			}
 		} else {
 			viewingPos = (int) pos;
 			if(firstItemIdx>0) pos = RemapPos((int) pos);
-			jointResult = data.get((int) pos);
+			jointResult = data_get((int) pos);
 		}
 		
 		long did = pos<<32|Objects.hashCode(this);
 		
 		if(jointResult==null) {
-			a.showT("ERROR "+pos+" "+weblistHandler.isMergingFramesNum()+" "+weblistHandler.bMergeFrames);
+			a.showT(CMN.Log("ERROR "+pos+" "+weblistHandler.isMergingFramesNum()+" "+weblistHandler.bMergeFrames));
 			return;
 		}
 		List<Long> vals = (List<Long>) jointResult.value;
@@ -406,7 +411,14 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		weblistHandler.did = did;
 	}
-
+	
+	private additiveMyCpr1 data_get(int pos) {
+		if (pos < 0 || pos > data.size()) {
+			return null;
+		}
+		return data.get(pos);
+	}
+	
 	@Override
 	public ArrayList<Long> getRecordAt(int pos) {
 		if(firstItemIdx>0) pos = RemapPos(pos);

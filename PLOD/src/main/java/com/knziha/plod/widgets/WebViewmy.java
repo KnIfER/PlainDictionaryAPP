@@ -267,6 +267,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		drawRect=false;
 		isloading=true;
 		scrollLck=0;
+		bMaybeHasSoundOnPage = false;
+		if (ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
+			weblistHandler.textMenu(null);
+		}
 	}
 	
 //	@Override
@@ -300,6 +304,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		isloading=true;
 		scrollLck=0;
 		recUrl(url);
+		bMaybeHasSoundOnPage = false;
+		if (ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
+			weblistHandler.textMenu(null);
+		}
 	}
 	
 	public String url;

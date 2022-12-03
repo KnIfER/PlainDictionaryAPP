@@ -113,6 +113,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	public void restore() throws IOException {
 		File file = new File(Environment.getExternalStorageDirectory(), "无限词典_备份.json");
+		if (!file.exists()) {
+			file = new File(Environment.getExternalStorageDirectory(), "平典搜索_备份.json");
+		}
 		Editor preferences = defaultReader.edit();
 		com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(BU.FileToString(file));
 		for(String key:json.keySet()) {

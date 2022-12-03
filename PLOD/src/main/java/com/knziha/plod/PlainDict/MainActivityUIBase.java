@@ -6738,10 +6738,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							//CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
+							CMN.debug("viewMode::onClick isMultiRecord=", weblistHandler.isMultiRecord());
 							if(which>=0 && which<=2) {
 								//which=(which+1)%2;
-								if(weblistHandler.isMultiRecord()) {
+								if(weblistHandler.isMultiRecord()
+										|| PDICMainAppOptions.getLv2JointOneAsSingle()
+										&& ActivedAdapter==adaptermy2)
+								{
 									resetMerge(which, true);
 									if (PDICMainAppOptions.remMultiview()) {
 										PDICMainAppOptions.multiViewMode(which);
@@ -7107,11 +7110,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private void resetMerge(int which, boolean dlg) {
 		WebViewListHandler weblist = weblistHandler;
-		if (weblist.isMultiRecord()) {
+		if (weblist.isMultiRecord()
+			|| PDICMainAppOptions.getLv2JointOneAsSingle()
+				&& ActivedAdapter==adaptermy2 && true/*...*/) {
 			if(which==-1) which=mergeFrames();
 			boolean bUseMergedUrl = which!=0;
 			if(which!=weblist.bMergeFrames) {
-				weblist.setViewMode(weblist.multiRecord, opt.multiViewMode(), weblist.dictView);
+				resultRecorderCombined record = weblist.multiRecord;
+				if (record==null) record = adaptermy2.results.size()==0? null
+						: (resultRecorderCombined) adaptermy2.results;
+				weblist.setViewMode(record, opt.multiViewMode(), weblist.dictView);
 				weblist.bMergeFrames = which;
 				weblist.webHolderSwapHide = true;
 				// 旧版本切换新版本出现闪黑，

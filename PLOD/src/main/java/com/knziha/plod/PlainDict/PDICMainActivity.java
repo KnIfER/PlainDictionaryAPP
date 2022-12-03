@@ -1880,9 +1880,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		}
 		
-		if (firstInstall)
-		{
+		if (firstInstall) {
 			VersionUtils.openIntro(this);
+			firstInstall = false;
 		}
 
 		//JumpToWord("crayon", 1);

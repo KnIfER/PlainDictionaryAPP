@@ -150,7 +150,6 @@ public class Drawer extends Fragment implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 	}
 	
 	@Override
@@ -586,6 +585,7 @@ public class Drawer extends Fragment implements
 							.show();
 					d.isDark = GlobalOptions.isDark;
 					Button btn = d.findViewById(android.R.id.button2);
+					ViewUtils.setVisible(btn, a.trialCount==-1);
 					btn.setOnClickListener(v1 -> {
 						AlertDialog dd = (AlertDialog) ViewUtils.getWeakRefObj(aboutDlg);
 						dd.setCanceledOnTouchOutside(false);
@@ -632,7 +632,7 @@ public class Drawer extends Fragment implements
 					d.setCancelable(true);
 					Button btn = (Button) d.tag;
 					btn.setText("检查更新");
-					ViewUtils.setVisible(btn, true);
+					ViewUtils.setVisible(btn, a.trialCount==-1);
 				}
 				d.show();
 				d.mAlert.mMessageView.requestFocus();

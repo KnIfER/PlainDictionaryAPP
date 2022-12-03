@@ -125,8 +125,8 @@
 		prepareMap(t);
 		if(window._merge && !window.frameElement) {
 			window.processPage = function(fx){try{if(fx)zhTran(choice, fx.contentWindow.document.body)}catch(e){debug(e)}};
-			for(var i=0;i<pages.length;i++) {
-				processPage(pages[i].item);
+			for(var i=0;i<frames.length;i++) {
+				processPage(frames[i].item);
 			}
 		} else {
 			zhTran(t, document.body);

@@ -80,7 +80,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	public DisplayMetrics dm;
 	//public LayoutInflater inflater;
 	public InputMethodManager imm;
-	protected int trialCount=-1;
+	public int trialCount=-1;
 	
 	public int mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION;
 	
@@ -358,7 +358,7 @@ public class Toastable_Activity extends AppCompatActivity {
 					if(trialCount>=2) {
 						opt.rootPath=trialPath;
 						if(Build.VERSION.SDK_INT<=30) {
-							showT("存储受限，持续试用中……");
+							showT("存储受限，无限试用中……");
 						}
 						pre_further_loading(savedInstanceState);
 						return;
