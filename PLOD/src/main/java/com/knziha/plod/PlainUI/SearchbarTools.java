@@ -402,11 +402,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 								}
 							return true;
 							case R.id.page_lnk_fye:
-								PeruseView pView = a.getPeruseView();
-								pView.searchAll(getHistoryAt(pos), a, true);
+								a.JumpToPeruseModeWithWord(getHistoryAt(pos));
 								changed = false;
 								break;
-							case R.id.page_lnk_pop:
+							case R.id.page_lnk_tapSch:
 								a.popupWord(getHistoryAt(pos), null, 0, null);
 								changed = false;
 								break;
