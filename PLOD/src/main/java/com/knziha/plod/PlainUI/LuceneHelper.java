@@ -26,6 +26,7 @@ import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
@@ -35,6 +36,7 @@ import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -46,6 +48,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
+import org.joni.Regex;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +56,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LuceneHelper {
 	final PDICMainActivity a;
@@ -89,12 +94,68 @@ public class LuceneHelper {
 		Analyzer analyzer = this.analyzer;
 		String phrase = CurrentSearchText;
 		IndexSearcher searcher = prepareSearch(true);
-		CMN.rt();
+		CMN.rt("搜索引擎 phrase="+phrase);
 		Query query;
 		TopDocs docs;
 		if (results == null) {
 			results = new resultRecorderLucene(a, a.loadManager, hitsPerPage);
 			query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
+			CMN.debug("breaked query::", query);
+			boolean debug_query = false;// GlobalOptions.debug;
+			if (phrase.contains("\"") || debug_query) {
+				// https://blog.csdn.net/sinat_27171121/article/details/128172024
+				try {
+					String raw = query.toString();
+					Pattern p = Pattern.compile("content:\"(.+?)\"");
+					Matcher m = p.matcher(raw);
+					StringBuffer sb = new StringBuffer();
+					boolean found = false;
+					while(m.find()) {
+						found = true;
+						m.appendReplacement(sb, "");
+						String raw_term = m.group(1);
+						int now = 0, last=-1;
+						// loop in "raw_term"
+						while (now < raw_term.length()) {
+							if (raw_term.charAt(now)==' ') {
+								boolean shouldStrip = true;
+								if (now-last-1 <= 1) shouldStrip = false;
+								if (shouldStrip) {
+									boolean quanYingWen = true;
+									for (int i = last+1; i < now; i++) {
+										if (WordBreakFilter.isBigram(raw_term.charAt(i))) {
+											quanYingWen = false;
+											break;
+										}
+									}
+									if(quanYingWen) shouldStrip = false;
+								}
+								if (shouldStrip) last = now;
+								else break;
+							}
+							now ++ ;
+						}
+						if (last > 0) raw_term = raw_term.substring(last+1);
+						sb.append("content:\"").append(raw_term).append("\"");
+					}
+					if (found || debug_query)
+					{
+						m.appendTail(sb);
+						raw = sb.toString();
+						//CMN.debug("修正前 query::", query);
+						Query refQuery = new QueryParser(Version.LUCENE_47, "content", new StandardAnalyzer(Version.LUCENE_47)).parse(raw);
+						CMN.debug("修正后 query::", refQuery.equals(new QueryParser(Version.LUCENE_47, "content", new StandardAnalyzer(Version.LUCENE_47)).parse(phrase)), refQuery);
+						query = refQuery;
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
+//			analyzer = new StandardAnalyzer(Version.LUCENE_47);
+//			query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
+//			CMN.debug("standard query::", new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase));
+//			Query reflectQuery = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(query.toString());
+//			CMN.debug("reflect query::", reflectQuery, query.equals(reflectQuery));
 			if (map != null) {
 				BooleanQuery booleanQuery = new BooleanQuery();
 				BooleanQuery dictQueries = new BooleanQuery();

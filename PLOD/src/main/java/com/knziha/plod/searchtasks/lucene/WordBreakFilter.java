@@ -1,5 +1,6 @@
 package com.knziha.plod.searchtasks.lucene;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.text.BreakIteratorHelper;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -35,8 +36,8 @@ public final class WordBreakFilter extends TokenFilter {
 	int start = 0;
 	@Override
 	public boolean incrementToken() throws IOException {
-		//CMN.Log("incrementToken", input);
 		if(component.text!=null) {
+			CMN.debug("breaking new term::", component.text, input);
 			breakIterator.setText(text = component.text);
 			component.text = null;
 			start = 0;
