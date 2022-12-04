@@ -1008,63 +1008,65 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private void AttachViews() {
 		// 初次添加请指明方位
 		if (/*!pin() && */!isVisible()) {
-			ViewGroup targetRoot = lastTargetRoot;
 			if (moveView.FVDOCKED && moveView.Maximized && PDICMainAppOptions.getResetMaxClickSearch()) {
 				if (wordCamera==null || true)
 				{
 					moveView.Dedock();
 				}
 			}
-//			CMN.Log("poping up ::: ", a.ActivedAdapter);
-			if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !moveView.FVDOCKED) {
-				float ty = 0;
-				float now = 0;
-				if (a.ActivedAdapter != null || popupFrame<0) {
-					//CMN.Log("???", y, targetRoot.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader));
-					if(popupFrame==-1){
-						now = a.mActionModeHeight;
-						CMN.Log(now, targetRoot.getHeight() / 2);
-					}
-					else if(invoker.peruseView!=null){
-						now = invoker.peruseView.getWebTouchY();
-					}
-					else if (invoker.weblistHandler.isViewSingle()) {
-						now = invoker.lastY + invoker.getTop();
-						//CMN.Log("now",sv.getChildAt(0).getHeight(), ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin);
-					}
-					else {
-						now = invoker.rl.getTop() + invoker.lastY + invoker.getTop() - invoker.weblistHandler.WHP.getScrollY();
-					}
-					if(a.thisActType!= MainActivityUIBase.ActType.MultiShare) {
-						try {
-							if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
-								now += a.contentview.getTop();
-							} else {
-								now += ((ViewGroup.MarginLayoutParams) a.contentview.getLayoutParams()).topMargin;
-							}//333 contentSnackHolder
-						} catch (Exception e) {
-							CMN.debug(e);
+			if (!pin()) {
+				ViewGroup targetRoot = lastTargetRoot;
+				CMN.Log("poping up ::: ", a.ActivedAdapter);
+				if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !moveView.FVDOCKED) {
+					float ty = 0;
+					float now = 0;
+					if (a.ActivedAdapter != null || popupFrame<0) {
+						//CMN.Log("???", y, targetRoot.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader));
+						if(popupFrame==-1){
+							now = a.mActionModeHeight;
+							CMN.Log(now, targetRoot.getHeight() / 2);
+						}
+						else if(invoker.peruseView!=null){
+							now = invoker.peruseView.getWebTouchY();
+						}
+						else if (invoker.weblistHandler.isViewSingle()) {
+							now = invoker.lastY + invoker.getTop();
+							//CMN.Log("now",sv.getChildAt(0).getHeight(), ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin);
+						}
+						else {
+							now = invoker.rl.getTop() + invoker.lastY + invoker.getTop() - invoker.weblistHandler.WHP.getScrollY();
+						}
+						if(a.thisActType!= MainActivityUIBase.ActType.MultiShare) {
+							try {
+								if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
+									now += a.contentview.getTop();
+								} else {
+									now += ((ViewGroup.MarginLayoutParams) a.contentview.getLayoutParams()).topMargin;
+								}//333 contentSnackHolder
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+						}
+						float pad = 56 * a.dm.density;
+						if (a instanceof FloatSearchActivity)
+							now += ((FloatSearchActivity) a).getPadHoldingCS();
+	//					CMN.debug("now",now);
+						if (now < targetRoot.getHeight() / 2) {
+							ty = now + pad;
+						} else {
+							ty = now - moveView.FVH_UNDOCKED - pad;
 						}
 					}
-					float pad = 56 * a.dm.density;
-					if (a instanceof FloatSearchActivity)
-						now += ((FloatSearchActivity) a).getPadHoldingCS();
-//					CMN.debug("now",now);
-					if (now < targetRoot.getHeight() / 2) {
-						ty = now + pad;
-					} else {
-						ty = now - moveView.FVH_UNDOCKED - pad;
-					}
+					//CMN.Log("min", getVisibleHeight()-popupMoveToucher.FVH_UNDOCKED-((ViewGroup.MarginLayoutParams)popupContentView.getLayoutParams()).topMargin*2);
+					popupContentView.setTranslationY(Math.min(a.getVisibleHeight() - moveView.FVH_UNDOCKED - ((ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams()).topMargin * 2, Math.max(0, ty)));
+					//a.showT(popupContentView.getTranslationY());
 				}
-				//CMN.Log("min", getVisibleHeight()-popupMoveToucher.FVH_UNDOCKED-((ViewGroup.MarginLayoutParams)popupContentView.getLayoutParams()).topMargin*2);
-				popupContentView.setTranslationY(Math.min(a.getVisibleHeight() - moveView.FVH_UNDOCKED - ((ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams()).topMargin * 2, Math.max(0, ty)));
-				//a.showT(popupContentView.getTranslationY());
+				
+				//ViewUtils.addViewToParent(popupGuarder, targetRoot);
+				//if(idx>=0){
+				a.fix_full_screen(null);
+				//}
 			}
-			
-			//ViewUtils.addViewToParent(popupGuarder, targetRoot);
-			//if(idx>=0){
-			a.fix_full_screen(null);
-			//}
 		}
 		//else popupWebView.loadUrl("about:blank");
 		//CMN.recurseLog(popupContentView, null);
