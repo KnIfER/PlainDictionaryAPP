@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.BitmapDrawable;
+import android.text.Editable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -184,30 +185,6 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 		return convertView;
 	}
 	
-	@Override
-	public boolean onLongClick(View v) {
-		int id = v.getId();
-		if (id == R.id.text|| id == R.id.check1) {
-			BookManagerMain.ViewHolder vh
-					= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
-			if (vh != null) {
-				PopupMenuHelper popupMenu = a.getPopupMenu();
-				pressedBookName = vh.title.getText();
-				if(popupMenu.getListener()!=this) {
-					int[] texts = new int[]{
-						R.string.delete
-					};
-					popupMenu.initLayout(texts, this);
-				}
-				View rv = dialog.getWindow().getDecorView();
-				View vp = (View) v.getParent();
-				popupMenu.showAt(rv, 0, vp.getHeight()-v.getTop()-v.getHeight(), Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
-				ViewUtils.preventDefaultTouchEvent(v, 0, 0);
-			}
-		}
-		return false;
-	}
-	
 	@SuppressLint("ResourceType")
 	@Override
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
@@ -224,58 +201,130 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 		return true;
 	}
 	
+	private Editable getText() {
+		Editable ret = etSearch.getText();
+		if (ret==null) {
+			etSearch.setText(" ");
+			ret = etSearch.getText();
+			ret.clear();
+		}
+		return ret;
+	}
+	
+	// longclick
+	@Override
+	public boolean onLongClick(View v) {
+		int id = v.getId();
+		if (id == R.id.text|| id == R.id.check1) {
+			BookManagerMain.ViewHolder vh
+					= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
+			if (vh != null) {
+				PopupMenuHelper popupMenu = a.getPopupMenu();
+				pressedBookName = vh.title.getText();
+				if(popupMenu.getListener()!=this) {
+					int[] texts = new int[]{
+							R.string.delete
+					};
+					popupMenu.initLayout(texts, this);
+				}
+				View rv = dialog.getWindow().getDecorView();
+				View vp = (View) v.getParent();
+				popupMenu.showAt(rv, 0, vp.getHeight()-v.getTop()-v.getHeight(), Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+				ViewUtils.preventDefaultTouchEvent(v, 0, 0);
+			}
+		}
+		if (id == R.id.quot) {
+			int st=0, ed=getText().length();
+			if (st > ed) {
+				int tmp = st; st=ed; ed=tmp;
+			}
+			getText().insert(st, "\"");
+			getText().insert(ed+1, "\"");
+			etSearch.setSelection(st+1, ed+1);
+			return true;
+		}
+		return false;
+	}
+	
 	// click
 	@Override
 	public void onClick(View v) {
 		int id = v.getId();
-		if (id == android.R.id.button1|| id == R.id.search) {
-			performSearch();
-		} else if (id == R.id.text|| id == R.id.check1) {
-			BookManagerMain.ViewHolder vh
-					= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
-			if (vh != null) {
-				if (schGroup != 2) {
-					if (id == R.id.check1) {
-						vh.ck.setChecked(!vh.ck.isChecked());
-					}
-				} else {
-					if (id != R.id.check1) {
-						vh.ck.setChecked(!vh.ck.isChecked());
-					}
-					try {
-						String bookName = helper.indexedbooks.get(vh.position).name;
-						if (vh.ck.isChecked()) {
-							schMap.put(bookName, null);
-						} else {
-							schMap.remove(bookName);
+		switch (id) {
+			case android.R.id.button1:
+			case R.id.search:
+				performSearch();
+			break;
+			case R.id.quot:
+				try {
+					if (etSearch.hasSelection()) {
+						int st=etSearch.getSelectionStart(), ed=etSearch.getSelectionEnd();
+						if (st > ed) {
+							int tmp = st; st=ed; ed=tmp;
 						}
-					} catch (Exception e) {
-						CMN.debug(e);
-					}
-				}
-			}
-		} else {
-			View p = ViewUtils.getNthParentNonNull(v, 1);
-			if (p == group) {
-				for (int i = 0; i < group.getChildCount(); i++) {
-					RadioSwitchButton b = (RadioSwitchButton) group.getChildAt(i);
-					if (b == v) {
-						b.setChecked(true);
-						PDICMainAppOptions.schGroup(schGroup = i);
+						getText().insert(st, "\"");
+						getText().insert(ed+1, "\"");
+						etSearch.setSelection(st+1, ed+1);
 					} else {
-						b.setChecked(false);
+						getText().insert(etSearch.getSelectionStart(), "\"");
+						if (getText().length()==1) {
+							getText().append("\"");
+							etSearch.setSelection(1);
+						}
+					}
+				} catch (Exception e) {
+					CMN.debug();
+				}
+				break;
+			case R.id.text:
+			case R.id.check1:
+				BookManagerMain.ViewHolder vh
+						= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
+				if (vh != null) {
+					if (schGroup != 2) {
+						if (id == R.id.check1) {
+							vh.ck.setChecked(!vh.ck.isChecked());
+						}
+					} else {
+						if (id != R.id.check1) {
+							vh.ck.setChecked(!vh.ck.isChecked());
+						}
+						try {
+							String bookName = helper.indexedbooks.get(vh.position).name;
+							if (vh.ck.isChecked()) {
+								schMap.put(bookName, null);
+							} else {
+								schMap.remove(bookName);
+							}
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
 					}
 				}
-				if (schGroup == 2 && schMap.size() == 0) {
-					schMap.put(a.currentDictionary.getDictionaryName(), null);
+			break;
+			default:
+				View p = ViewUtils.getNthParentNonNull(v, 1);
+				if (p == group) {
+					for (int i = 0; i < group.getChildCount(); i++) {
+						RadioSwitchButton b = (RadioSwitchButton) group.getChildAt(i);
+						if (b == v) {
+							b.setChecked(true);
+							PDICMainAppOptions.schGroup(schGroup = i);
+						} else {
+							b.setChecked(false);
+						}
+					}
+					if (schGroup == 2 && schMap.size() == 0) {
+						schMap.put(a.currentDictionary.getDictionaryName(), null);
+					}
+					notifyDataSetChanged();
+					return;
 				}
-				notifyDataSetChanged();
-				return;
-			}
-			p = ViewUtils.getNthParentNonNull(v, 2);
-			if (p == inputs) {
-				return;
-			}
+				p = ViewUtils.getNthParentNonNull(v, 2);
+				if (p == inputs) {
+					return;
+				}
+			break;
 		}
 	}
 	
@@ -306,6 +355,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 			tools = (ViewGroup) ViewUtils.findViewById((ViewGroup) view, R.id.tools);
 			group = tools.findViewById(R.id.group);
 			inputs = tools.findViewById(R.id.inputs);
+			ViewUtils.setOnClickListenersOneDepth(inputs, this, 999, null);
 			((RadioSwitchButton)group.getChildAt(schGroup = PDICMainAppOptions.schGroup())).setChecked(true);
 			if (schGroup == 2 && schMap.size() == 0) {
 				schMap.put(a.currentDictionary.getDictionaryName(), null);

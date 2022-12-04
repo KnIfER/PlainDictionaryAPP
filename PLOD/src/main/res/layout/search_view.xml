@@ -6,7 +6,8 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical"
-	android:paddingTop="0dp">
+	android:paddingTop="0dp"
+	tools:context="com.knziha.plod.PlainUI.SearchEngine">
 
 	<androidx.appcompat.widget.Toolbar
 		android:id="@+id/toolbar"
@@ -110,8 +111,6 @@
 			android:layout_weight="1"
 			android:layout_height="match_parent"
 			android:orientation="vertical"
-			android:alpha="0.3"
-			tools:alpha="1"
 			>
 			<LinearLayout
 				android:layout_width="match_parent"
@@ -120,21 +119,28 @@
 				android:orientation="horizontal"
 				>
 				<TextView
+					android:alpha="0.3"
 					android:text="&amp;&amp;"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="||"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="!"
 					style="@style/schEngineKit" />
 				<TextView
+					android:id="@+id/quot"
+					android:longClickable="true"
 					android:text="&quot; &quot;"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="^"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="~"
 					style="@style/schEngineKit" />
 			</LinearLayout>
@@ -145,21 +151,27 @@
 				android:orientation="horizontal"
 				>
 				<TextView
+					android:alpha="0.3"
 					android:text="+"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="-"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="*"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="?"
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text="("
 					style="@style/schEngineKit" />
 				<TextView
+					android:alpha="0.3"
 					android:text=")"
 					style="@style/schEngineKit" />
 			</LinearLayout>
