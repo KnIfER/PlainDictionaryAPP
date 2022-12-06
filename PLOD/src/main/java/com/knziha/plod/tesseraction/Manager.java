@@ -131,6 +131,7 @@ public class Manager implements View.OnClickListener {
 		setOnClickListenersOneDepth(UIData.toolbarContent, this, 1, null);
 		setOnClickListenersOneDepth(UIData.toast, this, 1, null);
 		setOnClickListenersOneDepth(UIData.fltTools, this, 999, null);
+		UIData.toastTv.setTextIsSelectable(true);
 		UIData.frameView.setOnClickListener(this);
 	}
 	

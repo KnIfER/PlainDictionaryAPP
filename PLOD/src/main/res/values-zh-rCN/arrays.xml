@@ -9,8 +9,9 @@
 		<item>@null</item>
 		<item>打开设置</item>
 		<item>@null</item>
-		<item>可打开MDX/DSL/WEB/PDF格式的文件</item>
+		<item>可打开MDX/DSL/PDF格式的文件，可选文件夹</item>
 		<item>主目录下的词典将以相对路径记录, 提高效率</item>
+		<item>默认为主目录外部同级AudioLib文件夹，加载其中的mdd作为发音库</item>
 		<item>&#160;</item>
 		<item>&#160;</item>
 		<item>@null</item>
@@ -26,7 +27,7 @@
 		<item>@null</item>
 		<item>打开设置</item>
 		<item>@null</item>
-		<item>可打开MDX/DSL/WEB/PDF格式的文件</item>
+		<item>可打开MDX/DSL/PDF格式的文件</item>
 		<item>主目录下的词典将以相对路径记录, 提高效率</item>
 		<item>亦可长按底部工具栏第二个图标</item>
 		<item>亦可长按底部工具栏倒数第二个图标</item>

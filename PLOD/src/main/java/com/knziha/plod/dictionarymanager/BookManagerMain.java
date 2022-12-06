@@ -428,23 +428,19 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 													}
 													adapter.notifyDataSetChanged();
 													a.showT(isCL ? "已设为默认折叠" : "已取消默认折叠");
-												}
-												break;
+												} break;
 												/* 设为发音库( mdd 专有 ) */
 												case 3: {
 													if (isMddResourceAt(actualPosition)) {
 														markDirty(actualPosition);
-														boolean isCS = PDICMainAppOptions.toggleTmpIsAudior(magent);
-														if (isCS)
-															setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
+														boolean isCS = !PDICMainAppOptions.getTmpIsAudior(getPlaceFlagAt(actualPosition));
+														setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(actualPosition), isCS));
+														if(isCS) setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
 														if (isOnSelected) {
 															for (int i = 0; i < manager_group().size(); i++) {
 																if (getPlaceSelected(i)) {
-																	if (isMddResourceAt(i)) {
-																		setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(i), isCS));
-																		if (isCS)
-																			setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(i), false));
-																	}
+																	setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(i), isCS));
+																	if(isCS) setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
 																}
 															}
 														}

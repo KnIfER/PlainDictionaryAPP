@@ -208,6 +208,7 @@ public class AgentApplication extends Application {
 			}
 		}
 		if (SDK_INT<=20) {
+			// 安卓4.4调试启动更快
 //			androidx.multidex.MultiDex.install(this);
 			com.bytedance.boost_multidex.BoostMultiDex.install(base);
 		}

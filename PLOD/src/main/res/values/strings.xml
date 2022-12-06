@@ -271,4 +271,5 @@
 	<string name="page_del_prev">删除之前项</string>
 	<string name="page_history_scope">设置显示范围</string>
 	<string name="page_del_conf">确认删除</string>
+	<string name="pick_audio_dir">选择发音库目录</string>
 </resources>

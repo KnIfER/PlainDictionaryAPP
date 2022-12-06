@@ -181,6 +181,7 @@ public class Drawer extends Fragment implements
 						, 0
 						, R.string.addd
 						, R.string.pick_main
+						, R.string.pick_audio_dir
 						, R.string.manager
 						, R.string.switch_favor
 						, 0
@@ -206,6 +207,7 @@ public class Drawer extends Fragment implements
 						, 0
 						, R.string.addd
 						, R.string.pick_main
+						, R.string.pick_audio_dir
 						, R.string.manager
 						, R.string.switch_favor
 				};
@@ -1160,25 +1162,74 @@ public class Drawer extends Fragment implements
 					public void
 					onSelectedFilePaths(String[] files, File n) {
 						if(files.length>0) {
-							a.pendingModPath(new File(files[0]).getAbsolutePath());
+							File file = new File(files[0]);
+							if (!file.equals(properties1.offset) && file.isDirectory()) {
+								a.pendingModPath(file.getAbsolutePath());
+								a.showT("需要重启生效");
+							} else {
+								a.showT("未更改");
+							}
 						}
 					}
-					
 					@Override
 					public void onEnterSlideShow(Window win, int delay) {
 					
 					}
-					
 					@Override
 					public void onExitSlideShow() {
 					
 					}
-					
 					@Override
 					public Activity getDialogActivity() {
 						return null;
 					}
+					@Override
+					public void onDismiss() {
 					
+					}
+				});
+				dialog1.show();
+			} break;
+			//选择发音库目录
+			case R.string.pick_audio_dir:  {
+				DialogProperties properties1 = new DialogProperties();
+				properties1.selection_mode = DialogConfigs.SINGLE_MODE;
+				properties1.selection_type = DialogConfigs.DIR_SELECT;
+				properties1.root = new File("/");
+				properties1.error_dir = Environment.getExternalStorageDirectory();
+				properties1.offset = a.opt.audioLib;
+				if(properties1.offset==null) properties1.offset = a.opt.lastMdlibPath;
+				//CMN.show(a.opt.lastMdlibPath+":"+Environment.getExternalStorageDirectory().getAbsolutePath());
+				properties1.opt_dir=new File(a.opt.pathToDatabases().append("favorite_dirs/").toString());
+				properties1.opt_dir.mkdirs();
+				properties1.title_id=R.string.pick_audio_dir;
+				//properties1.extensions = new String[] {"mdx"};
+				FilePickerDialog dialog1 = new FilePickerDialog(a, properties1);
+				dialog1.setDialogSelectionListener(new DialogSelectionListener() {
+					@Override
+					public void
+					onSelectedFilePaths(String[] files, File n) {
+						if(files.length>0) {
+							File file = new File(files[0]);
+							if (!file.equals(properties1.offset) && file.isDirectory()) {
+								a.opt.setAudioLibPath(file);
+								a.audioLoaded = false;
+								a.showT("已修改发音库目录！");
+							} else {
+								a.showT("未更改");
+							}
+						}
+					}
+					@Override
+					public void onEnterSlideShow(Window win, int delay) {
+					}
+					@Override
+					public void onExitSlideShow() {
+					}
+					@Override
+					public Activity getDialogActivity() {
+						return null;
+					}
 					@Override
 					public void onDismiss() {
 					

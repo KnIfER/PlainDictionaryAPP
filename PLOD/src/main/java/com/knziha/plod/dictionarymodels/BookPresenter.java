@@ -2285,13 +2285,13 @@ function debug(e){console.log(e)};
 	public void LoadPagelet(WebViewmy mWebView, StringBuilder htmlBuilder, String records) {
 //		if (getType()==PLAIN_TYPE_MDICT) {
 //			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-//			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
+//			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist' id='MddExist'/>");
 //			htmlBuilder.append("</div>");
 //		}
 		htmlBuilder.append(htmlHeadEndTag).append(records);
 		if (getType()==PLAIN_TYPE_MDICT) {
 			htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-			if(bookImpl.hasMdd()) htmlBuilder.append("<p class=''/>");
+			if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist' id='MddExist'/>");
 			htmlBuilder.append("</div>");
 		}
 		htmlBuilder.append(htmlEnd);
@@ -2557,10 +2557,6 @@ function debug(e){console.log(e)};
 	public PDICMainAppOptions getOpt() {
 		return opt;
 	}
-
-	public Object[] getSoundResourceByName(String canonicalName) throws IOException {
-		return bookImpl.getSoundResourceByName(canonicalName);
-	}
 	
 	public String getCharsetName() {
 		return bookImpl.getCharsetName();
@@ -2775,7 +2771,10 @@ function debug(e){console.log(e)};
 							if (entry == null) {
 								entry = mWebView.word;
 							}
-							
+							if (book.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+								text = text.replaceAll("-\n", "");
+								text = text.replaceAll("\n(?!\n)", " ");
+							}
 							ContentValues values = new ContentValues();
 							
 							String url = mWebView.url;

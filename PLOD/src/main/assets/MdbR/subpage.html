@@ -230,7 +230,14 @@ function hiPlaySound(e){
 		if(audio) audio.pause();
 		else audio = new Audio();
 		audio.src = vc;
-		audio.play();
+		var pro = audio.play();
+		pro.catch(error => {
+			if(((error+'').indexOf('found'))>0) {
+				//debug("播放失败.. ");
+				if(_app) location.href = 'sound://happy.mp3'
+				//else todo 使得 mdbr/sounds/ 等效于 sounds:// ……
+			}
+		});
 	}
 }
 

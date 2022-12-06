@@ -1725,8 +1725,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	
 	@Override
 	public Object[] getSoundResourceByName(String canonicalName) throws IOException {
+		CMN.debug("mdict::getSoundResourceByName", canonicalName, mdd);
 		if(getIsResourceFile()){
 			int idx = lookUp(canonicalName, false);
+			CMN.debug("mdict::getSoundResourceByName res lookup::", canonicalName, getIsResourceFile(), idx, canonicalName);
 			if(idx>=0){
 				String matched=getEntryAt(idx);
 				if(matched.regionMatches(true,0, canonicalName, 0, canonicalName.length())){
@@ -1737,10 +1739,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		} else {
 			if(mdd!=null && mdd.size()>0){
 				for(mdictRes mddTmp:mdd){
-					int idx = mddTmp.lookUp(canonicalName);
+					int idx = mddTmp.lookUp(canonicalName, false);
+					CMN.debug("mdict::getSoundResourceByName lookup::", idx, canonicalName);
 					if(idx>=0) {
 						String matched=mddTmp.getEntryAt(idx);
-						//SU.Log("getSoundResourceByName", matched, canonicalName);
+						CMN.debug("mdict::getSoundResourceByName res matched=?", matched);
 						if(matched.regionMatches(true,0, canonicalName, 0, canonicalName.length())){
 							String spx = "spx";
 							return new Object[]{matched.regionMatches(true,canonicalName.length(), spx, 0, spx.length()), mddTmp.getResourseAt(idx)};

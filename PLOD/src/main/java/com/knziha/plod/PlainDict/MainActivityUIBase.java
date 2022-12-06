@@ -154,6 +154,7 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
+import com.knziha.filepicker.utils.FileComparator;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
@@ -6885,15 +6886,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(wlh!=null)
 					wlh.setFetchWord(-2, null);
 			}  break;
-			/* 跳转翻阅模式 */
+			/* 从内容页跳转翻阅模式 */
 			case R.id.peruseMode:{
 				ret = closeMenu = true;
-				isLongClicked &= ActivedAdapter!=null;
-				if(true && !isLongClicked){
+				if(isLongClicked) {
+					AttachPeruseView(false);
+					ret=true;
+				} else {
+					isLongClicked &= ActivedAdapter!=null;
 					EnterPeruseModeByContent(isLongClicked);
 				}
 			} break;
-			case R.id.peruseList:{//切换主列表翻阅模式
+			/* 跳转翻阅模式 */
+			case R.id.peruseList:{
 				if(isLongClicked) {
 					AttachPeruseView(false);
 					ret=true;
@@ -7082,29 +7087,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private void EnterPeruseModeByContent(boolean isLongClicked) {
-		String nowKey=isLongClicked?null:(ActivedAdapter.getRowText(ActivedAdapter.lastClickedPos));
-		boolean proceed=true;
-		WebViewmy currentWebFocus;
-		if(getCurrentFocus() instanceof WebViewmy)
-			currentWebFocus = (WebViewmy) getCurrentFocus();
-		else{
-			currentWebFocus = getCurrentWebContext();
-		}
-		if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
-			proceed = false;
-			currentWebFocus.evaluateJavascript("getSelection().toString()", value -> {
-				String newKey = nowKey;
-				if (value.length() > 2) {
-					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-					if (value.length() > 0) {
-						newKey = value;
+		try {
+			String nowKey=isLongClicked?null:(ActivedAdapter.getRowText(ActivedAdapter.lastClickedPos));
+			boolean proceed=true;
+			WebViewmy currentWebFocus;
+			if(getCurrentFocus() instanceof WebViewmy)
+				currentWebFocus = (WebViewmy) getCurrentFocus();
+			else{
+				currentWebFocus = getCurrentWebContext();
+			}
+			if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
+				proceed = false;
+				currentWebFocus.evaluateJavascript("getSelection().toString()", value -> {
+					String newKey = nowKey;
+					if (value.length() > 2) {
+						value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+						if (value.length() > 0) {
+							newKey = value;
+						}
 					}
-				}
-				JumpToPeruseModeWithWord(newKey);
-			});
-		}
-		if(proceed && ActivedAdapter!=null){
-			JumpToPeruseModeWithWord(nowKey);
+					JumpToPeruseModeWithWord(newKey);
+				});
+			}
+			if(proceed && ActivedAdapter!=null){
+				JumpToPeruseModeWithWord(nowKey);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -8249,17 +8258,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else if (url.startsWith(soundTag)) {
 				try {
-					if (mWebView.maybeHasSoundResourceOnPage()) {
-						CMN.debug("mdx hijacked sound playing : ",url);
-						String soundUrl = URLDecoder.decode(url.substring(soundTag.length()), "UTF-8");
+					if (mWebView.maybeHasSoundResourceOnPage() || mWebView.presenter.isMergedBook()) {
+						CMN.debug("已拦截 sound url loading : ",url);
+						//String soundUrl = URLDecoder.decode(url/*.substring(soundTag.length())*/, "UTF-8");
 						if(PDICMainAppOptions.getCacheSoundResInAdvance()){
-							playCachedSoundFile(mWebView, soundUrl, invoker, false);
+							playCachedSoundFile(mWebView, URLDecoder.decode(url, "UTF-8"), invoker, false);
 							return true;
 						}
 						mWebView.setAutoPlay(true);
-						mWebView.evaluateJavascript(playsoundscript + ("('" + soundUrl + "')"), null);
+						mWebView.evaluateJavascript(playsoundscript + ("(\"" + StringEscapeUtils.escapeJava(url) + "\")"), null);
 					} else {
-						CMN.debug("page hijacked sound playing : ",url);
+						CMN.debug("已拦截 page sound url loading : ", url);
 						mWebView.setAutoPlay(true); // todo wtf???
 						mWebView.evaluateJavascript("var lnks = document.links; for(var i=0;i<lnks.length;i++){ if(lnks[i].getAttribute('href')=='" + URLDecoder.decode(url, "UTF-8") + "'){ links[i].click(); break; } }", null);
 					}
@@ -8516,6 +8525,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
+				if (mdbr && url.endsWith("favicon.ico")) {
+					return emptyResponse;
+				}
 				boolean merge = invoker.isMergedBook() || mWebView.merge;
 				if (mdbr) {
 					int slashIdx = url.indexOf("/", schemaIdx+7);
@@ -8783,16 +8795,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else {
 				// custom schemas
-				if(url.startsWith(soundTag)) {
-					opt.supressAudioResourcePlaying=false;
-					key = url.substring(soundTag.length());
-				}
-				else if(url.startsWith(soundsTag)) {
-					url = url.substring(soundsTag.length());
+				if(url.startsWith(soundTag) || url.startsWith(soundsTag)) {
+//					CMN.debug("接收到音频请求！", url, "::", invoker.getDictionaryName());
+//					opt.supressAudioResourcePlaying=false;
+//					key = url.substring(soundTag.length());
+//				}
+//				else if(url.startsWith(soundsTag)) {
+					url = url.substring(url.indexOf(":")+3);
+					int idx = url.lastIndexOf(".");
+					String suffix = null;
+					if (idx > 0) {
+						url = url.substring(0, idx);
+						// suffix is not used
+					}
 					try {
 						url = URLDecoder.decode(url,"UTF-8");
 					} catch (Exception ignored) { }
-					String soundKey="\\"+url+".";
+					String soundKey="\\"+url.replace("/", "\\")+".";
 					CMN.debug("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
 					InputStream restmp=null;
 					WebResourceResponse ret=null;
@@ -8802,12 +8821,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(mdTmp!=EmptyBook){
 							Boolean spx=false;
 							try {
-								Object[] result=mdTmp.getSoundResourceByName(soundKey);
+								Object[] result=mdTmp.bookImpl.getSoundResourceByName(soundKey);
 								if(result!=null) {
 									spx = (Boolean) result[0];
 									restmp = (InputStream) result[1];
 								}
-							} catch (IOException ignored) { }
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+							CMN.debug("↳ Pronouncer::", mdTmp, restmp);
 							if(restmp!=null && spx!=null) {
 								if (spx) {
 									try {
@@ -8821,6 +8843,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								break;
 							}
 						}
+					}
+					if (ret == null && opt.audioLib != null) {
+						ret = getSoundResourceByName(soundKey);
 					}
 					if(ret!=null){
 						CMN.debug("返回音频");
@@ -8978,6 +9003,65 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	boolean audioLoaded = false;
+	ArrayList<BookPresenter> audioLibs = new ArrayList<>();
+	
+	private WebResourceResponse getSoundResourceByName(String soundKey) {
+		CMN.debug("AudioLib::getSoundResourceByName::", soundKey, opt.audioLib);
+		File audioLib = opt.audioLib;
+		WebResourceResponse ret = null;
+		if (audioLib!=null && !audioLoaded) {
+			synchronized (audioLibs) {
+				if (!audioLoaded) {
+					File[] arr = audioLib.listFiles();
+					if (arr != null) {
+						Arrays.sort(arr, new FileComparator(1));
+						for (File f:arr) {
+							String path = f.getPath();
+							if (".mdd".regionMatches(true, 0, path, path.length() - 4, 4)) {
+								try {
+									audioLibs.add(new_book(path, this));
+								} catch (Exception e) {
+									CMN.debug(e);
+								}
+							}
+						}
+					}
+					audioLoaded = true;
+				}
+			}
+		}
+		if (audioLoaded) {
+			for (BookPresenter audior : audioLibs) {
+				Boolean spx=false;
+				InputStream restmp = null;
+				try {
+					Object[] result=audior.bookImpl.getSoundResourceByName(soundKey);
+					if(result!=null) {
+						spx = (Boolean) result[0];
+						restmp = (InputStream) result[1];
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+				CMN.debug("↳ AudioLib::Pronouncer::", audior, restmp);
+				if(restmp!=null && spx!=null) {
+					if (spx) {
+						try {
+							ret = decodeSpxStream(restmp);
+							if (ret != null) break;
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+					}
+					ret = new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
+					break;
+				}
+			}
+		}
+		return ret;
+	}
+	
 	private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
 		try {
 			CMN.debug("getPlugRes!", "Ext::"+presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
@@ -9077,16 +9161,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	private BookPresenter findPronouncer(int i, BookPresenter invoker) {
 		BookPresenter mdTmp = loadManager.md_getAt(i);
-		if(mdTmp!=null) {;
-			if(mdTmp==invoker)
-				return mdTmp;
-			return PDICMainAppOptions.getTmpIsAudior(mdTmp.tmpIsFlag)?mdTmp:EmptyBook;
+		if (PDICMainAppOptions.getTmpIsAudior(loadManager.getPlaceFlagAt(i))) {
+			return loadManager.md_get(i);
 		}
-		else {
-			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
-			if (phTmp!=null && PDICMainAppOptions.getTmpIsAudior(phTmp.tmpIsFlag)) {
-				return loadManager.md_get(i);
-			}
+		if(mdTmp!=null && (
+				PDICMainAppOptions.getTmpIsAudior(mdTmp.tmpIsFlag)
+				|| mdTmp==invoker && mdTmp.bookImpl.hasMdd()
+				)) {
+			return mdTmp;
 		}
 		return EmptyBook;
 	}
@@ -9111,7 +9193,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						Boolean spx=false;
 						InputStream restmp=null;
 						try {
-							Object[] result=mdTmp.getSoundResourceByName(soundKey);
+							Object[] result=mdTmp.bookImpl.getSoundResourceByName(soundKey);
 							if(result!=null) {
 								spx = (Boolean) result[0];
 								restmp = (InputStream) result[1];
@@ -9137,7 +9219,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			else {
-				Object[] res = invoker.getSoundResourceByName(soundUrl.replace("/", "\\"));
+				Object[] res = invoker.bookImpl.getSoundResourceByName(soundUrl.replace("/", "\\"));
 				if(res!=null){
 					InputStream ins = (InputStream) res[1];
 					BU.printFileStream(ins, tmpPath);
@@ -9302,8 +9384,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			audioTag.id="myAudio";
 			document.body.appendChild(audioTag);
 		}
+	 	if(!key) return;
 		audioTag.setAttribute("src", key);
-		audioTag.play();
+	 	audioTag.play();
+		//setTimeout(function(){audioTag.audioTag=0;audioTag.play()}, 1000);
 	 	return 0;
 	 })
 	 */
@@ -9928,7 +10012,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				requestSoundPlayBack(finalTarget, reader, wv);
 			}
 			else if (AutoBrowsePaused /*自动读时绕过*/ && (wv.maybeHasSoundResourceOnPage() || reader.isMergedBook())) {
-				/* 倾向于已经制定发音按钮 */
+				CMN.debug("倾向于已经制定发音按钮 !");
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
 					//CMN.Log("WebviewSoundJS", value);
 					if (!"10".equals(value)) {
@@ -10008,12 +10092,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		} else {
 			opt.supressAudioResourcePlaying=false;
-			soundKey=soundsTag+soundKey; /* CMN.Log("发音任务丢给资源拦截器", soundKey); */
+			soundKey=soundsTag+soundKey;
+			CMN.debug("发音任务丢给资源拦截器", soundKey);
 			wv.setAutoPlay(true);
 			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")"), invoker.getIsWebx()?new ValueCallback<String>() {
 				@Override
 				public void onReceiveValue(String value) {
-					wv.getSettings().setMediaPlaybackRequiresUserGesture(true);
+					//wv.getSettings().setMediaPlaybackRequiresUserGesture(true);
 				}
 			}:null);
 		}

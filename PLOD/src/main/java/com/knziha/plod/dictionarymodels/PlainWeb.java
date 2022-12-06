@@ -49,6 +49,7 @@ import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
 import org.nanohttpd.protocols.http.response.Status;
@@ -1502,7 +1503,7 @@ public class PlainWeb extends DictionaryAdapter {
 				// 检验、应用搜索搜索词
 				if (searchJs!=null)
 				{
-					return searchJs.replace("%s", searchKey);
+					return searchJs.replace("%s", StringEscapeUtils.escapeJava(searchKey));
 				}
 				return null;
 			}

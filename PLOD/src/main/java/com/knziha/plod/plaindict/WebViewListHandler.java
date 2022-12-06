@@ -51,6 +51,7 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.ColorUtils;
 
+import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -60,6 +61,7 @@ import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -1629,6 +1631,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		}
 		
+		CMN.debug("bar.getLayoutParams().height", bar.getLayoutParams().height);
+		
 		if (src==SearchUI.MainApp.MAIN) {
 			opt.schPage(b1);
 		} else if (src==SearchUI.FloatApp.MAIN) {
@@ -2363,12 +2367,21 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						wv.evaluateJavascript("getSelection().toString()", value -> {
 							if (value.length() > 2) {
 								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+								//CMN.debug("initQuickTranslatorsBar::getSelection=", StringEscapeUtils.escapeJava(value));
+								if (wv.presenter.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+									value = value.replaceAll("-\n", "");
+									value = value.replaceAll("\n(?!\n)", " ");
+								}
 								if (value.length() > 0) {
 									a.popupWord(value, book.getPath().equals("/ASSET2/译.web")?null:book, wv.frameAt, wv);
 								}
 							}
 						});
 					}
+				});
+				txtMenuGrid.setOnItemLongClickListener((parent, view, position, id) -> {
+					a.popupWord(null, null, 0, null);
+					return true;
 				});
 			}
 			if (txtMenuGrid.getParent() == null) {

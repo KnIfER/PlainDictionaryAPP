@@ -145,6 +145,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public File lastMdlibPath;
+	public File audioLib;
 	public String lastMdPlanName;
 	public boolean auto_seach_on_switch=true;
 	protected boolean bShouldUseExternalBrowserApp=true;
@@ -387,13 +388,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return locale!=null?locale:(locale=getString("locale",""));
 	}
 
-	public File getLastMdlibPath() {
-		String path = getString("lastMdlibPath",null);
-		return path==null?null:(lastMdlibPath=new File(path));
-	}
-
 	public void setLastMdlibPath(String lastMdlibPath) {
 		putString("lastMdlibPath",lastMdlibPath);
+	}
+	public void setAudioLibPath(File file) {
+		putString("audioLib", file.getPath());
+		audioLib = file;
 	}
 	public String getCurrFavoriteDBName() {//currFavoriteDBName
 		return getString("DB1",null);
@@ -3102,10 +3102,25 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public void CheckFileToDefaultMdlibs() {
-		getLastMdlibPath();
+		String path = getString("lastMdlibPath",null);
+		if(path!=null) {
+			lastMdlibPath = new File(path);
+		}
 		if(lastMdlibPath==null || !lastMdlibPath.exists()) {
-			lastMdlibPath = new File(pathToMainFolder().append("mdicts").toString());
+			File 默认值 = new File(pathToMainFolder().append("mdicts").toString());
+			lastMdlibPath = 默认值;
 			lastMdlibPath.mkdirs();
+		}
+		path = getString("audioLib",null);
+		if (path != null) {
+			audioLib = new File(path);
+		}
+		if(audioLib==null || !audioLib.exists()) {
+			File 默认值 = new File(lastMdlibPath, "../AudioLib");
+			audioLib = 默认值;
+		}
+		if(!audioLib.exists()) {
+			audioLib = null;
 		}
 	}
 	
