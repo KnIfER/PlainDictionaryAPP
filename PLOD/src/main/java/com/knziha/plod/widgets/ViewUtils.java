@@ -1659,6 +1659,20 @@ public class ViewUtils extends VU {
 		return v;
 	}
 	
+	public static View getNthChildNonNull(View v, int i) {
+		View c = v;
+		if (c != null) {
+			while(i-->0) {
+				if (c instanceof ViewGroup && ((ViewGroup) c).getChildCount()>0) {
+					c = ((ViewGroup) c).getChildAt(0);
+				} else {
+					break;
+				}
+			}
+		}
+		return c;
+	}
+	
 	public static View getNthParentNullable(View v, int i) {
 		ViewParent vp;
 		while(i-->0) {

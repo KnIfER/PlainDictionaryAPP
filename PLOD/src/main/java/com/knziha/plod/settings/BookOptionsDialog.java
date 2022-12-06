@@ -14,10 +14,13 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.fragment.app.DialogFragment;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -40,10 +43,20 @@ public class BookOptionsDialog extends DialogFragment {
 		return layout;
 	}
 	
+//	@Override
+//	public void onCreate(Bundle savedInstanceState) {
+//		super.onCreate(savedInstanceState);
+//		setStyle(STYLE_NO_TITLE, 0);
+//	}  // crash on sdk 21  :     requestFeature() must be called before adding content
+	
+	
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setStyle(STYLE_NO_TITLE, 0);
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		View v = ViewUtils.getNthChildNonNull(getDialog().getWindow().getDecorView(), 2);
+		if (v != null && v.getId() == android.R.id.title) {
+			VU.removeView(v);
+		}
 	}
 	
 	@Override
