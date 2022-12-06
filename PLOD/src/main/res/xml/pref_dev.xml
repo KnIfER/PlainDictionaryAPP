@@ -172,6 +172,7 @@
 			android:key="sounds_first"
 			android:title="点击按钮发音时，优先使用发音库而非发音链接"
 			android:persistent="false"
+			android:enabled="false"
 			/>
 
 		<Preference

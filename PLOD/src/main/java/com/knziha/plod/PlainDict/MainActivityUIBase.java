@@ -8851,6 +8851,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						CMN.debug("返回音频");
 						return ret;
 					} else {
+						url = mWebView.word;
 						ReadEntryPlanB(mWebView, url);
 					}
 					//return emptyResponse;
@@ -9132,11 +9133,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.supressAudioResourcePlaying=!AutoBrowsePaused;
 		CMN.debug("ReadEntryPlanB");
 		if(AutoBrowsePaused /*自动读时绕过*/ && PDICMainAppOptions.getUseSoundsPlaybackFirst() && hasMddForWeb(mWebView)){
-			root.post(() -> mWebView.evaluateJavascript(WebviewSoundJS, value -> {
-				if (!"10".equals(value)) {
-					ReadEntryPlanB_internal(url);
-				}
-			}));
+			// 好像会无限循环，赶紧关闭！
+			//root.post(() -> mWebView.evaluateJavascript(WebviewSoundJS, value -> {
+			//	if (!"10".equals(value)) {
+			//		ReadEntryPlanB_internal(url);
+			//	}
+			//}));
 		} else {
 			ReadEntryPlanB_internal(url);
 		}
@@ -9173,6 +9175,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return EmptyBook;
 	}
 
+	// 先不管丫的
 	private void playCachedSoundFile(WebViewmy mWebView, String soundUrl, BookPresenter invoker, boolean findInAudioLibs) throws IOException {
 		String soundKey = soundUrl;
 

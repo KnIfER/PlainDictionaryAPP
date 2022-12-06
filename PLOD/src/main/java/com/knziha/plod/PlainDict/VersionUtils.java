@@ -97,6 +97,7 @@ public class VersionUtils {
 		opt.shareTextOrUrl(0);
 		opt.setInPeruseMode(false);
 		opt.setInFloatPeruseMode(false);
+		PDICMainAppOptions.setUseSoundsPlaybackFirst(false);
 		
 		if (ViewUtils.isKindleDark()) {
 			if(!opt.defaultReader.contains("dkB")) {
