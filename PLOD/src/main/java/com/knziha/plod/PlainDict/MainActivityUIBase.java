@@ -4750,7 +4750,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (thisActType == ActType.MultiShare) {
 								populateDictionaryList();
 							}
-							if (isLongClicked) return false;
+							if (isLongClicked) {
+								AttachPeruseView(false);
+								return true;
+							}
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0)
 									JumpToPeruseModeWithWord(CurrentSelected);
@@ -9008,7 +9011,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	boolean audioLoaded = false;
-	ArrayList<BookPresenter> audioLibs = new ArrayList<>();
+	public final ArrayList<BookPresenter> audioLibs = new ArrayList<>();
 	
 	private WebResourceResponse getSoundResourceByName(String soundKey) {
 		CMN.debug("AudioLib::getSoundResourceByName::", soundKey, opt.audioLib);
@@ -9035,7 +9038,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
-		if (audioLoaded) {
+		if (audioLibs.size() > 0) {
 			for (BookPresenter audior : audioLibs) {
 				Boolean spx=false;
 				InputStream restmp = null;
@@ -9401,7 +9404,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	final static String playsoundscript="AUDIO";
 
 
-	static String delimiter = "[,.?!;，。？！；\r\n]";
+	static String delimiter = "[.?!;。？！；\r\n]";
 	int utteranceCacheSize = 1;
 	private int highLightBG = Color.YELLOW;//Color.YELLOW;
 
@@ -9501,7 +9504,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			interruptAutoReadProcess(true);
 		if(text!=null) {
 			speakText = text;
-			speakPool = text.split(delimiter);
+			if (text.length() > 1000) {
+				speakPool = text.split(delimiter);
+			} else {
+				speakPool = text.split("[\r\n]");
+			}
 			speakPoolIndex = 0;
 			speakPoolEndIndex = -1;
 			speakScaler = null;

@@ -87,6 +87,12 @@
 			app:allowDividerBelow="true"
 			/>
 		<Preference
+			android:key="battery"
+			android:title="申请电池优化白名单"
+			android:summary="避免处于后台时自动退出"
+			android:persistent="false"
+			/>
+		<Preference
 			android:key="settings"
 			android:title="系统设置"
 			android:persistent="false"

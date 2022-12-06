@@ -9,6 +9,7 @@ import androidx.preference.Preference;
 
 import com.knziha.plod.plaindict.AU;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.FcfrtAppBhUtils;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.ServiceEnhancer;
@@ -31,6 +32,7 @@ public class NotificationSettings extends PlainSettingsFragment implements Prefe
 		init_switch_preference(this, "options", PDICMainAppOptions.getShowNotificationSettings(), null, null, null);
 		//init_switch_preference(this, "swipe", PDICMainAppOptions.getNotificationSwipeble(), null, null);
 		
+		findPreference("battery").setOnPreferenceClickListener(this);
 		findPreference("batUsage").setOnPreferenceClickListener(this);
 		findPreference("batSummary").setOnPreferenceClickListener(this);
 		findPreference("settings").setOnPreferenceClickListener(this);
@@ -104,6 +106,9 @@ public class NotificationSettings extends PlainSettingsFragment implements Prefe
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		switch (preference.getKey()) {
+			case "battery":{
+				FcfrtAppBhUtils.requestIgnoreBatteryOptimizations(getContext());
+			} break;
 			case "batUsage": {
 				final String[] batteryUsageManagers = {
 						"com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"
