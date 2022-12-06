@@ -492,9 +492,14 @@ public abstract class MdictServer extends NanoHTTPD {
 				//CMN.pt("再编码耗时 : ");
 			} catch (Exception e) { e.printStackTrace(); }
 		
-		if(Acc.contains("image/") ) {
-			//SU.Log("Image request : ",Acc,key,presenter.bookImpl.getDictionaryName());
-			return newFixedLengthResponse(Status.OK,(IsCustomer&&ReceiveText)?"text/plain":"image/*", restmp, restmp.available());
+		if(Acc.contains("image/svg")||uri.endsWith(".svg")) {
+			//BU.printFileStream(restmp, new File("/sdcard/"+new File(uri).getName()));
+				return newFixedLengthResponse(Status.OK, "image/svg+xml", restmp, restmp.available());
+		}
+		
+		if(Acc.contains("image/")||uri.endsWith(".png")||uri.endsWith(".jpg")||uri.endsWith(".jpeg")||uri.endsWith(".webp")) {
+			//SU.Log("Image request : ",Acc,key,presenter.bookImpl.getDictionaryName(), restmp.available());
+			return newFixedLengthResponse(Status.OK,(IsCustomer&&ReceiveText)?"text/plain":"image/png", restmp, restmp.available());
 		}
 		
 		return newFixedLengthResponse(Status.OK,"*/*", restmp, restmp.available());

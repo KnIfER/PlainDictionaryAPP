@@ -2850,6 +2850,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=39, flagSize=2, shift=2, elevation=1) public static int schHistorySpanSize() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=39, flagSize=2, shift=2, elevation=1) public static void schHistorySpanSize(int v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=41) public static boolean audioLibDirCreated() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41) public static void audioLibDirCreated(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
 	//SE

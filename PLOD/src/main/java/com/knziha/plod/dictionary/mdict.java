@@ -277,6 +277,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				for(mdictRes mddTmp:mdd){
 					int idx = mddTmp.lookUp(key);
 					if(idx>=0) {
+						//CMN.debug("got resource @", idx, key+"=?"+mddTmp.getEntryAt(idx));
 						try {
 							return mddTmp.getResourseAt(idx);
 						} catch (IOException e) {

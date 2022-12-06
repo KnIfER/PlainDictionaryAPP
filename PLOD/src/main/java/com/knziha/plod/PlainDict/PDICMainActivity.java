@@ -1884,6 +1884,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			VersionUtils.openIntro(this);
 			firstInstall = false;
 		}
+		if (!PDICMainAppOptions.audioLibDirCreated()) {
+			try {
+				if (opt.audioLib == null) {
+					opt.audioLib = new File(opt.lastMdlibPath, "../AudioLib");
+					opt.audioLib.mkdirs();
+					if (!opt.audioLib.exists()) opt.audioLib = null;
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			PDICMainAppOptions.audioLibDirCreated(true);
+		}
 
 		//JumpToWord("crayon", 1);
 

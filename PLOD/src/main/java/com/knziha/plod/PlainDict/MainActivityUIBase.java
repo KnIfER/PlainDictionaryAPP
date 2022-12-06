@@ -8599,10 +8599,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 							Response ret = getMdictServer().handle(req);
 							if(ret!=null) {
-								//CMN.debug("WebResourceResponse::", ret.getMimeType());
+								CMN.debug("WebResourceResponse::", ret.getMimeType());
 								String mime = ret.getMimeType();
 								int idx=mime.indexOf(";");
 								if(idx>0) mime = mime.substring(0, idx);
+								if (mime.equals("image/svg")) {
+									mime = "image/svg+xml";
+								}
 								return new WebResourceResponse(mime, "UTF-8", ret.getData());
 							}
 						} catch (Exception e) {
