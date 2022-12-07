@@ -320,7 +320,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				a.toggleStar(displaying, (ImageView) v, false, weblistHandler);
 				a.collectFavoriteView = null;
 			} break;
-			case R.id.popupText1:{
+			case R.id.popupText1:{ // showEntryContextDlg
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(v.getTag());
 				if(dd==null) {
 					RecyclerView rv = new RecyclerView(a);
@@ -451,6 +451,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				}
 				dd.show();
 				dd.getWindow().setDimAmount(0);
+				ViewUtils.ensureTopAndTypedDlg(dd, a);
 				refillPreviewEntries(dd, true);
 			} break;
 			case R.id.popupText2:{

@@ -351,6 +351,39 @@ public class ViewUtils extends VU {
 		return ret;
 	}
 	
+	public static boolean ensureTopAndTypedDlg(AlertDialog dialog, MainActivityUIBase a) {
+		boolean reset = false;
+		if (dialog!=null) {
+			Dialog.OnDismissListener disLis = dialog.dismissListener;
+			int type = a.isFloatingApp() || (a.foreground&(1<<a.thisActType.ordinal()))==0?a.mDialogType:WindowManager.LayoutParams.TYPE_APPLICATION;
+			//CMN.debug("ensureWindowType::", type, WindowManager.LayoutParams.TYPE_APPLICATION);
+			try {
+				if (dialog.getWindow().getAttributes().type!=type) {
+					if (disLis!=null) dialog.setOnDismissListener(null);
+					reset = true;
+					dialog.dismiss();
+					dialog.getWindow().setType(type);
+				}
+				if (ViewUtils.littleCat && type==WindowManager.LayoutParams.TYPE_PHONE) {
+					a.moveTaskToFront();
+					((AgentApplication)a.getApplication()).floatApp.expand(true);
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			if (!reset && !VU.suppressNxtDialogReorder && !isTopmost(dialog, a)) {
+				if (disLis!=null) dialog.setOnDismissListener(null);
+				dialog.dismiss();
+				reset = true;
+			}
+			if (reset) {
+				dialog.show();
+				dialog.setOnDismissListener(disLis);
+			}
+		}
+		return reset;
+	}
+	
 	public static int indexOf(CharSequence text, char cc, int now) {
 		for (int i = now; i < text.length(); i++) {
 			if(text.charAt(i)==cc){

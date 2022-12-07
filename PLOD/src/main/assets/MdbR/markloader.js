@@ -1,15 +1,17 @@
 console.log('!!!高亮开始'); // 运行于主页面
 var w=window,waiting=false;
-var MarkLoad,MarkInst;
-if(!w.pages) {
-    w.pages = [{keys:[],faked:true}]
+var MarkLoad,MarkInst,MarkPages;
+if(!(w._merge && w.rawAddEvent)) {
+	MarkPages = [{keys:[],faked:true}]
+} else {
+	MarkPages = w.frames;
 }
 var current, currentIndex=0, pageIndex=0
   , totalMarks, totalPages;
 var currentClass = "current";
 function findPrvPage() {
     for(var i=pageIndex-1,inf;i>=0;i--) {
-        inf=pages[i];
+        inf=MarkPages[i];
         if(inf.keyz) {
             pageIndex=i; 
             currentIndex=inf.keyz-1;
@@ -21,8 +23,8 @@ function findPrvPage() {
 }
 function findNxtPage() {
     waiting=false;
-    for(var i=pageIndex+1,inf;i<pages.length;i++) {
-        inf=pages[i];
+    for(var i=pageIndex+1,inf;i<MarkPages.length;i++) {
+        inf=MarkPages[i];
         if(inf.keyz) {
             pageIndex=i;
             currentIndex=0;
@@ -45,7 +47,7 @@ function findNxtPage() {
 //exported
 function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt,wait) {
     if (true) { // results.length
-        var pg=pageIndex,results=pages[pg].keys;
+        var pg=pageIndex,results=MarkPages[pg].keys;
         if(reset) resetLight(d);
         //debug('jumpTo received reset='+reset+' '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
         var np=currentIndex+d;
@@ -62,18 +64,19 @@ function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt,w
             return 1;
         }
         if (pg==pageIndex) currentIndex=np;
-        else results=pages[pageIndex].keys;
+        else results=MarkPages[pageIndex].keys;
         if(current) removeClass();
         current = results[currentIndex];
         //console.log("current="+current);
         if(current){
             if(w.defP) {
-                var page=pages[pageIndex], top=pw_topOffset(current), height=current.offsetHeight
+				debug('pages=',MarkPages[pageIndex])
+                var page=MarkPages[pageIndex], top=pw_topOffset(current), height=current.offsetHeight
                 , defPTop=Math.ceil(defP.scrollTop), defPHeight=defP.offsetHeight
                 , b=page.box, boxT=b.offsetTop
                 , tH=page.title.offsetHeight, tT=page.title.offsetTop;
                 ;
-                if(pages.length>=1) {
+                if(MarkPages.length>=1) {
                     if(page.fold) {
                         unfoldFrame(page);
                     }
@@ -135,8 +138,8 @@ function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt,w
 }
 function updateIndicator(){
     if(w.app) {
-        var page=pages[pageIndex];
-      //  w.app.updateIndicator(sid.get(), page.id, currentIndex, page.keyz, totalMarks);
+        var page=MarkPages[pageIndex];
+        w.app.updateIndicator(sid.get(), page.id||null, currentIndex, page.keyz, totalMarks);
     }
 }
 function pw_topOffset(node){
@@ -156,11 +159,13 @@ function pw_topOffset(node){
     }
     return top;
 }
+
+// zhi dan ye
 function topOffset(elem){
     var top=0;
     var add=1;
-    while(elem && elem!=d.body){
-        if(!w.webx)if(elem.style.display=='none' || elem.style.display=='' && d.defaultView.getComputedStyle(elem,null).display=='none'){
+    while(elem && elem!=document.body){
+        if(!w.webx)if(elem.style.display=='none' || elem.style.display=='' && document.defaultView.getComputedStyle(elem,null).display=='none'){
             elem.style.display='block';
         }
         if(add){
@@ -178,12 +183,12 @@ function quenchLight(){
 }
 function resetLight(d){
     if(d==1) {pageIndex=0;currentIndex=-1;}
-    else if(d==-1) {pageIndex=pages.length-1;currentIndex=pages[pageIndex].keys.length;}
+    else if(d==-1) {pageIndex=MarkPages.length-1;currentIndex=MarkPages[pageIndex].keys.length;}
     quenchLight();
 }
 function setAsEndLight(){
-    pageIndex=pages.length-1;
-    currentIndex=pages[pageIndex].keys.length;
+    pageIndex=MarkPages.length-1;
+    currentIndex=MarkPages[pageIndex].keys.length;
     //currentIndex=results.length-1;
 }
 function setAsStartLight(){
@@ -201,8 +206,8 @@ function clearHighlights(){
     MarkInst.unmark({
         done: function() {
             //results=[];
-            for(var i=0;i<pages.length;i++){
-                pages[i].keys=[]
+            for(var i=0;i<MarkPages.length;i++){
+                MarkPages[i].keys=[]
             }
             w.bOnceHighlighted=false;
         }
@@ -262,9 +267,9 @@ function do_highlight(keyword){
 function done_highlight(){
     w.bOnceHighlighted=true;
     w.totalMarks=0;
-    for(var i=0;i<pages.length;i++){
-        var inf=pages[i];
-        if(inf.faked) inf.keys = d.getElementsByTagName("mark");
+    for(var i=0;i<MarkPages.length;i++){
+        var inf=MarkPages[i];
+        if(inf.faked) inf.keys = document.getElementsByTagName("mark");
         else try{
             inf.keys=inf.item.contentWindow.document.getElementsByTagName("mark");
         } catch(e) {

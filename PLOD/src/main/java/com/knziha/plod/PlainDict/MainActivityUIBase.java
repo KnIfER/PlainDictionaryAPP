@@ -5972,7 +5972,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				TTSController_.requestLayout();
 			} break;
 			case R.id.tts_play: {
-				if(speakPool==null) break;
+				if(speakPool.length==0) break;
 				if(v.getTag()==null){
 					if(speakPoolEndIndex+1>=speakPool.length){
 						speakPoolEndIndex=-1;
@@ -5986,7 +5986,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.id.tts_NxtUtterance:
 			case R.id.tts_LstUtterance: {
-				if(speakPool==null) break;
+				if(speakPool.length==0) break;
 				int delta = (id==R.id.tts_LstUtterance?-1:1);
 				TTSController_engine.stop();
 				int target = speakPoolIndex + delta;
@@ -9410,7 +9410,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	TextToSpeech TTSController_engine;
 	volatile boolean TTSReady;
-	String[] speakPool;
+	@NonNull String[] speakPool = ArrayUtils.EMPTY_STRING_ARRAY;
 	int[] speakScaler;
 	Object speakText;
 	volatile int speakPoolIndex;

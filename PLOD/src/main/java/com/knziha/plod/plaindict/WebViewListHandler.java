@@ -1149,30 +1149,57 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			do_jumpHighlight(d, calcIndicator);
 		} catch (Exception e) {
 			e.printStackTrace();
+			
 		}
 	}
 	
+	String schPageDid;
+	int schPagePos, schPageSz, schPageSZ;
 	public void updateInPageSch(String did, int keyIdx, int keyz, int total) {
-		String text;
-		String dictName=null;
-		if(!TextUtils.equals((String) pageSchIndicator.getTag(),did)) {
-			dictName = new File(a.getBookNameByIdNoCreation(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(did, 1)))).getName();
-			pageSchIndicator.setTag(did);
+		CMN.debug("updateInPageSch", "did = [" + did + "], keyIdx = [" + keyIdx + "], keyz = [" + keyz + "], total = [" + total + "]");
+		if(did==null) {
+			BookPresenter book = getWebContextNonNull().presenter;
+			did = book.isMergedBook()?"":book.idStr;
 		}
-		if(keyIdx>=0) {
-			keyIdx+=1;
-			if(total>keyz)
-				text = keyIdx+"/"+keyz+" ("+total+")";
-			else
-				text = keyIdx+"/"+keyz;
-		} else {
-			text = ""+total;
+		boolean b1 = !TextUtils.equals(schPageDid, did);
+		if (b1 ||  schPagePos!=keyIdx
+				|| schPageSz!=keyz
+				|| schPageSZ!=total
+		) {
+			if (b1) schPageDid = did;
+			else if(!PDICMainAppOptions.schPageEditShowCurrentPos()
+				&& schPageSZ==total) {
+				return;
+			}
+			schPagePos=keyIdx;
+			schPageSz=keyz;
+			if(total!=-100) schPageSZ=total;
+			if (pageSchIndicator.getTag() == null) {
+				pageSchIndicator.setTag((Runnable) () -> {
+					String text;
+					if(schPagePos>=0 && PDICMainAppOptions.schPageEditShowCurrentPos()) {
+						if(schPageSZ>schPageSz)
+							text = (schPagePos+1)+"/"+schPageSz+" ("+schPageSZ+")";
+						else
+							text = (schPagePos+1)+"/"+schPageSz;
+					} else {
+						text = ""+schPageSZ;
+					}
+					pageSchIndicator.setText(text);
+					text = (PDICMainAppOptions.schPageEditShowDictName() ? schPageDid : null);
+					if (pageSchDictIndicator.getTag()!=text) {
+						pageSchDictIndicator.setTag(text);
+						try {
+							pageSchDictIndicator.setText(TextUtils.isEmpty(text)?text:new File(a.getBookNameByIdNoCreation(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(text, 1)))).getName());
+						} catch (Exception e) {
+							pageSchDictIndicator.setText("");
+							CMN.debug(e);
+						}
+					}
+				});
+			}
+			pageSchIndicator.post((Runnable) pageSchIndicator.getTag());
 		}
-		String dictName1=dictName;
-		pageSchIndicator.post(() -> {
-			pageSchIndicator.setText(text);
-			if(dictName1!=null) pageSchDictIndicator.setText(dictName1);
-		});
 	}
 	
 	public boolean hasPageKey() {
@@ -1737,105 +1764,123 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return false;
 	}
 	
+	WeakReference<AlertDialog> SchTweaker = EmptyRef;
+	public static int schPageOptPaneSY;
 	// 页内搜索设定
 	public void showPageSchTweaker() {
-		a.weblist = this;
-		szStash = shezhi;
-		final SettingsPanel settings = new SettingsPanel(a, opt
-				, new String[][]{
+		AlertDialog dlg = SchTweaker.get();
+		if (dlg == null || dlg.isDark!=GlobalOptions.isDark) {
+			a.weblist = this;
+			szStash = shezhi;
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{
 						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "区分大小写", "以空格分割关键词", "通配符不匹配空格", "额外搜索变音字母"}
-						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "自动弹出键盘"}
-						,new String[]{"显示位置", "页面顶部", "页面底部"}
+						, new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "自动弹出键盘"}
+						, new String[]{"搜索框位置", "页面顶部", "页面底部"} // 显示位置
+						, new String[]{"搜索框旁数字标志", "显示当前高亮序号", "显示词典名称"} // 显示位置
 					}
-				, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */
-					, makeInt(101, 4, false) // pageSchUseRegex
-					, makeInt(101, 8, false) // pageSchWild
-					, makeInt(101, 5, false) // pageSchCaseSensitive
-					, makeInt(101, 6, false) // pageSchSplitKeys
-					, makeInt(101, 7, false) // pageSchWildMatchNoSpace
-					, makeInt(101, 9, false) // pageSchDiacritic
-				}
-				, new int[]{Integer.MAX_VALUE
-					, makeInt(6, 27, true) // schPageOnEdit
-					, makeInt(2, 55, false) // schPageAutoTurn
-					, makeInt(2, 56, false) // schPageAutoType
-					//, makeInt(2, 58, false) // schPageNavAudioKey
-					, makeInt(8, 24, true) // schpageAutoKeyboard
-				}
-				, new int[]{Integer.MAX_VALUE
-					, makeDynInt(1, 1, !PDICMainAppOptions.schpageAtBottom())
-					, makeDynInt(1, 2, PDICMainAppOptions.schpageAtBottom())
-				}
-		}, null);
-		settings.init(a, a.root);
-		settings.setActionListener(new SettingsPanel.ActionListener() {
-			@Override
-			public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
-				if (dynamic) {
-					if(!val) {
-						((Checkable)v).setChecked(!val);
+					, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */
+							, makeInt(101, 4, false) // pageSchUseRegex
+							, makeInt(101, 8, false) // pageSchWild
+							, makeInt(101, 5, false) // pageSchCaseSensitive
+							, makeInt(101, 6, false) // pageSchSplitKeys
+							, makeInt(101, 7, false) // pageSchWildMatchNoSpace
+							, makeInt(101, 9, false) // pageSchDiacritic
+						}
+						, new int[]{Integer.MAX_VALUE
+							, makeInt(6, 27, true) // schPageOnEdit
+							, makeInt(2, 55, false) // schPageAutoTurn
+							, makeInt(2, 56, false) // schPageAutoType
+							//, makeInt(2, 58, false) // schPageNavAudioKey
+							, makeInt(8, 24, true) // schpageAutoKeyboard
+						}
+						, new int[]{Integer.MAX_VALUE
+							, makeInt(8, 25, false) // makeDynInt(1, 1, !PDICMainAppOptions.schpageAtBottom())
+							, makeInt(8, 25, true) // makeDynInt(1, 2, PDICMainAppOptions.schpageAtBottom())
+						}
+						, new int[]{Integer.MAX_VALUE
+							, makeInt(8, 43, true) // schPageEditShowDictName
+							, makeInt(8, 42, true) // schPageEditShowCurrentPos
+						}
+					}, null);
+			settings.init(a, a.root);
+			settings.setActionListener(new SettingsPanel.ActionListener() {
+				@Override
+				public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
+					if (flagIdx == 101) {
+						if (flagPos == 4) {
+							for (int i = 6; i <= 8; i++)
+								settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(val ? 0.5f : 1);
+						}
 					}
-					val = flagPos==2;
-					PDICMainAppOptions.schpageAtBottom(val);
-					ViewGroup vg = (ViewGroup) v.getParent();
-					int idx = vg.indexOfChild(v)-flagPos;
-					((Checkable)vg.getChildAt(idx+1)).setChecked(!val);
-					((Checkable)vg.getChildAt(idx+2)).setChecked(val);
-					togSchPage(1);
-				}
-				else if (flagIdx==101) {
-					if (flagPos==4) {
-						for (int i = 6; i <= 8; i++)
-							settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(val?0.5f:1);
+					if (flagIdx == 8) {
+						if (flagPos == 42 || flagPos == 43) {
+							updateInPageSch(schPageDid, schPagePos, schPageSz, -100);
+						} else if (flagPos == 25) {
+							val = !PDICMainAppOptions.schpageAtBottom();
+							ViewGroup vg = (ViewGroup) v.getParent();
+							((Checkable) vg.findViewById(makeInt(8, 25, false))).setChecked(val);
+							((Checkable) vg.findViewById(makeInt(8, 25, true))).setChecked(!val);
+							togSchPage(1);
+						}
 					}
+					return true;
 				}
-				return true;
+				
+				@Override
+				public void onPickingDelegate(SettingsPanel settingsPanel, int flagIdx, int flagPos, int lastX, int lastY) {
+				}
+			});
+			if ((shezhi & 0x4) != 0) {
+				settings.onAction(null, 101, 4, false, true, 0);
 			}
-			@Override
-			public void onPickingDelegate(SettingsPanel settingsPanel, int flagIdx, int flagPos, int lastX, int lastY) {
-			}
-		});
-		if ((shezhi&0x4)!=0) {
-			settings.onAction(null, 101, 4, false, true, 0);
-		}
-		Framer f = new Framer(a);
-		f.mMaxHeight = (int) (1.25f*8*((RadioSwitchButton)settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight()+15*GlobalOptions.density);
-		f.addView(settings.settingsLayout);
-		AlertDialog dlg =
-				new AlertDialog.Builder(a,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
-						.setTitle("页内搜索设置")
-						.setView(f)
-						.setPositiveButton(R.string.confirm, null)
-//						.setTitleBtn(R.drawable.ic_search_large, (dialog, which) -> {
-//							pageSchWat.afterTextChanged(null);
-//							dialog.dismiss();
-//						})
-						.setOnDismissListener(new DialogInterface.OnDismissListener() {
-							@Override
-							public void onDismiss(DialogInterface dialog) {
-								//CMN.debug("Flag::页内搜索设置::pageSchSplitKeys::", shezhi&0x40);
-								if (szStash!=shezhi) {
-									ViewGroup webviewHolder = getViewGroup();
-									int cc = webviewHolder.getChildCount();
-									String val = "window.shzh="+shezhi+"; _highlight(null);";
-									BookPresenter.SavePageFlag(shezhi);
-									for (int i = 0; i < cc; i++) {
-										if(webviewHolder.getChildAt(i) instanceof LinearLayout){
-											ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
-											if(webHolder.getChildAt(1) instanceof WebView){
-												WebViewmy wv = (WebViewmy) webHolder.getChildAt(1);
-												wv.evaluateJavascript(val,null);
-											}
+			Framer f = new Framer(a);
+			f.mMaxHeight = (int) (1.25f * 8 * ((RadioSwitchButton) settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight() + 15 * GlobalOptions.density);
+			f.addView(settings.settingsLayout);
+			dlg = new AlertDialog.Builder(a, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
+					.setTitle("页内搜索设置")
+					.setView(f)
+					.setPositiveButton(R.string.confirm, null)
+//					.setTitleBtn(R.drawable.ic_search_large, (dialog, which) -> {
+//						pageSchWat.afterTextChanged(null);
+//						dialog.dismiss();
+//					})
+					.setOnDismissListener(new DialogInterface.OnDismissListener() {;
+						@Override
+						public void onDismiss(DialogInterface dialog) {
+							//CMN.debug("Flag::页内搜索设置::pageSchSplitKeys::", shezhi&0x40);
+							if (szStash != shezhi) {
+								ViewGroup webviewHolder = getViewGroup();
+								int cc = webviewHolder.getChildCount();
+								String val = "window.shzh=" + shezhi + "; _highlight(null);";
+								BookPresenter.SavePageFlag(shezhi);
+								for (int i = 0; i < cc; i++) {
+									if (webviewHolder.getChildAt(i) instanceof LinearLayout) {
+										ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
+										if (webHolder.getChildAt(1) instanceof WebView) {
+											WebViewmy wv = (WebViewmy) webHolder.getChildAt(1);
+											wv.evaluateJavascript(val, null);
 										}
 									}
 								}
 							}
-						})
-						.create();
-		
+							schPageOptPaneSY = settings.settingsLayout.getScrollY();
+						}
+					})
+					.create();
+			dlg.tag = settings;
+			SchTweaker = new WeakReference<>(dlg);
+			if (schPageOptPaneSY > 0) {
+				ViewGroup v = settings.settingsLayout;
+				v.post(() -> v.setScrollY(schPageOptPaneSY));
+			}
+		} else {
+			((SettingsPanel) dlg.tag).refresh();
+		}
 		dlg.show();
-		
 		dlg.getWindow().setDimAmount(0);
+		ViewUtils.ensureWindowType(dlg, a, dlg.dismissListener);
+		ViewUtils.ensureTopmost(dlg, a, dlg.dismissListener);
 	}
 	
 	void SearchOnPage(String text) {
