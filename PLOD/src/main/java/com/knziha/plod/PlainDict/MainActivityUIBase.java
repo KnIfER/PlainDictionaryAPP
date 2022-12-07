@@ -66,6 +66,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
+import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -289,6 +290,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9425,7 +9427,101 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			onAudioPause();
 		}
 	};
-
+	
+	final String[] supported_languages = new String[]{"eng", "kor", };
+	
+	public enum YuZhong{
+		zho
+		, eng
+		, kor
+		, jpn
+		, rus
+		, fra
+		, deu
+		, ara
+		, hin
+	}
+	
+	public static String guessLanguage(CharSequence text) {
+		int size = text.length();
+		if(size > 14) size = 13;
+		SparseIntArray weights = new SparseIntArray();
+		for (int i = 0; i < size; i++) {
+			char c = text.charAt(i);
+			int yz = -1;
+			if ('a' <= c && c <= 'z' || ('A' <= c && c <= 'Z')) {
+				yz = YuZhong.eng.ordinal();
+			}
+			else if (c>=192 && c<=339) {
+				switch (c) {
+					case 'À': case 'Â': case 'È': case 'É': case 'Ê': case 'Ë': case 'Î': case 'Ï': case 'Ô': case 'Ö': case 'Ù': case 'Û': case 'Ç': case 'Œ': case 'Æ': case 'à': case 'â': case 'è'
+							: case 'é': case 'ê': case 'î': case 'ï': case 'ô': /*case 'ö':*/ case 'ù': case 'û': /*case 'ü':*/ case 'ç': case 'œ': case 'æ':
+						yz = YuZhong.fra.ordinal();
+					break;
+					case 'ä': case 'ö': case 'ü': case 'ß':
+						yz = YuZhong.deu.ordinal();
+					break;
+				}
+			}
+			if(yz==-1)  {
+				int gc = Character.getType(c);
+				Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+				switch (block.toString()) {
+					case "CJK_UNIFIED_IDEOGRAPHS":
+						yz = YuZhong.zho.ordinal();
+						break;
+					case "HANGUL_JAMO":
+					case "HANGUL_COMPATIBILITY_JAMO":
+					case "HANGUL_SYLLABLES":
+						yz = YuZhong.kor.ordinal();
+					break;
+					case "HIRAGANA":
+					case "KATAKANA":
+						yz = YuZhong.jpn.ordinal();
+					break;
+					case "LATIN_EXTENDED_A":
+						yz = YuZhong.hin.ordinal();
+					break;
+					case "CYRILLIC":
+					case "CYRILLIC_EXTENDED_A":
+					case "CYRILLIC_EXTENDED_B":
+					case "CYRILLIC_SUPPLEMENTARY":
+						yz = YuZhong.rus.ordinal();
+					break;
+					case "ARABIC":
+					case "ARABIC_EXTENDED_A":
+					case "ARABIC_SUPPLEMENT":
+						yz = YuZhong.ara.ordinal();
+					break;
+				}
+				if (gc >= Character.UPPERCASE_LETTER && gc <= Character.OTHER_LETTER) {
+					//yz = YuZhong.RUS.ordinal();
+				}
+			}
+			if (yz >= 0) {
+				//CMN.debug("put::", c, YuZhong.values()[yz]);
+				weights.put(yz, weights.get(yz) + 1);
+			}
+		}
+		// weights.keyAt()
+		int max=0, guess=0;
+		for (int i = 0; i < weights.size(); i++) {
+			if (weights.valueAt(i) > max) {
+				max = weights.valueAt(i);
+				guess = weights.keyAt(i);
+			}
+		}
+		if (guess==YuZhong.eng.ordinal()) {
+			if (weights.get(YuZhong.fra.ordinal())>0) {
+				return "fra";
+			}
+			if (weights.get(YuZhong.deu.ordinal())>0) {
+				return "deu";
+			}
+		}
+		return YuZhong.values()[guess].name();
+	}
+	
 	/** 提交语句给TTS引擎 */
 	Runnable mPullReadTextRunnable = new Runnable() {
 		@Override
@@ -9444,8 +9540,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					HashMap<String, String> parms = new HashMap<>();
 					parms.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, Integer.toString(i));
 					parms.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(TTSVolume));
-					TTSController_engine.speak(speakPool[i].trim(),TextToSpeech.QUEUE_ADD, parms);
-					CMN.debug("缓存了句子", i, speakPool[i]);
+					
+					String text = speakPool[i].trim();
+					String lanuage = guessLanguage(text);
+					int res = TTSController_engine.setLanguage(new Locale(lanuage, ""));
+					CMN.debug("TTSController_engine.setLanguage::", res);
+					
+					TTSController_engine.speak(text,TextToSpeech.QUEUE_ADD, parms);
+					CMN.debug("缓存了句子", i, text, lanuage);
 					if(!AutoBrowsePaused){
 						root.postDelayed(forceNextTextRunnable, 800);
 					}
@@ -9467,7 +9569,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						start = start>0? 1 + speakScaler[start-1]:0;
 						baseSpan.setSpan(timeHLSpan, Math.min(start, baseSpan.length()-1), Math.min(end, baseSpan.length()), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 					} catch (Exception e) {
-						e.printStackTrace();
+						CMN.debug(e);
 					}
 				}
 			}
@@ -9530,11 +9632,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			mTTSReady = TTSReady = false;
 			TTSController_engine = new TextToSpeech(this, status -> {
 				TTSReady = true;
+				
 				mPullReadTextRunnable.run();
+				
 			}, null); //"com.google.android.tts"
 			TTSController_engine.setSpeechRate(TTS_LEVLES_SPEED[TTSSpeed]);
 			TTSController_engine.setPitch(TTS_LEVLES_SPEED[TTSPitch]);
-
+			
+			//TTSController_engine.speak(text, TextToSpeech.QUEUE_ADD, null);
+			
+			//if(false)
 			TTSController_engine.setOnUtteranceProgressListener(new UtteranceProgressListener() {
 				@Override
 				public void onStart(String utteranceId) {
@@ -9548,7 +9655,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					onAudioPlay();
 				}
-
 				@Override
 				public void onDone(String utteranceId) {
 					speakPoolEndIndex = IU.parsint(utteranceId);
@@ -9563,12 +9669,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					//onAudioPause();
 				}
-
+				long lastError=0;
 				@Override
 				public void onError(String utteranceId) {
-					//CMN.Log("tts onError" ,utteranceId);
+					CMN.debug("套接字::tts onError" ,utteranceId);
+//					long errId = CMN.now();
+//					if (errId - lastError > 256) {
+//						lastError = errId;
+//						onDone(utteranceId);
+//					}
 				}
-
 				@Override
 				public void onError(String utteranceId, int code) {
 					CMN.debug("tts onError" ,utteranceId, code);
