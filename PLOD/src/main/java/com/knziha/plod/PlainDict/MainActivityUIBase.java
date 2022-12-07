@@ -9407,7 +9407,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 
 	static String delimiter = "[.?!;。？！；\r\n]";
-	int utteranceCacheSize = 1;
+	int utteranceCacheSize = 10;
 	private int highLightBG = Color.YELLOW;//Color.YELLOW;
 
 	TextToSpeech TTSController_engine;
@@ -9573,7 +9573,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
-
 		}
 	};
 
@@ -9609,7 +9608,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (text.length() > 1000) {
 				speakPool = text.split(delimiter);
 			} else {
-				speakPool = text.split("[\r\n]");
+				//speakPool = text.split("[\r\n]");
+				speakPool = text.split(delimiter);
 			}
 			speakPoolIndex = 0;
 			speakPoolEndIndex = -1;
@@ -9634,14 +9634,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				TTSReady = true;
 				
 				mPullReadTextRunnable.run();
-				
 			}, null); //"com.google.android.tts"
 			TTSController_engine.setSpeechRate(TTS_LEVLES_SPEED[TTSSpeed]);
 			TTSController_engine.setPitch(TTS_LEVLES_SPEED[TTSPitch]);
 			
 			//TTSController_engine.speak(text, TextToSpeech.QUEUE_ADD, null);
 			
-			//if(false)
 			TTSController_engine.setOnUtteranceProgressListener(new UtteranceProgressListener() {
 				@Override
 				public void onStart(String utteranceId) {
@@ -9660,24 +9658,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					speakPoolEndIndex = IU.parsint(utteranceId);
 					int speakPoolIndex = speakPoolEndIndex+1;
 					CMN.debug("tts onDone" ,speakPoolIndex, speakCacheEndIndex);
-					if(speakPoolIndex>=speakCacheEndIndex){
-						mPullReadTextRunnable.run();
-					}
-					if(speakPoolIndex>=speakPool.length){
+					if (speakPoolIndex >= speakPool.length) {
 						onAudioPause();
 						CMN.debug("tts onPause");
+					} else if(speakPoolIndex>=speakCacheEndIndex){
+						mPullReadTextRunnable.run(); // 循环
 					}
 					//onAudioPause();
 				}
 				long lastError=0;
 				@Override
 				public void onError(String utteranceId) {
-					CMN.debug("套接字::tts onError" ,utteranceId);
-//					long errId = CMN.now();
-//					if (errId - lastError > 256) {
-//						lastError = errId;
-//						onDone(utteranceId);
-//					}
+					CMN.debug("9 onError" ,utteranceId);
+					long errId = CMN.now();
+					//if (errId - lastError > 256)
+					{
+						lastError = errId;
+						onDone(utteranceId);
+					}
 				}
 				@Override
 				public void onError(String utteranceId, int code) {

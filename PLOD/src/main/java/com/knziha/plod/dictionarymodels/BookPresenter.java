@@ -3285,7 +3285,7 @@ function debug(e){console.log(e)};
 			BookPresenter book = ViewUtils.getBookFromImageUrl(presenter, img, false);
 			if(book==null) return;
 			String url = img[0];
-			CMN.debug("openImage::", url);
+			CMN.debug("openImage::", url, book);
 			if (book.getImageBrowsable()) {
 				MainActivityUIBase a = book.a;
 				AgentApplication app = ((AgentApplication) a.getApplication());

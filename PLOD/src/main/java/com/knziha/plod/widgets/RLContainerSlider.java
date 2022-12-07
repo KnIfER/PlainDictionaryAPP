@@ -519,7 +519,12 @@ public class RLContainerSlider extends FrameLayout{
 								float dy = lastY - OrgY;
 								if (dy == 0) dy = 0.000001f;
 								dx = dx / dy;
-								if (dx > 1.988 || dx <= -1.988) {//3.3
+								theta = (int) (1.988*GlobalOptions.density);
+								if(WebContext!=null && WebContext.weblistHandler.isViewSingle() && (WebContext.getContentHeight() <= WebContext.getHeight())) {
+									theta /= 2;
+									CMN.debug("减半");
+								}
+								if (dx > theta || dx <= -theta) {//3.3
 									dragged = true;
 								}
 							}

@@ -223,6 +223,16 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		if (bNeedParseData) parseData();
 	}
 	
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		try {
+			text1.setText(text1.getText()+" - "+data[0].bookImpl.getDictionaryName()+(data.length==1?"":getResources().getString(R.string.multiple_vals)));
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
 	public void setData(BookPresenter[] data) {
 		this.data = data;
 		if(bIsCreated) {
