@@ -30,6 +30,7 @@ import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.BuildConfig;
@@ -365,6 +366,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 							p.setOnPreferenceClickListener(this);
 							break;
 						case "p_df":
+							p.setVisible(data[0].getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF);
 							init_switch_preference(this, key, PDICMainAppOptions.debugPDFFont(), null, null, p);
 							break;
 						case "online":
