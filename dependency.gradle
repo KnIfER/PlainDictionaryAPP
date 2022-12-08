@@ -17,6 +17,7 @@ dependencies {
     api('org.appxmod.glide:GlideModule:1.0.0')
     api('org.appxmod.glide:GifDecoder:1.0.0')
     api('org.appxmod.glide:DiskLruCache:1.0.0')
+    api libs_pref
 
     compileOnly ('org.appxmod.glide:Compiler:1.0.0')
     annotationProcessor ('org.appxmod.glide:Compiler:1.0.0')

@@ -41,5 +41,6 @@
 	<item name="decode2" type="id" />
 	<item name="decode3" type="id" />
 	<item name="quit" type="id" />
+	<item name="action0" type="id" />
 
 </resources>

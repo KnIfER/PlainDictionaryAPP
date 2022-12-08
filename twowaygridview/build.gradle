@@ -26,5 +26,5 @@ android {
 }
 
 dependencies{
-    api project(':AppPreference')
+    api libs_pref
 }

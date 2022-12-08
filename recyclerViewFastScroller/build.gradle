@@ -26,18 +26,18 @@ android {
 
 dependencies {
     api (libs_anno)
-    api project(":AxtCore")
+    api libs_core
     if (use_recycler_official == '1') {
         api(libs_recycler) {
             exclude module:"core"
         }
     } else {
-        api project(':AwtRecyclerView')
+        api libs_recycler
     }
     if(use_compat_official=='1'){
         api (libs_compat)
     }else{
-        implementation  project(':AxtAppCompat')
+        implementation libs_compat
         implementation (libs_appres){
             exclude module:"core"
         }

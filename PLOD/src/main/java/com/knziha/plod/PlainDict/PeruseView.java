@@ -2222,7 +2222,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				a.getVtk().setInvoker(currentDictionary, mWebView, null, null);
 //				a.getUcc().onClick(toolbar_cover); //111
 			break;
-			case R.id.action0:
+			case R.id.action0: // todo ????
 				contentview.setVisibility(View.VISIBLE);
 			break;
 			//todo ???

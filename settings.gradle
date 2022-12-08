@@ -10,18 +10,10 @@ include ':PLOD'
 include ':Logger'
 include ':Paging'
 
-
-include ':AxtCore'
-include ':AxtAppCompat'
 include ':AweDesigner'
-include ':AppPreference'
-include ':AwtRecyclerView'
 
-include ':drag_sort_lib'
 include ':filepicker'
 include ':colorpicker'
-
-include ':viewpager'
 
 include ':GestureView'
 //include ':Metaline:Metaline'

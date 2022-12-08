@@ -120,7 +120,14 @@ task delog {
     }
 }
 
+configurations {
+    compile.exclude group:'androidx.core', module: 'core'
+    all*.exclude group:'androidx.core', module: 'core'
+    all*.exclude group:'androidx.viewpager', module: 'viewpager'
+}
+
 dependencies {
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     configurations {
         all {
             exclude module: 'httpclient'
@@ -134,14 +141,12 @@ dependencies {
     //api 'org.lz4:lz4-pure-java:1.8.0'
 
     implementation 'com.alibaba:fastjson:1.2.62'
-    api (libs_coordinator){
-        exclude module:"core"
-    }
+    api (libs_coordinator)
     //api 'org.jruby.joni:joni:2.1.30'
     //api 'org.jruby.jcodings:jcodings:1.0.55'
     //implementation 'com.android.support:support-dynamic-animation:27.1.1'
     api 'org.anarres.lzo:lzo-core:1.0.6'
-    api project(path: ':viewpager')
+    api libs_viewpager
     api project(path: ':GestureView')
     //implementation 'com.android.volley:volley:1.2.0'
 
@@ -160,16 +165,15 @@ dependencies {
 
     testImplementation 'com.google.javascript:closure-compiler:v20211107'
 
+    api (libs_drawer)
     api (libs_ctext)
     api project(':recyclerViewFastScroller')
     api project(':twowaygridview')
     if (use_compat_official == '1') {
         api(libs_compat)
     } else {
-        implementation project(':AxtAppCompat')
-        implementation(libs_appres){
-            exclude module:"core"
-        }
+        implementation libs_compat
+        implementation(libs_appres)
         configurations {
             //all*.exclude group: 'androidx.appcompat'
         }
@@ -190,9 +194,8 @@ dependencies {
             exclude module: "appcompat-resources"
         }
     } else {
-        api(project(':AppPreference'))
+        api libs_pref
     }
-    api project(':drag_sort_lib')
     api project(':colorpicker')
     api project(':filepicker')
 
