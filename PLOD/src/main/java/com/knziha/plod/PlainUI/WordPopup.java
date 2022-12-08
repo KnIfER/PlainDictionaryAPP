@@ -1197,12 +1197,15 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		//CMN.debug("SearchOne::", popupKey);
 		if (popupKey != null) {
 			BookPresenter bookForce = popupForceId;
+			boolean forced;
 			if (bookForce != null) {
 				CCD = bookForce;
 				CCD_ID = loadMan.md_findOrAdd(bookForce);
 				popupForceId = null;
+				forced = true;
 			} else {
 				CCD_ID = upstrIdx = Math.min(upstrIdx, loadMan.md_size -1);
+				forced = false;
 			}
 			final int size = loadMan.md_size;
 			CMN.debug("轮询开始::", CCD, CCD_ID, loadMan.md_get(CCD_ID));
@@ -1327,7 +1330,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			
 			CMN.debug(CCD, "应用轮询结果", webx, idx, "SearchMode="+SearchMode);
-			if (idx >= 0 && CCD != a.EmptyBook && task.get() && taskVer == taskVersion.get()) {
+			if (idx<0 && forced) {
+				// start a plain search
+				popupWord(invoker, popupKey, null, 0);
+				return;
+			}
+			else if (idx >= 0 && CCD != a.EmptyBook && task.get() && taskVer == taskVersion.get()) {
 				if (bForceJump && SearchMode == 1)
 					mWebView.setTag(R.id.js_no_match, false);
 				currentPos = idx;
@@ -1341,7 +1349,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			
 			resetPreviewMidPos();
-			
 			
 			if (!PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.getHistoryStrategy7())

@@ -6830,7 +6830,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					dd = new AlertDialog.Builder(this)
 						.setView(cv)
 						.setTitle("翻译当前页面")
-						.setWikiText("此界面可上下翻页。谷歌翻译已经无法正常使用。", null)
+						.setWikiText("谷歌翻译已经无法正常使用。", null)
 						.create();
 					
 					cv.setOverScrollMode(OVER_SCROLL_ALWAYS);
@@ -6848,7 +6848,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					};
 					//ViewUtils.setOnClickListenersOneDepth(cv, click, 999, null);
 					View v = vv;
-					View[] ticks = new View[4];
+					View[] ticks = new View[5];
 					cv.setTag(ticks);
 					int tc=0;
 					while((v=ViewUtils.getNextView(v))!=null) {
@@ -6866,25 +6866,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					tagHolder.tag = null;
 				}
 				View[] ticks = (View[]) dd.mAlert.mView.getTag();
-				boolean ts = PDICMainAppOptions.translatePageTS();
-				if(ticks[0].getId()==R.string.makeTradition ^ ts) {
-					int[] idStr = ts?new int[]{R.string.makeTradition, R.string.makeSimple, R.string.tapSelOpt}
-						: new int[]{R.string.tapSelDuan, R.string.tapSelZi, R.string.tapSch};
-					for (int i = 0; i < 3; i++) {
-						((TextView)ticks[i]).setText(idStr[i]);
-						ticks[i].setId(idStr[i]);
-						if(ts) ticks[i].setActivated(false);
-					}
-				}
-				if (!ts) {
-					//ticks[0].setActivated(weblist.getWebContextNonNull().translating>0);
-					ticks[0].setActivated((weblist.tapSel & 0x4) != 0);
-					ticks[1].setActivated((weblist.tapSel & 0x2) != 0);
-					ticks[2].setActivated(weblist.tapSch);
-				} else {
-					ticks[0].setActivated(weblist.zhTrans==1);
-					ticks[1].setActivated(weblist.zhTrans==2);
-				}
+				ticks[0].setActivated((weblist.tapSel & 0x4) != 0);
+				ticks[1].setActivated((weblist.tapSel & 0x2) != 0);
+				ticks[4].setActivated(weblist.tapSch);
+				ticks[2].setActivated(weblist.zhTrans==1);
+				ticks[3].setActivated(weblist.zhTrans==2);
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
 			case R.id.fetchWord: {
@@ -7864,15 +7850,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(dialog!=null) dialog.dismiss();
 				return;
 			} else {
-				if(id==R.id.close) {
-					if(dialog!=null) {
-						View[] vus = (View[]) dialog.mAlert.mView.getTag();
-						if (vus[0].getId()==R.string.makeTradition) {
-							wlh.togZhTrans(0, null);
-							if(dialog!=null) dialog.dismiss();
-							return;
-						}
-					}
+				if(id==R.id.closeTrans) {
+					wlh.togZhTrans(0, null);
+					if(dialog!=null) dialog.dismiss();
+					return;
 				}
 				wlh.updateTapSel(id==R.string.tapSelZi?2
 						:id==R.string.tapSelDuan?4

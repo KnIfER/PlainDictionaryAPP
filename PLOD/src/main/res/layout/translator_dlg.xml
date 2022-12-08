@@ -49,6 +49,36 @@
 		android:orientation="horizontal"
 		>
 		<com.knziha.plod.widgets.TextMenuView
+			android:id="@string/makeTradition"
+			style="@style/singlechoice_plain_theme1"
+			android:text="@string/makeTradition"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			/>
+
+		<com.knziha.plod.widgets.TextMenuView
+			android:id="@string/makeSimple"
+			style="@style/singlechoice_plain_theme1"
+			android:text="@string/makeSimple"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			/>
+
+		<TextView
+			android:id="@+id/closeTrans"
+			style="@style/singlechoice_plain_theme1"
+			android:text="@string/close"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			/>
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		>
+		<com.knziha.plod.widgets.TextMenuView
 			android:id="@string/tapSch"
 			style="@style/singlechoice_plain_theme1"
 			android:text="@string/tapSch"

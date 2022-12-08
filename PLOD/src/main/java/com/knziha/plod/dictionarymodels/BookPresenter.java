@@ -86,6 +86,7 @@ import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.BreakIteratorHelper;
 
 import org.apache.commons.lang3.StringUtils;
@@ -4362,9 +4363,8 @@ function debug(e){console.log(e)};
 		
 		tv.setTextSize(17f);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-//		XYTouchRecorder xyt = mdTmp.getOpt().XYTouchRecorderInstance();
-//		tv.setOnClickListener(xyt);
-//		tv.setOnTouchListener(xyt);
+		XYTouchRecorder xyt = PDICMainAppOptions.setAsLinkedTextView(tv, false, true);
+		//xyt.clickInterceptor = (view1, span) -> { }
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
