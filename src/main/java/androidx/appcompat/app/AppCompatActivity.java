@@ -84,7 +84,8 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
         TaskStackBuilder.SupportParentable, ActionBarDrawerToggle.DelegateProvider {
 
     private static final String DELEGATE_TAG = "androidx:appcompat";
-
+	
+	public boolean stopped;
     private AppCompatDelegate mDelegate;
     private Resources mResources;
 
@@ -246,12 +247,14 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
 
     @Override
     protected void onStart() {
+		stopped = false;
         super.onStart();
         getDelegate().onStart();
     }
 
     @Override
     protected void onStop() {
+		stopped = true;
         super.onStop();
         getDelegate().onStop();
     }
