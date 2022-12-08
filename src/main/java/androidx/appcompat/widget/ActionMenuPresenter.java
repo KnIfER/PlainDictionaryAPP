@@ -16,11 +16,14 @@
 
 package androidx.appcompat.widget;
 
+import static androidx.appcompat.view.menu.MenuPopupHelper.fastPopupMenu;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.SparseBooleanArray;
@@ -33,6 +36,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.R;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.ActionBarPolicy;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.view.menu.BaseMenuPresenter;
@@ -46,12 +50,13 @@ import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ActionProvider;
 import androidx.core.view.GravityCompat;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
  * MenuPresenter for building action menus as seen in the action bar and action modes.
  */
-class ActionMenuPresenter extends BaseMenuPresenter
+public class ActionMenuPresenter extends BaseMenuPresenter
         implements ActionProvider.SubUiVisibilityListener {
 
     private static final String TAG = "ActionMenuPresenter";
@@ -193,7 +198,27 @@ class ActionMenuPresenter extends BaseMenuPresenter
             actionView = super.getItemView(item, convertView, parent);
         }
         actionView.setVisibility(item.isActionViewExpanded() ? View.GONE : View.VISIBLE);
-
+	
+		if (mMenu.checkActDrawable!=null && actionView.getClass()==ActionMenuItemView.class) {
+			// 画出选中or启用的效果
+			ActionMenuItemView view = (ActionMenuItemView) actionView;
+			Drawable d = view.getIcon();
+			// actionView.setAlpha(0.5f);
+			if(item.isChecked() ^ (d!=view.getItemData().getIcon())) {
+				d = view.getItemData().getIcon();
+				if (item.isChecked()) {
+					LayerDrawable ld = new LayerDrawable(
+							new Drawable[]{mMenu.checkActDrawable, d}
+					);
+					d = ld;
+				}
+				view.setIcon(d);
+			}
+		}
+		if(item.isEnabled() ^ (actionView.getAlpha()==1)) {
+			actionView.setAlpha(item.isEnabled() ? 1 : 0.5f);
+		}
+		
         final ActionMenuView menuParent = (ActionMenuView) parent;
         final ViewGroup.LayoutParams lp = actionView.getLayoutParams();
         if (!menuParent.checkLayoutParams(lp)) {
@@ -261,7 +286,10 @@ class ActionMenuPresenter extends BaseMenuPresenter
                     parent.removeView(mOverflowButton);
                 }
                 ActionMenuView menuView = (ActionMenuView) mMenuView;
-                menuView.addView(mOverflowButton, menuView.generateOverflowButtonLayoutParams());
+				ActionMenuView.LayoutParams lp = menuView.generateOverflowButtonLayoutParams();
+				menuView.addView(mOverflowButton, lp);
+				if(GlobalOptions.isSmall)
+					lp.width=GlobalOptions.btnMaxWidth;
             }
         } else if (mOverflowButton != null && mOverflowButton.getParent() == mMenuView) {
             ((ViewGroup) mMenuView).removeView(mOverflowButton);
@@ -327,23 +355,36 @@ class ActionMenuPresenter extends BaseMenuPresenter
         }
         return null;
     }
-
+	
+	WeakReference<OverflowPopup> popupRef_1 = new WeakReference<>(null);
     /**
      * Display the overflow menu if one is present.
      * @return true if the overflow menu was shown, false otherwise.
      */
-    public boolean showOverflowMenu() {
-        if (mReserveOverflow && !isOverflowMenuShowing() && mMenu != null && mMenuView != null &&
-                mPostedOpenRunnable == null && !mMenu.getNonActionItems().isEmpty()) {
-            OverflowPopup popup = new OverflowPopup(mContext, mMenu, mOverflowButton, true);
-            mPostedOpenRunnable = new OpenOverflowRunnable(popup);
-            // Post this for later; we might still need a layout for the anchor to be right.
-            ((View) mMenuView).post(mPostedOpenRunnable);
-
-            return true;
-        }
-        return false;
-    }
+	public boolean showOverflowMenu() {
+		//CMN.Log("showOverflowMenu???");
+		if (mReserveOverflow && !isOverflowMenuShowing() && mMenu != null && mMenuView != null
+				&& mPostedOpenRunnable == null && !mMenu.getNonActionItems().isEmpty()) {
+			//CMN.Log("showOverflowMenu!!!");
+			OverflowPopup popup = fastPopupMenu?popupRef_1.get():null;
+			if(popup==null) {
+				popup = new OverflowPopup(mContext, mMenu, mOverflowButton, true);
+				if(fastPopupMenu)  popupRef_1 = new WeakReference<>(popup);
+			}
+			mPostedOpenRunnable = new OpenOverflowRunnable(popup);
+			// Post this for later; we might still need a layout for the anchor to be right.
+			// ((View) mMenuView).post(mPostedOpenRunnable);
+			if(fastPopupMenu)  mPostedOpenRunnable.run();
+			else ((View) mMenuView).post(mPostedOpenRunnable);
+		
+			// ActionMenuPresenter uses null as a callback argument here
+			// to indicate overflow is opening.
+			//super.onSubMenuSelected(null); // todo ????
+		
+			return true;
+		}
+		return false;
+	}
 
     /**
      * Hide the overflow menu if it is currently showing.
@@ -351,6 +392,7 @@ class ActionMenuPresenter extends BaseMenuPresenter
      * @return true if the overflow menu was hidden, false otherwise.
      */
     public boolean hideOverflowMenu() {
+		// CMN.Log("mPostedOpenRunnable!!!", mPostedOpenRunnable);
         if (mPostedOpenRunnable != null && mMenuView != null) {
             ((View) mMenuView).removeCallbacks(mPostedOpenRunnable);
             mPostedOpenRunnable = null;
@@ -358,6 +400,7 @@ class ActionMenuPresenter extends BaseMenuPresenter
         }
 
         MenuPopupHelper popup = mOverflowPopup;
+		// CMN.Log("dismissed!!!", popup);
         if (popup != null) {
             popup.dismiss();
             return true;
@@ -621,10 +664,11 @@ class ActionMenuPresenter extends BaseMenuPresenter
             }
         };
     }
-
-    private class OverflowMenuButton extends AppCompatImageView
+	
+	public class OverflowMenuButton extends AppCompatImageView
             implements ActionMenuView.ActionMenuChildView {
-
+		
+		public OnClickListener beforeOpen;
         public OverflowMenuButton(Context context) {
             super(context, null, R.attr.actionOverflowButtonStyle);
             setId(R.id.action_menu_presenter);
@@ -671,7 +715,8 @@ class ActionMenuPresenter extends BaseMenuPresenter
             if (super.performClick()) {
                 return true;
             }
-
+			if(beforeOpen !=null)
+				beforeOpen.onClick(this); // todo use ... indicate overflow is opening instead
             playSoundEffect(SoundEffectConstants.CLICK);
             showOverflowMenu();
             return true;
@@ -708,6 +753,16 @@ class ActionMenuPresenter extends BaseMenuPresenter
 
             return changed;
         }
+		
+		public final ActionMenuPresenter getPresenter() {
+			return ActionMenuPresenter.this;
+		}
+		
+		public void clearPopup() {
+			if(getPresenter().mOverflowPopup!=null) {
+				getPresenter().mOverflowPopup.popupRef_2.clear();
+			}
+		}
     }
 
     private class OverflowPopup extends MenuPopupHelper {
@@ -723,7 +778,7 @@ class ActionMenuPresenter extends BaseMenuPresenter
             if (mMenu != null) {
                 mMenu.close();
             }
-            mOverflowPopup = null;
+            // mOverflowPopup = null;
 
             super.onDismiss();
         }

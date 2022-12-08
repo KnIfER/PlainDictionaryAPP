@@ -39,6 +39,8 @@ import androidx.appcompat.R;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Presents a menu as a small, simple popup anchored to another view.
  *
@@ -218,7 +220,10 @@ public class MenuPopupHelper implements MenuHelper {
         showPopup(x, y, true, true);
         return true;
     }
-
+	
+	public static boolean fastPopupMenu = false;
+	public WeakReference<MenuPopup> popupRef_2 = new WeakReference<>(null);
+	
     /**
      * Creates the popup and assigns cached properties.
      *
@@ -227,6 +232,7 @@ public class MenuPopupHelper implements MenuHelper {
     @NonNull
     @SuppressWarnings("deprecation") /* getDefaultDisplay */
     private MenuPopup createPopup() {
+		//CMN.Log("createPopup::", CMN.id(this));
         final WindowManager windowManager = (WindowManager) mContext.getSystemService(
                 Context.WINDOW_SERVICE);
         final Display display = windowManager.getDefaultDisplay();
@@ -242,15 +248,18 @@ public class MenuPopupHelper implements MenuHelper {
         final int minSmallestWidthCascading = mContext.getResources().getDimensionPixelSize(
                 R.dimen.abc_cascading_menus_min_smallest_width);
         final boolean enableCascadingSubmenus = smallestWidth >= minSmallestWidthCascading;
-
-        final MenuPopup popup;
-        if (enableCascadingSubmenus) {
-            popup = new CascadingMenuPopup(mContext, mAnchorView, mPopupStyleAttr,
-                    mPopupStyleRes, mOverflowOnly);
-        } else {
-            popup = new StandardMenuPopup(mContext, mMenu, mAnchorView, mPopupStyleAttr,
-                    mPopupStyleRes, mOverflowOnly);
-        }
+	
+		MenuPopup popup = fastPopupMenu?popupRef_2.get():null;
+		if(popup==null) {
+			if (enableCascadingSubmenus) {
+				popup = new CascadingMenuPopup(mContext, mAnchorView, mPopupStyleAttr,
+						mPopupStyleRes, mOverflowOnly);
+			} else {
+				popup = new StandardMenuPopup(mContext, mMenu, mAnchorView, mPopupStyleAttr,
+						mPopupStyleRes, mOverflowOnly);
+			}
+			if(fastPopupMenu)  popupRef_2 = new WeakReference<>(popup);
+		}
 
         // Assign immutable properties.
         popup.addMenu(mMenu);

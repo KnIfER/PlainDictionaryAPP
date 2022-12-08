@@ -16,6 +16,10 @@
 
 package androidx.appcompat.widget;
 
+import static androidx.annotation.RestrictTo.Scope.LIBRARY;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+import static androidx.annotation.RestrictTo.Scope.TESTS;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
@@ -48,6 +52,7 @@ import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.R;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.CollapsibleActionView;
 import androidx.appcompat.view.SupportMenuInflater;
@@ -63,10 +68,6 @@ import androidx.customview.view.AbsSavedState;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static androidx.annotation.RestrictTo.Scope.LIBRARY;
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-import static androidx.annotation.RestrictTo.Scope.TESTS;
 
 /**
  * A standard toolbar for use within application content.
@@ -150,6 +151,7 @@ public class Toolbar extends ViewGroup {
     private TextView mTitleTextView;
     private TextView mSubtitleTextView;
     public ImageButton mNavButtonView;
+	public View mNavButtonLayout;
 	private OnClickListener rawListener;
     private ImageView mLogoView;
 
@@ -773,6 +775,7 @@ public class Toolbar extends ViewGroup {
                 if (mTitleTextColor != null) {
                     mTitleTextView.setTextColor(mTitleTextColor);
                 }
+				mTitleTextView.setGravity(Gravity.CENTER);
             }
             if (!isChildOrHidden(mTitleTextView)) {
                 addSystemView(mTitleTextView, true);
@@ -1010,7 +1013,12 @@ public class Toolbar extends ViewGroup {
     public Drawable getNavigationIcon() {
         return mNavButtonView != null ? mNavButtonView.getDrawable() : null;
     }
-
+	
+	@Nullable
+	public View getNavigationBtn() {
+		return mNavButtonView;
+	}
+	
     /**
      * Set a listener to respond to navigation events.
      *
@@ -1023,17 +1031,24 @@ public class Toolbar extends ViewGroup {
     public void setNavigationOnClickListener(OnClickListener listener) {
         ensureNavButtonView();
         mNavButtonView.setOnClickListener(listener);
-		if(getId()==R.id.action_context_bar) rawListener=listener;
+		/*if(getId()==R.id.action_context_bar)*/ rawListener=listener; // todo ???
     }
 	
 	/** add OnClickListener to navigation */
-	public void addNavigationOnClickListener(final OnClickListener listener) {
+	public void addNavigationOnClickListener(final OnTouchListener listener) {
 		ensureNavButtonView();
-		mNavButtonView.setOnClickListener(rawListener==null?listener:new OnClickListener() {
+//		mNavButtonView.setOnClickListener(rawListener==null?listener:new OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				rawListener.onClick(v);
+//				listener.onClick(v);
+//			}
+//		}); // todo ???
+		mNavButtonView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				rawListener.onClick(v);
-				listener.onClick(v);
+				if(listener.onTouch(v, null) && rawListener!=null)
+					rawListener.onClick(v);
 			}
 		});
 	}
@@ -1185,7 +1200,8 @@ public class Toolbar extends ViewGroup {
             mMenuView.setOnMenuItemClickListener(mMenuViewItemClickListener);
             mMenuView.setMenuCallbacks(mActionMenuPresenterCallback, mMenuBuilderCallback);
             final LayoutParams lp = generateDefaultLayoutParams();
-            lp.gravity = GravityCompat.END | (mButtonGravity & Gravity.VERTICAL_GRAVITY_MASK);
+			// 怎么把按钮顶上去了呢？
+			//lp.gravity = GravityCompat.END | (mButtonGravity & Gravity.VERTICAL_GRAVITY_MASK);
             mMenuView.setLayoutParams(lp);
             addSystemView(mMenuView, false);
         }
@@ -1496,12 +1512,15 @@ public class Toolbar extends ViewGroup {
 
     private void ensureNavButtonView() {
         if (mNavButtonView == null) {
-            mNavButtonView = new AppCompatImageButton(getContext(), null,
+			mNavButtonLayout = mNavButtonView = new AppCompatImageButton(getContext(), null,
                     R.attr.toolbarNavigationButtonStyle);
 			mNavButtonView.setId(R.id.home);
             final LayoutParams lp = generateDefaultLayoutParams();
-            lp.gravity = GravityCompat.START | (mButtonGravity & Gravity.VERTICAL_GRAVITY_MASK);
+			// 这里也是！
+			//lp.gravity = GravityCompat.START | (mButtonGravity & Gravity.VERTICAL_GRAVITY_MASK);
             mNavButtonView.setLayoutParams(lp);
+			if(GlobalOptions.isSmall)
+				lp.width=GlobalOptions.btnMaxWidth;
         }
     }
 
@@ -1523,8 +1542,8 @@ public class Toolbar extends ViewGroup {
             });
         }
     }
-
-    private void addSystemView(View v, boolean allowHide) {
+	
+	public void addSystemView(View v, boolean allowHide) {
         final ViewGroup.LayoutParams vlp = v.getLayoutParams();
         final LayoutParams lp;
         if (vlp == null) {
@@ -1724,14 +1743,15 @@ public class Toolbar extends ViewGroup {
         // System views measure first.
 
         int navWidth = 0;
-        if (shouldLayout(mNavButtonView)) {
-            measureChildConstrained(mNavButtonView, widthMeasureSpec, width, heightMeasureSpec, 0,
+		final View layout = mNavButtonLayout;
+        if (shouldLayout(layout)) {
+            measureChildConstrained(layout, widthMeasureSpec, width, heightMeasureSpec, 0,
                     mMaxButtonHeight);
-            navWidth = mNavButtonView.getMeasuredWidth() + getHorizontalMargins(mNavButtonView);
-            height = Math.max(height, mNavButtonView.getMeasuredHeight() +
-                    getVerticalMargins(mNavButtonView));
+            navWidth = layout.getMeasuredWidth() + getHorizontalMargins(layout);
+            height = Math.max(height, layout.getMeasuredHeight() +
+                    getVerticalMargins(layout));
             childState = View.combineMeasuredStates(childState,
-                    mNavButtonView.getMeasuredState());
+					layout.getMeasuredState());
         }
 
         if (shouldLayout(mCollapseButtonView)) {
@@ -1856,13 +1876,14 @@ public class Toolbar extends ViewGroup {
         // Align views within the minimum toolbar height, if set.
         final int minHeight = ViewCompat.getMinimumHeight(this);
         final int alignmentHeight = minHeight >= 0 ? Math.min(minHeight, b - t) : 0;
-
-        if (shouldLayout(mNavButtonView)) {
+	
+		final View layout = mNavButtonLayout;
+        if (shouldLayout(layout)) {
             if (isRtl) {
-                right = layoutChildRight(mNavButtonView, right, collapsingMargins,
+                right = layoutChildRight(layout, right, collapsingMargins,
                         alignmentHeight);
             } else {
-                left = layoutChildLeft(mNavButtonView, left, collapsingMargins,
+                left = layoutChildLeft(layout, left, collapsingMargins,
                         alignmentHeight);
             }
         }
@@ -2231,7 +2252,7 @@ public class Toolbar extends ViewGroup {
 
     @Override
     protected LayoutParams generateDefaultLayoutParams() {
-        return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
     }
 
     @Override

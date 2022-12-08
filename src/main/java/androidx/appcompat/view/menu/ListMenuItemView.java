@@ -168,6 +168,18 @@ public class ListMenuItemView extends LinearLayout
 
     @Override
     public void setCheckable(boolean checkable) {
+		//CMN.Log("setCheckable::", mTitleView.getText(), Integer.toHexString(Objects.hashCode(this)));
+		if(mItemData.mMenu.checkDrawable !=null) {
+			checkable = checkable && mItemData.isChecked();
+			if(checkable ^ (mTitleView.getCompoundDrawables()[2]!=null))
+				if(checkable) {
+					mTitleView.setCompoundDrawables(null, null, mItemData.mMenu.checkDrawable, null);
+				} else {
+					mTitleView.setCompoundDrawables(null, null, null, null);
+				}
+			return;
+		}
+		
         if (!checkable && mRadioButton == null && mCheckBox == null) {
             return;
         }

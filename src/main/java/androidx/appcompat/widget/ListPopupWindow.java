@@ -124,7 +124,7 @@ public class ListPopupWindow implements ShowableListMenu {
     private int mDropDownVerticalOffset;
     private int mDropDownWindowLayoutType = WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL;
     private boolean mDropDownVerticalOffsetSet;
-    private boolean mOverlapAnchor;
+    private boolean mOverlapAnchor = true;
     private boolean mOverlapAnchorSet;
 
     private int mDropDownGravity = Gravity.NO_GRAVITY;
@@ -1363,12 +1363,14 @@ public class ListPopupWindow implements ShowableListMenu {
 
     /**
      * @hide Only used by {@link androidx.appcompat.view.menu.CascadingMenuPopup} to position
-     * a submenu correctly.
+     * a submenu correctly. nope. you can use it everywhere.
      */
     @RestrictTo(LIBRARY_GROUP_PREFIX)
     public void setOverlapAnchor(boolean overlapAnchor) {
-        mOverlapAnchorSet = true;
-        mOverlapAnchor = overlapAnchor;
+		if (this.mOverlapAnchor!=overlapAnchor) {
+			mOverlapAnchorSet = true;
+			mOverlapAnchor = overlapAnchor;
+		}
     }
 
     private class PopupDataSetObserver extends DataSetObserver {

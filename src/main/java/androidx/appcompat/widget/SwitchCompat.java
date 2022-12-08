@@ -184,7 +184,10 @@ public class SwitchCompat extends CompoundButton {
 
     /** Bottom bound for drawing the switch track and thumb. */
     private int mSwitchBottom;
-
+	
+	/** Switch layout scale. */
+	protected float scale=1;
+	
     private final TextPaint mTextPaint;
     private ColorStateList mTextColors;
     private Layout mOnLayout;
@@ -882,13 +885,14 @@ public class SwitchCompat extends CompoundButton {
         }
 
         final int switchWidth = Math.max(mSwitchMinWidth,
-                2 * mThumbWidth + paddingLeft + paddingRight);
-        final int switchHeight = Math.max(trackHeight, thumbHeight);
+				(int)(2 * mThumbWidth * scale) + paddingLeft + paddingRight);
+		final int switchHeight = Math.max(trackHeight, (int)(thumbHeight * scale));
         mSwitchWidth = switchWidth;
         mSwitchHeight = switchHeight;
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
+		
+		//android.util.Log.e("fatal mSwitchHeight", ""+mSwitchHeight, mSwitchHeight+getPaddingTop()+getPaddingBottom());
         final int measuredHeight = getMeasuredHeight();
         if (measuredHeight < switchHeight) {
             setMeasuredDimension(getMeasuredWidthAndState(), switchHeight);
@@ -1222,7 +1226,7 @@ public class SwitchCompat extends CompoundButton {
             mThumbDrawable.getPadding(padding);
 
             final int thumbLeft = thumbInitialLeft - padding.left;
-            final int thumbRight = thumbInitialLeft + mThumbWidth + padding.right;
+            final int thumbRight = thumbInitialLeft + (int)(mThumbWidth*scale) + padding.right;
             mThumbDrawable.setBounds(thumbLeft, switchTop, thumbRight, switchBottom);
 
             final Drawable background = getBackground();
@@ -1353,7 +1357,7 @@ public class SwitchCompat extends CompoundButton {
                 insets = DrawableUtils.INSETS_NONE;
             }
 
-            return mSwitchWidth - mThumbWidth - padding.left - padding.right
+            return mSwitchWidth - (int)(mThumbWidth*scale) - padding.left - padding.right
                     - insets.left - insets.right;
         } else {
             return 0;

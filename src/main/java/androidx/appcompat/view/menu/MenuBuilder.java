@@ -77,6 +77,11 @@ public class MenuBuilder implements SupportMenu {
 
     private final Context mContext;
     private final Resources mResources;
+	
+	public Object tag;
+	public Drawable checkDrawable;
+	public Drawable checkActDrawable;
+	public boolean mOverlapAnchor = true;
 
     /**
      * Whether the shortcuts should be qwerty-accessible. Use isQwertyMode() instead of accessing
@@ -195,6 +200,9 @@ public class MenuBuilder implements SupportMenu {
 		}
 	}
 	
+	public List<MenuItemImpl> getItems() {
+		return mItems;
+	}
 	/**
      * Called by menu to notify of close and selection changes.
      * @hide

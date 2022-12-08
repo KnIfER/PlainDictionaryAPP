@@ -98,7 +98,7 @@ public class ContentFrameLayout extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        final DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
+		final DisplayMetrics metrics = getContext().getApplicationContext().getResources().getDisplayMetrics();
         final boolean isPortrait = metrics.widthPixels < metrics.heightPixels;
 
         final int widthMode = getMode(widthMeasureSpec);

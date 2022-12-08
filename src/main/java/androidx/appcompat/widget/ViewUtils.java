@@ -22,6 +22,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.RestrictTo;
 import androidx.core.view.ViewCompat;
@@ -35,8 +36,10 @@ import java.lang.reflect.Method;
 @RestrictTo(LIBRARY_GROUP_PREFIX)
 public class ViewUtils {
     private static final String TAG = "ViewUtils";
-
-    private static Method sComputeFitSystemWindowsMethod;
+	
+	public static ViewGroup.LayoutParams EmptyLayoutParams = new ViewGroup.LayoutParams(0,0);
+	
+	private static Method sComputeFitSystemWindowsMethod;
 
     static {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {

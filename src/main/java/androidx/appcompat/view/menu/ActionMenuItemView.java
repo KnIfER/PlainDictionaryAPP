@@ -28,12 +28,13 @@ import android.os.Build;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
+import androidx.appcompat.app.CMN;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.ActionMenuView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.ForwardingListener;
@@ -90,6 +91,11 @@ public class ActionMenuItemView extends AppCompatTextView
 
         mSavedPaddingLeft = -1;
         setSaveEnabled(false);
+	
+		mMaxIconSize *= GlobalOptions.isSmall?1:1.35;
+		//setMaxWidth(10);
+		//setMaxWidth((int) (GlobalOptions.density*45));
+		setMaxWidth(GlobalOptions.btnMaxWidth);
     }
 
     @Override
@@ -196,11 +202,13 @@ public class ActionMenuItemView extends AppCompatTextView
     @Override
     public void setCheckable(boolean checkable) {
         // TODO Support checkable action items
+		CMN.Log("action::setCheckable", checkable);
     }
 
     @Override
     public void setChecked(boolean checked) {
         // TODO Support checkable action items
+		CMN.Log("action::setChecked", checked);
     }
 
     public void setExpandedFormat(boolean expandedFormat) {

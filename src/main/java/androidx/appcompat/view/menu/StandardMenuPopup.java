@@ -116,6 +116,7 @@ final class StandardMenuPopup extends MenuPopup implements OnDismissListener, On
 
     public StandardMenuPopup(Context context, MenuBuilder menu, View anchorView, int popupStyleAttr,
             int popupStyleRes, boolean overflowOnly) {
+		//CMN.Log("StandardMenuPopup::", CMN.id(this));
         mContext = context;
         mMenu = menu;
         mOverflowOnly = overflowOnly;
@@ -131,7 +132,8 @@ final class StandardMenuPopup extends MenuPopup implements OnDismissListener, On
         mAnchorView = anchorView;
 
         mPopup = new MenuPopupWindow(mContext, null, mPopupStyleAttr, mPopupStyleRes);
-
+		mPopup.setOverlapAnchor(menu.mOverlapAnchor);
+		
         // Present the menu using our context, not the menu builder's context.
         menu.addMenuPresenter(this, context);
     }
@@ -161,14 +163,18 @@ final class StandardMenuPopup extends MenuPopup implements OnDismissListener, On
         mPopup.setOnItemClickListener(this);
         mPopup.setOnItemLongClickListener(this);
         mPopup.setModal(true);
-
-        if(GlobalOptions.isDark && mPopup.getBackground()!=null)
+	
+		if(GlobalOptions.isDark && mPopup.getBackground()!=null)
+			mPopup.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+	
+		if(GlobalOptions.isDark && mPopup.getBackground()!=null)
 			mPopup.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 
         final View anchor = mShownAnchorView;
         final boolean addGlobalListener = mTreeObserver == null;
         mTreeObserver = anchor.getViewTreeObserver(); // Refresh to latest
         if (addGlobalListener) {
+			mTreeObserver.removeOnGlobalLayoutListener(mGlobalLayoutListener);
             mTreeObserver.addOnGlobalLayoutListener(mGlobalLayoutListener);
         }
         anchor.addOnAttachStateChangeListener(mAttachStateChangeListener);
@@ -234,7 +240,7 @@ final class StandardMenuPopup extends MenuPopup implements OnDismissListener, On
 
     @Override
     public void onDismiss() {
-        mWasDismissed = true;
+        //mWasDismissed = true;
         mMenu.close();
 
         if (mTreeObserver != null) {

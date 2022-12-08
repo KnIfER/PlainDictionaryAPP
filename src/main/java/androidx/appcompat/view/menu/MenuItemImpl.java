@@ -80,7 +80,7 @@ public final class MenuItemImpl implements SupportMenuItem {
     private int mIconResId = NO_ICON;
 
     /** The menu to which this item belongs */
-    MenuBuilder mMenu;
+	public MenuBuilder mMenu;
     /** If this item should launch a sub menu, this is the sub menu to launch */
     private SubMenuBuilder mSubMenu;
 
@@ -107,6 +107,7 @@ public final class MenuItemImpl implements SupportMenuItem {
     private int mShowAsAction = SHOW_AS_ACTION_NEVER;
 
     public boolean isLongClicked;
+	public Object tag;
     private View mActionView;
 	public View actionView;
 	//public Object tag;
@@ -136,7 +137,7 @@ public final class MenuItemImpl implements SupportMenuItem {
      * @param categoryOrder The ordering for this item.
      * @param title The text to display for the item.
      */
-    MenuItemImpl(MenuBuilder menu, int group, int id, int categoryOrder, int ordering,
+	public MenuItemImpl(MenuBuilder menu, int group, int id, int categoryOrder, int ordering,
             CharSequence title, int showAsAction) {
 
         mMenu = menu;

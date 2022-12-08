@@ -77,7 +77,7 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
-        super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);
 		getDelegate().onCreate(savedInstanceState);
 		if(getWindow()!=null)
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,  WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);

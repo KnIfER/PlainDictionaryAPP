@@ -388,7 +388,7 @@ final class CascadingMenuPopup extends MenuPopup implements MenuPresenter, OnKey
         final MenuPopupWindow popupWindow = createPopupWindow();
         popupWindow.setAdapter(adapter);
         popupWindow.setContentWidth(menuWidth);
-        popupWindow.setDropDownGravity(mDropDownGravity);
+		popupWindow.setDropDownGravity(mDropDownGravity);
 
 		if(GlobalOptions.isDark && popupWindow.getBackground()!=null)
 			popupWindow.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
@@ -472,7 +472,7 @@ final class CascadingMenuPopup extends MenuPopup implements MenuPresenter, OnKey
             popupWindow.setHorizontalOffset(x);
 
             // Vertically align with the parent item.
-            popupWindow.setOverlapAnchor(true);
+            popupWindow.setOverlapAnchor(menu.mOverlapAnchor);
             popupWindow.setVerticalOffset(parentOffsetY);
         } else {
             if (mHasXOffset) {
