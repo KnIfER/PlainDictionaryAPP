@@ -16,6 +16,8 @@
 
 package androidx.appcompat.app;
 
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,8 +45,6 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.R;
-
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 /**
  * A subclass of Dialog that can display one, two or three buttons. If you only want to
@@ -74,7 +74,7 @@ import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
  */
 public class AlertDialog extends AppCompatDialog implements DialogInterface {
 	
-	private final AlertController mAlert;
+	public final AlertController mAlert;
 
     /**
      * No layout hint.
@@ -85,6 +85,8 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
      * Hint layout to the side.
      */
     static final int LAYOUT_HINT_SIDE = 1;
+	public Object tag;
+	public boolean isDark;
 
     protected AlertDialog(@NonNull Context context) {
         this(context, 0);
@@ -99,6 +101,7 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
     protected AlertDialog(@NonNull Context context, @StyleRes int themeResId) {
         super(context, resolveDialogTheme(context, themeResId));
         mAlert = new AlertController(getContext(), this, getWindow());
+		isDark = GlobalOptions.isDark;
     }
 
     protected AlertDialog(@NonNull Context context, boolean cancelable,
@@ -426,7 +429,32 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
             P.mMessage = message;
             return this;
         }
-
+	
+	
+		/**
+		 * Set a negative button to be invoked when the listener of the dialog is invoked.
+		 * @param text
+		 * @param listener
+		 *
+		 * @return This object builds to call allow for chaining of methods to set .
+		 */
+		public Builder setWikiText(CharSequence text, final OnClickListener listener) {
+			P.mWikiText = text;
+			P.mWikiTextListener = listener;
+			return this;
+		}
+	
+		public Builder setTitleBtn(int resId, final OnClickListener listener) {
+			P.mWikiText = "TBTN"+resId;
+			P.mWikiTextListener = listener;
+			return this;
+		}
+	
+		public Builder setMaxLines(int val) {
+			P.mMaxLines = val;
+			return this;
+		}
+		
         /**
          * Set the resource id of the {@link Drawable} to be used in the title.
          * <p>
@@ -788,13 +816,26 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
          */
         public Builder setSingleChoiceItems(@ArrayRes int itemsId, int checkedItem,
                 final OnClickListener listener) {
-            P.mItems = P.mContext.getResources().getTextArray(itemsId);
-            P.mOnClickListener = listener;
-            P.mCheckedItem = checkedItem;
-            P.mIsSingleChoice = true;
+			if (itemsId!=0) {
+				P.mItems = P.mContext.getResources().getTextArray(itemsId);
+				P.mOnClickListener = listener;
+				P.mCheckedItem = checkedItem;
+				P.mIsSingleChoice = true;
+			}
             return this;
         }
 
+		public Builder setSingleChoiceItems(@ArrayRes int[] mItem_StrIds, int checkedItem,
+											final OnClickListener listener) {
+			if (mItem_StrIds!=null) {
+				P.mItems = null;
+				P.mItem_StrIds = mItem_StrIds;
+				P.mOnClickListener = listener;
+				P.mCheckedItem = checkedItem;
+				P.mIsSingleChoice = true;
+			}
+			return this;
+		}
 
         public Builder setSingleChoiceLayout(@LayoutRes int layout) {
             P.mSingleChoiceItemLayout = layout;
@@ -994,6 +1035,7 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
             // We can't use Dialog's 3-arg constructor with the createThemeContextWrapper param,
             // so we always have to re-set the theme
             final AlertDialog dialog = new AlertDialog(P.mContext, mTheme);
+			dialog.isDark = GlobalOptions.isDark;
             P.apply(dialog.mAlert);
             dialog.setCancelable(P.mCancelable);
             if (P.mCancelable) {
@@ -1029,5 +1071,12 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
 
     public TextView getTitleView() {
     	return mAlert.mTitleView;
+	}
+	
+	public OnDismissListener dismissListener;
+	
+	@Override
+	public void setOnDismissListener(@Nullable OnDismissListener listener) {
+		super.setOnDismissListener(dismissListener = listener);
 	}
 }

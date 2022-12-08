@@ -16,6 +16,8 @@
 
 package androidx.appcompat.app;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
@@ -63,8 +65,6 @@ import androidx.core.widget.NestedScrollView;
 
 import java.lang.ref.WeakReference;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-
 public class AlertController {
     private final Context mContext;
     final AppCompatDialog mDialog;
@@ -74,7 +74,7 @@ public class AlertController {
     private CharSequence mTitle;
     private CharSequence mMessage;
     ListView mListView;
-    private View mView;
+    public View mView;
 
     private int mViewLayoutResId;
 
@@ -105,8 +105,12 @@ public class AlertController {
     private Drawable mIcon;
 
     private ImageView mIconView;
-	TextView mTitleView;
-    private TextView mMessageView;
+	public TextView mTitleView;
+	public int mMaxLines;
+	public ImageView wikiBtn;
+	public View wikiSep;
+	public TextView mMessageView;
+
     ViewGroup mTopPanel;
     private View mCustomTitleView;
 
@@ -494,7 +498,49 @@ public class AlertController {
         setupButtons(buttonPanel);
         mTopPanel = topPanel;
         setupTitle(topPanel, false);
-
+	
+		//CMN.recurseLogCascade(mWindow.getDecorView());
+		//CMN.Log("mTitleView", mTitleView);
+		//CMN.Log("mWikiText", mWikiText);
+		if (mTitleView!=null && mWikiText!=null) {
+			ImageView wikiBtn = this.wikiBtn = new ImageView(mTitleView.getContext());
+			wikiBtn.setImageResource(R.drawable.ic_baseline_live_help_24);
+			wikiBtn.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
+			ViewGroup vg = (ViewGroup) mTitleView.getParent();
+			if (vg instanceof LinearLayout) {
+				LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mTitleView.getLayoutParams();
+				lp.width=-2;
+				lp.weight=0;
+				View space = wikiSep = new View(mTitleView.getContext());
+				if("TBTN".regionMatches(0, mWikiText.toString(), 0, 4)) {
+					wikiBtn.setImageResource(Integer.parseInt(mWikiText.subSequence(4, mWikiText.length()).toString()));
+					vg.addView(space);
+					vg.addView(wikiBtn);
+					int pad=vg.getPaddingRight()*2/3;
+					wikiBtn.setPadding(pad, 0, pad, 0);
+					vg.setPadding(vg.getPaddingLeft(), vg.getPaddingTop(), 0, 0);
+				} else {
+					vg.addView(wikiBtn);
+					vg.addView(space);
+				}
+				lp = (LinearLayout.LayoutParams) wikiBtn.getLayoutParams();
+				lp.width=-2;
+				lp = (LinearLayout.LayoutParams) space.getLayoutParams();
+				lp.width=0;
+				lp.weight=1;
+				wikiBtn.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						if(mWikiTextListener!=null)
+							mWikiTextListener.onClick(mDialog, -1);
+						else new AlertDialog.Builder(mTitleView.getContext())
+								.setMessage(mWikiText)
+								.show();
+					}
+				});
+			}
+		}
+	
         final boolean hasCustomPanel = customPanel != null
                 && customPanel.getVisibility() != View.GONE;
         final boolean hasTopPanel = topPanel != null
@@ -707,6 +753,8 @@ public class AlertController {
                 // Display the title if a title is supplied, else hide it.
                 mTitleView = (TextView) mWindow.findViewById(R.id.alertTitle);
                 mTitleView.setText(mTitle);
+				mTitleView.setSingleLine(false);
+				if (mMaxLines != 0) mTitleView.setMaxLines(mMaxLines);
 				if(GlobalOptions.isLarge) mTitleView.setTextSize(26);
 				if(darkIs) {
 					mTitleView.setTextColor(Color.WHITE);
@@ -948,6 +996,9 @@ public class AlertController {
         public Drawable mPositiveButtonIcon;
         public DialogInterface.OnClickListener mPositiveButtonListener;
         public CharSequence mNegativeButtonText;
+		public DialogInterface.OnClickListener mWikiTextListener;
+		public CharSequence mWikiText;
+		public int mMaxLines;
         public Drawable mNegativeButtonIcon;
         public DialogInterface.OnClickListener mNegativeButtonListener;
         public CharSequence mNeutralButtonText;
@@ -958,6 +1009,7 @@ public class AlertController {
         public DialogInterface.OnDismissListener mOnDismissListener;
         public DialogInterface.OnKeyListener mOnKeyListener;
         public CharSequence[] mItems;
+		public int[] mItem_StrIds;
         public ListAdapter mAdapter;
         public DialogInterface.OnClickListener mOnClickListener;
         public int mViewLayoutResId;
@@ -1017,6 +1069,7 @@ public class AlertController {
                     dialog.setIcon(dialog.getIconAttributeResId(mIconAttrId));
                 }
             }
+			dialog.mMaxLines = mMaxLines;
             if(mSingleChoiceItemLayout!=0){
                 dialog.mSingleChoiceItemLayout=mSingleChoiceItemLayout;
             }
@@ -1031,13 +1084,16 @@ public class AlertController {
                 dialog.setButton(DialogInterface.BUTTON_NEGATIVE, mNegativeButtonText,
                         mNegativeButtonListener, null, mNegativeButtonIcon);
             }
+			if (mWikiText!=null) {
+				dialog.setWikiText(mWikiText, mWikiTextListener);
+			}
             if (mNeutralButtonText != null || mNeutralButtonIcon != null) {
                 dialog.setButton(DialogInterface.BUTTON_NEUTRAL, mNeutralButtonText,
                         mNeutralButtonListener, null, mNeutralButtonIcon);
             }
             // For a list, the client can either supply an array of items or an
             // adapter or a cursor
-            if ((mItems != null) || (mCursor != null) || (mAdapter != null)) {
+            if ((mItems != null) || (mItem_StrIds != null) || (mCursor != null) || (mAdapter != null)) {
                 createListView(dialog);
             }
             if (mView != null) {
@@ -1067,8 +1123,24 @@ public class AlertController {
 
             if (mIsMultiChoice) {
                 if (mCursor == null) {
+					if(mItems==null) mItems = new String[mItem_StrIds.length];
                     adapter = new ArrayAdapter<CharSequence>(
                             mContext, dialog.mMultiChoiceItemLayout, android.R.id.text1, mItems) {
+						@Nullable
+						@Override
+						public CharSequence getItem(int position) {
+							if (mItem_StrIds!=null) {
+								return getContext().getResources().getString(mItem_StrIds[position]);
+							}
+							return super.getItem(position);
+						}
+						@Override
+						public int getCount() {
+							if (mItem_StrIds!=null) {
+								return mItem_StrIds.length;
+							}
+							return super.getCount();
+						}
                         @Override
                         public View getView(int position, View convertView, ViewGroup parent) {
                             View view = super.getView(position, convertView, parent);
@@ -1080,6 +1152,8 @@ public class AlertController {
                             }
                             if(GlobalOptions.isDark)
                             	((TextView)view.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
+							//if (mItem_StrIds!=null)
+//							//view.setId(mItem_StrIds[position]);
                             return view;
                         }
                     };
@@ -1130,12 +1204,14 @@ public class AlertController {
 							View view = super.getView(position, convertView, parent);
 							if(GlobalOptions.isDark)
 								((TextView)view.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
-							return view;						}
+							return view;
+						}
 					};
                 } else if (mAdapter != null) {
                     adapter = mAdapter;
                 } else {
-                    adapter = new CheckedItemAdapter(mContext, layout, android.R.id.text1, mItems);
+					if(mItems==null) mItems=new String[]{}; // todo check safe
+                    adapter = new CheckedItemAdapter(mContext, layout, android.R.id.text1, mItems, mItem_StrIds);
                 }
             }
 
@@ -1153,7 +1229,7 @@ public class AlertController {
                 listView.setOnItemClickListener(new OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                        mOnClickListener.onClick(dialog.mDialog, position);
+                        mOnClickListener.onClick(dialog.mDialog, (mItem_StrIds!=null&&position<mItem_StrIds.length)?mItem_StrIds[position]:position);
                         if (!mIsSingleChoice) {
                             dialog.mDialog.dismiss();
                         }
@@ -1185,13 +1261,38 @@ public class AlertController {
             dialog.mListView = listView;
         }
     }
-
-    private static class CheckedItemAdapter extends ArrayAdapter<CharSequence> {
-        public CheckedItemAdapter(Context context, int resource, int textViewResourceId,
-                CharSequence[] objects) {
-            super(context, resource, textViewResourceId, objects);
-        }
-
+	
+	public CharSequence mWikiText;
+	public DialogInterface.OnClickListener mWikiTextListener;
+	
+	public void setWikiText(CharSequence text, final DialogInterface.OnClickListener listener) {
+		this.mWikiText = text;
+		this.mWikiTextListener = listener;
+	}
+	
+	public static class CheckedItemAdapter extends ArrayAdapter<CharSequence> {
+		final int[] mStrIds;
+		public CheckedItemAdapter(Context context, int resource, int textViewResourceId,
+								  CharSequence[] objects, int[] mItem_StrIds) {
+			super(context, resource, textViewResourceId, objects);
+			mStrIds = mItem_StrIds;
+		}
+		@Nullable
+		@Override
+		public CharSequence getItem(int position) {
+			if (mStrIds!=null) {
+				return getContext().getResources().getString(mStrIds[position]);
+			}
+			return super.getItem(position);
+		}
+		@Override
+		public int getCount() {
+			if (mStrIds!=null) {
+				return mStrIds.length;
+			}
+			return super.getCount();
+		}
+		
 		@NonNull
 		@Override
 		public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
