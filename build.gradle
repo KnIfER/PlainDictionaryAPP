@@ -29,8 +29,8 @@ android {
 
 
 dependencies {
-    compileOnly project(':Metaline')
-    annotationProcessor project(':Metaline')
+    compileOnly project(':Metaline:Metaline')
+    annotationProcessor project(':Metaline:Metaline')
 
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     if(mod_core=='1') {
