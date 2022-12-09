@@ -123,7 +123,7 @@ public class AgentApplication extends Application {
 	}
 	public final static BufferAllocator BufferAllocatorInst = new BufferAllocator();
 	
-	@Metaline(file = "src\\main\\assets\\李白全集.mdx")
+	@Metaline(file = "PLOD\\src\\main\\assets\\李白全集.mdx", rootPath=BuildConfig.projectPath)
 	final static int liba_filesize = 0;
 	
 	static {

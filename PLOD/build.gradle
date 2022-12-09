@@ -23,24 +23,28 @@ apply plugin: 'com.android.application'
 //android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
 android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
 
+def zhuanXiegang(){
+    return rootProject.projectDir.getPath().replace('\\', '\\\\');
+}
+
 android {
-//    tasks.whenTaskAdded { task ->
-//        if (task.name.contains("lint")
-////如果instant run不生效，把clean这行干掉
-//                ||task.name.equals("clean")
-//                //如果项目中有用到aidl则不可以舍弃这个任务
-//                ||task.name.contains("Aidl")
-////用不到测试的时候就可以先关闭
-//                ||task.name.contains("mockableAndroidJar")
-//                ||task.name.contains("UnitTest")
-//                ||task.name.contains("AndroidTest")
-////用不到NDK和JNI的也关闭掉
-//                || task.name.contains("Ndk")
-//                || task.name.contains("Jni")
-//        ) {
-//            task.enabled = true
-//        }
-//    }
+    tasks.whenTaskAdded { task ->
+        if (task.name.contains("lint")
+//如果instant run不生效，把clean这行干掉
+                ||task.name.equals("clean")
+                //如果项目中有用到aidl则不可以舍弃这个任务
+                ||task.name.contains("Aidl")
+//用不到测试的时候就可以先关闭
+                ||task.name.contains("mockableAndroidJar")
+                ||task.name.contains("UnitTest")
+                ||task.name.contains("AndroidTest")
+//用不到NDK和JNI的也关闭掉
+                || task.name.contains("Ndk")
+                || task.name.contains("Jni")
+        ) {
+            task.enabled = true
+        }
+    }
 
     lintOptions {
         //tasks.lint.enabled = false
@@ -79,6 +83,7 @@ android {
     buildTypes {
         debug {
             buildConfigField "boolean","isDebug","true"
+            buildConfigField "String","projectPath","\"${zhuanXiegang()}\""
             aaptOptions {
                 ignoreAssetsPattern '!Markjs:!pdfjs:!Search'
             }
@@ -87,6 +92,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
             buildConfigField "boolean","isDebug","false"
+            buildConfigField "String","projectPath","\"${zhuanXiegang()}\""
         }
     }
 
@@ -147,7 +153,7 @@ dependencies {
     //implementation 'com.android.support:support-dynamic-animation:27.1.1'
     api 'org.anarres.lzo:lzo-core:1.0.6'
     api libs_viewpager
-    api project(path: ':GestureView')
+    api libs_guest
     //implementation 'com.android.volley:volley:1.2.0'
 
     testImplementation 'org.jdom:jdom:2.0.2'
@@ -167,40 +173,16 @@ dependencies {
 
     api (libs_drawer)
     api (libs_ctext)
-    api project(':recyclerViewFastScroller')
-    api project(':twowaygridview')
-    if (use_compat_official == '1') {
-        api(libs_compat)
-    } else {
-        implementation libs_compat
-        implementation(libs_appres)
-        configurations {
-            //all*.exclude group: 'androidx.appcompat'
-        }
-    }
-    implementation project(':AweDesigner')
+    api libs_recyclerScroll
+    api libs_twoway
+    api(libs_compat)
+    api libs_mat
+    api libs_pref
 
-    if (use_mat_official == '1') {
-        api(libs_mat) {
-            exclude module: "appcompat"
-            exclude module: "appcompat-resources"
-        }
-    } else {
-        implementation project(':AweDesigner')
-    }
-    if (use_prefer_official == '1') {
-        api(libs_prefer) {
-            exclude module: "appcompat"
-            exclude module: "appcompat-resources"
-        }
-    } else {
-        api libs_pref
-    }
-    api project(':colorpicker')
-    api project(':filepicker')
+    api libs_color
+    api libs_file
 
-    api project(':Logger')
-    api project(':Paging')
+    api libs_paging
 
     api fileTree(include: ['*.jar'], dir: 'libs')
     api(libs_anno)

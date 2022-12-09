@@ -1,19 +1,2 @@
-
-
-
-include ':recyclerViewFastScroller'
-
-include ':twowaygridview'
-
 include ':PLOD'
 
-include ':Logger'
-include ':Paging'
-
-include ':AweDesigner'
-
-include ':filepicker'
-include ':colorpicker'
-
-include ':GestureView'
-//include ':Metaline:Metaline'

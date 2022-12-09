@@ -574,6 +574,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	WeakReference<AlertDialog> setchooser = ViewUtils.DummyRef;
 	private WeakReference<BottomSheetDialog> bottomPlaylist = ViewUtils.DummyRef;
+	private WeakReference<BottomSheetDialog> bottomSoundPane = ViewUtils.DummyRef;
 	WeakReference<AlertDialog> ChooseFavorDialog = ViewUtils.DummyRef;
 	WeakReference<DBroswer> DBrowserHolder = ViewUtils.DummyRef;
 	DBroswer DBrowser;
@@ -3429,7 +3430,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(hdl!=null) {
 					hdl.clearActivity();
 				}
-				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser, bottomPlaylist};
+				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser, bottomPlaylist, bottomSoundPane};
 				for(WeakReference hI:holders){
 					if(hI!=null)
 						hI.clear();
@@ -5617,45 +5618,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		tv.setTag(null);
 	}
 	
-	public void showSoundTweaker() {
-		String[] DictOpt = getResources().getStringArray(R.array.sound_spec);
-		final String[] Coef = DictOpt[0].split("_");
-		final SpannableStringBuilder ssb = new SpannableStringBuilder();
-		
-		TextView tv = buildStandardConfigDialog(this, true, null, R.string.SoundOpt);
-		Dialog configurableDialog = (Dialog) tv.getTag();
-
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, true);//opt.getAutoReadEntry()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 12, null, 0, 0, 0x1, 0, 1, 4, 12, false);//暂停
-		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 48, 1, 4, -1, true);//opt.getThenAutoReadContent()//
-		
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, true);//opt.getHintTTSReading()//
-		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, true);//opt.getTTSBackgroundPlay()//
-
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, true);//opt.getClickSearchEnabled()//
-		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, null, 0, 1, 0x1, 0, 1, 3, 15, false);
-
-		boolean flagCase = PeruseViewAttached();
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, true);//opt.getUseVolumeBtn()
-		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, true);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
-
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, null, 0, 0, 0x1, 44, 1, 3, 16, false);//滚动条
-		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, true);//opt.getTTSHighlightWebView()//
-
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, null, 0, 0, 0x1, 0, 1, 3, 10, false);//
-
-		ssb.delete(ssb.length()-4, ssb.length());
-		
-		tv.setTag(null);
-		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-		configurableDialog.show();
-	}
-
 	void changeToDarkMode() {
 		CMN.debug("changeToDarkMode");
 		try {
@@ -9615,7 +9577,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				TTSReady = true;
 				
 				mPullReadTextRunnable.run();
-			}, null); //"com.google.android.tts"
+			}, opt.getString("ttsEngine", null)); //"com.google.android.tts"
 			TTSController_engine.setSpeechRate(TTS_LEVLES_SPEED[TTSSpeed]);
 			TTSController_engine.setPitch(TTS_LEVLES_SPEED[TTSPitch]);
 			
@@ -10341,15 +10303,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			etNew.requestFocus();
 		}
 	}
-
-	public void showMultipleCollection(String text, ViewGroup webviewholder) {
-		//showT("功能关闭中，请等待5.0版本");
-		//showT(text);
-		BottomSheetDialog _bottomPlaylist = bottomPlaylist.get();
-		if(_bottomPlaylist==null) {
+	
+	public void showSoundTweaker() {
+		String text = "";
+		BottomSheetDialog bPane = bottomPlaylist.get();
+		if(bPane==null) {
 			CMN.debug("重建底部弹出");
-			bottomPlaylist = new WeakReference<>(_bottomPlaylist = new BottomSheetDialog(this));
-			View ll = LayoutInflater.from(this).inflate(R.layout.favorite_bottom_sheet, null);
+			bottomPlaylist = new WeakReference<>(bPane = new BottomSheetDialog(this));
+			View ll = LayoutInflater.from(this).inflate(R.layout.bottom_favorite_sheet, null);
 			ListView lv = ll.findViewById(R.id.favorList);
 			lv.setAdapter(FavoriteNoteBooksAdapter());
 			lv.setOnItemClickListener((parent, view, position, id) -> {
@@ -10358,7 +10319,102 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				tv.jumpDrawablesToCurrentState();
 				AppFunAdapter.setChecked(position, tv.isChecked());
 			});
-			BottomSheetDialog final_bottomPlaylist = _bottomPlaylist;
+			BottomSheetDialog final_bottomPlaylist = bPane;
+			OnClickListener clicker = v -> {
+				switch (v.getId()) {
+					case R.id.cancel:
+						final_bottomPlaylist.dismiss();
+						break;
+					case R.id.confirm:
+						Long[] selectionArr = AppFunAdapter.selectedPositionsArr;
+						ArrayList<MyPair<String, Long>> items = AppFunAdapter.notebooksV2;
+						HashSet<Long> selection = AppFunAdapter.selectedPositions;
+						if(selection.size()>0) {
+							int delCnt=0, delNum=0, addCnt=0, addNum=0;
+							for(Long oldFav:selectionArr) {
+								if (!selection.contains(oldFav)) {
+									delNum++;
+									try {
+										if(prepareHistoryCon().remove(text, oldFav)>=0) {
+											delCnt++;
+										}
+									} catch (Exception e) { CMN.debug(e); }
+								}
+							}
+							selection.removeAll(Arrays.asList(selectionArr));
+							addNum = selection.size();
+							selectionArr = selection.toArray(new Long[addNum]);
+							for(Long newFav:selectionArr) {
+								try {
+									if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
+										addCnt++;
+									}
+								} catch (Exception e) { CMN.debug(e); }
+							}
+							String msg = "";
+							if (addNum>0) {
+								msg += " 添加完毕！(" + addCnt + "/" + addNum + ")";
+							}
+							if (delNum>0) {
+								if (!TextUtils.isEmpty(msg)) {
+									msg += "\t";
+								}
+								msg += " 移除完毕！(" + delCnt + "/" + delNum + ")";
+							}
+							if (!TextUtils.isEmpty(msg)) {
+								showT(msg);
+							}
+							selection.clear();
+						}
+						final_bottomPlaylist.dismiss();
+						break;
+					case R.id.new_folder:
+						showCreateNewFavoriteDialog((int) (ll.getWidth() - getResources().getDimension(R.dimen._35_)));
+						break;
+				}
+			};
+			ll.findViewById(R.id.cancel).setOnClickListener(clicker);
+			ll.findViewById(R.id.confirm).setOnClickListener(clicker);
+			ll.findViewById(R.id.new_folder).setOnClickListener(clicker);
+			bPane.setContentView(ll);
+			bPane.getWindow().setDimAmount(0.2f);
+			//bottomPlaylist.getWindow().setBackgroundDrawable(null);
+			//bottomPlaylist.getWindow().getDecorView().setBackground(null);
+			////bottomPlaylist.getWindow().findViewById(R.id.design_bottom_sheet).setBackground(null);
+			//fix_full_screen(bottomPlaylist.getWindow().getDecorView());
+			bPane.getWindow().getDecorView().setTag(lv);
+			//CMN.recurseLogCascade(lv);
+			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
+			if(GlobalOptions.isDark) {
+				ll.setBackgroundColor(Color.BLACK);
+				((TextView)ll.findViewById(R.id.title)).setTextColor(Color.WHITE);
+				ll.findViewById(R.id.bottombar).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+			}
+		}
+		FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
+		View v = (View) bPane.getWindow().getDecorView().getTag();
+		DisplayMetrics dm2 = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
+		v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * bPane.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
+		v.requestLayout();
+		bPane.show();
+	}
+
+	public void showMultipleCollection(String text, ViewGroup webviewholder) {
+		BottomSheetDialog bPane = bottomSoundPane.get();
+		if(bPane==null) {
+			CMN.debug("重建底部弹出");
+			bottomSoundPane = new WeakReference<>(bPane = new BottomSheetDialog(this));
+			View ll = LayoutInflater.from(this).inflate(R.layout.bottom_favorite_sheet, null);
+			ListView lv = ll.findViewById(R.id.favorList);
+			lv.setAdapter(FavoriteNoteBooksAdapter());
+			lv.setOnItemClickListener((parent, view, position, id) -> {
+				CheckedTextView tv = view.findViewById(android.R.id.text1);
+				tv.toggle();
+				tv.jumpDrawablesToCurrentState();
+				AppFunAdapter.setChecked(position, tv.isChecked());
+			});
+			BottomSheetDialog final_bottomPlaylist = bPane;
 			OnClickListener clicker = v -> {
 				switch (v.getId()) {
 					case R.id.cancel:
@@ -10415,15 +10471,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ll.findViewById(R.id.cancel).setOnClickListener(clicker);
 			ll.findViewById(R.id.confirm).setOnClickListener(clicker);
 			ll.findViewById(R.id.new_folder).setOnClickListener(clicker);
-			_bottomPlaylist.setContentView(ll);
-			_bottomPlaylist.getWindow().setDimAmount(0.2f);
+			bPane.setContentView(ll);
+			bPane.getWindow().setDimAmount(0.2f);
 			//bottomPlaylist.getWindow().setBackgroundDrawable(null);
 			//bottomPlaylist.getWindow().getDecorView().setBackground(null);
 			////bottomPlaylist.getWindow().findViewById(R.id.design_bottom_sheet).setBackground(null);
 			//fix_full_screen(bottomPlaylist.getWindow().getDecorView());
-			_bottomPlaylist.getWindow().getDecorView().setTag(lv);
+			bPane.getWindow().getDecorView().setTag(lv);
 			//CMN.recurseLogCascade(lv);
-			_bottomPlaylist.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
+			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
 			if(GlobalOptions.isDark) {
 				ll.setBackgroundColor(Color.BLACK);
 				((TextView)ll.findViewById(R.id.title)).setTextColor(Color.WHITE);
@@ -10431,12 +10487,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
-		View v = (View) _bottomPlaylist.getWindow().getDecorView().getTag();
+		View v = (View) bPane.getWindow().getDecorView().getTag();
 		DisplayMetrics dm2 = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
-		v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * _bottomPlaylist.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
+		v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * bPane.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
 		v.requestLayout();
-		_bottomPlaylist.show();
+		bPane.show();
 	}
 
 	/** @param reason: 0=切换收藏夹; 1=切换收藏夹(收藏夹视图); 2=移动收藏 */
