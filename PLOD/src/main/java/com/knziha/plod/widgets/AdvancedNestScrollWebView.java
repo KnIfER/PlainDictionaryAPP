@@ -25,6 +25,7 @@ import android.view.MotionEvent;
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainActivity;
 
 /**
@@ -51,6 +52,8 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		CMN.debug("onTouchEvent", "isViewSingle = [" + weblistHandler.isViewSingle() + "]");
+		CMN.debug("onTouchEvent", mChildHelper.isNestedScrollingEnabled(), mNestedScrollEnabled);
 		if(mNestedScrollEnabled&&weblistHandler.isViewSingle()) {
 			mChildHelper.onTouchEvent(this, event);
 			super.onTouchEvent(event);

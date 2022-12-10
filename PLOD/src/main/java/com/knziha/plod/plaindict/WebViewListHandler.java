@@ -975,6 +975,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		if(this.dictView!=dictView) {
 			this.dictView = dictView;
+			if (this==a.weblistHandler && a.thisActType==MainActivityUIBase.ActType.PlainDict) {
+				((AdvancedNestScrollWebView)this.dictView).setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
+			}
 		}
 	}
 	

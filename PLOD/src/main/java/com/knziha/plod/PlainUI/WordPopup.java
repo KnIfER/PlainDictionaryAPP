@@ -1421,7 +1421,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (nowView != standalone) {
 			ViewUtils.removeView(nowView);
 		}
-		ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1);
+		if (ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1)) {
+			((AdvancedNestScrollWebView)standalone).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveClickSearch());
+		}
 		return standalone;
 	}
 	
@@ -1542,7 +1544,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			((PDICMainActivity)a).checkUpdate(task);
 		}
 		else if(mType==TASK_TTS) {
-			((MainActivityUIBase)a).ttsPopup.doSendText();
+			((MainActivityUIBase)a).ttsHub.doSendText();
 		}
 	}
 	

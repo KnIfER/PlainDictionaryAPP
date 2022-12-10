@@ -119,6 +119,7 @@ public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.Popu
 		this.bPopIsFocusable = true;
 		this.bFadeout = -2;
 		this.bAnimate = false;
+		this.tweakDlgScreen = false;
 		this.a = a;
 		setShowInDialog();
 	}
@@ -602,7 +603,7 @@ public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.Popu
 //			popupLstD.setOnTouchListener(TTSController_moveToucher);
 			// 缩放逻辑
 			tv.viewPager = viewPager;
-			tv.setTheme(0xFFffffff, Color.BLACK, 0x883b53f1, 0x883b53f1);
+			tv.setTheme(a.AppWhite, a.AppBlack, 0x883b53f1, 0x883b53f1);
 			this.tv = tv;
 		}
 		return floatBasic;
@@ -709,19 +710,23 @@ public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.Popu
 	
 	public List<TextToSpeech.EngineInfo> getEngines() {
 		engines.clear();
-		PackageManager pm = a.getPackageManager();
-		Intent intent = new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
-		List<ResolveInfo> resolveInfos = pm.queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY);
-		if (resolveInfos == null) return engines;
-		for (ResolveInfo resolve : resolveInfos) {
-			ServiceInfo service = resolve.serviceInfo;
-			if (service.packageName != null) {
-				TextToSpeech.EngineInfo engine = new TextToSpeech.EngineInfo();
-				engine.name = service.packageName;
-				String name = service.loadLabel(pm).toString();
-				engine.label = TextUtils.getTrimmedLength(name)>0?name:engine.name;
-				engines.add(engine);
+		try {
+			PackageManager pm = a.getPackageManager();
+			Intent intent = new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
+			List<ResolveInfo> resolveInfos = pm.queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY);
+			if (resolveInfos == null) return engines;
+			for (ResolveInfo resolve : resolveInfos) {
+				ServiceInfo service = resolve.serviceInfo;
+				if (service.packageName != null) {
+					TextToSpeech.EngineInfo engine = new TextToSpeech.EngineInfo();
+					engine.name = service.packageName;
+					String name = service.loadLabel(pm).toString();
+					engine.label = TextUtils.getTrimmedLength(name) > 0 ? name : engine.name;
+					engines.add(engine);
+				}
 			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 		return engines;
 	}
@@ -819,6 +824,7 @@ public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.Popu
 			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
 			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
+			tv.setTheme(a.AppWhite, a.AppBlack, 0x883b53f1, 0x883b53f1);
 		}
 		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
 				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
@@ -997,6 +1003,6 @@ public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.Popu
 			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
 		}
 		refreshExpand();
-		bPane.show();
+		super.showDialog();
 	}
 }

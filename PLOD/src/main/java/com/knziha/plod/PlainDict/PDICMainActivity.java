@@ -3062,9 +3062,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.id.drawer_layout:{
 				showIconCustomizator();
 			}  return true;
-			case R.drawable.ic_fulltext_reader:{
-				ttsPopup.toggleFloatBtn();
-			}  return true;
 		}
 		return false;
 	}

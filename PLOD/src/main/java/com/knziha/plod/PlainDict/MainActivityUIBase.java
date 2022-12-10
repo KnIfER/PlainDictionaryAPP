@@ -1405,7 +1405,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public WordPopup wordPopup = new WordPopup(this);
-	public TTSHub ttsPopup = new TTSHub(this);
+	public TTSHub ttsHub = new TTSHub(this);
 	
 	public void fix_pw_color() {
 		bottomPlaylist.clear();
@@ -1826,10 +1826,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void interruptAutoReadProcess(boolean forceClose){
 		hdl.removeMessages(332211);
-		if(ttsPopup.tts !=null){
+		if(ttsHub.tts !=null){
 			if(forceClose){
-				ttsPopup.tts.setOnUtteranceProgressListener(null);
-				ttsPopup.tts.stop();
+				ttsHub.tts.setOnUtteranceProgressListener(null);
+				ttsHub.tts.stop();
 			}
 		}
 		if(mAutoReadProgressAnimator!=null && mAutoReadProgressAnimator.isRunning()){
@@ -3349,9 +3349,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void onPause() {
 		super.onPause();
 		foreground&=~(1<<thisActType.ordinal());
-		if(ttsPopup.tts !=null && !opt.getTTSBackgroundPlay()){
-			ttsPopup.pauseTTS();
-			ttsPopup.pauseTTSCtrl(true);
+		if(ttsHub.tts !=null && !opt.getTTSBackgroundPlay()){
+			ttsHub.pauseTTS();
+			ttsHub.pauseTTSCtrl(true);
 		}
 		if(peruseView !=null) {
 			peruseView.dismissDialogOnly();
@@ -3391,9 +3391,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ucc.invoker=null;
 					ucc=null;
 				}
-				if(ttsPopup.tts !=null){
-					ttsPopup.tts.stop();
-					ttsPopup.tts.shutdown();
+				if(ttsHub.tts !=null){
+					ttsHub.tts.stop();
+					ttsHub.tts.shutdown();
 				}
 				if(CMN.instanceCount<=0){
 					((AgentApplication)getApplication()).closeDataBases();
@@ -4581,7 +4581,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										ttsPopup.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+										ttsHub.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
 									}
 								});
 								return true;
@@ -4682,11 +4682,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0)
-									ttsPopup.ReadText(CurrentSelected, null);
+									ttsHub.ReadText(CurrentSelected, null);
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										ttsPopup.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+										ttsHub.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
 									}
 								});
 							}
@@ -5371,7 +5371,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				launchSettings(History.id, 0);
 			break;
 			case 10:
-				ttsPopup.toggleFloatBtn();
+				ttsHub.toggleFloatBtn();
 			break;
 			case 11:{
 //				if(ttsPopup.TTSController_!=null){
@@ -6525,6 +6525,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showSoundTweaker();
 				contentUIData.webcontentlister.judger = false;
 			} return true;
+			case R.drawable.ic_fulltext_reader:{
+				//ttsHub.toggleFloatBtn();
+				findWebList(v);
+				ttsHub.show();
+				contentUIData.webcontentlister.judger = false;
+			}  return true;
 		}
 		return false;
 	}
@@ -6695,7 +6701,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					dd = new AlertDialog.Builder(this)
 						.setView(cv)
 						.setTitle("翻译当前页面")
-						.setWikiText("谷歌翻译已经无法正常使用。", null)
+						.setWikiText("谷歌翻译已经无法正常使用。\n繁简转换结果仅供参考。", null)
 						.create();
 					
 					cv.setOverScrollMode(OVER_SCROLL_ALWAYS);
@@ -9007,7 +9013,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private void ReadEntryPlanB_internal(String url) {
 		String msg = "找不到音频";
 		if(!AutoBrowsePaused/*自动读时强制*/ || opt.getUseTTSToReadEntry()){
-			ttsPopup.ReadText(url, null);
+			ttsHub.ReadText(url, null);
 			msg = opt.getHintTTSReading()?("正在使用 TTS"):null;
 		}
 		if(msg!=null){
@@ -9532,7 +9538,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void postReadEntry() {
 		CMN.debug("postReadEntry");
 		if(opt.getUseTTSToReadEntry()){
-			ttsPopup.pauseTTS();
+			ttsHub.pauseTTS();
 		}
 		//bottombar2.findViewById(R.id.browser_widget12).performClick();
 		//root.postDelayed(() -> performReadEntry(), 100);
@@ -9542,7 +9548,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void postReadContent(WebViewmy mWebView) {
 		//CMN.Log("postReadEntry");
 		if(opt.getUseTTSToReadEntry()){
-			ttsPopup.pauseTTS();
+			ttsHub.pauseTTS();
 		}
 		root.postDelayed(() -> performReadContent(mWebView), 100);
 	}
@@ -9557,7 +9563,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(mWebView!=null){
 			mWebView.evaluateJavascript("document.documentElement.innerText", value -> {
 				value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-				ttsPopup.ReadText(value, mWebView);
+				ttsHub.ReadText(value, mWebView);
 			});
 		}
 	}
@@ -9841,7 +9847,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void showSoundTweaker() {
 		//toggleTTS();
-		ttsPopup.show();
+		ttsHub.show();
 	}
 
 	/** @param reason: 0=切换收藏夹; 1=切换收藏夹(收藏夹视图); 2=移动收藏 */
@@ -10994,9 +11000,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mThenReadEntryCount==0){
 				bThenReadContent=PDICMainAppOptions.getAutoBrowsingReadContent();
 			}
-			if(ttsPopup.tts !=null){
-				ttsPopup.tts.setOnUtteranceProgressListener(null);
-				ttsPopup.tts.stop();
+			if(ttsHub.tts !=null){
+				ttsHub.tts.setOnUtteranceProgressListener(null);
+				ttsHub.tts.stop();
 			}
 			if(PDICMainAppOptions.getAutoBrowsingReadEntry()){
 				postReadEntry();

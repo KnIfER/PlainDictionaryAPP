@@ -101,6 +101,7 @@
 				android:layout_height="wrap_content"
 				android:textIsSelectable="false"
 				android:textColor="#000"
+				android:text="无限词典"
 				android:textSize="20sp"
 				android:focusable="false"
 				android:paddingStart="8dp"

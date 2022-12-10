@@ -2246,6 +2246,10 @@ function debug(e){console.log(e)};
 			ApplyPadding(htmlBuilder);
 			htmlBuilder.append("}");
 		}
+		if (true) {
+			if(!styleOpened){ htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;}
+			htmlBuilder.append("html{min-height:100%;display:flex;align-items:center;justify-content:center;}");
+		}
 		if(styleOpened) {
 			htmlBuilder.append("</style>");
 		}
@@ -3552,7 +3556,7 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void ReadText(int sid, String word) {
 			if(presenter==null) return;
-			presenter.a.ttsPopup.ReadText(word, findWebview(sid));
+			presenter.a.ttsHub.ReadText(word, findWebview(sid));
 		}
 
 		public void setBook(BookPresenter bk) {
@@ -3567,7 +3571,7 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void setTTS() {
 			if(presenter==null) return;
-			presenter.a.root.post(() -> presenter.a.ttsPopup.showTTS());
+			presenter.a.root.post(() -> presenter.a.ttsHub.showTTS());
 		}
 
 		@JavascriptInterface

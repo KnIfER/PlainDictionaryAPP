@@ -590,6 +590,7 @@ public class PlainWeb extends DictionaryAdapter {
 		website = JSONObject.parseObject(text);
 		String _host = null, tmp;
 		Map.Entry<String, Object> node; Object val;
+		index = "";
 		useragent = null;
 		entrance.clear();
 		for(Iterator<Map.Entry<String, Object>> iter = website.entrySet().iterator(); iter.hasNext();) {

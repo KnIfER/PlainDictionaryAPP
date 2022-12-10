@@ -1243,11 +1243,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								} else {
 									placeHolder = mdTmp.placeHolder;
 								}
-								loadMan.md.add(toPos+i, mdTmp);
-								loadMan.lazyMan.placeHolders.add(toPos+i, placeHolder);
+								toPos = Math.max(0, Math.min(toPos + i, loadMan.md.size()));
+								loadMan.md.add(toPos, mdTmp);
+								loadMan.lazyMan.placeHolders.add(toPos, placeHolder);
 								loadMan.lazyMan.chairCount++;
 								if(select){
-									f1.setPlaceSelected(toPos+i, true);
+									f1.setPlaceSelected(toPos, true);
 								}
 							}
 							f1.refreshSize();

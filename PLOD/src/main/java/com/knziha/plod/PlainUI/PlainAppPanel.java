@@ -34,6 +34,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
 	protected int MainAppBackground;
+	protected boolean tweakDlgScreen = true;
 	
 	public PlainAppPanel() {
 		super(null, null, null, null, null);
@@ -97,48 +98,51 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 		if (dialog==null) {
 			final PlainDialog d = new PlainDialog(a);
 			d.mBackPrevention = this;
-			dialogDismissListener = dialog -> dismissImmediate();
-			d.setOnDismissListener(dialogDismissListener);
 			if(settingsLayoutHolder==null) {
 				settingsLayoutHolder = new FrameLayout(a);
 				settingsLayoutHolder.setOnClickListener(v -> dismiss());
 			}
 			dialog = d;
 		}
+		if (dialogDismissListener==null) {
+			dialogDismissListener = dialog -> dismissImmediate();
+			dialog.setOnDismissListener(dialogDismissListener);
+		}
 		if(settingsLayoutHolder!=settingsLayout)
 			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);
-		dialog.setContentView(settingsLayoutHolder);
+		if (tweakDlgScreen)
+			dialog.setContentView(settingsLayoutHolder);
 		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
 //		if (resizeDlg)
 //			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 		
 		dialog.show();
 		
-		
-		int padbot = bottomPadding;
-		if(padbot!=0) {
-			if(bottombar!=null) {
-				padbot = bottombar.getHeight();
-			} else {
-				padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
+		if (tweakDlgScreen) {
+			int padbot = bottomPadding;
+			if(padbot!=0) {
+				if(bottombar!=null) {
+					padbot = bottombar.getHeight();
+				} else {
+					padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
+				}
+				settingsLayoutHolder.setPadding(0,a.root.getPaddingTop(),0,padbot);
+				bottomPadding = padbot;
 			}
-			settingsLayoutHolder.setPadding(0,a.root.getPaddingTop(),0,padbot);
-			bottomPadding = padbot;
-		}
-		
-		Window window = dialog.getWindow();
-		ViewUtils.makeFullscreenWnd(window);
-		
-		
-		Toastable_Activity.setStatusBarColor(window, a.MainAppBackground);
-		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-		
-		View t = window.findViewById(android.R.id.title);
-		if(t!=null) t.setVisibility(View.GONE);
-		int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
-		if(id!=0){
-			t = window.findViewById(id);
+			
+			Window window = dialog.getWindow();
+			ViewUtils.makeFullscreenWnd(window);
+			
+			Toastable_Activity.setStatusBarColor(window, a.MainAppBackground);
+			//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+			
+			View t = window.findViewById(android.R.id.title);
 			if(t!=null) t.setVisibility(View.GONE);
+			int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
+			if(id!=0){
+				t = window.findViewById(id);
+				if(t!=null) t.setVisibility(View.GONE);
+			}
 		}
 		
 	}

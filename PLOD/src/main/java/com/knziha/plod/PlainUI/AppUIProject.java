@@ -26,6 +26,7 @@ public class AppUIProject {
 				R.drawable.star_ic
 				, R.drawable.ic_prv_dict_chevron
 				, R.drawable.ic_nxt_dict_chevron
+				, R.drawable.ic_fulltext_reader
 				, 4
 				, 6
 				, 9

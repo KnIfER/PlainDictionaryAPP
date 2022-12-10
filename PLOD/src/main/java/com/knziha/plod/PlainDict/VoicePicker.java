@@ -82,7 +82,7 @@ public class VoicePicker extends DialogFragment
 			a = a_;
 			//ArrayList<Voice> arrayList = data.getList();
 			/* pull data */
-			Set<Voice> all = a.ttsPopup.tts.getVoices();
+			Set<Voice> all = a.ttsHub.tts.getVoices();
 			data.getList().ensureCapacity(all.size()*2);
 			for (Voice vI:all) {
 				if(!vI.getFeatures().contains("notInstalled")) {
