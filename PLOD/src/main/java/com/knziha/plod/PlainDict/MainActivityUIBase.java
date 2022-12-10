@@ -46,18 +46,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.os.Parcelable;
 import android.os.StrictMode;
 import android.os.StrictMode.VmPolicy;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -66,7 +62,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
-import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -110,7 +105,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.CallSuper;
@@ -183,6 +177,7 @@ import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.SettingsSearcher;
 import com.knziha.plod.PlainUI.ShareHelper;
+import com.knziha.plod.PlainUI.TTSHub;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.PlainUI.WordPopup;
@@ -244,13 +239,7 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
-import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ColoredTextSpan1;
-import com.knziha.text.ScrollViewHolder;
-import com.knziha.text.SelectableTextView;
-import com.knziha.text.SelectableTextViewBackGround;
-import com.knziha.text.SelectableTextViewCover;
-import com.knziha.text.TTSMoveToucher;
 
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
@@ -290,7 +279,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -574,7 +562,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	WeakReference<AlertDialog> setchooser = ViewUtils.DummyRef;
 	private WeakReference<BottomSheetDialog> bottomPlaylist = ViewUtils.DummyRef;
-	private WeakReference<BottomSheetDialog> bottomSoundPane = ViewUtils.DummyRef;
 	WeakReference<AlertDialog> ChooseFavorDialog = ViewUtils.DummyRef;
 	WeakReference<DBroswer> DBrowserHolder = ViewUtils.DummyRef;
 	DBroswer DBrowser;
@@ -596,16 +583,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static int foreground;
 	protected boolean click_handled_not;
 
-	protected TextView TTSController_tvHandle;
-	protected TTSMoveToucher TTSController_moveToucher;
-	protected TextView TTSController_indicator;
-	protected SelectableTextView TTSController_tv;
-	public ImageView TTSController_popIvBack;
-	public ImageView TTSController_playBtn;
-	protected ViewGroup TTSController_;
-	protected ViewGroup TTSController_toolbar, TTSController_bottombar;
-	protected CircleCheckBox TTSController_ck1;
-	protected CircleCheckBox TTSController_ck2;
 	Runnable PhotoRunnable=new Runnable() {
 		@Override
 		public void run() {
@@ -743,13 +720,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private static final String PDFPage="PAGE";
 	public resultRecorderCombined recCom/* = EmptyResult*/; //todo
 	protected boolean forbidVolumeAjustmentsForTextRead;
-	private ColoredHighLightSpan timeHLSpan;
-	private static final float[] TTS_LEVLES_SPEED = new float[]{0.25f, 0.75f, 1f, 1.25f, 1.75f, 2f, 2.5f, 2.75f, 4f};
-	private int TTSSpeed = 2;
-	private int TTSPitch = 2;
-	private float TTSVolume = 1.f;
-	private ViewGroup TTSController_controlBar;
-	private WebViewmy mCurrentReadContext;
 	public String fakedExp;
 
 	public void jump(int pos, BookPresenter md) {
@@ -1435,6 +1405,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public WordPopup wordPopup = new WordPopup(this);
+	public TTSHub ttsPopup = new TTSHub(this);
 	
 	public void fix_pw_color() {
 		bottomPlaylist.clear();
@@ -1855,10 +1826,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void interruptAutoReadProcess(boolean forceClose){
 		hdl.removeMessages(332211);
-		if(TTSController_engine!=null){
+		if(ttsPopup.tts !=null){
 			if(forceClose){
-				TTSController_engine.setOnUtteranceProgressListener(null);
-				TTSController_engine.stop();
+				ttsPopup.tts.setOnUtteranceProgressListener(null);
+				ttsPopup.tts.stop();
 			}
 		}
 		if(mAutoReadProgressAnimator!=null && mAutoReadProgressAnimator.isRunning()){
@@ -3378,9 +3349,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void onPause() {
 		super.onPause();
 		foreground&=~(1<<thisActType.ordinal());
-		if(TTSController_engine!=null && !opt.getTTSBackgroundPlay()){
-			pauseTTS();
-			pauseTTSCtrl(true);
+		if(ttsPopup.tts !=null && !opt.getTTSBackgroundPlay()){
+			ttsPopup.pauseTTS();
+			ttsPopup.pauseTTSCtrl(true);
 		}
 		if(peruseView !=null) {
 			peruseView.dismissDialogOnly();
@@ -3420,9 +3391,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ucc.invoker=null;
 					ucc=null;
 				}
-				if(TTSController_engine !=null){
-					TTSController_engine.stop();
-					TTSController_engine.shutdown();
+				if(ttsPopup.tts !=null){
+					ttsPopup.tts.stop();
+					ttsPopup.tts.shutdown();
 				}
 				if(CMN.instanceCount<=0){
 					((AgentApplication)getApplication()).closeDataBases();
@@ -3430,7 +3401,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(hdl!=null) {
 					hdl.clearActivity();
 				}
-				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser, bottomPlaylist, bottomSoundPane};
+				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser, bottomPlaylist};
 				for(WeakReference hI:holders){
 					if(hI!=null)
 						hI.clear();
@@ -4610,7 +4581,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+										ttsPopup.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
 									}
 								});
 								return true;
@@ -4711,11 +4682,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0)
-									ReadText(CurrentSelected, null);
+									ttsPopup.ReadText(CurrentSelected, null);
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+										ttsPopup.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
 									}
 								});
 							}
@@ -5400,25 +5371,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				launchSettings(History.id, 0);
 			break;
 			case 10:
-				toggleTTS();
+				ttsPopup.toggleFloatBtn();
 			break;
 			case 11:{
-				if(TTSController_!=null){
-					((CircleCheckBox)TTSController_bottombar.findViewById(R.id.ttsHighlight)).setChecked(opt.getTTSHighlightWebView(), false);
-				}
+//				if(ttsPopup.TTSController_!=null){
+//					((CircleCheckBox)ttsPopup.TTSController_bottombar.findViewById(R.id.ttsHighlight)).setChecked(opt.getTTSHighlightWebView(), false);
+//				}
 			} break;
 			case 12:{
 				toggleClickSearch(opt.tapSch());
 			} break;
 			case 15:
-				try {
-					Intent intent = new Intent();
-					intent.setAction("com.android.settings.TTS_SETTINGS");
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					this.startActivity(intent);
-				} catch (Exception ignored) { }
 			break;
-			/* 天运之子，层类无穷，衍生不尽！ */
 			case 16:{
 				showScrollSet();
 			} break;
@@ -5898,67 +5862,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						postPutName(1000);
 					}
 				}
-			} break;
-			case R.id.ttsPin: {
-				CircleCheckBox checker = (CircleCheckBox) v;
-				checker.toggle();
-				opt.setTTSCtrlPinned(checker.isChecked());
-				TTSController_controlBar.setVisibility(checker.isChecked()?View.VISIBLE:View.GONE);
-			} break;
-			case R.id.ttsHighlight: {
-				CircleCheckBox checker = (CircleCheckBox) v;
-				checker.toggle(false);
-				opt.setTTSHighlightWebView(checker.isChecked());
-			} break;
-			case R.id.tts_settings: {
-				try {
-					Intent intent = new Intent();
-					intent.setAction("com.android.settings.TTS_SETTINGS");
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(intent);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			} break;
-			case R.id.tts_popIvBack: {
-				if(TTSController_.getParent()!=null){
-					hideTTS();
-				}
-			} break;
-			case R.id.tts_expand: {
-				if(opt.setTTSExpanded(!opt.getTTSExpanded())){
-					TTSController_.getLayoutParams().height=TTSController_moveToucher.FVH_UNDOCKED;
-					((ImageView)v).setImageResource(R.drawable.ic_substrct_black_24dp);
-				} else {
-					TTSController_.getLayoutParams().height= (int) getResources().getDimension(R.dimen._45_);
-					((ImageView)v).setImageResource(R.drawable.ic_add_black_24dp);
-				}
-				TTSController_.requestLayout();
-			} break;
-			case R.id.tts_play: {
-				if(speakPool.length==0) break;
-				if(v.getTag()==null){
-					if(speakPoolEndIndex+1>=speakPool.length){
-						speakPoolEndIndex=-1;
-					}
-					mPullReadTextRunnable.run();
-				} else {
-					v.setTag(null);
-					TTSController_engine.stop();
-					TTSController_playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-				}
-			} break;
-			case R.id.tts_NxtUtterance:
-			case R.id.tts_LstUtterance: {
-				if(speakPool.length==0) break;
-				int delta = (id==R.id.tts_LstUtterance?-1:1);
-				TTSController_engine.stop();
-				int target = speakPoolIndex + delta;
-				while(target<speakPool.length && target>=0 && speakPool[target].trim().length()==0){
-					target += delta;
-				}
-				speakPoolEndIndex = target - 1;
-				mPullReadTextRunnable.run();
 			} break;
 			/* 清零 */
 			case R.id.ivDeleteText:{
@@ -9104,7 +9007,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private void ReadEntryPlanB_internal(String url) {
 		String msg = "找不到音频";
 		if(!AutoBrowsePaused/*自动读时强制*/ || opt.getUseTTSToReadEntry()){
-			ReadText(url, null);
+			ttsPopup.ReadText(url, null);
 			msg = opt.getHintTTSReading()?("正在使用 TTS"):null;
 		}
 		if(msg!=null){
@@ -9347,469 +9250,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 */
 	@Metaline
 	final static String playsoundscript="AUDIO";
-
-
-	static String delimiter = "[.?!;。？！；\r\n]";
-	int utteranceCacheSize = 10;
-	private int highLightBG = Color.YELLOW;//Color.YELLOW;
-
-	TextToSpeech TTSController_engine;
-	volatile boolean TTSReady;
-	@NonNull String[] speakPool = ArrayUtils.EMPTY_STRING_ARRAY;
-	int[] speakScaler;
-	Object speakText;
-	volatile int speakPoolIndex;
-	volatile int speakPoolEndIndex;
-	volatile int speakCacheEndIndex;
-	
-	//Runnable forceNextTextRunnable = this::onAudioPause;
-	Runnable forceNextTextRunnable = new Runnable() {
-		@Override
-		public void run() {
-			CMN.debug("forceNextTextRunnable");
-			onAudioPause();
-		}
-	};
-	
-	final String[] supported_languages = new String[]{"eng", "kor", };
-	
-	public enum YuZhong{
-		zho
-		, eng
-		, kor
-		, jpn
-		, rus
-		, fra
-		, deu
-		, ara
-		, hin
-	}
-	
-	public static String guessLanguage(CharSequence text) {
-		int size = text.length();
-		if(size > 14) size = 13;
-		SparseIntArray weights = new SparseIntArray();
-		for (int i = 0; i < size; i++) {
-			char c = text.charAt(i);
-			int yz = -1;
-			if ('a' <= c && c <= 'z' || ('A' <= c && c <= 'Z')) {
-				yz = YuZhong.eng.ordinal();
-			}
-			else if (c>=192 && c<=339) {
-				switch (c) {
-					case 'À': case 'Â': case 'È': case 'É': case 'Ê': case 'Ë': case 'Î': case 'Ï': case 'Ô': case 'Ö': case 'Ù': case 'Û': case 'Ç': case 'Œ': case 'Æ': case 'à': case 'â': case 'è'
-							: case 'é': case 'ê': case 'î': case 'ï': case 'ô': /*case 'ö':*/ case 'ù': case 'û': /*case 'ü':*/ case 'ç': case 'œ': case 'æ':
-						yz = YuZhong.fra.ordinal();
-					break;
-					case 'ä': case 'ö': case 'ü': case 'ß':
-						yz = YuZhong.deu.ordinal();
-					break;
-				}
-			}
-			if(yz==-1)  {
-				int gc = Character.getType(c);
-				Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
-				switch (block.toString()) {
-					case "CJK_UNIFIED_IDEOGRAPHS":
-						yz = YuZhong.zho.ordinal();
-						break;
-					case "HANGUL_JAMO":
-					case "HANGUL_COMPATIBILITY_JAMO":
-					case "HANGUL_SYLLABLES":
-						yz = YuZhong.kor.ordinal();
-					break;
-					case "HIRAGANA":
-					case "KATAKANA":
-						yz = YuZhong.jpn.ordinal();
-					break;
-					case "LATIN_EXTENDED_A":
-						yz = YuZhong.hin.ordinal();
-					break;
-					case "CYRILLIC":
-					case "CYRILLIC_EXTENDED_A":
-					case "CYRILLIC_EXTENDED_B":
-					case "CYRILLIC_SUPPLEMENTARY":
-						yz = YuZhong.rus.ordinal();
-					break;
-					case "ARABIC":
-					case "ARABIC_EXTENDED_A":
-					case "ARABIC_SUPPLEMENT":
-						yz = YuZhong.ara.ordinal();
-					break;
-				}
-				if (gc >= Character.UPPERCASE_LETTER && gc <= Character.OTHER_LETTER) {
-					//yz = YuZhong.RUS.ordinal();
-				}
-			}
-			if (yz >= 0) {
-				//CMN.debug("put::", c, YuZhong.values()[yz]);
-				weights.put(yz, weights.get(yz) + 1);
-			}
-		}
-		// weights.keyAt()
-		int max=0, guess=0;
-		for (int i = 0; i < weights.size(); i++) {
-			if (weights.valueAt(i) > max) {
-				max = weights.valueAt(i);
-				guess = weights.keyAt(i);
-			}
-		}
-		if (guess==YuZhong.eng.ordinal()) {
-			if (weights.get(YuZhong.fra.ordinal())>0) {
-				return "fra";
-			}
-			if (weights.get(YuZhong.deu.ordinal())>0) {
-				return "deu";
-			}
-		}
-		return YuZhong.values()[guess].name();
-	}
-	
-	/** 提交语句给TTS引擎 */
-	Runnable mPullReadTextRunnable = new Runnable() {
-		@Override
-		public void run() {
-			if(TTSController_engine==null)
-				return;
-			int start = Math.max(0 ,Math.min(speakPool.length, speakPoolEndIndex+1));
-			int end = Math.min(start+utteranceCacheSize, speakPool.length);
-			speakCacheEndIndex = end;
-			if(start>=speakPool.length){
-				pauseTTSCtrl(true);
-			}
-			else {
-				pauseTTSCtrl(false);
-				for (int i = start; i < end; i++) {
-					HashMap<String, String> parms = new HashMap<>();
-					parms.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, Integer.toString(i));
-					parms.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(TTSVolume));
-					
-					String text = speakPool[i].trim();
-					String lanuage = guessLanguage(text);
-					int res = TTSController_engine.setLanguage(new Locale(lanuage, ""));
-					CMN.debug("TTSController_engine.setLanguage::", res);
-					
-					TTSController_engine.speak(text,TextToSpeech.QUEUE_ADD, parms);
-					CMN.debug("缓存了句子", i, text, lanuage);
-					if(!AutoBrowsePaused){
-						root.postDelayed(forceNextTextRunnable, 800);
-					}
-				}
-				if(TTSController_!=null && TTSController_.getParent()!=null && speakText instanceof SpannableString){
-					TTSController_tvHandle.setText(speakPool[start]);
-					if(speakScaler ==null){
-						speakScaler = new int[speakPool.length];
-						for (int j = 0; j < speakPool.length; j++) {
-							speakScaler[j]=(j>0?speakScaler[j-1]+1:0)+speakPool[j].length();
-						}
-					}
-					if(timeHLSpan==null){
-						timeHLSpan = new ColoredHighLightSpan(highLightBG, 9f, 1);
-					}
-					try {
-						SpannableString baseSpan = (SpannableString) speakText;
-						end = 1 + speakScaler[start];
-						start = start>0? 1 + speakScaler[start-1]:0;
-						baseSpan.setSpan(timeHLSpan, Math.min(start, baseSpan.length()-1), Math.min(end, baseSpan.length()), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-					} catch (Exception e) {
-						CMN.debug(e);
-					}
-				}
-			}
-		}
-	};
-
-	void pauseTTSCtrl(boolean pause) {
-		if(TTSController_playBtn!=null) {
-			if (pause) {
-				TTSController_playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-				TTSController_playBtn.setTag(null);
-			} else if(TTSController_playBtn.getTag()==null){
-				TTSController_playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
-				TTSController_playBtn.setTag(false);
-			}
-		}
-	}
-
-	Runnable mUpdateTextRunnable = new Runnable() {
-		@Override
-		public void run() {
-			if(TTSController_!=null && speakText instanceof String) {
-				TTSController_tv.setText(new SpannableStringBuilder((String) speakText).append("\n\n\n\n"), TextView.BufferType.SPANNABLE);
-				speakText = TTSController_tv.getText();
-				TTSController_tv.clearSelection();
-			}
-		}
-	};
-
-	/** 重新开始TTS读网页句子。 */
-	public void ReadText(String text, WebViewmy mWebView){
-		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething())
-			interruptAutoReadProcess(true);
-		if(text!=null) {
-			speakText = text;
-			if (text.length() > 1000) {
-				speakPool = text.split(delimiter);
-			} else {
-				//speakPool = text.split("[\r\n]");
-				speakPool = text.split(delimiter);
-			}
-			speakPoolIndex = 0;
-			speakPoolEndIndex = -1;
-			speakScaler = null;
-			if(TTSController_!=null && TTSController_.getParent()!=null){
-				if(Thread.currentThread()!= Looper.getMainLooper().getThread())
-					root.post(mUpdateTextRunnable);
-				else
-					mUpdateTextRunnable.run();
-			}
-			mCurrentReadContext = mWebView;
-		}
-		if(TTSController_engine != null) {
-			TTSController_engine.stop();
-		}
-		pauseTTS();
-		boolean mTTSReady = TTSReady;
-		
-		if(true || TTSController_engine==null) {
-			mTTSReady = TTSReady = false;
-			TTSController_engine = new TextToSpeech(this, status -> {
-				TTSReady = true;
-				
-				mPullReadTextRunnable.run();
-			}, opt.getString("ttsEngine", null)); //"com.google.android.tts"
-			TTSController_engine.setSpeechRate(TTS_LEVLES_SPEED[TTSSpeed]);
-			TTSController_engine.setPitch(TTS_LEVLES_SPEED[TTSPitch]);
-			
-			//TTSController_engine.speak(text, TextToSpeech.QUEUE_ADD, null);
-			
-			TTSController_engine.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-				@Override
-				public void onStart(String utteranceId) {
-					speakPoolIndex = IU.parsint(utteranceId);
-					root.removeCallbacks(forceNextTextRunnable);
-					CMN.debug("tts onStart" ,speakPoolIndex);
-					if(opt.getTTSHighlightWebView()) {
-						WebViewmy CRC = mCurrentReadContext;
-						if(CRC!=null)
-							CRC.post(() -> CRC.findAllAsync(speakPool[speakPoolIndex]));
-					}
-					onAudioPlay();
-				}
-				@Override
-				public void onDone(String utteranceId) {
-					speakPoolEndIndex = IU.parsint(utteranceId);
-					int speakPoolIndex = speakPoolEndIndex+1;
-					CMN.debug("tts onDone" ,speakPoolIndex, speakCacheEndIndex);
-					if (speakPoolIndex >= speakPool.length) {
-						onAudioPause();
-						CMN.debug("tts onPause");
-					} else if(speakPoolIndex>=speakCacheEndIndex){
-						mPullReadTextRunnable.run(); // 循环
-					}
-					//onAudioPause();
-				}
-				long lastError=0;
-				@Override
-				public void onError(String utteranceId) {
-					CMN.debug("9 onError" ,utteranceId);
-					long errId = CMN.now();
-					//if (errId - lastError > 256)
-					{
-						lastError = errId;
-						onDone(utteranceId);
-					}
-				}
-				@Override
-				public void onError(String utteranceId, int code) {
-					CMN.debug("tts onError" ,utteranceId, code);
-				}
-			});
-		}
-
-		if(text!=null) {
-			speakPoolIndex = 0;
-			speakPoolEndIndex = -1;
-		}
-
-		if(mTTSReady)
-			mPullReadTextRunnable.run();
-	}
-
-	/** 暂停TTS */
-	public void pauseTTS(){
-		if(TTSController_engine !=null){
-			TTSController_engine.stop();
-			speakPoolEndIndex=speakPoolIndex-1;
-		}
-	}
-
-	/**
-	  engines  | voices  | Languages
-	  speed | pitch
-	 */
-	/** TTS controller */
-	public void showTTS() {
-		ViewGroup targetRoot = root;
-		if(PeruseViewAttached())
-			targetRoot = peruseView.root;
-		boolean isNewHolder=false;
-		boolean isInit=false;
-		// 初始化核心组件
-		if(TTSController_tv == null){
-			isInit=isNewHolder=true;
-			TTSController_ = (ViewGroup) getLayoutInflater()
-					.inflate(R.layout.float_tts_basic, root, false);
-			TTSController_.setOnClickListener(ViewUtils.DummyOnClick);
-			TTSController_toolbar = (ViewGroup) TTSController_.getChildAt(0);
-			ImageView TTSController_expand = TTSController_toolbar.findViewById(R.id.tts_expand);
-			TTSController_expand.setOnClickListener(this);
-			if(opt.getTTSExpanded()) {
-				TTSController_expand.setImageResource(R.drawable.ic_substrct_black_24dp);
-			}
-			ViewGroup middle = (ViewGroup) TTSController_.getChildAt(1);
-			SelectableTextView tv = TTSController_.findViewById(R.id.text1);
-			TTSController_controlBar = (ViewGroup) TTSController_.getChildAt(2);
-			if(!opt.getTTSCtrlPinned())
-				TTSController_controlBar.setVisibility(View.GONE);
-			SeekBar.OnSeekBarChangeListener controller_controller=new SeekBar.OnSeekBarChangeListener() {
-				@Override
-				public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-					seekBar.setTag(false);
-					switch (seekBar.getId()){
-						case R.id.sb1:
-							TTSVolume=progress*1.f/100;
-							TTSController_tvHandle.setText("音量："+ progress);
-						break;
-						case R.id.sb2:
-							float _TTS_Pitch=TTS_LEVLES_SPEED[TTSPitch=progress];
-							TTSController_engine.setPitch(_TTS_Pitch);
-							TTSController_tvHandle.setText("音调："+_TTS_Pitch);
-						break;
-						case R.id.sb3:
-							float _TTS_Speed=TTS_LEVLES_SPEED[TTSSpeed=progress];
-							TTSController_engine.setSpeechRate(_TTS_Speed);
-							TTSController_tvHandle.setText("语速："+_TTS_Speed);
-						break;
-					}
-				}
-				@Override public void onStartTrackingTouch(SeekBar seekBar) { }
-				@Override
-				public void onStopTrackingTouch(SeekBar seekBar) {
-					if(seekBar.getTag()==null){
-						onProgressChanged(seekBar, seekBar.getProgress(), false);
-					} else {
-						pauseTTS();
-						switch (seekBar.getId()) {
-							case R.id.sb1:
-								mPullReadTextRunnable.run();
-							break;
-							case R.id.sb2:
-							case R.id.sb3:
-								ReadText(null, mCurrentReadContext);
-							break;
-						}
-					}
-					seekBar.setTag(null);
-				}
-			};
-			SeekBar TTS_sb1 = (SeekBar) TTSController_controlBar.getChildAt(0);
-			TTS_sb1.setProgress((int) (TTSVolume *100));
-			TTS_sb1.setOnSeekBarChangeListener(controller_controller);
-			TTS_sb1 = (SeekBar) TTSController_controlBar.getChildAt(1);
-			TTS_sb1.setProgress(TTSPitch);
-			TTS_sb1.setMax(TTS_LEVLES_SPEED.length-1);
-			TTS_sb1.setOnSeekBarChangeListener(controller_controller);
-			TTS_sb1 = (SeekBar) TTSController_controlBar.getChildAt(2);
-			TTS_sb1.setProgress((int) (TTSSpeed));
-			TTS_sb1.setMax(TTS_LEVLES_SPEED.length-1);
-			TTS_sb1.setOnSeekBarChangeListener(controller_controller);
-			TTSController_bottombar = (ViewGroup) TTSController_.getChildAt(3);
-			tv.setBackgroundColor(Color.TRANSPARENT);
-			ScrollViewHolder svmy = middle.findViewById(R.id.sv);
-			SelectableTextViewCover textCover = middle.findViewById(R.id.cover);
-			SelectableTextViewBackGround textCover2 = middle.findViewById(R.id.cover2);
-			tv.instantiate(textCover, textCover2, svmy, null);
-			tv.setTextViewListener(selectableTextView -> {
-				//TimetaskHolder tk = new TimetaskHolder(2);
-				//timer.schedule(tk, 110);
-			});
-			TTSController_playBtn = TTSController_toolbar.findViewById(R.id.tts_play);
-			TTSController_playBtn.setOnClickListener(this);
-			TTSController_popIvBack = TTSController_toolbar.findViewById(R.id.tts_popIvBack);
-			TTSController_popIvBack.setOnClickListener(MainActivityUIBase.this);
-
-
-			//TTSController_bottombar.findViewById(R.id.popIvRecess).setOnClickListener(MainActivityUIBase.this);
-			//TTSController_bottombar.findViewById(R.id.popIvForward).setOnClickListener(MainActivityUIBase.this);
-			TTSController_bottombar.findViewById(R.id.tts_settings).setOnClickListener(MainActivityUIBase.this);
-
-			TTSController_ck1 = TTSController_bottombar.findViewById(R.id.ttsPin);
-			TTSController_ck1.setOnClickListener(MainActivityUIBase.this);
-			TTSController_ck2 = TTSController_bottombar.findViewById(R.id.ttsHighlight);
-			TTSController_ck2.setOnClickListener(MainActivityUIBase.this);
-			TTSController_tvHandle = TTSController_toolbar.findViewById(R.id.popupText1);
-			TTSController_indicator = TTSController_bottombar.findViewById(R.id.popupText2);
-			TTSController_tvHandle.setOnClickListener(MainActivityUIBase.this);
-			View popupNxtD, popupLstD;
-			(popupNxtD= TTSController_toolbar.findViewById(R.id.tts_NxtUtterance)).setOnClickListener(MainActivityUIBase.this);
-			(popupLstD= TTSController_toolbar.findViewById(R.id.tts_LstUtterance)).setOnClickListener(MainActivityUIBase.this);
-			//TTSController_indicator.setOnClickListener(MainActivityUIBase.this);
-
-			// 移动逻辑
-			TTSController_tvHandle.setOnTouchListener(TTSController_moveToucher = new TTSMoveToucher(MainActivityUIBase.this, TTSController_tvHandle, TTSController_, opt));
-			TTSController_indicator.setOnTouchListener(TTSController_moveToucher);
-			popupNxtD.setOnTouchListener(TTSController_moveToucher);
-			popupLstD.setOnTouchListener(TTSController_moveToucher);
-			// 缩放逻辑
-			TTSController_tv = tv;
-		}
-
-		TTSController_ck1.drawInnerForEmptyState=
-		TTSController_ck2.drawInnerForEmptyState=GlobalOptions.isDark;
-		if(!GlobalOptions.isDark){
-			TTSController_ck1.circle_shrinkage=2;
-			TTSController_ck2.circle_shrinkage=2;
-		}
-		TTSController_ck1.setChecked(opt.getTTSCtrlPinned());
-		TTSController_ck2.setChecked(opt.getTTSHighlightWebView());
-
-		TTSController_tv.setTheme(0xFFffffff, Color.BLACK, 0x883b53f1, 0x883b53f1);
-
-		if(isNewHolder){
-			fix_pw_color();
-			FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) TTSController_.getLayoutParams());
-			lp.height = TTSController_moveToucher.FVH_UNDOCKED=(int)(dm.heightPixels*5.0/12-getResources().getDimension(R.dimen._20_));
-			if(!opt.getTTSExpanded()) lp.height = TTSController_moveToucher._45_;
-			TTSController_.setTranslationY(targetRoot.getHeight()-getResources().getDimension(R.dimen._50_)-getResources().getDimension(R.dimen._50_));
-			lp.height= TTSController_.getLayoutParams().height;
-		}
-
-		ViewGroup svp = (ViewGroup) TTSController_.getParent();
-		if(svp!=targetRoot){
-			if(svp!=null) svp.removeView(wordPopup.popupGuarder);
-			if(TTSController_moveToucher.FVDOCKED && TTSController_moveToucher.Maximized){
-				TTSController_moveToucher.Dedock();
-			}
-
-			targetRoot.addView(TTSController_);
-			fix_full_screen(null);
-		}
-		mUpdateTextRunnable.run();
-	}
-
-	public void hideTTS() {
-		((ViewGroup)TTSController_.getParent()).removeView(TTSController_);
-		checkFlags();
-	}
-
-	public void toggleTTS() {
-		if(TTSController_==null || TTSController_.getParent()==null)
-			showTTS();
-		else{
-			hideTTS();
-		}
-	}
 	
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -10092,7 +9532,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void postReadEntry() {
 		CMN.debug("postReadEntry");
 		if(opt.getUseTTSToReadEntry()){
-			pauseTTS();
+			ttsPopup.pauseTTS();
 		}
 		//bottombar2.findViewById(R.id.browser_widget12).performClick();
 		//root.postDelayed(() -> performReadEntry(), 100);
@@ -10102,7 +9542,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void postReadContent(WebViewmy mWebView) {
 		//CMN.Log("postReadEntry");
 		if(opt.getUseTTSToReadEntry()){
-			pauseTTS();
+			ttsPopup.pauseTTS();
 		}
 		root.postDelayed(() -> performReadContent(mWebView), 100);
 	}
@@ -10117,7 +9557,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(mWebView!=null){
 			mWebView.evaluateJavascript("document.documentElement.innerText", value -> {
 				value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-				ReadText(value, mWebView);
+				ttsPopup.ReadText(value, mWebView);
 			});
 		}
 	}
@@ -10304,8 +9744,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void showSoundTweaker() {
-		String text = "";
+	public void showMultipleCollection(String text, ViewGroup webviewholder) {
 		BottomSheetDialog bPane = bottomPlaylist.get();
 		if(bPane==null) {
 			CMN.debug("重建底部弹出");
@@ -10399,100 +9838,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		v.requestLayout();
 		bPane.show();
 	}
-
-	public void showMultipleCollection(String text, ViewGroup webviewholder) {
-		BottomSheetDialog bPane = bottomSoundPane.get();
-		if(bPane==null) {
-			CMN.debug("重建底部弹出");
-			bottomSoundPane = new WeakReference<>(bPane = new BottomSheetDialog(this));
-			View ll = LayoutInflater.from(this).inflate(R.layout.bottom_favorite_sheet, null);
-			ListView lv = ll.findViewById(R.id.favorList);
-			lv.setAdapter(FavoriteNoteBooksAdapter());
-			lv.setOnItemClickListener((parent, view, position, id) -> {
-				CheckedTextView tv = view.findViewById(android.R.id.text1);
-				tv.toggle();
-				tv.jumpDrawablesToCurrentState();
-				AppFunAdapter.setChecked(position, tv.isChecked());
-			});
-			BottomSheetDialog final_bottomPlaylist = bPane;
-			OnClickListener clicker = v -> {
-				switch (v.getId()) {
-					case R.id.cancel:
-						final_bottomPlaylist.dismiss();
-					break;
-					case R.id.confirm:
-						Long[] selectionArr = AppFunAdapter.selectedPositionsArr;
-						ArrayList<MyPair<String, Long>> items = AppFunAdapter.notebooksV2;
-						HashSet<Long> selection = AppFunAdapter.selectedPositions;
-						if(selection.size()>0) {
-							int delCnt=0, delNum=0, addCnt=0, addNum=0;
-							for(Long oldFav:selectionArr) {
-								if (!selection.contains(oldFav)) {
-									delNum++;
-									try {
-										if(prepareHistoryCon().remove(text, oldFav)>=0) {
-											delCnt++;
-										}
-									} catch (Exception e) { CMN.debug(e); }
-								}
-							}
-							selection.removeAll(Arrays.asList(selectionArr));
-							addNum = selection.size();
-							selectionArr = selection.toArray(new Long[addNum]);
-							for(Long newFav:selectionArr) {
-								try {
-									if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
-										addCnt++;
-									}
-								} catch (Exception e) { CMN.debug(e); }
-							}
-							String msg = "";
-							if (addNum>0) {
-								msg += " 添加完毕！(" + addCnt + "/" + addNum + ")";
-							}
-							if (delNum>0) {
-								if (!TextUtils.isEmpty(msg)) {
-									msg += "\t";
-								}
-								msg += " 移除完毕！(" + delCnt + "/" + delNum + ")";
-							}
-							if (!TextUtils.isEmpty(msg)) {
-								showT(msg);
-							}
-							selection.clear();
-						}
-						final_bottomPlaylist.dismiss();
-					break;
-					case R.id.new_folder:
-						showCreateNewFavoriteDialog((int) (ll.getWidth() - getResources().getDimension(R.dimen._35_)));
-					break;
-				}
-			};
-			ll.findViewById(R.id.cancel).setOnClickListener(clicker);
-			ll.findViewById(R.id.confirm).setOnClickListener(clicker);
-			ll.findViewById(R.id.new_folder).setOnClickListener(clicker);
-			bPane.setContentView(ll);
-			bPane.getWindow().setDimAmount(0.2f);
-			//bottomPlaylist.getWindow().setBackgroundDrawable(null);
-			//bottomPlaylist.getWindow().getDecorView().setBackground(null);
-			////bottomPlaylist.getWindow().findViewById(R.id.design_bottom_sheet).setBackground(null);
-			//fix_full_screen(bottomPlaylist.getWindow().getDecorView());
-			bPane.getWindow().getDecorView().setTag(lv);
-			//CMN.recurseLogCascade(lv);
-			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
-			if(GlobalOptions.isDark) {
-				ll.setBackgroundColor(Color.BLACK);
-				((TextView)ll.findViewById(R.id.title)).setTextColor(Color.WHITE);
-				ll.findViewById(R.id.bottombar).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-			}
-		}
-		FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
-		View v = (View) bPane.getWindow().getDecorView().getTag();
-		DisplayMetrics dm2 = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
-		v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * bPane.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
-		v.requestLayout();
-		bPane.show();
+	
+	public void showSoundTweaker() {
+		//toggleTTS();
+		ttsPopup.show();
 	}
 
 	/** @param reason: 0=切换收藏夹; 1=切换收藏夹(收藏夹视图); 2=移动收藏 */
@@ -11645,9 +10994,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mThenReadEntryCount==0){
 				bThenReadContent=PDICMainAppOptions.getAutoBrowsingReadContent();
 			}
-			if(TTSController_engine!=null){
-				TTSController_engine.setOnUtteranceProgressListener(null);
-				TTSController_engine.stop();
+			if(ttsPopup.tts !=null){
+				ttsPopup.tts.setOnUtteranceProgressListener(null);
+				ttsPopup.tts.stop();
 			}
 			if(PDICMainAppOptions.getAutoBrowsingReadEntry()){
 				postReadEntry();

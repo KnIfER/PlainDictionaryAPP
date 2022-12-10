@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.NoScrollViewPager;
 
 import java.lang.reflect.Field;
 
@@ -24,6 +25,7 @@ public class SelectableTextView extends TextView implements View.OnClickListener
     int overshoot;
     public SelectableTextViewCover textCover;
     public SelectableTextViewBackGround textCover2;
+    public NoScrollViewPager viewPager;
     //public FrameCover textCover3;
     Drawable handleLeft;
     Drawable handleRight;
@@ -471,7 +473,10 @@ public class SelectableTextView extends TextView implements View.OnClickListener
                         textCover.postInvalidate();
                     }
                 }
-            break;
+				if (draggingHandle!=null && viewPager!=null) {
+					viewPager.setNoScroll(true);
+				}
+				break;
             case MotionEvent.ACTION_MOVE:
 //                    removeCallbacks(mRunRedraw);
 //                    post(mRunRedraw);
@@ -505,6 +510,9 @@ public class SelectableTextView extends TextView implements View.OnClickListener
         if(draggingHandle!=null){
             draggingHandle=null;
             textCover.invalidate();
+			if (viewPager!=null) {
+				viewPager.setNoScroll(false);
+			}
         }
         isDragging=false;
         //System.gc();
@@ -536,7 +544,6 @@ public class SelectableTextView extends TextView implements View.OnClickListener
             e.printStackTrace();
         }
     }
-
 
     public void setTheme(int bgColor, int textColor, int heightLightColor, int heightLightColor2) {
         BackGroundColor = bgColor;

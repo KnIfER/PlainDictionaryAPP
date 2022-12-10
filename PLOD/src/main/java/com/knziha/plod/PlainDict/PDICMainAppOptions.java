@@ -2859,6 +2859,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=43, shift=1) public static boolean schPageEditShowCurrentPos() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=43, shift=1) public static void schPageEditShowCurrentPos(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=44) public static boolean sysTTS() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=44) public static void sysTTS(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=45) public static boolean ttsHubExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45) public static void ttsHubExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
 	//SE

@@ -1,17 +1,13 @@
 package com.knziha.plod.PlainUI;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.app.Dialog;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.PopupWindow;
 
@@ -99,14 +95,15 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	
 	protected void showDialog() {
 		if (dialog==null) {
-			dialog = new PlainDialog(a);
-			dialog.mBackPrevention = this;
+			final PlainDialog d = new PlainDialog(a);
+			d.mBackPrevention = this;
 			dialogDismissListener = dialog -> dismissImmediate();
-			dialog.setOnDismissListener(dialogDismissListener);
+			d.setOnDismissListener(dialogDismissListener);
 			if(settingsLayoutHolder==null) {
 				settingsLayoutHolder = new FrameLayout(a);
 				settingsLayoutHolder.setOnClickListener(v -> dismiss());
 			}
+			dialog = d;
 		}
 		if(settingsLayoutHolder!=settingsLayout)
 			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);

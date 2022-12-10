@@ -14,6 +14,7 @@ public class WordPopupTask implements Runnable {
 	public final static int TASK_LOAD_HISTORY=3;
 	public final static int TASK_FYE_SCH=4;
 	public final static int TASK_UPD_SCH=5;
+	public final static int TASK_TTS=6;
 	Thread t;
 	public final AtomicInteger taskVersion = new AtomicInteger();
 	public volatile AtomicBoolean taskRunning =new AtomicBoolean();

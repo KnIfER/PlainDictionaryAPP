@@ -39,4 +39,6 @@
   <methods>;
 }
 
--keep class org.apache.lucene.** { *; }
+-keep class org.apache.lucene.**
+
+# { *; }

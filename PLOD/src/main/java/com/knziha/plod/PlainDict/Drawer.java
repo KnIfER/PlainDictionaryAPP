@@ -1155,6 +1155,7 @@ public class Drawer extends Fragment implements
 				properties1.opt_dir=new File(a.opt.pathToDatabases().append("favorite_dirs/").toString());
 				properties1.opt_dir.mkdirs();
 				properties1.title_id=R.string.pick_main;
+				properties1.isDark = a.AppWhite==Color.BLACK;
 				//properties1.extensions = new String[] {"mdx"};
 				FilePickerDialog dialog1 = new FilePickerDialog(a, properties1);
 				dialog1.setDialogSelectionListener(new DialogSelectionListener() {
@@ -1203,6 +1204,7 @@ public class Drawer extends Fragment implements
 				properties1.opt_dir=new File(a.opt.pathToDatabases().append("favorite_dirs/").toString());
 				properties1.opt_dir.mkdirs();
 				properties1.title_id=R.string.pick_audio_dir;
+				properties1.isDark = a.AppWhite==Color.BLACK;
 				//properties1.extensions = new String[] {"mdx"};
 				FilePickerDialog dialog1 = new FilePickerDialog(a, properties1);
 				dialog1.setDialogSelectionListener(new DialogSelectionListener() {

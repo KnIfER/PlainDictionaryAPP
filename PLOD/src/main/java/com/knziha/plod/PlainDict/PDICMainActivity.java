@@ -43,7 +43,6 @@ import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -58,7 +57,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.DownloadListener;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -100,8 +98,6 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
-import com.knziha.plod.PlainUI.SearchbarTools;
-import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -3067,7 +3063,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				showIconCustomizator();
 			}  return true;
 			case R.drawable.ic_fulltext_reader:{
-				toggleTTS();
+				ttsPopup.toggleFloatBtn();
 			}  return true;
 		}
 		return false;

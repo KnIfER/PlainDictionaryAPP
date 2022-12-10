@@ -5,6 +5,7 @@ import static com.knziha.plod.PlainUI.WordPopupTask.TASK_LOAD_HISTORY;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV_NXT;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_SCH;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_TTS;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_UPD_SCH;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
@@ -1539,6 +1540,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 		else if(mType==TASK_UPD_SCH) {
 			((PDICMainActivity)a).checkUpdate(task);
+		}
+		else if(mType==TASK_TTS) {
+			((MainActivityUIBase)a).ttsPopup.doSendText();
 		}
 	}
 	

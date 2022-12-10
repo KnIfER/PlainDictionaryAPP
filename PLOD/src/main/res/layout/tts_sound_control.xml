@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/book_notes_drawer"
+	android:name="com.knziha.plod.PlainUI.DrawerView"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		>
+		<FrameLayout
+			android:id="@+id/bar"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:background="?attr/colorPrimary"
+			android:paddingTop="7dp"
+			>
+		</FrameLayout>
+
+		<com.knziha.plod.widgets.NoScrollViewPager
+			android:id="@+id/viewpager"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			android:background="#fff"
+			/>
+
+		<View
+			android:layout_width="match_parent"
+			android:layout_height=".5dp"
+			android:background="#bbb"
+			/>
+
+		<com.knziha.ankislicer.customviews.ShelfLinearLayout
+			android:id="@+id/btns"
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="50dp"
+			android:background="?attr/colorPrimary"
+			>
+			<TextView
+				android:id="@+id/tts1"
+				android:text="朗读引擎"
+				style="@style/book_note_foot"
+				android:textColor="#fff"
+				/>
+			<TextView
+				android:id="@+id/tts2"
+				android:text="当前文本"
+				style="@style/book_note_foot"
+				android:textColor="#fff"
+				/>
+			<TextView
+				android:id="@+id/ivBack"
+				android:text="返回"
+				style="@style/book_note_foot"
+				android:textColor="#fff"
+				android:layout_weight=".75"
+				/>
+			<TextView
+				android:id="@+id/tts_settings"
+				android:text="系统设置"
+				style="@style/book_note_foot"
+				android:textColor="#fff"
+				/>
+		</com.knziha.ankislicer.customviews.ShelfLinearLayout>
+
+	</LinearLayout>
+
+</FrameLayout>

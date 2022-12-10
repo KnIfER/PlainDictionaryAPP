@@ -63,7 +63,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean bAutoRefresh = false;
 	protected boolean hasDelegatePicker;
 	public PopupWindow pop;
-	public PlainDialog dialog;
+	public Dialog dialog;
 	protected DialogInterface.OnDismissListener dialogDismissListener;
 	protected int mPaddingLeft=10;
 	protected int mPaddingRight=10;
@@ -322,7 +322,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 					if(storageInt!=0) {
 						button.setChecked(getBooleanInFlag(storageInt));
 					}
-					button.setTag(storageInt);
+					//button.setTag(storageInt);
 					button.setId(storageInt);
 				}
 				if ((storageInt&BIT_HAS_ICON)!=0) {
@@ -357,9 +357,9 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		if(linearLayout!=null)
 		for (int i = 0, len=linearLayout.getChildCount(); i < len; i++) {
 			View v = linearLayout.getChildAt(i);
-			if (v instanceof RadioSwitchButton) {
+			if (v instanceof RadioSwitchButton && v.getTag()!=this) {
 				RadioSwitchButton button = (RadioSwitchButton)v;
-				int storageInt = IU.parsint(v.getTag(), 0);
+				int storageInt = v.getId();
 				if (storageInt!=Integer.MAX_VALUE) {
 					button.setChecked(getBooleanInFlag(storageInt));
 					if ((storageInt&BIT_HAS_ICON)!=0) {
@@ -498,7 +498,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		if (v instanceof RadioSwitchButton) {
 			RadioSwitchButton button = (RadioSwitchButton)v;
 			//((Toastable_Activity)v.getContext()).showT("v::"+button.isChecked());
-			int storageInt = IU.parsint(v.getTag(), 0);
+			int storageInt = v.getId();
 			CMN.Log("storageInt::", v.getTag(), storageInt, (storageInt>>FLAG_IDX_SHIFT), button.isChecked());
 			if(storageInt!=0) {
 				Drawable d;

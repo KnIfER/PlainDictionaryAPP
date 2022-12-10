@@ -3552,7 +3552,7 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void ReadText(int sid, String word) {
 			if(presenter==null) return;
-			presenter.a.ReadText(word, findWebview(sid));
+			presenter.a.ttsPopup.ReadText(word, findWebview(sid));
 		}
 
 		public void setBook(BookPresenter bk) {
@@ -3567,7 +3567,7 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void setTTS() {
 			if(presenter==null) return;
-			presenter.a.root.post(() -> presenter.a.showTTS());
+			presenter.a.root.post(() -> presenter.a.ttsPopup.showTTS());
 		}
 
 		@JavascriptInterface

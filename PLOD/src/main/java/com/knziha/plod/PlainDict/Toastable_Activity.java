@@ -298,8 +298,8 @@ public class Toastable_Activity extends AppCompatActivity {
 	public static void setWindowsPadding(@NonNull View decorView) {
 		decorView.setPadding(DockerMarginL, DockerMarginT, DockerMarginR, DockerMarginB);
 	}
-
-	protected void checkFlags() {
+	
+	public void checkFlags() {
 		if (opt.checkModified(flags, false)) {
 			opt.fillFlags(flags);
 		}

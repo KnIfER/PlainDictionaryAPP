@@ -80,6 +80,7 @@
 		android:layout_height="0dp"
 		android:layout_weight="1"
 		android:theme="@style/AppTheme"
+		android:paddingLeft="15dp"
 		>
 		<FrameLayout
 			android:layout_width="match_parent"
@@ -134,6 +135,18 @@
 			android:theme="@style/seekBarStyle"
 			android:splitTrack="false"
 			android:max="100"
+			android:contentDescription="音量滑块"
+			/>
+		<ImageView
+			android:id="@+id/volumn"
+			android:layout_width="30dp"
+			android:layout_height="match_parent"
+			android:padding="4dp"
+			android:src="@drawable/voice_ic_big"
+			android:layout_marginRight="5dp"
+			android:contentDescription="音量按钮"
+			android:tint="#44A0D3"
+			android:background="?attr/actionBarItemBackground"
 			/>
 		<SeekBar
 			android:id="@+id/sb2"
@@ -145,6 +158,18 @@
 			android:theme="@style/seekBarStyle"
 			android:splitTrack="false"
 			android:max="20"
+			android:contentDescription="音调滑块"
+			/>
+		<ImageView
+			android:id="@+id/pitch"
+			android:layout_width="30dp"
+			android:layout_height="match_parent"
+			android:padding="4dp"
+			android:src="@drawable/ic_baseline_signal_cellular_alt_24"
+			android:layout_marginRight="5dp"
+			android:contentDescription="音调按钮"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#44A0D3"
 			/>
 		<SeekBar
 			android:id="@+id/sb3"
@@ -156,60 +181,18 @@
 			android:theme="@style/seekBarStyle"
 			android:splitTrack="false"
 			android:max="20"
+			android:contentDescription="语速滑块"
+			/>
+		<ImageView
+			android:id="@+id/speed"
+			android:layout_width="30dp"
+			android:layout_height="match_parent"
+			android:padding="4dp"
+			android:src="@drawable/ic_baseline_directions_run_24"
+			android:layout_marginRight="5dp"
+			android:contentDescription="语速按钮"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#44A0D3"
 			/>
 	</LinearLayout>
-
-	<LinearLayout
-			xmlns:UIStyles="http://schemas.android.com/apk/res-auto"
-			android:id="@+id/checkerr"
-			android:orientation="horizontal"
-			android:layout_width="match_parent"
-			android:layout_height="@dimen/_35_"
-			android:layout_gravity="bottom"
-			android:background="@drawable/floatcontent_bottom"
-			app:layout_behavior="com.knziha.plod.widgets.BottomNavigationBehavior"
-			>
-			<com.knziha.filepicker.widget.CircleCheckBox
-				android:id="@+id/ttsPin"
-				android:layout_width="30dp"
-				android:layout_height="match_parent"
-				app:dim1="6dp"
-				app:color_background="#FF3F51B5"
-				app:color_border="#FFF"
-				app:size="25dp"
-				app:src0="@drawable/ic_tune_black_24dp"
-				android:layout_marginStart="8dp"
-				/>
-			<com.knziha.filepicker.widget.CircleCheckBox
-				android:id="@+id/ttsHighlight"
-				android:layout_width="30dp"
-				android:layout_height="match_parent"
-				app:dim1="6dp"
-				app:color_background="#FF3F51B5"
-				app:color_border="#FFF"
-				app:size="25dp"
-				app:src0="@drawable/ic_border_color_black_24dp"
-				android:layout_marginStart="8dp"
-				/>
-			<TextView
-				android:id="@+id/popupText2"
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:gravity="bottom"
-				android:padding="5dp"
-				android:textColor="@color/OldHeaderBlue"
-				android:singleLine="true"
-				android:ellipsize="end"
-				/>
-
-			<ImageView
-				android:id="@+id/tts_settings"
-				android:layout_width="30dp"
-				android:layout_height="match_parent"
-				android:padding="4dp"
-				android:src="@drawable/drawer_menu_icon_setting"
-				android:layout_marginRight="5dp"
-				/>
-		</LinearLayout>
 </LinearLayout>
