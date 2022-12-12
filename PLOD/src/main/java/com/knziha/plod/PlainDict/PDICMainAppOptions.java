@@ -2866,6 +2866,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=45) public static boolean ttsHubExpanded() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=45) public static void ttsHubExpanded(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=46, shift=1) public static boolean sortDictManager() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static void sortDictManager(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
 	//SE
@@ -3057,6 +3060,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=40, shift=1) public static boolean dictManagerClickPopup() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=40, shift=1) public static void dictManagerClickPopup(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=41, shift=1) public static boolean dictManagerClickPopup1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41, shift=1) public static void dictManagerClickPopup1(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	
 	public int getPseudoInitCode(int pseudoInit) {

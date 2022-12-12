@@ -274,4 +274,8 @@
 	<string name="pick_audio_dir">选择发音库目录</string>
 	<string name="load">加载</string>
 	<string name="qiehan_sel">切换选中</string>
+	<string name="switch_pick">切换选中状态</string>
+	<string name="tianjia">添加</string>
+	<string name="addTo">添加至…</string>
+	<string name="addToPrv">添加至上次添加位置</string>
 </resources>

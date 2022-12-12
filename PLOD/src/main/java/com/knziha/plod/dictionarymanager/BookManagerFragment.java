@@ -34,7 +34,6 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	int lastClickedPosIndex=0;
 	protected View pressedV;
 	protected int pressedPos;
-	
 	PopupMenuHelper mPopup;
 	
 	public abstract PopupMenuHelper getPopupMenu();
@@ -78,7 +77,7 @@ public abstract class BookManagerFragment<T> extends ListFragment {
     }
 
     protected DragSortListView listView;
-    private DragSortController mController;
+	protected DragSortController mController;
 
     public int dragStartMode = DragSortController.ON_DOWN;
     public boolean removeEnabled = false;

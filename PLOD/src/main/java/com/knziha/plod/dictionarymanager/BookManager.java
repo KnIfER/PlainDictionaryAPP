@@ -211,6 +211,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		int item = viewPager.getCurrentItem();
 		if(item<fragments.size() && fragments.get(item) instanceof BookManagerFragment.SelectableFragment){
 			if(((BookManagerFragment.SelectableFragment)fragments.get(item)).exitSelectionMode()){
+				showT("已清除选择");
 				return;
 			}
 		}
@@ -504,7 +505,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		searchbar = (Toolbar) VU.findViewById(root, R.id.searchbar);
 		int barSzBot = (int) mResource.getDimension(R.dimen.barSzBot);//opt.getBottombarSize();
 		searchbar.getChildAt(0).getLayoutParams().height = barSzBot;
-		searchbar.setNavigationIcon(R.drawable.ic_baseline_double_arrow_24);
+		//searchbar.setNavigationIcon(R.drawable.ic_baseline_double_arrow_24);
+		searchbar.setNavigationIcon(R.drawable.dragneo);
 		VU.setOnClickListenersOneDepth(searchbar, this, 999, null);
 		etSearch = searchbar.findViewById(R.id.etSearch);
 		etSearch.setFilters(new InputFilter[] {
@@ -544,6 +546,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				return true;
 			}
 		});
+		PDICMainAppOptions.schDictManager(true);
 		VU.setVisible(searchbar, PDICMainAppOptions.schDictManager());
 		schIndicator = searchbar.findViewById(R.id.indicator);
         
@@ -559,14 +562,17 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		AllMenus.checkActDrawable = mResource.getDrawable(R.drawable.frame_checked_whiter);
 		AllMenus.twoColumn = true;
-		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 22, 24, 23, 0, 2, 1, 19, 18, 5, 20, 3, 6, 16, 21);
-		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 0, 3, 15, 16);
-		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 13, 14, 7, 8, 16);
-		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 13, 14, 7, 17, 8, 9, 10, 11, 12, 16);
+		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 22, 24, 23, 0, 2, 1, 19, 18, 5, 20, 27, 3, 6, 21);
+		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 0, 3, 15);
+		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 24, 26, 13, 14, 7, 8);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 24, 26, 13, 14, 7, 17, 8, 9, 10, 11, 12);
 		AllMenus.setItems(Menu1);
 		
 		if (PDICMainAppOptions.dictManagerClickPopup()) {
 			ViewUtils.findInMenu(Menu1, R.id.popup).setChecked(true);
+		}
+		if (PDICMainAppOptions.dictManagerClickPopup1()) {
+			ViewUtils.findInMenu(Menu3, R.id.popup1).setChecked(true);
 		}
 		if (PDICMainAppOptions.dictManager1MultiSelecting()) {
 			ViewUtils.findInMenu(Menu1, R.string.multi_select).setChecked(true);
@@ -581,7 +587,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 
 		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(BookManagerFolderAbs f, boolean enter){
-				AllMenus.setItems(enter?Menu3Sel:Menu3);
+				//AllMenus.setItems(enter?Menu3Sel:Menu3);
 			}
 			public int addIt(BookManagerFolderAbs f, final mFile fn) {
 				boolean found=false;
@@ -730,6 +736,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public void onClick(View v) {
 		switch (v.getId()) {
 			case R.id.home:
+				if (v==searchbar.getNavigationBtn()) {
+					PDICMainAppOptions.sortDictManager(!PDICMainAppOptions.sortDictManager());
+					if(f1!=null) f1.dataSetChanged();
+					if(f1!=null) f2.dataSetChanged();
+					break;
+				}
 				onBackPressed();
 			break;
 			case R.id.forward:
@@ -861,7 +873,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	            holder.positition = position;
 	            
 				decorateByViewHolder(holder);
-				
 	            
 	            String name = setsArr.get(position).getName();
 	            holder.tv.setText(name.substring(0,name.length()-4));
@@ -1063,7 +1074,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			case R.id.popup:{
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dictManagerClickPopup(item.isChecked());
-				showT(!item.isChecked()?"点击列表项"+(viewPager.getCurrentItem()==0?"切换启用和禁用状态":viewPager.getCurrentItem()==1?"加载分组":"切换选中状态"):"点击列表项弹出菜单");
+				showT(!item.isChecked()?"点击列表项"+(viewPager.getCurrentItem()==0?"切换启用和禁用状态"
+						:viewPager.getCurrentItem()==1?"加载分组":"切换选中状态") //+ "\n长按弹出菜单"
+						:"点击列表项弹出菜单"); // ，长按排序
+			} break;
+			case R.id.popup1:{
+				item.setChecked(!item.isChecked());
+				PDICMainAppOptions.dictManagerClickPopup1(item.isChecked());
+				showT(item.isChecked()?"点击列表右侧按钮弹出菜单":"右侧按钮直接添加");
 			} break;
 			/* 词典选项 */
 			case R.id.toolbar_action0:{
@@ -1088,6 +1106,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 间选 | 间不选, f1 */
 			case R.id.toolbar_action1:{
 				closeMenu = true;
+				//selectBetween(!isLongClicked, sf1);
 				int[] positions = f1.lastClickedPos;
 				if(positions[0]!=-1 && positions[1]!=-1){
 					int start=positions[0];
@@ -1146,8 +1165,20 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if (isLongClicked) {
 					f1.deleteSelOrOne(false);
 				} else {
-					disenaddAll("禁用选中项", false, true, PDICMainAppOptions.getWarnDisenaddAll());
+					f1.disEna(true, true, -1);
 				}
+			} break;
+			/* 启用网络词典 | 禁用网络词典, f1 */
+			case R.id.webDisen:{
+				closeMenu = true;
+				int cc=0;
+				for (int i = 0; i < szf1; i++) {
+					if (CMN.getSuffix(f1.getPathAt(i)).equals(".web")) {
+						f1.setPlaceRejected(i, isLongClicked);
+						cc++;
+					}
+				}
+				f1.dataSetChanged();
 			} break;
 			/* 另存为 */
             case R.id.toolbar_action3:{
@@ -1177,7 +1208,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 启用选中项 */
             case R.id.toolbar_action5:{
-				disenSel(false, szf1, sf1);
+				//disenSel(false, szf1, sf1);
+				f1.disEna(true, false, -1);
 			} break;
 			/* 启用全部 | 禁用全部 */
             case R.id.disenAll:
@@ -1284,229 +1316,18 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 添加 */
             case R.id.toolbar_action9:{ // add_selection_to_set
-				if(isLongClicked) {/* 添加到第几行 */
-					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
-					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
-					NumberPicker np = dv.findViewById(R.id.numberpicker);
-					CheckBox checker1 = dv.findViewById(R.id.check1);
-					CheckBox checker2 = dv.findViewById(R.id.check2);
-					np.setMaxValue(szf1);
-					AlertDialog dTmp = builder2.setView(dv).create();
-					dv.findViewById(R.id.confirm).setOnClickListener(v -> {
-						int toPos = Math.min(szf1, np.getValue());
-						int cc = 0;
-						mFile[] arr = f3.Selection.toArray(new mFile[0]);
-						Arrays.sort(arr);
-						final boolean insert = checker1.isChecked();
-						final boolean select = checker2.isChecked();
-						HashSet<String> map = new HashSet<>(arr.length);
-						ArrayList<mFile> files = new ArrayList<>(arr.length);
-						for (int i = 0; i < arr.length; i++) {
-							mFile fn = arr[i];
-							if (!fn.getIsDirectory()) {
-								files.add(fn);
-								String key = fn/*.getRealPath()*/.getPath();
-								if(insert||select) map.add(key);
-							}
-						}
-						if(insert) {
-							f1.markDirty(-1);
-							for (int i = 0; i < f1.manager_group().size(); i++) {
-								if (map.contains(f1.getPathAt(i))) {
-									f1.setPlaceRejected(i, false);
-									f1.replace(i, -1); // remove first
-									i--;
-								}
-							}
-							for (int i = 0; i < files.size(); i++) {
-								mFile fn = files.get(i);
-								if (fn.exists() || fn.webAsset!=null) {
-									cc++;
-								}
-								String key = fn.getRealPath().getPath();
-								//loadMan.lazyMan.newChair();
-								BookPresenter mdTmp = mdict_cache.get(key);
-								PlaceHolder placeHolder;
-								if (mdTmp!=null && mdTmp.getClass()!=BookPresenter.class) {
-									mdTmp = null;
-								}
-								if (mdTmp==null) {
-									//m = new_MagentTransient(key, opt, 0, false);
-									placeHolder = new PlaceHolder(key);
-								} else {
-									placeHolder = mdTmp.placeHolder;
-								}
-								toPos = Math.max(0, Math.min(toPos + i, loadMan.md.size()));
-								loadMan.md.add(toPos, mdTmp);
-								loadMan.lazyMan.placeHolders.add(toPos, placeHolder);
-								loadMan.lazyMan.chairCount++;
-								if(select){
-									f1.setPlaceSelected(toPos, true);
-								}
-							}
-							f1.refreshSize();
-						}
-						else if (select) {
-							for (int i = 0; i < szf1; i++) {
-								if (map.contains(f1.getPathAt(i))){
-									f1.setPlaceSelected(i, true);
-									cc++;
-								}
-							}
-						}
-						f1.dataSetChanged();
-						if(insert) {
-							f1.getListView().setSelectionFromTop(toPos, 0);
-						}
-						viewPager.setCurrentItem(0);
-						showT((insert?"添加完毕!(":"已选中!(")+cc+"/"+files.size()+")");
-						toolbar.getMenu().close();
-						dTmp.dismiss();
-					});
-
-					Window win = dTmp.getWindow();
-					win.setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_ld:R.drawable.popup_shadow_l);
-					dTmp.show();
-					ViewGroup dvp = win.getDecorView().findViewById(R.id.dialog);
-					dvp.setPadding(0,0,0,0);
-					dv.setPadding((int) (15*opt.dm.density), 0,0,(int) (10*opt.dm.density));
-					closeMenu=false;
-				}
-				else { // 添加到末尾
-					int cc = 0;
-					mFile[] arr = f3.Selection.toArray(new mFile[0]);
-					Arrays.sort(arr);
-					int count=arr.length;
-					
-					HashMap<String, Integer> map = new HashMap<>(szf1);
-					for (int i = 0; i < szf1; i++) {
-						map.put(f1.getPathAt(i), i);
+				if (fragments.get(viewPager.getCurrentItem()) instanceof BookManagerFolderAbs) {
+					BookManagerFolderAbs frame = (BookManagerFolderAbs) fragments.get(viewPager.getCurrentItem());
+					addFrameElementsToF1(frame, true, isLongClicked);
+					if(isLongClicked) {
+						closeMenu=false;
 					}
-					for(int i=0;i<arr.length;i++) {
-						mFile fn=arr[i];
-						if(fn.isDirectory()) {
-							count--;
-							continue;
-						}
-						String key = fn/*.getRealPath()*/.getPath();
-						Integer idx = map.get(key);
-						if(idx!=null) { // 已经有了
-							f1.setPlaceRejected(idx, false);
-						}
-						else {
-							f1.markDirty(-1);
-							//loadMan.lazyMan.newChair();
-							BookPresenter mdTmp = mdict_cache.get(key);
-							PlaceHolder placeHolder;
-							if (mdTmp!=null && mdTmp.getClass()!=BookPresenter.class) {
-								mdTmp = null;
-							}
-							if (mdTmp==null) {
-								placeHolder = new PlaceHolder(key);
-							} else {
-								placeHolder = mdTmp.placeHolder;
-							}
-							loadMan.md.add(mdTmp);
-							loadMan.lazyMan.placeHolders.add(placeHolder);
-							loadMan.lazyMan.chairCount++;
-							cc++;
-						}
-					}
-					showT("添加完毕!("+cc+"/"+count+")");
-					f1.refreshSize();
-					f1.dataSetChanged();
 				}
 			} break;
-			/* 清理 */
+			/* f3->f1禁用选中项目 | f3->f1删除选中项目 */
             case R.id.toolbar_action10:{
 				if(isLongClicked) {
-					final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
-					CheckBox ck = dv.findViewById(R.id.ck);
-					ck.setChecked(PDICMainAppOptions.getDelRecApplyAll());
-					dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
-					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
-					builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
-							.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！")
-							.setPositiveButton(R.string.confirm, (dialog, which) -> {
-								mFile[] arr = f3.Selection.toArray(new mFile[0]);
-								HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
-								int s2 = list.size();
-								for (int i = 0; i < s2; i++) {
-									mFile fn = list.get(i)/*.getRealPath()*/;
-									if (fn.webAsset==null) {
-										if (fn instanceof mAssetFile)
-											continue;
-										if (fn.isDirectory())
-											continue;
-										if (removePool.contains(fn)) {
-											list.remove(i--);
-											s2--;
-											mdlibsCon.remove(mFile.tryDeScion(fn, opt.lastMdlibPath));
-											f3.isDirty = true;
-											mFile p = fn.getParentFile();
-											if (p != null) {
-												mFile pTmp = i<list.size()?list.get(i):null;
-												if (p.equals(pTmp) && pTmp.children.size()==0
-														&& (i+1>=list.size() || !mFile.isDirScionOf(list.get(i+1), p))) {
-													list.remove(i--);
-													s2--;
-												}
-											}
-										}
-									}
-								}
-								PDICMainAppOptions.setDelRecApplyAll(ck.isChecked());
-								deleteRecordsHard(f3, false);
-								if (!PDICMainAppOptions.getDebuggingRemoveRec()) {
-									ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(PDICMainAppOptions.getDelRecApplyAll(), f3.isDirty);
-									AgentApplication app = ((AgentApplication) getApplication());
-									char[] cb = app.get4kCharBuff();
-									boolean bNeedRewrite;
-									for (File fI : moduleFullScannerArr) {
-										StringBuilder sb = new StringBuilder();
-										String line;
-										try {
-											ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
-											bNeedRewrite = false;
-											while ((line = br.readLine()) != null) {
-												try {
-													String key = line;
-													if(key.startsWith("[:")){
-														int idx = key.indexOf("]",2);
-														if(idx>=2) key = key.substring(idx+1);
-													}
-													key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
-													//CMN.debug("rewrite::", key, removePool.contains(new mFile(key)));
-													if (removePool.contains(new mFile(key)) || removePool.contains(new mFile(new File(key).getCanonicalPath()))) {
-														bNeedRewrite = true;
-														continue;
-													}
-												} catch (Exception e) {
-													CMN.debug(e);
-												}
-												sb.append(line).append("\n");
-											}
-											br.close();
-											cb = br.cb;
-											if (bNeedRewrite) {
-												CMN.debug("rewrite::", fI);
-												ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
-												bw.write(sb.toString());
-												bw.flush();
-												bw.close();
-												cb = br.cb;
-											}
-										} catch (Exception e) {
-											CMN.debug(e);
-										}
-									}
-									app.set4kCharBuff(cb);
-								}
-								showT("移除完毕!");
-							})
-							.setNeutralButton(R.string.cancel, null);
-					d = builder2.create();
-					d.show();
+					deleteFromF3Sel(f3);
 				} else {
 					int cc1 = 0;
 					for(int i = 0; i< szf1; i++) {
@@ -1521,19 +1342,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					f1.dataSetChanged();
 				}
 			} break;
-			/* 禁用选中项 | 删除选中项  删除记录 */
-            case R.id.tintList:{
+			/* 删除全部记录, f3 */
+			case R.string.remove_records:{
 				if(isLongClicked) {
-					new AlertDialog.Builder(BookManager.this)
-							.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()))
-							.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
-							.setPositiveButton(R.string.confirm, (dialog, which) -> {
-								deleteRecordsHard(f3, true);
-								dialog.dismiss();
-							})
-							.create().show();
+					closeMenu = false;
 				} else {
-					disenSel(true, szf1, sf1);
+					deleteFromF3SelHardInAll(f3, list);
 				}
 			} break;
 			/* 移动文件 */
@@ -1766,6 +1580,141 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
+	public void addFrameElementsToF1(BookManagerFolderAbs frame, boolean useSelection, boolean pickPosition) {
+		int szf1 = f1.manager_group().size(), cnt=0;
+		if (pickPosition) {
+			/* 添加到第几行 */
+			AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
+			View dv = getLayoutInflater().inflate(GlobalOptions.isDark?R.layout.dialog_move_to_line_d:R.layout.dialog_move_to_line, null);
+			NumberPicker np = dv.findViewById(R.id.numberpicker);
+			CheckBox checker1 = dv.findViewById(R.id.check1);
+			CheckBox checker2 = dv.findViewById(R.id.check2);
+			np.setMaxValue(szf1);
+			AlertDialog dTmp = builder2.setView(dv).create();
+			dv.findViewById(R.id.confirm).setOnClickListener(v -> {
+				int toPos = Math.min(szf1, np.getValue());
+				int cc = 0;
+				mFile[] arr = frame.getElements(useSelection);
+				Arrays.sort(arr);
+				final boolean insert = checker1.isChecked();
+				final boolean select = checker2.isChecked();
+				HashSet<String> map = new HashSet<>(arr.length);
+				ArrayList<mFile> files = new ArrayList<>(arr.length);
+				for (int i = 0; i < arr.length; i++) {
+					mFile fn = arr[i];
+					if (!fn.getIsDirectory()) {
+						files.add(fn);
+						String key = fn.getRealPath().getPath();
+						if(insert||select) map.add(key);
+					}
+				}
+				if(insert) {
+					f1.markDirty(-1);
+					for (int i = 0; i < f1.manager_group().size(); i++) {
+						if (map.contains(f1.getPathAt(i))) {
+							f1.setPlaceRejected(i, false);
+							f1.replace(i, -1); // remove first
+							i--;
+						}
+					}
+					for (int i = 0; i < files.size(); i++) {
+						mFile fn = files.get(i);
+						if (fn.exists() || fn.webAsset!=null) {
+							cc++;
+						}
+						String key = fn.getRealPath().getPath();
+						//loadMan.lazyMan.newChair();
+						BookPresenter mdTmp = mdict_cache.get(key);
+						PlaceHolder placeHolder;
+						if (mdTmp!=null && mdTmp.getClass()!=BookPresenter.class) {
+							mdTmp = null;
+						}
+						if (mdTmp==null) {
+							//m = new_MagentTransient(key, opt, 0, false);
+							placeHolder = new PlaceHolder(key);
+						} else {
+							placeHolder = mdTmp.placeHolder;
+						}
+						toPos = Math.max(0, Math.min(toPos + i, loadMan.md.size()));
+						loadMan.md.add(toPos, mdTmp);
+						loadMan.lazyMan.placeHolders.add(toPos, placeHolder);
+						loadMan.lazyMan.chairCount++;
+						if(select){
+							f1.setPlaceSelected(toPos, true);
+						}
+					}
+					f1.refreshSize();
+				}
+				else if (select) {
+					for (int i = 0; i < szf1; i++) {
+						if (map.contains(f1.getPathAt(i))){
+							f1.setPlaceSelected(i, true);
+							cc++;
+						}
+					}
+				}
+				f1.dataSetChanged();
+				if(insert) {
+					f1.getListView().setSelectionFromTop(toPos, 0);
+				}
+				viewPager.setCurrentItem(0);
+				showT((insert?"添加完毕!(":"已选中!(")+cc+"/"+files.size()+")");
+				toolbar.getMenu().close();
+				dTmp.dismiss();
+			});
+			Window win = dTmp.getWindow();
+			win.setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_ld:R.drawable.popup_shadow_l);
+			dTmp.show();
+			ViewGroup dvp = win.getDecorView().findViewById(R.id.dialog);
+			dvp.setPadding(0,0,0,0);
+			dv.setPadding((int) (15*opt.dm.density), 0,0,(int) (10*opt.dm.density));
+		}
+		else {
+			/* 添加到末尾 */
+			int cc = 0;
+			mFile[] arr = frame.getElements(useSelection);
+			Arrays.sort(arr);
+			int count=arr.length;
+			HashMap<String, Integer> map = new HashMap<>(szf1);
+			for (int i = 0; i < szf1; i++) {
+				map.put(f1.getPathAt(i), i);
+			}
+			for(int i=0;i<arr.length;i++) {
+				mFile fn=arr[i];
+				if(fn.isDirectory()) {
+					count--;
+					continue;
+				}
+				String key = fn.getRealPath().getPath();
+				Integer idx = map.get(key);
+				if(idx!=null) { // 已经有了
+					f1.setPlaceRejected(idx, false);
+				}
+				else {
+					f1.markDirty(-1);
+					//loadMan.lazyMan.newChair();
+					BookPresenter mdTmp = mdict_cache.get(key);
+					PlaceHolder placeHolder;
+					if (mdTmp!=null && mdTmp.getClass()!=BookPresenter.class) {
+						mdTmp = null;
+					}
+					if (mdTmp==null) {
+						placeHolder = new PlaceHolder(key);
+					} else {
+						placeHolder = mdTmp.placeHolder;
+					}
+					loadMan.md.add(mdTmp);
+					loadMan.lazyMan.placeHolders.add(placeHolder);
+					loadMan.lazyMan.chairCount++;
+					cc++;
+				}
+			}
+			showT("添加完毕!("+cc+"/"+count+")");
+			f1.refreshSize();
+			f1.dataSetChanged();
+		}
+	}
+	
 	private void disenSel(boolean disable, int szf1, boolean sf1) {
 		int cnt=0;
 		if(opt.dictManager1MultiSelecting()){
@@ -1785,6 +1734,112 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		} else {
 			showT("当前分组无选中词典。");
 		}
+	}
+	
+	
+	public Fragment getFragment() {
+		return fragments.get(viewPager.getCurrentItem());
+	}
+	
+	public void deleteFromF3Sel(BookManagerFolderAbs f3) {
+		new AlertDialog.Builder(BookManager.this)
+				.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()))
+				.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
+				.setPositiveButton(R.string.confirm, (dialog, which) -> {
+					deleteRecordsHard(f3, true);
+					dialog.dismiss();
+				})
+				.create().show();
+	}
+	
+	public void deleteFromF3SelHardInAll(BookManagerFolderAbs f3, ArrayList<mFile> list) {
+		final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
+		CheckBox ck = dv.findViewById(R.id.ck);
+		ck.setChecked(PDICMainAppOptions.getDelRecApplyAll());
+		dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
+		AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
+		builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
+				.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！")
+				.setPositiveButton(R.string.confirm, (dialog, which) -> {
+					mFile[] arr = f3.Selection.toArray(new mFile[0]);
+					HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
+					int s2 = list.size();
+					for (int i = 0; i < s2; i++) {
+						mFile fn = list.get(i)/*.getRealPath()*/;
+						if (fn.webAsset==null) {
+							if (fn instanceof mAssetFile)
+								continue;
+							if (fn.isDirectory())
+								continue;
+							if (removePool.contains(fn)) {
+								list.remove(i--);
+								s2--;
+								mdlibsCon.remove(mFile.tryDeScion(fn, opt.lastMdlibPath));
+								f3.isDirty = true;
+								mFile p = fn.getParentFile();
+								if (p != null) {
+									mFile pTmp = i<list.size()?list.get(i):null;
+									if (p.equals(pTmp) && pTmp.children.size()==0
+											&& (i+1>=list.size() || !mFile.isDirScionOf(list.get(i+1), p))) {
+										list.remove(i--);
+										s2--;
+									}
+								}
+							}
+						}
+					}
+					PDICMainAppOptions.setDelRecApplyAll(ck.isChecked());
+					deleteRecordsHard(f3, false);
+					if (!PDICMainAppOptions.getDebuggingRemoveRec()) {
+						ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(PDICMainAppOptions.getDelRecApplyAll(), f3.isDirty);
+						AgentApplication app = ((AgentApplication) getApplication());
+						char[] cb = app.get4kCharBuff();
+						boolean bNeedRewrite;
+						for (File fI : moduleFullScannerArr) {
+							StringBuilder sb = new StringBuilder();
+							String line;
+							try {
+								ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+								bNeedRewrite = false;
+								while ((line = br.readLine()) != null) {
+									try {
+										String key = line;
+										if(key.startsWith("[:")){
+											int idx = key.indexOf("]",2);
+											if(idx>=2) key = key.substring(idx+1);
+										}
+										key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
+										//CMN.debug("rewrite::", key, removePool.contains(new mFile(key)));
+										if (removePool.contains(new mFile(key)) || removePool.contains(new mFile(new File(key).getCanonicalPath()))) {
+											bNeedRewrite = true;
+											continue;
+										}
+									} catch (Exception e) {
+										CMN.debug(e);
+									}
+									sb.append(line).append("\n");
+								}
+								br.close();
+								cb = br.cb;
+								if (bNeedRewrite) {
+									CMN.debug("rewrite::", fI);
+									ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+									bw.write(sb.toString());
+									bw.flush();
+									bw.close();
+									cb = br.cb;
+								}
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+						}
+						app.set4kCharBuff(cb);
+					}
+					showT("移除完毕!");
+				})
+				.setNeutralButton(R.string.cancel, null);
+		d = builder2.create();
+		d.show();
 	}
 	
 	// 缝合怪
@@ -1812,7 +1867,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						//mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,md.size()-f1.rejector.size()));
 						in.close();
 					} catch (Exception e2) {
-						e2.printStackTrace();
+						CMN.debug(e2);
 					}
 				}
 			}

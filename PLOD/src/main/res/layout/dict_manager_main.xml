@@ -23,7 +23,6 @@
 			android:title="分组管理"
 			android:theme="@style/toolbarTheme"
 			/>
-
 		<com.google.android.material.tabs.TabLayout
 			android:id="@+id/mTabLayout"
 			android:layout_width="wrap_content"

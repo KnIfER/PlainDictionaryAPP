@@ -137,7 +137,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		if (position >= listView.getHeaderViewsCount()) {//词典选项
 			pressedPos = position - listView.getHeaderViewsCount();
 			if (view!=null) pressedV = view;
-			showPopup(view);
+			if (PDICMainAppOptions.dictManagerClickPopup() && false) {
+				boolean start = mController.startDrag(position,0, view.getHeight()/2);
+				return false;
+			} else {
+				showPopup(view);
+			}
 		}
 		return true;
 	}
@@ -250,7 +255,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//mngr_agent_manageable mdTmp = adapter.getItem(position);
 			
 			if(query!=null && filtered.get(position)!=null)
-				vh.title.setBackgroundResource(R.drawable.xuxian2);
+				vh.title.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
 			else
 				vh.title.setBackground(null);
 
@@ -267,6 +272,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			} else {
 				vh.ck.setVisibility(View.GONE);
 			}
+			ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
 
 			StringBuilder rgb = new StringBuilder("#");
 			boolean disabled = getPlaceRejected(position);
@@ -335,7 +341,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					BookPresenter magent;
 					if (isLongClick) {
 						if (view.getId() == R.id.disable) {
-							deleteSelOrOne(true);
+							deleteSelOrOne(!isOnSelected);
 							popupMenuHelper.dismiss();
 						}
 						return false;
@@ -344,28 +350,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						/* 启用 禁用 */
 						case R.id.enable:
 						case R.id.disable:  {
-							int cc=0;
-							boolean isF = view.getId()==R.id.disable;
-							if (isOnSelected) {
-								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
-									if (getPlaceSelected(i)) {
-										markDirty(i);
-										setPlaceRejected(i, isF);
-										cc++;
-									}
-								}
-							} else {
-								markDirty(position);
-								setPlaceRejected(position, isF);
-								cc = 1;
-							}
-							adapter.notifyDataSetChanged();
-							refreshSize();
-							if (cc > 1) {
-								a.showT(!isF ? "已启用" + getNameAt(position) + "等" + cc + "个词典" : "已禁用" + getNameAt(position) + "等" + cc + "个词典");
-							} else {
-								a.showT(!isF ? "已启用" + getNameAt(position) : "已禁用" + getNameAt(position));
-							}
+							disEna(isOnSelected, view.getId()==R.id.disable, position);
 						} break;
 						case R.string.rename: {
 							renameFile();
@@ -392,21 +377,22 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							a.f2.adapter.notifyDataSetChanged();
 							d.dismiss();
 						} break;
+						case R.id.jianxuan: {//间选
+							a.onMenuItemClick(ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1));
+						} break;
 						case R.string.move_top: {//移至顶部
 							markDirty(-1);
 							replace(position, 0);
 							adapter.notifyDataSetChanged();
 							getListView().setSelection(0);
-						}
-						break;
+						} break;
 						case R.string.move_bottom: {//移至底部
 							markDirty(-1);
 							int last = manager_group().size() - 1;
 							replace(position, last);
 							adapter.notifyDataSetChanged();
 							getListView().setSelection(last);
-						}
-						break;
+						} break;
 						case R.id.openFolder: {//在外部管理器打开路径
 							magent = getMagentAt(position);
 							StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
@@ -418,8 +404,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							} catch (Exception e) {
 								a.show(R.string.no_suitable_app);
 							}
-						}
-						break;
+						} break;
 						case R.id.openFolderInner: {//在内置管理器打开路径
 							magent = getMagentAt(position);
 							DialogProperties properties = new DialogProperties();
@@ -438,8 +423,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							properties.isDark = GlobalOptions.isDark;
 							FilePickerDialog fdialog = new FilePickerDialog(a, properties);
 							fdialog.show();
-						}
-						break;
+						} break;
 						case R.id.tweak1://词典设置
 							magent = getMagentAt(position);
 							if (isOnSelected) {
@@ -560,6 +544,33 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			});
 		}
 		return mPopup;
+	}
+	
+	public void disEna(boolean useSelection, boolean off, int position) {
+		int cc=0;
+		if (useSelection) {
+			for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+				if (getPlaceSelected(i)) {
+					markDirty(i);
+					setPlaceRejected(i, off);
+					cc++;
+					if(position==-1) position = i;
+				}
+			}
+		} else if(position!=-1){
+			markDirty(position);
+			setPlaceRejected(position, off);
+			cc = 1;
+		}
+		adapter.notifyDataSetChanged();
+		refreshSize();
+		if (cc > 1) {
+			a.showT(!off ? "已启用" + getNameAt(position) + "等" + cc + "个词典" : "已禁用" + getNameAt(position) + "等" + cc + "个词典");
+		} else if (cc > 0) {
+			a.showT(!off ? "已启用" + getNameAt(position) : "已禁用" + getNameAt(position));
+		} else {
+			a.showT("当前分组无选中词典。");
+		}
 	}
 	
 	private void renameFile() {

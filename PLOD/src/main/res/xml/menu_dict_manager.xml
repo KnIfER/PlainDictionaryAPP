@@ -19,7 +19,7 @@
 </group>
 	<!--9 --><item android:title="@string/add_selection_to_set" android:id="@+id/toolbar_action9" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--10--><item android:title="@string/remove_selection_from_set" android:id="@+id/toolbar_action10" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
-	<!--11--><item android:title="@string/remove_records" android:id="@+id/tintList" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--11--><item android:title="@string/remove_records" android:id="@string/remove_records" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--12--><item android:title="@string/move_files" android:id="@+id/peruseMode" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--13--><item android:title="@string/fold_all" android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--14--><item android:title="@string/unfold_all" android:id="@+id/tapSch" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
@@ -36,4 +36,6 @@
 	<!--23--><item android:title="切换点击弹出菜单" android:id="@+id/popup" android:icon="@drawable/ic_click_popup" app:showAsAction="always" android:checkable="true" />
 	<!--24--><item android:title="清除多选" android:id="@+id/clearSel" android:icon="@drawable/close_box_outline" app:showAsAction="always" android:checkable="false" />
 	<!--25--><item android:title="进入多选模式" android:id="@+id/enter_select" android:icon="@drawable/sel_box_outline" app:showAsAction="always" />
+	<!--26--><item android:title="切换点击加号按钮弹出菜单" android:id="@+id/popup1" android:icon="@drawable/ic_click_popup" app:showAsAction="always" />
+	<!--27--><item android:title="启用网络词典 | 禁用网络词典" android:id="@+id/webDisen"  app:showAsAction="never" />
 </menu>

@@ -170,8 +170,8 @@
 	<string name="enable_all">启用全部 | 启用选中项</string>
 	<string name="select_all_invalid">选中失效项 | 不选失效</string>
 	<string name="add_selection_to_set">启用选中词典 | 插入至…</string>
-	<string name="remove_selection_from_set">禁用选中词典 | 清理</string>
-	<string name="remove_records">删除记录</string>
+	<string name="remove_selection_from_set">禁用选中词典 | 删除选中项</string>
+	<string name="remove_records">删除全部记录</string>
 	<string name="move_files">移动文件</string>
 	<string name="new___">新建</string>
 	<string name="dict_specs">&#160;全局_ 特定_ 现代_ 旧版_ ×_ √</string>
@@ -237,5 +237,8 @@
 	<string name="pick_audio_dir">选择发音库目录</string>
 	<string name="load">加载</string>
 	<string name="qiehan_sel">切换选中</string>
+	<string name="switch_pick">切换选中状态</string>
+	<string name="tianjia">添加</string>
+	<string name="addTo">添加至…</string>
 	>
 </resources>

@@ -1,11 +1,17 @@
 package com.knziha.plod.dictionarymanager;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,25 +24,34 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
 
+import com.knziha.filepicker.model.DialogConfigs;
+import com.knziha.filepicker.model.DialogProperties;
+import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+@SuppressLint("ResourceType")
 public abstract class BookManagerFolderAbs extends ListFragment
-		implements BookManagerFragment.SelectableFragment, View.OnClickListener {
+		implements BookManagerFragment.SelectableFragment, View.OnClickListener, PopupMenuHelper.PopupMenuListener {
 	int type=0;
 	String parentFile;
-	public boolean SelectionMode=false;
+	public boolean SelectionMode=true;
 	HashSet<mFile> selFolders = new HashSet<>();
 	public HashSet<mFile> Selection = new HashSet<mFile>(){
 		@Override
@@ -53,6 +68,62 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			return super.removeAll(c);
 		}
 	};
+	
+	protected View pressedV;
+	protected int pressedPos;
+	PopupMenuHelper mPopup;
+	
+	protected void showPopup(View v) {
+		PopupMenuHelper popupMenu = getPopupMenu();
+		int[] vLocationOnScreen = new int[2];
+		if (v == null) v = listView;
+		v.getLocationOnScreen(vLocationOnScreen);
+		popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+	}
+	
+	public PopupMenuHelper getPopupMenu() {
+		if (mPopup==null) {
+			mPopup  = new PopupMenuHelper(getActivity(), null, null);
+			mPopup.initLayout(new int[]{
+					//R.string.switch_pick
+					 R.string.tianjia
+					, R.string.addTo
+					, R.string.addToPrv
+			}, this);
+			mPopup.lv.findViewById(R.string.addToPrv).getLayoutParams().height = 0;
+		}
+		return mPopup;
+	}
+	
+	public mFile[] getElements(boolean useSelection) {
+		if (useSelection) {
+			return Selection.toArray(new mFile[0]);
+		}
+		BookManagerFolderlike.ViewHolder vh = (BookManagerFolderlike.ViewHolder) ViewUtils.getViewHolderInParents(pressedV, BookManagerFolderlike.ViewHolder.class);
+		return new mFile[]{vh.dataLet.getRealPath()};
+	}
+	
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		BookManagerFolderlike.ViewHolder vh = (BookManagerFolderlike.ViewHolder) ViewUtils.getViewHolderInParents(pressedV, BookManagerFolderlike.ViewHolder.class);
+		switch (v.getId()) {
+			case R.string.switch_pick:{
+				vh.ck.performClick();
+			} break;
+			case R.string.tianjia:{
+				//addIt(vh);
+				getBookManager().addFrameElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), false);
+			} break;
+			case R.string.addTo:{
+				getBookManager().addFrameElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), true);
+			} break;
+			case R.string.addToPrv:{
+			
+			} break;
+		}
+		popupMenuHelper.dismiss();
+		return true;
+	}
 	
 	public int calcSelectionSz() {
 		int ret = Selection.size(), sfz=selFolders.size();
@@ -104,15 +175,15 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	@Override
 	public boolean exitSelectionMode() {
 		if(SelectionMode) {
-			SelectionMode = false;
+			//SelectionMode = false;
 			if (Selection.size() > 0) {
 				Selection.clear();
 				lastClickedPos[0] = -1;
 				lastClickedPos[1] = -1;
 				if(oes!=null) oes.onEnterSelection(this, false);
+				adapter.notifyDataSetChanged();
+				return true;
 			}
-			adapter.notifyDataSetChanged();
-			return true;
 		}
 		return false;
 	}
@@ -122,8 +193,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public void onClick(View v) {
 		BookManagerFolderlike.ViewHolder vh = (BookManagerFolderlike.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerFolderlike.ViewHolder.class);
 		switch (v.getId()) {
-			case R.id.folderIcon:
-			{
+			case R.id.folderIcon: {
 				mFile mdTmp = vh.dataLet;
 				int pos = vh.position;
 				if(mdTmp.children.size()==0) {
@@ -146,14 +216,29 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			} break;
 			case R.id.drag_handle:
 			{
-				mFile mdTmp = vh.dataLet;
-				if(!mdTmp.isDirectory()) {
-					if(oes.addIt(this, mdTmp)==1)
-						a.showT("添加成功!");
-					else if(oes.addIt(this, mdTmp)==0) // wtf???
-						a.showT("已存在");
+				if (PDICMainAppOptions.dictManagerClickPopup1()) {
+					pressedV = vh.itemView;
+					pressedPos = vh.position;
+					showPopup(vh.itemView);
+				} else {
+					addIt(vh);
 				}
 			} break;
+			case R.id.ck: {
+				vh.selecting = true;
+				listView.getOnItemClickListener().onItemClick(listView, vh.itemView, vh.position+listView.getHeaderViewsCount(), 0);
+				vh.selecting = false;
+			} break;
+		}
+	}
+	
+	private void addIt(BookManagerFolderlike.ViewHolder vh) {
+		mFile mdTmp = vh.dataLet;
+		if(!mdTmp.isDirectory()) {
+			if(oes.addIt(this, mdTmp)==1)
+				a.showT("添加成功!");
+			else if(oes.addIt(this, mdTmp)==0) // wtf???
+				a.showT("已存在");
 		}
 	}
 	
@@ -169,11 +254,12 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		listView.addHeaderView(v);
 		listView.setOnItemClickListener((parent, view, position, id) -> {
 			if(position>= listView.getHeaderViewsCount()) {
-				position = position - listView.getHeaderViewsCount();
+				pressedPos = position = position - listView.getHeaderViewsCount();
+				pressedV = view;
 				//mFile p = data.getList().get(position);
 				ViewHolder vh = (ViewHolder)view.getTag();
 				mFile mdTmp = vh.dataLet;
-				if(SelectionMode) {
+				if(SelectionMode/* && (!PDICMainAppOptions.dictManagerClickPopup() || vh.selecting)*/) {
 					int pos = vh.position;
 					//CMN.Log(pos+" ?= "+position);
 					if(Selection.remove(mdTmp.getRealPath())) {
@@ -217,7 +303,8 @@ public abstract class BookManagerFolderAbs extends ListFragment
 //						lastClickedPos[(++lastClickedPosIndex) % 2] = position;
 //					}
 					adapter.notifyDataSetChanged();
-				}else {
+				}
+				else {
 					if(mdTmp.isDirectory()) {
 						((ViewHolder)view.getTag()).folderIcon.performClick();
 						//adapter.notifyDataSetChanged();
@@ -227,12 +314,14 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		});
 		listView.setOnItemLongClickListener((parent, view, position, id) -> {
 			if(position>= listView.getHeaderViewsCount()) {
-				position = position - listView.getHeaderViewsCount();
-				SelectionMode=true;
-				if(oes!=null) oes.onEnterSelection(this, true);
-				//Selection.put(adapter.getItem(position).getAbsolutePath());
-				listView.getOnItemClickListener().onItemClick(parent, view, position+ listView.getHeaderViewsCount(), id);
-				adapter.notifyDataSetChanged();
+				pressedPos = position - listView.getHeaderViewsCount();
+				pressedV = view;
+//				SelectionMode=true;
+//				if(oes!=null) oes.onEnterSelection(this, true);
+//				//Selection.put(adapter.getItem(position).getAbsolutePath());
+//				listView.getOnItemClickListener().onItemClick(parent, view, position+ listView.getHeaderViewsCount(), id);
+//				adapter.notifyDataSetChanged();
+				showPopup(view);
 			}
 			return true;
 		});
@@ -249,19 +338,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		
 		public View getView(int pos, View convertView, ViewGroup parent) {
 			View v = super.getView(pos, convertView, parent);
-			if(v.getTag()==null) {
+			BookManagerFolderlike.ViewHolder vh;
+			if (v.getTag() == null) {
 				//Log.e("新建",""+pos);
-				final BookManagerFolderlike.ViewHolder vh=new BookManagerFolderlike.ViewHolder();
-				vh.ck = v.findViewById(R.id.ck);
-				vh.folderIcon = (v.findViewById(R.id.folderIcon));
-				vh.folderIcon.setOnClickListener(BookManagerFolderAbs.this);
-				vh.text= v.findViewById(R.id.text);
-				vh.splitterIcon= v.findViewById(R.id.splitterIcon);
-				vh.drag_handle=v.findViewById(R.id.drag_handle);
-				vh.drag_handle.setOnClickListener(BookManagerFolderAbs.this);
-				v.setTag(vh);
+				vh = new BookManagerFolderlike.ViewHolder(v, BookManagerFolderAbs.this);
+			} else {
+				vh = (BookManagerFolderlike.ViewHolder) v.getTag();
 			}
-			BookManagerFolderlike.ViewHolder vh=(BookManagerFolderlike.ViewHolder) v.getTag();
 			vh.position = pos;
 			final mFile mdTmp = getItem(pos);
 			vh.dataLet=mdTmp;
@@ -273,6 +356,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					vh.ck.setChecked(true);
 				else
 					vh.ck.setChecked(false);
+				vh.tweakCheck();
 			} else {
 				vh.ck.setChecked(false);
 				vh.ck.setVisibility(View.GONE);
@@ -292,11 +376,11 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			else
 				vh.text.setTextColor(Color.RED);
 			
-			if(query!=null
+			if(!TextUtils.isEmpty(query)
 					&& mdTmp.getName().toLowerCase().contains(query)
 					// && filtered.get(pos)!=null
 			)
-				vh.text.setBackgroundResource(R.drawable.xuxian2);
+				vh.text.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
 			else
 				vh.text.setBackground(null);
 			
@@ -345,13 +429,36 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	}
 	
 	public static class ViewHolder{
+		public boolean selecting;
 		int position;
 		public mFile dataLet;
+		public View itemView;
 		public View folderIcon;
 		public View splitterIcon;
 		public View drag_handle;
 		public TextView text;
 		public CheckBox ck;
+		boolean isDark;
+		public ViewHolder(View v, BookManagerFolderAbs m) {
+			ck = v.findViewById(R.id.ck);
+			ck.setOnClickListener(m);
+			itemView = v;
+			folderIcon = (v.findViewById(R.id.folderIcon));
+			folderIcon.setOnClickListener(m);
+			text=v.findViewById(R.id.text);
+			splitterIcon= v.findViewById(R.id.splitterIcon);
+			drag_handle=v.findViewById(R.id.drag_handle);
+			drag_handle.setOnClickListener(m);
+			v.setTag(this);
+		}
+		public void tweakCheck() {
+			if (isDark!=GlobalOptions.isDark) {
+				isDark = isDark!=GlobalOptions.isDark;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					ck.getButtonDrawable().setColorFilter(isDark?GlobalOptions.NEGATIVE_1:null);
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -429,4 +536,9 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			CMN.debug(e);
 		}
 	}
+	
+	public final BookManager getBookManager() {
+		return ((BookManager) getActivity());
+	}
+	
 }

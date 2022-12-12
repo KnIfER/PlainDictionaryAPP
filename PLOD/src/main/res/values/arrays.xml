@@ -53,34 +53,6 @@
 		<item>建立关键词索引</item>
 	</string-array>
 
-   	<string-array name="dicts_option">
-    	<item>@string/rename</item>
-    	<item>@string/multi_select</item>
-    	<item>@string/move_top</item>
-    	<item>@string/move_bottom</item>
-    	<item>设为…</item>
-	</string-array>
-
-	<string-array name="dicts_option1">
-		<item>在外部管理器打开路径</item>
-		<item>在内置管理器打开路径</item>
-		<item>定制词典（简易）</item>
-		<item>定制词典（详细）</item>
-	</string-array>
-
-	<string-array name="dicts_option2">
-		<item>构词库</item>
-		<item>点译词库</item>
-		<item>默认折叠</item>
-		<item>发音库</item>
-	</string-array>
-
-	<string-array name="dicts_option3">
-		<item>构词库</item>
-		<item>点译词库</item>
-		<item>默认折叠</item>
-	</string-array>
-
 	<!--webx-->
 
 	<string-array name="config_web_pages">

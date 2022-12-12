@@ -130,8 +130,8 @@
 			android:paddingBottom="4dp"
 			/>-->
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/morph"
-			android:text="设为…"
+			android:id="@+id/jianxuan"
+			android:text="间选"
 			android:layout_width="0dp"
 			android:layout_height="match_parent"
 			android:gravity="center"
@@ -140,8 +140,6 @@
 			android:background="?listChoiceBackgroundIndicator"
 			android:paddingTop="4dp"
 			android:paddingBottom="4dp"
-			android:alpha="0.2"
-			android:enabled="false"
 			/>
 		<com.knziha.plod.widgets.TextMenuView
 			android:id="@+id/tapSch"

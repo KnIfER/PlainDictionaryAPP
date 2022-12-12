@@ -166,7 +166,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
 			
 			if(query!=null && filtered.get(position)!=null)
-				vh.title.setBackgroundResource(R.drawable.xuxian2);
+				vh.title.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
 			else
 				vh.title.setBackground(null);
 			
@@ -185,7 +185,8 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				vh.tweakCheck();
 			} else
 				vh.ck.setVisibility(View.GONE);
-
+			
+			ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
 			return convertView;
 		}
 	}
@@ -240,7 +241,12 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			if(position>= listView.getHeaderViewsCount()) {
 				pressedPos = position - listView.getHeaderViewsCount();
 				pressedV = v;
-				showPopup(v);
+				if (PDICMainAppOptions.dictManagerClickPopup() && true) {
+					boolean start = mController.startDrag(position,0, v.getHeight()/2);
+					return false;
+				} else {
+					showPopup(v);
+				}
 			}
 			return true;
 		});
