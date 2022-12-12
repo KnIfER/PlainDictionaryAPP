@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.BookManager.transferRunnable;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
+import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
@@ -148,9 +150,14 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				//((TextView)v.findViewById(R.id.text)).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorHeaderBlue));
 				vh.title.setTextColor(Color.BLUE);
 				//((TextView)v.findViewById(R.id.text)).setText("✲"+((TextView)v.findViewById(R.id.text)).getText());
-			}else
+			} else
 				vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
+			
+			if(query!=null && filtered.get(position)!=null)
+				vh.title.setBackgroundResource(R.drawable.xuxian2);
+			else
+				vh.title.setBackground(null);
 			
 			if(GlobalOptions.isDark) {
 				convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
@@ -159,12 +166,13 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			String key = scanInList.get(position);
 			vh.title.setText(key);
 
-			if(a.opt.getDictManager1MultiSelecting()){
+			if(true){
 				vh.ck.setVisibility(View.VISIBLE);
 				vh.ck.setOnCheckedChangeListener(null);
 				vh.ck.setChecked(selector.contains(key));
 				vh.ck.setOnCheckedChangeListener(checkChanged);
-			}else
+				vh.tweakCheck();
+			} else
 				vh.ck.setVisibility(View.GONE);
 
 			return convertView;
@@ -187,7 +195,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			((BookManagerMain.ViewHolder)v.getTag()).ck.jumpDrawablesToCurrentState();
 			//v.getBackground().setLevel(20000);
 			mDslv.setFloatAlpha(1.0f);
-			v.setBackgroundColor(Color.parseColor("#ffff00"));//TODO: get primary color
+			v.setBackgroundColor(GlobalOptions.isDark?0xFFc17d33:0xFFffff00);//TODO: get primary color
 			isDirty=true;
 			return v;
 		}
@@ -206,20 +214,20 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 
 		LastSelectedPlan = a.opt.getLastPlanName("LastPlanName");
 
-		mDslv.setOnItemClickListener((parent, view, position, id) -> {
-			if(position>=mDslv.getHeaderViewsCount()) {
-				position = position - mDslv.getHeaderViewsCount();
+		listView.setOnItemClickListener((parent, view, position, id) -> {
+			if(position>= listView.getHeaderViewsCount()) {
+				position = position - listView.getHeaderViewsCount();
 				showLoadModuleDlg(PDICMainAppOptions.getWarnLoadModule(), position);
 			}
 		});
 
-		mDslv.setOnItemLongClickListener(new OnItemLongClickListener() {
+		listView.setOnItemLongClickListener(new OnItemLongClickListener() {
 			AlertDialog d;
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				if(position>=mDslv.getHeaderViewsCount()) {
+				if(position>= listView.getHeaderViewsCount()) {
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(getActivity());
-					final int actualPosition = position - mDslv.getHeaderViewsCount();
+					final int actualPosition = position - listView.getHeaderViewsCount();
 					builder2.setTitle(R.string.setOpt);
 					builder2.setSingleChoiceItems(new String[] {}, 0,
 							new DialogInterface.OnClickListener() {
@@ -284,7 +292,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 												}});
 											break;
 										case 1:
-											boolean deleteMultiple = a.opt.getDictManager1MultiSelecting() && selector.size()>0 && selector.contains(name);
+											boolean deleteMultiple = selector.size()>0 && selector.contains(name);
 											View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.dialog_about,null);
 											AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 											TextView tvtv = dialog1.findViewById(R.id.title);
@@ -420,7 +428,13 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		return (from, to) -> {
 			//CMN.Log("to", to);
 			//if(true) return;
-			if(a.opt.getDictManager1MultiSelecting() && selector.contains(scanInList.get(from))){
+			int pos=-1, top=0;
+			BookManagerMain.ViewHolder vh = (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), BookManagerMain.ViewHolder.class);
+			if (vh != null) {
+				pos = vh.position;
+				top = ViewUtils.getNthParentNonNull(vh.itemView, 1).getTop();
+			}
+			if(selector.contains(scanInList.get(from))){
 				ArrayList<String> md_selected = new ArrayList<>(selector.size());
 				if(to>from) to++;
 				for (int i = scanInList.size()-1; i >= 0; i--) {
@@ -438,6 +452,28 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				scanInList.add(to, mdTmp);
 				adapter.notifyDataSetChanged();
 			}
+			if (pos>=0) {
+				listView.setSelectionFromTop(pos + listView.getHeaderViewsCount(), top);
+			}
 		};
 	}
+	
+	public int schFilter(String query) {
+		int prvSz = filtered.size();
+		this.query = query;
+		filtered.clear();
+		if (!TextUtils.isEmpty(query)) {
+			for (int i = 0; i < scanInList.size(); i++) {
+				String name = scanInList.get(i);
+				if (name.toLowerCase().indexOf(query)>0) {
+					filtered.put(i, name);
+				}
+			}
+		}
+		if (!(filtered.size()==0 && prvSz==0)) {
+			adapter.notifyDataSetChanged();
+		}
+		return filtered.size();
+	}
+	
 }

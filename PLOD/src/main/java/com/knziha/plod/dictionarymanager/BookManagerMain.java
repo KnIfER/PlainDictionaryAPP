@@ -6,14 +6,12 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.RelativeSizeSpan;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,15 +22,16 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
@@ -46,7 +45,6 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
@@ -57,13 +55,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
-		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener {
+		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener, DragSortListView.DropListener {
 	public static int lastViewPos;
 	public static int lastViewTop;
 	HashSet<PlaceHolder> Selection = new HashSet<>();
@@ -74,7 +71,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private Drawable mActiveDrawable;
 	private Drawable mFilterDrawable;
 	private Drawable mAudioDrawable;
+	private Drawable mWebDrawable;
+	private Drawable mPDFDrawable;
 	private Drawable mRightDrawable;
+	private View pressedV;
+	private int pressedPos;
+	private boolean tweakedDict;
 	
 	public BookManagerMain(){
 		super();
@@ -118,7 +120,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 
 	@Override
 	public boolean exitSelectionMode() {
-		if(true && selected_size()>0){
+		if((this!=getBookManager().f1 || PDICMainAppOptions.dictManager1MultiSelecting()) && selected_size()>0){
 			for (PlaceHolder ph : Selection) {
 				setPlaceSelectedInter(ph, false);
 			}
@@ -134,342 +136,10 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		if (position >= mDslv.getHeaderViewsCount()) {//词典选项
-			AlertDialog.Builder builder2 = new AlertDialog.Builder(getActivity());
-			final int actualPosition = position - mDslv.getHeaderViewsCount();
-			SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.dictOpt)).append("");
-			int start = ssb.length();
-
-			final BookPresenter magent = getMagentAt(actualPosition);
-			boolean isOnSelected = getOpt().getDictManager1MultiSelecting() && getPlaceSelected(actualPosition);
-			if (isOnSelected) ssb.append("…");
-			ssb.append(magent.getPath());
-			if (isOnSelected) ssb.append("…");
-			int end = ssb.length();
-
-			ssb.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			ssb.setSpan(new ClickableSpan() {
-				@Override
-				public void onClick(@NonNull View widget) {//更多选项
-					AlertDialog.Builder builder3 = new AlertDialog.Builder(getActivity());
-					builder3.setTitle("更多选项");
-					builder3.setSingleChoiceItems(new String[]{}, 0,
-							(dialog, pos) -> {
-								//mdict_manageable magent = manager_group.get(actualPosition);
-								switch (pos) {
-									case 0: {//在外部管理器打开路径
-										StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
-										try {
-											startActivity(new Intent(Intent.ACTION_VIEW)
-													.setDataAndType(Uri.fromFile(magent.f().getParentFile()), "resource/folder")
-													.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-											);
-										} catch (Exception e) {
-											a.show(R.string.no_suitable_app);
-										}
-									}
-									break;
-									case 1: {//在内置管理器打开路径
-										DialogProperties properties = new DialogProperties();
-										properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
-										properties.selection_type = DialogConfigs.FILE_SELECT;
-										properties.root = new File("/");
-										properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-										properties.offset = magent.f().getParentFile();
-										properties.opt_dir = new File(getOpt().pathToDatabases() + "favorite_dirs/");
-										properties.dedicatedTarget = magent.f().getName();
-										properties.opt_dir.mkdirs();
-										properties.extensions = new HashSet<>();
-										properties.extensions.add(".mdx");
-										properties.extensions.add(".mdd");
-										properties.title_id = R.string.app_name;
-										properties.isDark = GlobalOptions.isDark;
-										FilePickerDialog fdialog = new FilePickerDialog(a, properties);
-										fdialog.show();
-									}
-									break;
-									case 2://词典设置
-										if (isOnSelected) {
-											ArrayList<BookPresenter> mdTmps = new ArrayList<>(selected_size());
-											int cc = 0;
-											for (BookPresenter mI : manager_group()) {
-												if (getPlaceSelected(cc++))
-													mdTmps.add(mI);
-											}
-											BookPresenter[] data = mdTmps.toArray(new BookPresenter[0]);
-											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), data);
-										} else {
-											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), magent);
-										}
-										bDictTweakerOnceShowed = true;
-										break;
-									case 3://词典设置
-										if (isOnSelected) {
-											ArrayList<BookPresenter> mdTmps = new ArrayList<>(selected_size());
-											int cc = 0;
-											for (BookPresenter mI : manager_group()) {
-												if (getPlaceSelected(cc++))
-													mdTmps.add(mI);
-											}
-											BookPresenter[] data = mdTmps.toArray(new BookPresenter[0]);
-											getBookManager().showBookPreferences(data);
-										} else {
-											getBookManager().showBookPreferences(magent);
-										}
-										break;
-								}
-							});
-
-					String[] Menus = getResources().getStringArray(
-							R.array.dicts_option1);
-					List<String> arrMenu = Arrays.asList(Menus);
-					AlertDialog dd = builder3.show();
-					dd.setOnDismissListener(dialog -> {
-						if (bDictTweakerOnceShowed) {
-							adapter.notifyDataSetChanged();
-							bDictTweakerOnceShowed = false;
-						}
-					});
-					dd.getListView().setAdapter(new ArrayAdapterHardCheckMark<>(getActivity(),
-							R.layout.singlechoice, android.R.id.text1, arrMenu));
-				}
-			}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-			builder2.setTitle(ssb);
-			builder2.setSingleChoiceItems(new String[]{}, 0,
-					(dialog, pos) -> {
-						switch (pos) {
-							case 0: {
-								if (true) {
-									a.showT("功能关闭，请等待6.0版本");
-									break;
-								}
-								View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
-								final ListView lv = dialog1.findViewById(R.id.lv);
-								final EditText et = dialog1.findViewById(R.id.et);
-								ImageView iv = dialog1.findViewById(R.id.confirm);
-								et.setText(getNameAt(actualPosition));
-
-								AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-								builder.setView(dialog1);
-								builder.setIcon(R.mipmap.ic_directory_parent);
-								final AlertDialog dd = builder.create();
-
-								iv.setOnClickListener(v -> {
-									boolean suc = false;
-									String newName = et.getText().toString();
-									String newPath = newName;
-									if(!newPath.contains("/")){
-										if(newName.endsWith(".mdx"))
-											newName = newName.substring(0, newName.length()-4);
-										else if(magent.isMdict())
-											newPath+=".mdx";
-										if(newName.length()>0){
-											String oldPath = magent.getPath();
-											File oldf = magent.f();
-											String oldFn = oldf.getName();
-											String OldFName = magent.getDictionaryName();
-											int oldFnLen = oldFn.length();
-
-											File to = new File(magent.f().getParent(), newPath);
-											String toFn = getOpt().tryGetDomesticFileName(to.getPath());
-											if (to.equals(magent.f())) {//就是自己
-												suc = true;
-											} else if (new File(magent.getPath()).exists()) {//正常重命名
-												if (to.exists()) {
-													a.showT("文件已存在，重命名失败！");
-												} else if (magent.renameFileTo(getActivity(), to)) {//正常重命名成功
-													suc = true;
-												}
-											} else {
-												if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
-													magent.renameFileTo(getActivity(), to);
-													CMN.Log("重命名", magent.getDictionaryName());
-													MagentTransient mdTmp = a.new_MagentTransient(to.getAbsolutePath(), getOpt(), null, true);
-													loadMan.md.set(actualPosition, mdTmp);
-													loadMan.lazyMan.placeHolders.set(actualPosition, mdTmp.getPlaceHolder());
-													suc = true;
-												}
-											}
-											if (suc) {
-												a.RebasePath(oldf, OldFName, to, newName, oldFn);
-												adapter.notifyDataSetChanged();
-												markDirty(-1);
-												d.dismiss();
-												dd.dismiss();
-												a.show(R.string.renD);
-												ArrayList<File> moduleFullScannerArr = a.ScanInModlueFiles(true, true);
-												AgentApplication app = ((AgentApplication) getActivity().getApplication());
-												char[] cb = app.get4kCharBuff();
-												for (File fI : moduleFullScannerArr) {
-													StringBuilder sb = new StringBuilder();
-													String line;
-
-													try {
-														ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
-														boolean bNeedReWrite = false;
-														while ((line = br.readLine()) != null) {
-															/* 含名俱重 */
-															try {
-																if (line.endsWith(oldFn)) {
-																	int ll = line.length();
-																	if (ll == oldFnLen || line.charAt(ll - oldFnLen) == '/') {
-																		line = ll == oldFnLen ? toFn : (line.substring(0, ll - oldFnLen) + toFn);
-																		bNeedReWrite = true;
-																	}
-																}
-															} catch (Exception ignored) {
-															}
-															sb.append(line).append("\n");
-														}
-														br.close();
-														cb = br.cb;
-														if (bNeedReWrite) {
-															ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
-															bw.write(sb.toString());
-															bw.flush();
-															bw.close();
-															cb = br.cb;
-														}
-													} catch (IOException e) {
-														e.printStackTrace();
-													}
-												}
-												app.set4kCharBuff(cb);
-												BookManagerFolderlike f3 = getBookManager().f3;
-												if (f3.dataPrepared) {
-													int idx = f3.data.remove(new mFile(oldPath));
-													if (idx != -1) {
-														f3.data.insert(new mFile(to).init(getOpt()));
-													}
-												}
-											}
-										}
-									}
-									if(!suc) {
-										a.showT("重命名失败!");
-									}
-								});
-								dd.show();
-							}
-							break;
-							case 1: {//多选
-								a.opt.setDictManager1MultiSelecting(!a.opt.getDictManager1MultiSelecting());
-								adapter.notifyDataSetChanged();
-								a.f2.adapter.notifyDataSetChanged();
-								d.dismiss();
-							}
-							break;
-							case 2: {//移至顶部
-								markDirty(-1);
-								replace(actualPosition, 0);
-								d.dismiss();
-								adapter.notifyDataSetChanged();
-								getListView().setSelection(0);
-							}
-							break;
-							case 3: {//移至底部
-								markDirty(-1);
-								int last = manager_group().size() - 1;
-								replace(actualPosition, last);
-								d.dismiss();
-								adapter.notifyDataSetChanged();
-								getListView().setSelection(last);
-							}
-							break;
-							/* 设为滤器等等… */
-							case 4: {
-								AlertDialog.Builder builder3 = new AlertDialog.Builder(getActivity());
-								builder3.setTitle("更多选项");
-								builder3.setSingleChoiceItems(
-										magent.isMddResource() ? R.array.dicts_option2 : R.array.dicts_option3, -1,
-										(dialog3, pos3) -> {
-											switch (pos3) {
-												/* 设为滤器 */
-												case 0: {
-													markDirty(actualPosition);
-													boolean isF = !PDICMainAppOptions.getTmpIsFiler(getPlaceFlagAt(actualPosition));
-													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), isF));
-													if (isOnSelected) {
-														for (int i = 0; i < manager_group().size(); i++) {
-															if (getPlaceSelected(i) && !manager_group().get(i).isMddResource())
-																setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(i), isF));
-														}
-													}
-													adapter.notifyDataSetChanged();
-													a.showT(isF ? "已设为构词库" : "已取消构词库");
-												}
-												break;
-												/* 设为点译词库 */
-												case 1: {
-													markDirty(actualPosition);
-													boolean isCS = !PDICMainAppOptions.getTmpIsClicker(getPlaceFlagAt(actualPosition));
-													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(actualPosition), isCS));
-													if (isOnSelected) {
-														for (int i = 0; i < manager_group().size(); i++) {
-															if (getPlaceSelected(i))
-																setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(i), isCS));
-														}
-													}
-													adapter.notifyDataSetChanged();
-													a.showT(isCS ? "已设为译词库" : "已取消点译词库");
-												}
-												break;
-												/* 设为默认折叠 */
-												case 2: {
-													markDirty(actualPosition);
-													boolean isCL = !PDICMainAppOptions.getTmpIsCollapsed(getPlaceFlagAt(actualPosition));
-													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsCollapsed(getPlaceFlagAt(actualPosition), isCL));
-													if (isOnSelected) {
-														for (int i = 0; i < manager_group().size(); i++) {
-															if (getPlaceSelected(i))
-																setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsCollapsed(getPlaceFlagAt(i), isCL));
-														}
-													}
-													adapter.notifyDataSetChanged();
-													a.showT(isCL ? "已设为默认折叠" : "已取消默认折叠");
-												} break;
-												/* 设为发音库( mdd 专有 ) */
-												case 3: {
-													if (isMddResourceAt(actualPosition)) {
-														markDirty(actualPosition);
-														boolean isCS = !PDICMainAppOptions.getTmpIsAudior(getPlaceFlagAt(actualPosition));
-														setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(actualPosition), isCS));
-														if(isCS) setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
-														if (isOnSelected) {
-															for (int i = 0; i < manager_group().size(); i++) {
-																if (getPlaceSelected(i)) {
-																	setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(i), isCS));
-																	if(isCS) setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
-																}
-															}
-														}
-														adapter.notifyDataSetChanged();
-														a.showT(isCS ? "已设为发音库" : "已取消发音库");
-													}
-												}
-												break;
-											}
-											dialog3.dismiss();
-										});
-								AlertDialog dd = builder3.show();
-							}
-							break;
-						}
-					});
-
-			String[] Menus = getResources().getStringArray(
-					R.array.dicts_option);
-			List<String> arrMenu = Arrays.asList(Menus);
-			d = builder2.show();
-
-			TextView titleView = d.getWindow().getDecorView().findViewById(R.id.alertTitle);
-			titleView.setSingleLine(false);
-			titleView.setMovementMethod(LinkMovementMethod.getInstance());
-			if (!GlobalOptions.isLarge) titleView.setMaxLines(5);
-
-			d.getListView().setAdapter(new ArrayAdapterHardCheckMark<>(getActivity(),
-					R.layout.singlechoice, android.R.id.text1, arrMenu));
+		if (position >= listView.getHeaderViewsCount()) {//词典选项
+			pressedPos = position - listView.getHeaderViewsCount();
+			if (view!=null) pressedV = view;
+			showPopup(view);
 		}
 		return true;
 	}
@@ -477,17 +147,83 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public void performLastItemLongClick() {
 		if(adapter.getCount()>0){
 			int idx = lastClickedPos[(lastClickedPosIndex+1)%2];
-			int hc = mDslv.getHeaderViewsCount();
+			int hc = listView.getHeaderViewsCount();
 			// CMN.debug("performLastItemLongClick::", idx, hc);
 			if(idx<hc||idx>=adapter.getCount()){
 				idx = hc;
-				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(mDslv.getChildAt(0), ViewHolder.class);
+				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
 				if (vh != null) {
 					idx = vh.position + hc;
 				}
 			}
 			onItemLongClick(null, null, idx, 0);
 		}
+	}
+	
+	@Override
+	public void drop(int from, int to) {
+		//CMN.Log("to", to);
+		//if(true) return;
+		boolean b1 = to<0;
+		if(b1) to=-to;
+		int pos=-1, top=0;
+		ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
+		if (vh != null) {
+			pos = vh.position;
+			top = ViewUtils.getNthParentNonNull(vh.itemView, 1).getTop();
+		}
+		if(a.opt.dictManager1MultiSelecting() && (getPlaceSelected(from) || b1)){
+			ArrayList<BookPresenter> md_selected = new ArrayList<>(selected_size());
+			ArrayList<PlaceHolder> ph_selected = new ArrayList<>(selected_size());
+			if(to>from || b1) to++;
+			for (int i = loadMan.md.size()-1; i >= 0; i--) {
+				if(getPlaceSelected(i)){
+					md_selected.add(0, loadMan.md.remove(i));
+					ph_selected.add(0, loadMan.lazyMan.placeHolders.remove(i));
+					if(i<to) {
+						to--;
+					}
+					if (i < pos) {
+						pos--;
+					}
+				}
+			}
+			loadMan.md.addAll(to, md_selected);
+			loadMan.lazyMan.placeHolders.addAll(to, ph_selected);
+			adapter.notifyDataSetChanged();
+		}
+		else if (from != to && !b1) {
+			replace(from, to);
+			adapter.notifyDataSetChanged();
+			if (from < pos) {
+				pos--;
+			}
+		}
+		if (pos>=0) {
+			listView.setSelectionFromTop(pos + listView.getHeaderViewsCount(), top);
+		}
+	}
+	
+	public void deleteSelOrOne(boolean one) {
+		int szf1 = manager_group().size();
+		new AlertDialog.Builder(getBookManager())
+				.setTitle(getBookManager().mResource.getString(R.string.surerrecords, one?1:Selection.size()))
+				.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
+				.setPositiveButton(R.string.confirm, (dialog, which) -> {
+					if (one) {
+						remove(pressedPos);
+					} else {
+						for (int i = szf1 - 1; i >= 0; i--) {
+							if (getPlaceSelected(i)) {
+								remove(i);
+							}
+						}
+					}
+					refreshSize();
+					dataSetChanged();
+					dialog.dismiss();
+				})
+				.create().show();
 	}
 	
 	private class MyAdapter extends ArrayAdapter<BookPresenter> {
@@ -501,6 +237,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
 				vh = new ViewHolder(convertView);
+				vh.title.trimStart = false;
 			} else {
 				vh = (ViewHolder) convertView.getTag();
 			}
@@ -509,25 +246,28 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//position = position - mDslv.getHeaderViewsCount();
 			//mngr_agent_manageable mdTmp = adapter.getItem(position);
 			
+			if(query!=null && filtered.get(position)!=null)
+				vh.title.setBackgroundResource(R.drawable.xuxian2);
+			else
+				vh.title.setBackground(null);
 
-//			if(BookManager.dictQueryWord!=null && mdTmp.getDictionaryName().toLowerCase().contains(aaa.dictQueryWord))
-//				vh.title.setBackgroundResource(R.drawable.xuxian2);
-//			else
-//				vh.title.setBackground(null);
+			final String key = getPathAt(position);
+			final String name = CMN.getAssetName(key);
+			final String suffix = CMN.getSuffix(key);
 
-			String key = getPathAt(position);
-
-			if(a.opt.getDictManager1MultiSelecting()){
+			if(a.opt.dictManager1MultiSelecting()){
 				vh.ck.setVisibility(View.VISIBLE);
 				vh.ck.setOnCheckedChangeListener(null);
 				vh.ck.setChecked(getPlaceSelected(position));
 				vh.ck.setOnCheckedChangeListener(checkChanged);
+				vh.tweakCheck();
 			} else {
 				vh.ck.setVisibility(View.GONE);
 			}
 
 			StringBuilder rgb = new StringBuilder("#");
-			if(getPlaceRejected(position))
+			boolean disabled = getPlaceRejected(position);
+			if(disabled)
 				rgb.append("aaaaaa");//一样的亮兰色aafafa
 			else
 				rgb.append(GlobalOptions.isDark?"EEEEEE":"000000");
@@ -537,13 +277,22 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			vh.title.setTextColor(Color.parseColor(rgb.toString()));
 			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
 			
-			int tmpFlag = getPlaceFlagAt(position);
+			//int tmpFlag = getPlaceFlagAt(position);
+			
+			BookPresenter magent = getMagentAt(position);
 			
 			Drawable mLeftDrawable=null;
-			if(PDICMainAppOptions.getTmpIsFiler(tmpFlag)){
-				mLeftDrawable=mFilterDrawable;
-			} else if(PDICMainAppOptions.getTmpIsAudior(tmpFlag)){
-				mLeftDrawable=mAudioDrawable;
+//			if(PDICMainAppOptions.getTmpIsFiler(tmpFlag)){
+//				mLeftDrawable=mFilterDrawable;
+//			}
+//			if(PDICMainAppOptions.getTmpIsAudior(tmpFlag)){
+//				mLeftDrawable=mAudioDrawable;
+//			}
+			if(suffix.equals(".web")){
+				mLeftDrawable=mWebDrawable;
+			}
+			else if(suffix.equals(".pdf")){
+				mLeftDrawable=mPDFDrawable;
 			}
 			
 			BookPresenter thereYouAre = a.app_mdict_cache.get(new File(key).getName());
@@ -552,10 +301,14 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			
 			vh.title.setCompoundDrawables(mActiveDrawable,
 					mLeftDrawable,
-					PDICMainAppOptions.getTmpIsClicker(tmpFlag)?mRightDrawable:null,
-					PDICMainAppOptions.getTmpIsCollapsed(tmpFlag)?"<>":null);
+					magent.getIsDedicatedFilter()?mRightDrawable:null,
+					magent.getAutoFold()?"<>":null);
 			
-			vh.title.setText(CMN.getAssetName(key));
+			if (disabled) {
+				vh.title.setText("// "+name);
+			} else {
+				vh.title.setText(name);
+			}
 			
 			vh.title.setStarLevel(0);
 			
@@ -565,7 +318,362 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			return convertView;
 		}
 	}
-
+	
+	PopupMenuHelper mPopup;
+	
+	public PopupMenuHelper getPopupMenu() {
+		if (mPopup==null) {
+			mPopup  = new PopupMenuHelper(getActivity(), null, null);
+			mPopup.initLayout(new int[]{
+					R.layout.poplist_shewei_gouciku
+			}, new PopupMenuHelper.PopupMenuListener() {
+				@Override
+				public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
+					int position = pressedPos;
+					boolean isOnSelected = getPlaceSelected(position);
+					BookPresenter magent;
+					if (isLongClick) {
+						if (view.getId() == R.id.disable) {
+							deleteSelOrOne(true);
+							popupMenuHelper.dismiss();
+						}
+						return false;
+					}
+					switch (view.getId()) {
+						/* 启用 禁用 */
+						case R.id.enable:
+						case R.id.disable:  {
+							int cc=0;
+							boolean isF = view.getId()==R.id.disable;
+							if (isOnSelected) {
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (getPlaceSelected(i)) {
+										markDirty(i);
+										setPlaceRejected(i, isF);
+										cc++;
+									}
+								}
+							} else {
+								markDirty(position);
+								setPlaceRejected(position, isF);
+								cc = 1;
+							}
+							adapter.notifyDataSetChanged();
+							refreshSize();
+							if (cc > 1) {
+								a.showT(!isF ? "已启用" + getNameAt(position) + "等" + cc + "个词典" : "已禁用" + getNameAt(position) + "等" + cc + "个词典");
+							} else {
+								a.showT(!isF ? "已启用" + getNameAt(position) : "已禁用" + getNameAt(position));
+							}
+						} break;
+						case R.string.rename: {
+							renameFile();
+						} break;
+						case R.id.move_sel: {
+							int from = -1;
+							if (PDICMainAppOptions.dictManager1MultiSelecting()) {
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (getPlaceSelected(i)) {
+										from = i;
+										break;
+									}
+								}
+							}
+							if (from == -1) {
+								a.showT("无操作");
+							} else {
+								drop(from, -pressedPos);
+							}
+						} break;
+						case R.string.multi_select: {//多选
+							a.opt.dictManager1MultiSelecting(!a.opt.dictManager1MultiSelecting());
+							adapter.notifyDataSetChanged();
+							a.f2.adapter.notifyDataSetChanged();
+							d.dismiss();
+						} break;
+						case R.string.move_top: {//移至顶部
+							markDirty(-1);
+							replace(position, 0);
+							adapter.notifyDataSetChanged();
+							getListView().setSelection(0);
+						}
+						break;
+						case R.string.move_bottom: {//移至底部
+							markDirty(-1);
+							int last = manager_group().size() - 1;
+							replace(position, last);
+							adapter.notifyDataSetChanged();
+							getListView().setSelection(last);
+						}
+						break;
+						case R.id.openFolder: {//在外部管理器打开路径
+							magent = getMagentAt(position);
+							StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+							try {
+								startActivity(new Intent(Intent.ACTION_VIEW)
+										.setDataAndType(Uri.fromFile(magent.f().getParentFile()), "resource/folder")
+										.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+								);
+							} catch (Exception e) {
+								a.show(R.string.no_suitable_app);
+							}
+						}
+						break;
+						case R.id.openFolderInner: {//在内置管理器打开路径
+							magent = getMagentAt(position);
+							DialogProperties properties = new DialogProperties();
+							properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
+							properties.selection_type = DialogConfigs.FILE_SELECT;
+							properties.root = new File("/");
+							properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
+							properties.offset = magent.f().getParentFile();
+							properties.opt_dir = new File(getOpt().pathToDatabases() + "favorite_dirs/");
+							properties.dedicatedTarget = magent.f().getName();
+							properties.opt_dir.mkdirs();
+							properties.extensions = new HashSet<>();
+							properties.extensions.add(".mdx");
+							properties.extensions.add(".mdd");
+							properties.title_id = R.string.app_name;
+							properties.isDark = GlobalOptions.isDark;
+							FilePickerDialog fdialog = new FilePickerDialog(a, properties);
+							fdialog.show();
+						}
+						break;
+						case R.id.tweak1://词典设置
+							magent = getMagentAt(position);
+							if (isOnSelected) {
+								ArrayList<BookPresenter> arr = new ArrayList<>(selected_size());
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (getPlaceSelected(i)) {
+										arr.add(getMagentAt(i));
+									}
+								}
+								BookPresenter[] data = arr.toArray(new BookPresenter[0]);
+								BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), data);
+							} else {
+								BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), magent);
+							}
+							bDictTweakerOnceShowed = true;
+							break;
+						case R.id.tweak2://词典设置
+							if (isOnSelected) {
+								ArrayList<BookPresenter> arr = new ArrayList<>(selected_size());
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (getPlaceSelected(i)) {
+										arr.add(getMagentAt(i));
+									}
+								}
+								BookPresenter[] data = arr.toArray(new BookPresenter[0]);
+								getBookManager().showBookPreferences(data);
+							} else {
+								getBookManager().showBookPreferences(getMagentAt(position));
+							}
+							break;
+						/* —— 设为滤器等等… —— */
+						/* 设为点译词库 */
+						case R.id.tapSch: {
+							magent = getMagentAt(position);
+							boolean isF = !magent.getIsDedicatedFilter();
+							magent.setIsDedicatedFilter(isF);
+							int cc=0;
+							if (isOnSelected) {
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (getPlaceSelected(i) && !getPathAt(i).endsWith(".mdd")) {
+										// setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(i), isF));
+										getMagentAt(i).setIsDedicatedFilter(isF);
+										cc++;
+									}
+								}
+							} else {
+								cc=1;
+							}
+							tweakedDict = true;
+							adapter.notifyDataSetChanged();
+							if (cc > 1) {
+								a.showT(isF ? "已设置" + magent.getDictionaryName() + "等" + cc + "个词典为点译词库" : "已取消" + magent.getDictionaryName() + "等" + cc + "个点译库");
+							} else {
+								a.showT(isF ? "已设置" + magent.getDictionaryName() + "为点译词库" : "已取消" + magent.getDictionaryName() + "点译词库");
+							}
+						} break;
+						/* 设为默认折叠 */
+						case R.id.fold: {
+							magent = getMagentAt(position);
+							boolean isF = !magent.getAutoFold();
+							magent.setAutoFold(isF);
+							int cc=0;
+							if (isOnSelected) {
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (getPlaceSelected(i)) {
+										getMagentAt(i).setAutoFold(isF);
+										cc++;
+									}
+								}
+							} else {
+								cc=1;
+							}
+							tweakedDict = true;
+							adapter.notifyDataSetChanged();
+							if (cc > 1) {
+								a.showT(isF ? "已设置" + magent.getDictionaryName() + "等" + cc + "个词典为默认折叠" : "已取消" + magent.getDictionaryName() + "等" + cc + "默认折叠");
+							} else {
+								a.showT(isF ? "已设置" + magent.getDictionaryName() + "为默认折叠" : "已取消" + magent.getDictionaryName() + "默认折叠");
+							}
+						} break;
+						/* 设为点译词库 */
+//						case 1: {
+//							markDirty(actualPosition);
+//							boolean isCS = !PDICMainAppOptions.getTmpIsClicker(getPlaceFlagAt(actualPosition));
+//							setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(actualPosition), isCS));
+//							if (isOnSelected) {
+//								for (int i = 0; i < manager_group().size(); i++) {
+//									if (getPlaceSelected(i))
+//										setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(i), isCS));
+//								}
+//							}
+//							adapter.notifyDataSetChanged();
+//							a.showT(isCS ? "已设为译词库" : "已取消点译词库");
+//						} break;
+						/* 设为发音库( mdd 专有 ) */
+//						case 3: {
+//							if (isMddResourceAt(actualPosition)) {
+//								markDirty(actualPosition);
+//								boolean isCS = !PDICMainAppOptions.getTmpIsAudior(getPlaceFlagAt(actualPosition));
+//								setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(actualPosition), isCS));
+//								if(isCS) setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
+//								if (isOnSelected) {
+//									for (int i = 0; i < manager_group().size(); i++) {
+//										if (getPlaceSelected(i)) {
+//											setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(i), isCS));
+//											if(isCS) setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
+//										}
+//									}
+//								}
+//								adapter.notifyDataSetChanged();
+//								a.showT(isCS ? "已设为发音库" : "已取消发音库");
+//							}
+//						} break;
+					}
+					popupMenuHelper.dismiss();
+					return true;
+				}
+			});
+		}
+		return mPopup;
+	}
+	
+	private void renameFile() {
+		BookPresenter magent = getMagentAt(pressedPos);
+		boolean isOnSelected = getPlaceSelected(pressedPos);
+		
+		View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
+		final ListView lv = dialog1.findViewById(R.id.lv);
+		final EditText et = dialog1.findViewById(R.id.et);
+		ImageView iv = dialog1.findViewById(R.id.confirm);
+		et.setText(getNameAt(pressedPos));
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setView(dialog1);
+		builder.setIcon(R.mipmap.ic_directory_parent);
+		final AlertDialog dd = builder.create();
+		
+		iv.setOnClickListener(v -> {
+			boolean suc = false;
+			String newName = et.getText().toString();
+			String newPath = newName;
+			if(!newPath.contains("/")){
+				if(newName.endsWith(".mdx"))
+					newName = newName.substring(0, newName.length()-4);
+				else if(magent.isMdict())
+					newPath+=".mdx";
+				if(newName.length()>0){
+					String oldPath = magent.getPath();
+					File oldf = magent.f();
+					String oldFn = oldf.getName();
+					String OldFName = magent.getDictionaryName();
+					int oldFnLen = oldFn.length();
+					
+					File to = new File(magent.f().getParent(), newPath);
+					String toFn = getOpt().tryGetDomesticFileName(to.getPath());
+					if (to.equals(magent.f())) {//就是自己
+						suc = true;
+					} else if (new File(magent.getPath()).exists()) {//正常重命名
+						if (to.exists()) {
+							a.showT("文件已存在，重命名失败！");
+						} else if (magent.renameFileTo(getActivity(), to)) {//正常重命名成功
+							suc = true;
+						}
+					} else {
+						if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
+							magent.renameFileTo(getActivity(), to);
+							CMN.Log("重命名", magent.getDictionaryName());
+							MagentTransient mdTmp = a.new_MagentTransient(to.getAbsolutePath(), getOpt(), null, true);
+							loadMan.md.set(pressedPos, mdTmp);
+							loadMan.lazyMan.placeHolders.set(pressedPos, mdTmp.getPlaceHolder());
+							suc = true;
+						}
+					}
+					if (suc) {
+						a.RebasePath(oldf, OldFName, to, newName, oldFn);
+						adapter.notifyDataSetChanged();
+						markDirty(-1);
+						d.dismiss();
+						dd.dismiss();
+						a.show(R.string.renD);
+						ArrayList<File> moduleFullScannerArr = a.ScanInModlueFiles(true, true);
+						AgentApplication app = ((AgentApplication) getActivity().getApplication());
+						char[] cb = app.get4kCharBuff();
+						for (File fI : moduleFullScannerArr) {
+							StringBuilder sb = new StringBuilder();
+							String line;
+							
+							try {
+								ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+								boolean bNeedReWrite = false;
+								while ((line = br.readLine()) != null) {
+									/* 含名俱重 */
+									try {
+										if (line.endsWith(oldFn)) {
+											int ll = line.length();
+											if (ll == oldFnLen || line.charAt(ll - oldFnLen) == '/') {
+												line = ll == oldFnLen ? toFn : (line.substring(0, ll - oldFnLen) + toFn);
+												bNeedReWrite = true;
+											}
+										}
+									} catch (Exception ignored) {
+									}
+									sb.append(line).append("\n");
+								}
+								br.close();
+								cb = br.cb;
+								if (bNeedReWrite) {
+									ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+									bw.write(sb.toString());
+									bw.flush();
+									bw.close();
+									cb = br.cb;
+								}
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						app.set4kCharBuff(cb);
+						BookManagerFolderlike f3 = getBookManager().f3;
+						if (f3.dataPrepared) {
+							int idx = f3.data.remove(new mFile(oldPath));
+							if (idx != -1) {
+								f3.data.insert(new mFile(to).init(getOpt()));
+							}
+						}
+					}
+				}
+			}
+			if(!suc) {
+				a.showT("重命名失败!");
+			}
+		});
+		dd.show();
+	}
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -575,6 +683,8 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			mActiveDrawable = resource.getDrawable(R.drawable.star_ic_solid);
 			mFilterDrawable = resource.getDrawable(R.drawable.filter);
 			mAudioDrawable = resource.getDrawable(R.drawable.voice_ic_big);
+			mWebDrawable = resource.getDrawable(R.drawable.ic_web);
+			mPDFDrawable = resource.getDrawable(R.drawable.file_pdf_box);
 			mRightDrawable = resource.getDrawable(R.drawable.ic_click_search);
 			loadMan = a.loadMan;
 			//TODO 省去这一步的IO？
@@ -590,50 +700,41 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 //			}
 
 			aaa = (BookManager) getActivity();
-			mDslv.setOnItemClickListener((parent, view, position, id) -> {
+			listView.setOnItemClickListener((parent, v, position, id) -> {
 				//CMN.show(""+(adapter==null)+" "+(((dict_manager_activity)getActivity()).f1.adapter==null));
 				//adapter.getItem(position).value = !adapter.getItem(position).value;//TODO optimize
-				if (position >= mDslv.getHeaderViewsCount()) {
-					position -= mDslv.getHeaderViewsCount();
-					markDirty(position);
-					setPlaceRejected(position, !getPlaceRejected(position));
-					adapter.notifyDataSetChanged();
-					refreshSize();
+				if (position >= listView.getHeaderViewsCount()) {
+					pressedPos = position - listView.getHeaderViewsCount();
+					pressedV = v;
+					if (PDICMainAppOptions.dictManagerClickPopup()) {
+						showPopup(v);
+					} else {
+						markDirty(pressedPos);
+						setPlaceRejected(pressedPos, !getPlaceRejected(pressedPos));
+						adapter.notifyDataSetChanged();
+						refreshSize();
+					}
 				}
 			});
 
-			mDslv.setOnItemLongClickListener(this);
+			listView.setOnItemLongClickListener(this);
 			setListAdapter();
 			refreshSize();
-			mDslv.setSelectionFromTop(lastViewPos, lastViewTop);
+			listView.setSelectionFromTop(lastViewPos, lastViewTop);
 		}
+	}
+	
+	private void showPopup(View v) {
+		PopupMenuHelper popupMenu = getPopupMenu();
+		int[] vLocationOnScreen = new int[2];
+		if (v == null) v = listView;
+		v.getLocationOnScreen(vLocationOnScreen);
+		popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
 	}
 	
 	@Override
 	DragSortListView.DropListener getDropListener() {
-		return (from, to) -> {
-			//CMN.Log("to", to);
-			//if(true) return;
-			if(a.opt.getDictManager1MultiSelecting() && getPlaceSelected(from)){
-				ArrayList<BookPresenter> md_selected = new ArrayList<>(selected_size());
-				ArrayList<PlaceHolder> ph_selected = new ArrayList<>(selected_size());
-				if(to>from) to++;
-				for (int i = loadMan.md.size()-1; i >= 0; i--) {
-					if(getPlaceSelected(i)){
-						md_selected.add(0, loadMan.md.remove(i));
-						ph_selected.add(0, loadMan.lazyMan.placeHolders.remove(i));
-						if(i<to) to--;
-					}
-				}
-				loadMan.md.addAll(to, md_selected);
-				loadMan.lazyMan.placeHolders.addAll(to, ph_selected);
-				adapter.notifyDataSetChanged();
-			}
-			else if (from != to) {
-				replace(from, to);
-				adapter.notifyDataSetChanged();
-			}
-		};
+		return this;
 	}
 	
 	private class MyDSController extends DragSortController {
@@ -651,7 +752,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			((ViewHolder)v.getTag()).ck.jumpDrawablesToCurrentState();
 			//v.getBackground().setLevel(500);
 			mDslv.setFloatAlpha(1.0f);
-			v.setBackgroundColor(Color.parseColor("#ffff00"));//TODO: get primary color
+			v.setBackgroundColor(GlobalOptions.isDark?0xFFc17d33:0xFFffff00);//TODO: get primary color
 			markDirty(-1);
 			return v;
 		}
@@ -665,15 +766,27 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	
 	public static class ViewHolder{
 		public int position;
+		public View itemView;
 		public ImageView handle;
 		public FlowTextView title;
 		public CheckBox ck;
+		boolean isDark;
 
 		public ViewHolder(View v) {
+			itemView = v;
 			handle = v.findViewById(R.id.drag_handle);
 			title = v.findViewById(R.id.text);
 			ck = v.findViewById(R.id.check1);
 			v.setTag(this);
+		}
+		
+		public void tweakCheck() {
+			if (isDark!=GlobalOptions.isDark) {
+				isDark = isDark!=GlobalOptions.isDark;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					ck.getButtonDrawable().setColorFilter(isDark?GlobalOptions.NEGATIVE_1:null);
+				}
+			}
 		}
 	}
 
@@ -825,5 +938,34 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			}
 		}
 		return placeArray;
+	}
+	
+	public int schFilter(String query) {
+		int prvSz = filtered.size();
+		this.query = query;
+		filtered.clear();
+		if (!TextUtils.isEmpty(query)) {
+			for (int i = 0; i < manager_group().size(); i++) {
+				String name = getNameAt(i).toString();
+				if (name.toLowerCase().indexOf(query)>0) {
+					filtered.put(i, name);
+				}
+			}
+		}
+		if (!(filtered.size()==0 && prvSz==0)) {
+			adapter.notifyDataSetChanged();
+		}
+		return filtered.size();
+	}
+	
+	
+	public void checkTweakedDict() {
+		CMN.debug("checkTweakedDict", tweakedDict);
+		if (tweakedDict) {
+			for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+				a.getMagentAt(i, false).checkFlag(a);
+			}
+			tweakedDict = false;
+		}
 	}
 }

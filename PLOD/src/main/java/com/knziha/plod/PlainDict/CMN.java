@@ -269,9 +269,16 @@ public class CMN{
 		return new File(name).getName();
 	}
 	
+	public static String getSuffix(String key) {
+		int idx = key.lastIndexOf(".");
+		if (idx>=0) {
+			return key.substring(idx).toLowerCase();
+		}
+		return "";
+	}
+	
 	public static String debug(Object...o) {
 		if (BuildConfig.DEBUG) return Log(o);
 		return null;
 	}
-	
 }

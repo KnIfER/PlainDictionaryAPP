@@ -158,8 +158,9 @@ public class MagentTransient extends BookPresenter {
 //	}
 	
 	@Override
-	public void checkFlag(Toastable_Activity context) {
-		if(isDirty||firstFlag!=FFStamp){
+	public boolean checkFlag(Toastable_Activity context) {
+		boolean ret = isDirty||firstFlag!=FFStamp;
+		if(ret){
 			if(changeMap){
 				String path = getPath();
 				if(PDICMainAppOptions.ChangedMap ==null) PDICMainAppOptions.ChangedMap =new HashSet<>();
@@ -173,6 +174,7 @@ public class MagentTransient extends BookPresenter {
 			FFStamp=firstFlag;
 			isDirty=false;
 		}
+		return ret;
 	}
 
 	@Override

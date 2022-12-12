@@ -52,8 +52,8 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		CMN.debug("onTouchEvent", "isViewSingle = [" + weblistHandler.isViewSingle() + "]");
-		CMN.debug("onTouchEvent", mChildHelper.isNestedScrollingEnabled(), mNestedScrollEnabled);
+		//CMN.debug("onTouchEvent", "isViewSingle = [" + weblistHandler.isViewSingle() + "]");
+		//CMN.debug("onTouchEvent", mChildHelper.isNestedScrollingEnabled(), mNestedScrollEnabled);
 		if(mNestedScrollEnabled&&weblistHandler.isViewSingle()) {
 			mChildHelper.onTouchEvent(this, event);
 			super.onTouchEvent(event);

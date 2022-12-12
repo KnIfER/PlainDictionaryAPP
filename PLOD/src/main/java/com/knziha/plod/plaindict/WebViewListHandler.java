@@ -41,6 +41,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertController;
@@ -266,6 +267,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 //					a.root.removeCallbacks(entrySeekRn);
 //					a.root.postDelayed(entrySeekRn, isFoldingScreens()?100:50);
 					entrySeekRn.run();
+					toastFrame();
 				}
 				if (multiRecord.jointResult!=null) {
 					multiRecord.jointResult.LongestStartWithSeqLength = -progress;
@@ -275,12 +277,20 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		@Override
 		public void onStartTrackingTouch(SeekBar seekBar) {
 			seeking = true;
+			toastFrame();
 		}
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
 			seeking = false;
 		}
 	};
+	
+	private void toastFrame() {
+		if (scrollFocus!=null) {
+			a.showT(scrollFocus.presenter.getDictionaryName(), Toast.LENGTH_SHORT);
+			a.m_currentToast.setGravity(Gravity.BOTTOM, 0, 175*2);
+		}
+	}
 	
 	public void setScrollFocus(WebViewmy wv, int frame) {
 		if (!bDataOnly) {
@@ -975,8 +985,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		if(this.dictView!=dictView) {
 			this.dictView = dictView;
-			if (this==a.weblistHandler && a.thisActType==MainActivityUIBase.ActType.PlainDict) {
-				((AdvancedNestScrollWebView)this.dictView).setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
+			if (dictView!=null && this==a.weblistHandler && a.thisActType==MainActivityUIBase.ActType.PlainDict) {
+				((AdvancedNestScrollWebView)dictView).setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 			}
 		}
 	}

@@ -1,22 +1,12 @@
 package com.knziha.plod.dictionarymanager;
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
-
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.R;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class BookManagerFolderlike extends BookManagerFolderAbs {

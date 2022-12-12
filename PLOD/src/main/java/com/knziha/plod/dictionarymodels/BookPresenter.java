@@ -442,6 +442,10 @@ function debug(e){console.log(e)};
 		firstFlag&=~0x2;
 		if(val) firstFlag|=0x2;
 	}
+	
+	@Metaline(flagPos=6) public boolean getIsDedicatedFilter(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=6) public void setIsDedicatedFilter(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
+	
 	/** 内容可重载（检查数据库或文件系统中的重载内容） */
 	@Metaline(flagPos=7) public boolean getContentEditable(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=7) public void setContentEditable(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
@@ -449,11 +453,7 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=8) public boolean getEditingContents(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=8) public void setEditingContents(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
-	@Deprecated
-	public void setIsDedicatedFilter(boolean val){
-		firstFlag&=~0x40;
-		if(val) firstFlag|=0x40;
-	}
+	
 	
 	@Metaline(flagPos=5) public boolean getUseInternalBG(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=5) public void setUseInternalBG(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
@@ -490,6 +490,7 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=31, shift=1) public boolean getImageBrowsable(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=31, shift=1) public void setImageBrowsable(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=32) public boolean getAutoFold(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=32) public void setAutoFold(boolean val){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=33) public boolean getDrawHighlightOnTop(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=33) public void setDrawHighlightOnTop(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
@@ -535,6 +536,11 @@ function debug(e){console.log(e)};
 	
 	@Metaline(flagPos=52) public boolean tapschWebStandaloneSet() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52) public void tapschWebStandaloneSet(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=53, flagSize=2) public int zhoAny() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=53) public boolean zhoVer() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=54) public boolean zhoHor() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=55) public boolean zhoHigh() { firstFlag=firstFlag; throw new RuntimeException();}
 	
 	
 	public boolean getSavePageToDatabase(){
@@ -2246,9 +2252,13 @@ function debug(e){console.log(e)};
 			ApplyPadding(htmlBuilder);
 			htmlBuilder.append("}");
 		}
-		if (true) {
+		if (zhoAny()!=0) {
 			if(!styleOpened){ htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;}
-			htmlBuilder.append("html{min-height:100%;display:flex;align-items:center;justify-content:center;}");
+			htmlBuilder.append("html{min-height:").append(zhoHigh() ? "92%" : "100%")
+					.append(";display:flex;")
+					.append(zhoVer() ? "align-items:center;" : "")
+					.append(zhoHor() ? "justify-content:center;" : "")
+					.append("}");
 		}
 		if(styleOpened) {
 			htmlBuilder.append("</style>");
@@ -2537,10 +2547,13 @@ function debug(e){console.log(e)};
 	}
 
 	@Override
-	public void checkFlag(Toastable_Activity context) {
-		if(FFStamp!=firstFlag || isDirty)
+	public boolean checkFlag(Toastable_Activity context) {
+		boolean ret = FFStamp!=firstFlag || isDirty;
+		if(ret) {
 			saveStates(context, context.prepareHistoryCon());
+		}
 		if(isWebx) bookImpl.saveConfigs(this);
+		return ret;
 	}
 
 	@Override
@@ -3986,9 +3999,8 @@ function debug(e){console.log(e)};
 		tmpIsFlag = val;
 	}
 	
-	public void saveStates(Context context, LexicalDBHelper historyCon) {
+	public void saveStates(Toastable_Activity context, LexicalDBHelper historyCon) {
 		if(mType==PLAIN_TYPE_EMPTY) return;
-		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;
 			
@@ -4048,7 +4060,7 @@ function debug(e){console.log(e)};
 			putBookOptions(context, historyCon, bookImpl.getBooKID(), bos.getArray(MainActivityUIBase.ConfigSize), bookImpl.getFile().getPath(), save_name);
 			isDirty = false;
 			
-			readConfigs(a, a.prepareHistoryCon());
+			readConfigs(context, context.prepareHistoryCon());
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

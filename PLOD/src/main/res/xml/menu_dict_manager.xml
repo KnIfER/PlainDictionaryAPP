@@ -11,8 +11,8 @@
 </group>
 	<!--3 --><item android:title="@string/save_as" android:id="@+id/toolbar_action3" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--4 --><item android:title="禁用全部" android:id="@+id/toolbar_action4" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
-	<!--5 --><item android:title="禁用选中项 | 启用选中项" android:id="@+id/toolbar_action5" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
-	<!--6 --><item android:title="启用全部 | 添加全部词典" android:id="@+id/remPagePos" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--5 --><item android:title="启用选中项" android:id="@+id/toolbar_action5" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--6 --><item android:title="启用全部 | 禁用全部" android:id="@+id/disenAll" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 <group android:id="@+id/select">
 	<!--7 --><item android:title="全选 | 全不选" android:id="@+id/toolbar_action7" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--8 --><item android:title="@string/select_all_invalid" android:id="@+id/toolbar_action8" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
@@ -24,11 +24,16 @@
 	<!--13--><item android:title="@string/fold_all" android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--14--><item android:title="@string/unfold_all" android:id="@+id/tapSch" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 	<!--15--><item android:title="@string/new___" android:id="@+id/toolbar_action15" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
-	<!--16--><item android:title="menu_search" android:id="@+id/action_search" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
+	<!--16--><item android:title="底部显示搜索框" android:id="@+id/action_search" android:icon="@drawable/ic_search_24k" app:showAsAction="always" />
 <group android:id="@+id/select">
-	<!--17--><item android:title="@string/inter_sel" android:id="@+id/inter_sel" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
-	<!--18--><item android:title="@string/select_all_invalid" android:id="@+id/inval_sel" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
-	<!--19--><item android:title="选中禁用项 | 不选禁用项" android:id="@+id/inena_sel" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
+	<!--17--><item android:title="@string/inter_sel" android:id="@+id/inter_sel" app:showAsAction="never" />
+	<!--18--><item android:title="@string/select_all_invalid" android:id="@+id/inval_sel" app:showAsAction="never" />
+	<!--19--><item android:title="选中禁用项 | 不选禁用项" android:id="@+id/inena_sel" app:showAsAction="never" />
 </group>
-	<!--20--><item android:title="删除记录" android:id="@+id/del_rec" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
+	<!--20--><item android:title="禁用选中项 | 删除选中项" android:id="@+id/del_rec" app:showAsAction="never" />
+	<!--21--><item android:title="添加全部词典" android:id="@+id/addAll"  app:showAsAction="never" />
+	<!--22--><item android:title="切换多选模式" android:id="@string/multi_select" android:icon="@drawable/sel_box_outline" android:tint="#fff" app:showAsAction="always" android:checkable="true"/>
+	<!--23--><item android:title="切换点击弹出菜单" android:id="@+id/popup" android:icon="@drawable/ic_click_popup" app:showAsAction="always" android:checkable="true" />
+	<!--24--><item android:title="清除多选" android:id="@+id/clearSel" android:icon="@drawable/close_box_outline" app:showAsAction="always" android:checkable="false" />
+	<!--25--><item android:title="进入多选模式" android:id="@+id/enter_select" android:icon="@drawable/sel_box_outline" app:showAsAction="always" />
 </menu>

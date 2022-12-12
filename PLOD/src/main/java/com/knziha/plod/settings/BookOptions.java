@@ -1,5 +1,7 @@
 package com.knziha.plod.settings;
 
+import android.app.Activity;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
@@ -29,6 +31,7 @@ import com.knziha.filepicker.settings.IntPreference;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
@@ -92,9 +95,8 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		if(pref instanceof ColorPickerPreference)
 			MainProgram.setColorPreferenceTitle(pref, val);
 		
-		if(multiple) {
-			pref.setTitle(pref.getTitle()+getResources().getString(R.string.multiple_vals));
-		}
+		
+		multiPref(multiple, pref);
 	}
 	
 	private void init_switcher(String key, boolean def, int position, Preference pref) {
@@ -110,9 +112,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		pref = init_switch_preference(this, key, val, null, null, pref);
 		pref.getExtras().putInt("flagPos", position);
 		if(def)pref.getExtras().putBoolean("def", def);
-		if(multiple) {
-			pref.setTitle(pref.getTitle()+getResources().getString(R.string.multiple_vals));
-		}
+		multiPref(multiple, pref);
 	}
 	
 	private void init_integer(String key, int position, int infoArr, int mask, Preference pref) {
@@ -129,9 +129,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		pref.getExtras().putInt("flagPos", position);
 		pref.getExtras().putInt("mask", mask);
 		
-		if(multiple) {
-			pref.setTitle(pref.getTitle()+getResources().getString(R.string.multiple_vals));
-		}
+		multiPref(multiple, pref);
 	}
 	
 	private boolean getBooleanFlagAt(BookPresenter datum, long mask, boolean def) {
@@ -227,11 +225,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	@Override
 	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		try {
-			text1.setText(text1.getText()+" - "+data[0].bookImpl.getDictionaryName()+(data.length==1?"":getResources().getString(R.string.multiple_vals)));
-		} catch (Exception e) {
-			CMN.debug(e);
-		}
+		setContext(getActivity());
 	}
 	
 	public void setData(BookPresenter[] data) {
@@ -361,6 +355,18 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 							break;
 						case "GPB":
 							init_switcher(key, false, 50, p);
+							break;
+						case "dedicated":
+							init_switcher(key, false, 54, p);
+							break;
+						case "zho_ver":
+							init_switcher(key, false, 53, p);
+							break;
+						case "zho_hor":
+							init_switcher(key, false, 54, p);
+							break;
+						case "zho_high":
+							init_switcher(key, false, 55, p);
 							break;
 						case "reload":
 							p.setOnPreferenceClickListener(this);
@@ -547,6 +553,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "GPL":
 				case "GPR":
 				case "GPB":
+				case "zho_ver":
+				case "zho_hor":
+				case "zho_high":
 					PDICMainAppOptions.dynamicPadding(true);
 				break;
 				case "p_df":
@@ -667,6 +676,30 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				}
 			}
 			//mWebFrame.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
+		}
+	}
+	
+	String multiple_vals_str;
+	
+	public void setContext(Activity context) {
+		try {
+			if (multiple_vals_str == null)
+				multiple_vals_str = context.getResources().getString(R.string.multiple_vals);
+			text1.setSingleLine(true);
+			text1.setText("词典设置 - " + (data.length == 1 ? "" : multiple_vals_str+" ") + data[0].bookImpl.getDictionaryName());
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
+	private void multiPref(boolean multiple, Preference pref) {
+		try {
+			if (multiple ^ TextUtils.indexOf(pref.getTitle(), multiple_vals_str) >= 0) {
+				if (multiple) pref.setTitle(pref.getTitle() + multiple_vals_str);
+				else pref.setTitle(pref.getTitle().toString().replace(multiple_vals_str, ""));
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 }

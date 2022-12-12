@@ -21,7 +21,7 @@ public interface mngr_agent_manageable {
 	boolean isMddResource();
 	void setTmpIsFlag(int val);
 	File f();
-	void checkFlag(Toastable_Activity context);
+	boolean checkFlag(Toastable_Activity context);
 	long getFirstFlag();
 	void setFirstFlag(long val);
 	void onValueChanged(WebViewmy view, int val, int mask, int flagPosition, int processId);

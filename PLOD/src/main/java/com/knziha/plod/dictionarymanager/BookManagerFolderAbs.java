@@ -3,8 +3,9 @@ package com.knziha.plod.dictionarymanager;
 import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +25,6 @@ import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
-
-import org.jcodings.constants.PosixBracket;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +78,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	ArrayListBookTree<mFile> data=new ArrayListBookTree<>();
 	ArrayList<mFile> dataTree=new ArrayList<>();
 	
-	protected ListView mDslv;
+	protected ListView listView;
 	ArrayAdapter<mFile> adapter;
 	boolean isDirty = false;
 	BookManager a;
@@ -164,13 +163,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		a = (BookManager) getActivity();
 		parentFile=a.opt.lastMdlibPath.getPath();
 		// setListview
-		mDslv = getListView();
-		mDslv.setChoiceMode(mDslv.CHOICE_MODE_MULTIPLE);
+		listView = getListView();
+		listView.setChoiceMode(listView.CHOICE_MODE_MULTIPLE);
 		View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);
-		mDslv.addHeaderView(v);
-		mDslv.setOnItemClickListener((parent, view, position, id) -> {
-			if(position>=mDslv.getHeaderViewsCount()) {
-				position = position - mDslv.getHeaderViewsCount();
+		listView.addHeaderView(v);
+		listView.setOnItemClickListener((parent, view, position, id) -> {
+			if(position>= listView.getHeaderViewsCount()) {
+				position = position - listView.getHeaderViewsCount();
 				//mFile p = data.getList().get(position);
 				ViewHolder vh = (ViewHolder)view.getTag();
 				mFile mdTmp = vh.dataLet;
@@ -226,13 +225,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				}
 			}
 		});
-		mDslv.setOnItemLongClickListener((parent, view, position, id) -> {
-			if(position>=mDslv.getHeaderViewsCount()) {
-				position = position - mDslv.getHeaderViewsCount();
+		listView.setOnItemLongClickListener((parent, view, position, id) -> {
+			if(position>= listView.getHeaderViewsCount()) {
+				position = position - listView.getHeaderViewsCount();
 				SelectionMode=true;
 				if(oes!=null) oes.onEnterSelection(this, true);
 				//Selection.put(adapter.getItem(position).getAbsolutePath());
-				mDslv.getOnItemClickListener().onItemClick(parent, view, position+mDslv.getHeaderViewsCount(), id);
+				listView.getOnItemClickListener().onItemClick(parent, view, position+ listView.getHeaderViewsCount(), id);
 				adapter.notifyDataSetChanged();
 			}
 			return true;
@@ -293,7 +292,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			else
 				vh.text.setTextColor(Color.RED);
 			
-			if(BookManager.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(BookManager.dictQueryWord))
+			if(query!=null
+					&& mdTmp.getName().toLowerCase().contains(query)
+					// && filtered.get(pos)!=null
+			)
 				vh.text.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.text.setBackground(null);
@@ -356,11 +358,75 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
-		mDslv = (ListView) inflater.inflate(R.layout.dict_dsl_main2, null);
-		mDslv.setDividerHeight(0);
+		listView = (ListView) inflater.inflate(R.layout.dict_dsl_main2, null);
+		listView.setDividerHeight(0);
 		//mDslv.setOnTouchListener(mController);
 		//mDslv.setDragEnabled(dragEnabled);
 		//CMN.show("onCreateView");
-		return mDslv;
+		return listView;
+	}
+	
+	String query;
+	SparseArray<String> filtered = new SparseArray<>();
+	
+	public int schFilter(String query) {
+		int prvSz = filtered.size();
+		filtered.clear();
+		if (!TextUtils.isEmpty(this.query = query)) {
+			if (adapter != null) {
+				for (int i = 0; i < adapter.getCount(); i++) {
+					String name = adapter.getItem(i).getName();
+					if (name.toLowerCase().indexOf(query)>=0) {
+						filtered.put(i, name);
+					}
+				}
+			}
+		}
+		if (!(filtered.size()==0 && prvSz==0)) {
+			adapter.notifyDataSetChanged();
+		}
+		return filtered.size();
+	}
+	
+	public void schPrvNxt(String query, boolean next) {
+		try {
+			if (!query.equals(this.query)) {
+				schFilter(query);
+			}
+			if (filtered.size() > 0) {
+				View child = ViewUtils.findCenterYChild(listView);
+				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(child, ViewHolder.class);
+				int fvp = (vh==null?0:vh.position), found = -1;
+				if (next) {
+					for (int i = 0; i < filtered.size(); i++) {
+						if (filtered.keyAt(i) > fvp) {
+							found = i;
+							break;
+						}
+					}
+					if (found != -1) {
+						ViewUtils.stopScroll(listView, -100, -100);
+						listView.setSelectionFromTop(filtered.keyAt(found)+ listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
+					}
+				} else {
+					for (int i = 0; i < filtered.size(); i++) {
+						if (filtered.keyAt(i) < fvp) {
+							found = i;
+						} else {
+							break;
+						}
+					}
+					if (found != -1) {
+						ViewUtils.stopScroll(listView, -100, -100);
+						getListView().setSelectionFromTop(filtered.keyAt(found)+listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
+					}
+				}
+			}
+			if ("".equals(query)) {
+				listView.setSelectionFromTop(next?adapter.getCount():0, 0);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 }

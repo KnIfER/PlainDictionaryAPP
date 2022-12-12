@@ -9324,7 +9324,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void onBookOptionsSet() {
+	public void onBookOptionsSet(boolean set) {
 		if(PDICMainAppOptions.dynamicPadding()){
 			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
 			if (wv!=null) wv.presenter.ApplyPadding(wv, true);

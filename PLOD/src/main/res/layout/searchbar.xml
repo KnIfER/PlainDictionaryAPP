@@ -5,7 +5,6 @@
 			android:id="@+id/searchbar"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:minHeight="?attr/actionBarSize"
 			android:theme="@style/toolbarBaseTheme"
 			app:contentInsetLeft="0dp"
 			app:contentInsetStart="0dp"
@@ -14,7 +13,7 @@
 	>
 	        <LinearLayout
 	            android:layout_width="match_parent"
-	            android:layout_height="wrap_content"
+	            android:layout_height="?attr/actionBarSize"
 	            android:layout_centerVertical="true"
 	            android:gravity="center_vertical"
 				android:orientation="horizontal"
@@ -28,7 +27,7 @@
 					<com.knziha.plod.widgets.EditTextmy
 						android:id="@+id/etSearch"
 						android:layout_width="match_parent"
-						android:layout_height="?attr/actionBarSize"
+						android:layout_height="match_parent"
 						android:paddingRight="32dp"
 						android:singleLine="true"
 						android:textColor="#ffffff"
@@ -74,7 +73,7 @@
 				<ImageView
 					android:id="@+id/enter"
 					android:layout_width="@dimen/_35_"
-					android:layout_height="?attr/actionBarSize"
+					android:layout_height="match_parent"
 					android:layout_marginLeft="3dp"
 					android:src="@drawable/schpage_settings"
 					android:background="?attr/actionBarItemBackground"
@@ -84,18 +83,20 @@
 	                android:id="@+id/forward"
 					android:layout_marginLeft="3dp"
 					android:layout_width="@dimen/_35_"
-	                android:layout_height="?attr/actionBarSize"
+	                android:layout_height="match_parent"
 	                android:src="@drawable/toshn"
 					android:background="?attr/actionBarItemBackground"
+					android:contentDescription="向上搜索"
 	                />
 
 	            <ImageView
 					android:layout_marginLeft="3dp"
 	                android:id="@+id/recess"
 					android:layout_width="@dimen/_35_"
-	                android:layout_height="?attr/actionBarSize"
+	                android:layout_height="match_parent"
 	                android:src="@drawable/toxia"
 					android:background="?attr/actionBarItemBackground"
+					android:contentDescription="向下搜索"
 	                />
 	        </LinearLayout>
  </androidx.appcompat.widget.Toolbar>

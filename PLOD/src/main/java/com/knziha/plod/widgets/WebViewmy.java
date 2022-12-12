@@ -1572,4 +1572,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean maybeHasSoundResourceOnPage() {
 		return bMaybeHasSoundOnPage || presenter.bookImpl.hasMdd();
 	}
+	
+	
+	@Override
+	protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+		super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
+		//CMN.debug("onOverScrolled", "scrollX = [" + scrollX + "], scrollY = [" + scrollY + "], clampedX = [" + clampedX + "], clampedY = [" + clampedY + "]");
+		
+	}
 }

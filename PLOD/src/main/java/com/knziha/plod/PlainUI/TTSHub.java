@@ -67,7 +67,7 @@ import java.util.List;
 import java.util.Locale;
 
 @SuppressLint("ResourceType")
-public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.PopupMenuListener {
+public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuListener {
 	MainActivityUIBase a;
 	NoScrollViewPager viewPager;
 	View[] viewList;
@@ -93,7 +93,7 @@ public class TTSHub<defYZ> extends PlainAppPanel implements PopupMenuHelper.Popu
 	public float TTSVolume = 1.f;
 	public ViewGroup controlBar;
 	
-	public static String delimiter = "[.?!;。？！；\r\n]";
+	public static String delimiter = "[.?!;。？！；\\[\\]【】\r\n]";
 	public int utteranceCacheSize = 9;
 	public int highLightBG = Color.YELLOW;//Color.YELLOW;
 	

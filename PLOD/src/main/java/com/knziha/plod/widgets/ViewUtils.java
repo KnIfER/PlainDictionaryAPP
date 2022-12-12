@@ -1070,6 +1070,15 @@ public class ViewUtils extends VU {
 		evt.recycle();
 	}
 	
+	public static void stopScroll(View view, int x, int y) {
+		MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, x, y, 0);
+		if (view!=null) view.dispatchTouchEvent(evt);
+		evt.setAction(MotionEvent.ACTION_CANCEL);
+		if (view!=null) view.dispatchTouchEvent(evt);
+		evt.setSource(100);
+		evt.recycle();
+	}
+	
 	public static void performClick(View view, float x, float y) {
 		MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, x, y, 0);
 		view.dispatchTouchEvent(evt);
@@ -1254,6 +1263,19 @@ public class ViewUtils extends VU {
 			}
 		}
 		return null;
+	}
+	
+	public static View findCenterYChild(ViewGroup recyclerView) {
+		int childCount = recyclerView.getChildCount(), middle=recyclerView.getHeight()/2+1;
+		if (childCount > 0) {
+			for (int i = 0; i < childCount; i++) {
+				View child = recyclerView.getChildAt(i);
+				if (child.getBottom() > middle) {
+					return child;
+				}
+			}
+		}
+		return recyclerView.getChildAt(0);
 	}
 	
 	/**

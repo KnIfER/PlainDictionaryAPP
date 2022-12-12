@@ -65,8 +65,10 @@ public class BookOptionsDialog extends DialogFragment {
 		//todo 在此调试一下配置存放
 		if (getActivity() instanceof Toastable_Activity) {
 			MainActivityUIBase a=null;
+			boolean set = false;
 			for (BookPresenter datum : bookOptions.data) {
-				datum.checkFlag((Toastable_Activity) getActivity());
+				if(datum.checkFlag((Toastable_Activity) getActivity()))
+					set = true;
 				if (a==null && datum.getIsManagerAgent()==0) {
 					a=datum.a;
 				}
@@ -74,9 +76,7 @@ public class BookOptionsDialog extends DialogFragment {
 			if (getActivity() instanceof MainActivityUIBase) {
 				a = (MainActivityUIBase) getActivity();
 			}
-			if (a!=null) {
-				a.onBookOptionsSet();
-			}
+			((Toastable_Activity)getActivity()).onBookOptionsSet(set);
 		}
 	}
 	
@@ -91,7 +91,7 @@ public class BookOptionsDialog extends DialogFragment {
 		if (win!=null) {
 			win.setBackgroundDrawableResource(GlobalOptions.isDark? androidx.appcompat.R.drawable.popup_shadow_d: androidx.appcompat.R.drawable.popup_shadow_l);
 			win.getDecorView().setPadding(0, 0, 0, 0);
-			win.getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+			View.OnLayoutChangeListener layout = (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
 				DisplayMetrics dm = getResources().getDisplayMetrics();
 				WindowManager.LayoutParams params = win.getAttributes();
 				int w = (int) (0.95*dm.widthPixels);
@@ -104,7 +104,9 @@ public class BookOptionsDialog extends DialogFragment {
 				params.width = w;
 				params.height = h;
 				win.setAttributes(params);
-			});
+			};
+			win.getDecorView().addOnLayoutChangeListener(layout);
+			layout.onLayoutChange(null, 0, 0, 0, 0, 0, 0, 0, 0);
 			win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 		}
 		

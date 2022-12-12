@@ -476,7 +476,7 @@ public class RLContainerSlider extends FrameLayout{
 					if (WebContext!=null) {
 						calcWebWidth();
 					}
-					//CMN.Log("ACTION_DOWN");
+					CMN.debug("ACTION_DOWN");
 					if (touch_id!=first_touch_id) {
 						detector.onTouchEvent(ev);
 						if (tapZoom
@@ -519,15 +519,20 @@ public class RLContainerSlider extends FrameLayout{
 								float dy = lastY - OrgY;
 								if (dy == 0) dy = 0.000001f;
 								dx = dx / dy;
-								theta = (int) (1.988*GlobalOptions.density);
 								if(WebContext!=null && WebContext.weblistHandler.isViewSingle() && (WebContext.getContentHeight() <= WebContext.getHeight())) {
-									theta /= 2;
+									theta = (int) (GlobalOptions.density);
 									//CMN.debug("减半");
+								} else {
+									theta = (int) (3*GlobalOptions.density);
+									if (dx > 1000 || dx <= -1000) {//3.3
+										theta = Integer.MAX_VALUE;
+									}
 								}
 								if (dx > theta || dx <= -theta) {//3.3
 									dragged = true;
 								}
 							}
+							CMN.debug("theta", theta, dx);
 						}
 					}
 				break;
@@ -618,8 +623,8 @@ public class RLContainerSlider extends FrameLayout{
 			if (pBc!=null) {
 				pBc = null;
 				tapCtx = SearchUI.pBc;
-				quoTapZoom();
 			}
+			quoTapZoom();
 		} else {
 			if (pBc!=webview.pBc) {
 				pBc = webview.pBc;

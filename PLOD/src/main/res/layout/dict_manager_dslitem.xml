@@ -8,15 +8,15 @@
 	android:orientation="horizontal"
 	android:minHeight="@dimen/item_height"
 	>
-	<CheckBox
-		android:id="@+id/check1"
+	<ImageView
+		android:id="@id/drag_handle"
+		android:src="@drawable/dragneo"
+		android:paddingEnd="8dp"
+		android:paddingStart="8dp"
+		android:layout_marginStart="3dp"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:paddingEnd="3dp"
-		android:layout_marginStart="3dp"
-		android:gravity="center"
-		android:focusable="false"
-		/>
+		android:layout_weight="0" />
 	<com.knziha.plod.widgets.FlowTextView
 		android:id="@+id/text"
 		android:layout_width="0dp"
@@ -29,13 +29,13 @@
 		android:gravity="center_vertical"
 		tools:text="aaaa"
 		/>
-	<ImageView
-		android:id="@id/drag_handle"
-		android:src="@drawable/dragneo"
-		android:paddingEnd="5dp"
-		android:paddingStart="2dp"
-		android:layout_marginEnd="8dp"
+	<CheckBox
+		android:id="@+id/check1"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_weight="0" />
+		android:paddingEnd="3dp"
+		android:layout_marginStart="3dp"
+		android:gravity="center"
+		android:focusable="false"
+		/>
 </LinearLayout>

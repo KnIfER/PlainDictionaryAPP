@@ -236,7 +236,7 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	protected void checkLog(Bundle savedInstanceState){
 		Bag flag = new Bag(false);
-		//skipCheckLog = true;
+		skipCheckLog = true;
 		if(!skipCheckLog && opt.getLogToFile()){
 			try {
 				File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
@@ -491,7 +491,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 	
 	public AccessibilityManager accessMan;
-	Toast m_currentToast;
+	public Toast m_currentToast;
 	TextView toastTv;
 	View toastV;
 	public void showX(int ResId,int len, Object...args) {
@@ -535,7 +535,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		m_currentToast.show();
 	}
 	public void showMT(Object text){
-		showT(text);
+		showT(text, Toast.LENGTH_SHORT);
 		m_currentToast.setGravity(Gravity.CENTER, 0, 0);
 	}
 	public void cancelToast(){
@@ -824,6 +824,10 @@ public class Toastable_Activity extends AppCompatActivity {
 		ActivityManager manager = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
 		if (manager != null)
 			manager.moveTaskToFront(getTaskId(), 0);
+	}
+	
+	public void onBookOptionsSet(boolean set) {
+	
 	}
 }
 

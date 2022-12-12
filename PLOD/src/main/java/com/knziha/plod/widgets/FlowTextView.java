@@ -29,6 +29,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -68,6 +69,7 @@ public class FlowTextView extends View {
 	public float margin=0;
 	public int maxLines=-1;
 	public boolean trim = true;
+	public boolean trimStart = true;
 	public boolean ellipsis = false;
 	ArrayListHolder lineObjects = new ArrayListHolder(3);
 	public int pad_right;
@@ -172,9 +174,11 @@ public class FlowTextView extends View {
 				} else if(fixedTailTrimCount>0) {
 					mLength-=fixedTailTrimCount;
 				}
-				suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());
-				if(suffix_index>0){
-					mStart = suffix_index+1;
+				if(trimStart) {
+					suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());
+					if(suffix_index>0){
+						mStart = suffix_index+1;
+					}
 				}
 			}
 			postCalcTextLayout();
@@ -371,6 +375,7 @@ public class FlowTextView extends View {
 		int paddingLeft = getPaddingLeft();
 		int height = getMeasuredHeight();
 		int width = getMeasuredWidth();
+		boolean isDark = GlobalOptions.isDark;
 		
 		if(mCoverBitmap !=null) {
 			int RWidth = mLineHeight*5/6;
@@ -388,7 +393,9 @@ public class FlowTextView extends View {
 				RStart += mLineHeight;
 			}
 			mLeftDrawable.setBounds(RStart, RTop, RStart+RWidth, RTop+RWidth);
+			if(isDark) mLeftDrawable.setColorFilter(GlobalOptions.NEGATIVE);
 			mLeftDrawable.draw(canvas);
+			if(isDark) mLeftDrawable.setColorFilter(null);
 		}
 		
 		if(mRightDrawable!=null) {
@@ -399,7 +406,9 @@ public class FlowTextView extends View {
 				RTop -= mLineHeight/6;
 			}
 			mRightDrawable.setBounds(RStart, RTop, RStart+RWidth, RTop+RWidth);
+			if(isDark) mRightDrawable.setColorFilter(GlobalOptions.NEGATIVE);
 			mRightDrawable.draw(canvas);
+			if(isDark) mRightDrawable.setColorFilter(null);
 		}
 		
 		/* tail */
@@ -501,9 +510,14 @@ public class FlowTextView extends View {
 		if(mTail!=null||mRightDrawable!=null){
 			starLeft -= lineHeight/2;
 		}
+		boolean isDark = GlobalOptions.isDark;
 		int starTop = paddingTop + (height - mStarWidth)/2;
 		int starBottom = starTop+mStarWidth;
 		int padding = (int) (mStarWidth*2/3+2*GlobalOptions.density);
+		if(isDark) {
+			mActiveDrawable.setColorFilter(GlobalOptions.NEGATIVE);
+			mRatingDrawable.setColorFilter(GlobalOptions.NEGATIVE_1);
+		}
 		for (int i = 0; i < StarLevel; i++) {
 			mActiveDrawable.setBounds(starLeft, starTop, starLeft+mStarWidth, starBottom);
 			mActiveDrawable.draw(canvas);
@@ -519,6 +533,10 @@ public class FlowTextView extends View {
 				mRatingDrawable.draw(canvas);
 				starLeft -= padding;
 			}
+		}
+		if(isDark) {
+			mActiveDrawable.setColorFilter(null);
+			mRatingDrawable.setColorFilter(null);
 		}
 	}
 	
@@ -632,15 +650,31 @@ public class FlowTextView extends View {
 	}
 	
 	public void setCompoundDrawables(Drawable StarDrawable, Drawable LeftDrawable, Drawable RightDrawable, String Tail) {
+		boolean inval = false;
 		if(mText!=null && (!StringUtils.equals(mTail, Tail)||LeftDrawable!=mLeftDrawable)) {
 			mText="";
 		}
-		mActiveDrawable = StarDrawable;
-		mLeftDrawable = LeftDrawable;
-		mRightDrawable = RightDrawable;
-		mTail = Tail;
-		if(mTail!=null){
-			mTailLength = mTextPaint.measureText(mTail);
+		if (mActiveDrawable!=StarDrawable) {
+			mActiveDrawable = StarDrawable;
+			inval = true;
+		}
+		if (mLeftDrawable!=LeftDrawable) {
+			mLeftDrawable = LeftDrawable;
+			inval = true;
+		}
+		if (mRightDrawable!=RightDrawable) {
+			mRightDrawable = RightDrawable;
+			inval = true;
+		}
+		if (!TextUtils.equals(mTail, Tail)) {
+			mTail = Tail;
+			inval = true;
+			if(Tail!=null){
+				mTailLength = mTextPaint.measureText(Tail);
+			}
+		}
+		if (inval) {
+			invalidate();
 		}
 	}
 	

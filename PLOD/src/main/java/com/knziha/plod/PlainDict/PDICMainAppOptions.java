@@ -1312,13 +1312,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	public boolean getDictManager1MultiSelecting() {
-		return (SecondFlag & 0x4000000000l) == 0x4000000000l;
-	}
-	public boolean setDictManager1MultiSelecting(boolean val) {
-		updateSFAt(0x4000000000l,val);
-		return val;
-	}
+//	public boolean getDictManager1MultiSelecting() {
+//		//return (SecondFlag & 0x4000000000l) == 0x4000000000l;
+//		return true;
+//	}
+//	public boolean setDictManager1MultiSelecting(boolean val) {
+//		updateSFAt(0x4000000000l,val);
+//		return val;
+//	}
 
 	public boolean getCheckMdlibs() {
 		return (SecondFlag & 0x8000000000l) != 0x8000000000l;
@@ -3047,6 +3048,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=37) public static boolean dynamicPadding() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=37) public static void dynamicPadding(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=38, shift=1) public static boolean schDictManager() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=38, shift=1) public static void schDictManager(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=39, shift=1) public static boolean dictManager1MultiSelecting() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=39, shift=1) public static void dictManager1MultiSelecting(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=40, shift=1) public static boolean dictManagerClickPopup() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40, shift=1) public static void dictManagerClickPopup(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	
 	public int getPseudoInitCode(int pseudoInit) {
