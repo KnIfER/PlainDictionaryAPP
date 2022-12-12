@@ -561,8 +561,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		AllMenus.twoColumn = true;
 		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 22, 24, 23, 0, 2, 1, 19, 18, 5, 20, 3, 6, 16, 21);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 0, 3, 15, 16);
-		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 25, 23, 13, 14, 7, 8, 16);
-		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 22, 23, 13, 14, 7, 17, 8, 9, 10, 11, 12, 16);
+		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 13, 14, 7, 8, 16);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 13, 14, 7, 17, 8, 9, 10, 11, 12, 16);
 		AllMenus.setItems(Menu1);
 		
 		if (PDICMainAppOptions.dictManagerClickPopup()) {
@@ -1063,7 +1063,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			case R.id.popup:{
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dictManagerClickPopup(item.isChecked());
-				showT(!item.isChecked()?"点击列表项切换"+(viewPager.getCurrentItem()==0?"启用和禁用状态":"选中状态"):"点击列表项弹出菜单");
+				showT(!item.isChecked()?"点击列表项"+(viewPager.getCurrentItem()==0?"切换启用和禁用状态":viewPager.getCurrentItem()==1?"加载分组":"切换选中状态"):"点击列表项弹出菜单");
 			} break;
 			/* 词典选项 */
 			case R.id.toolbar_action0:{

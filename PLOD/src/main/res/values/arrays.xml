@@ -96,14 +96,6 @@
 		<item>点译查询</item>
 		<item>翻阅查询</item>
 	</string-array>
-
-	<string-array name="module_sets_option">
-	    <item>@string/rename</item>
-	    <item>@string/delete</item>
-	    <item>@string/duplicate</item>
-	    <item>选中 / 取消选中</item>
-	    <item>加载</item>
-	</string-array>
     
     <string-array name="dict_spec"> 
 	    <item>@string/dict_specs</item>

@@ -74,8 +74,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private Drawable mWebDrawable;
 	private Drawable mPDFDrawable;
 	private Drawable mRightDrawable;
-	private View pressedV;
-	private int pressedPos;
 	private boolean tweakedDict;
 	
 	public BookManagerMain(){
@@ -158,6 +156,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			}
 			onItemLongClick(null, null, idx, 0);
 		}
+	}
+	
+	@Override
+	DragSortListView.DropListener getDropListener() {
+		return this;
 	}
 	
 	@Override
@@ -318,8 +321,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			return convertView;
 		}
 	}
-	
-	PopupMenuHelper mPopup;
 	
 	public PopupMenuHelper getPopupMenu() {
 		if (mPopup==null) {
@@ -722,19 +723,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			refreshSize();
 			listView.setSelectionFromTop(lastViewPos, lastViewTop);
 		}
-	}
-	
-	private void showPopup(View v) {
-		PopupMenuHelper popupMenu = getPopupMenu();
-		int[] vLocationOnScreen = new int[2];
-		if (v == null) v = listView;
-		v.getLocationOnScreen(vLocationOnScreen);
-		popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
-	}
-	
-	@Override
-	DragSortListView.DropListener getDropListener() {
-		return this;
 	}
 	
 	private class MyDSController extends DragSortController {

@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import androidx.fragment.app.ListFragment;
 
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +32,21 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	public CompoundButton.OnCheckedChangeListener checkChanged;
 	int[] lastClickedPos=new int[]{-1, -1};
 	int lastClickedPosIndex=0;
-
+	protected View pressedV;
+	protected int pressedPos;
+	
+	PopupMenuHelper mPopup;
+	
+	public abstract PopupMenuHelper getPopupMenu();
+	
+	protected void showPopup(View v) {
+		PopupMenuHelper popupMenu = getPopupMenu();
+		int[] vLocationOnScreen = new int[2];
+		if (v == null) v = listView;
+		v.getLocationOnScreen(vLocationOnScreen);
+		popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+	}
+	
     ArrayAdapter<T> adapter;
     boolean isDirty = false;
 	BookManager a;

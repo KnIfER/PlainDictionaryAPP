@@ -35,15 +35,6 @@
 		<item>&#160;</item>
 	</string-array>-->
 
-
-  	<string-array name="module_sets_option"> 
-		    <item name="shan">重命名</item>
-		    <item name="to1">删除</item>
-		    <item name="to2">复制</item>
-			<item>选中 / 取消选中</item>
-			<item>加载分组</item>
-	</string-array> 
-	
 <!--   <string-array name="dict_spec">
 	    <item>全局_特定_现代_经典_不缓存_内存_显存</item>
 	    <item>背景色:</item>
