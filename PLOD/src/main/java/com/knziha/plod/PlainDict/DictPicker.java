@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.CMN.AssetTag;
-import static com.knziha.plod.plaindict.CMN.debug;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -18,6 +17,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.ClickableSpan;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,6 +27,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -37,8 +38,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.knziha.plod.PlainUI.PlainAppPanel;
-import com.knziha.plod.PlainUI.PlainDialog;
+import com.knziha.plod.PlainUI.PlainBottomDialog;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.CheckableImageView;
@@ -52,8 +56,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class DictPicker extends PlainAppPanel implements View.OnClickListener
-{
+public class DictPicker extends PlainAppPanel implements View.OnClickListener, PopupMenuHelper.PopupMenuListener {
 	public boolean PostEnabled=true;
 	public int bForcePin;
 	private AnimationSet animation;
@@ -70,10 +73,16 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	public Pattern SearchPattern;
 	public int LastSearchScrollItem;
 	
-	LinearLayout.LayoutParams dockLayout;
-	ViewGroup.LayoutParams undockLayout;
-	private LinearLayout dialogLayout;
+	LinearLayout.LayoutParams dockParms;
+	ViewGroup.LayoutParams bottomDlgParms = new FrameLayout.LayoutParams(-1, -1);
+	ViewGroup.LayoutParams undockParms = new FrameLayout.LayoutParams(-1, -2);
+	boolean bottomDlg = true;
+	private PlainBottomDialog dialogBtm;
+	private FrameLayout bottomDlgLayout;
+	private FrameLayout dialogLayout;
+	private LinearLayout dialogContent;
 	private ViewGroup pdictBtm;
+	private Drawable pdictBtmBG;
 	private LinearSplitView splitView;
 	private ViewGroup splitter;
 	private int type;
@@ -84,6 +93,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private EditText etSearchDict;
 	private boolean SearchDictPatternChanged;
 	private IBinder wtSearch;
+	private ImageView tweakBtn;
 	private CheckableImageView pinBtn;
 	private CheckableImageView autoBtn;
 	
@@ -130,6 +140,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			//if(itemAnimator instanceof SimpleItemAnimator)
 			//	((SimpleItemAnimator)itemAnimator).setSupportsChangeAnimations(false);
 			mRecyclerView.setItemAnimator(null);
+			bottomDlg = PDICMainAppOptions.pickDictScrMid();
 			
 			mRecyclerView.setMinimumWidth(a.dm.widthPixels*2/3);
 			mRecyclerView.setVerticalScrollBarEnabled(true);
@@ -144,15 +155,18 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			//view.setBackgroundResource(R.drawable.popup_shadow_l);
 			//root.setOnClickListener(this);
 			ViewUtils.setOnClickListenersOneDepth(root, this, 999, null);
-			dialogLayout = (LinearLayout) root.getChildAt(0);
-			pdictBtm = (ViewGroup) dialogLayout.getChildAt(dialogLayout.getChildCount()-1);
+			dialogLayout = (FrameLayout) root.getChildAt(0);
+			dialogContent = (LinearLayout) dialogLayout.getChildAt(0);
+			
 			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) dialogLayout.getLayoutParams();
 			dialogLayout.setTag(new int[]{lp.topMargin, lp.bottomMargin});
-			View bottombar = dialogLayout.getChildAt(2);
+			View bottombar = pdictBtm = (ViewGroup) dialogContent.getChildAt(dialogContent.getChildCount()-1);
+			pdictBtmBG = pdictBtm.getBackground();
 			settingsLayout = root;
 			//bgView = dialogLayout;
 			this.root = root;
 			pinBtn = bottombar.findViewById(R.id.pinBtn);
+			tweakBtn = bottombar.findViewById(R.id.tweakBtn);
 			pinBtn_setChecked(pin());
 			
 			autoBtn = bottombar.findViewById(R.id.autoBtn);
@@ -182,20 +196,32 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				//dialogLayout.getBackground().setColorFilter(a.AppWhite, PorterDuff.Mode.SRC_IN);
 				if(Build.VERSION.SDK_INT<=23)dialogLayout.setBackgroundColor(Color.BLACK);
 				else dialogLayout.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-				pdictBtm.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
+				pdictBtmBG.setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
+				if (dialogContent.getBackground() != null) {
+					if(Build.VERSION.SDK_INT<=23)dialogContent.setBackgroundColor(Color.BLACK);
+					else dialogContent.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+				}
 			} else {
 				if(Build.VERSION.SDK_INT<=23)dialogLayout.setBackgroundResource(R.drawable.popup_background3);
 				else dialogLayout.getBackground().setColorFilter(null);
-				pdictBtm.getBackground().setColorFilter(null);
+				pdictBtmBG.setColorFilter(null);
+				if (dialogContent.getBackground() != null) {
+					if(Build.VERSION.SDK_INT<=23)dialogContent.setBackgroundResource(R.drawable.popup_background3_split);
+					else dialogContent.getBackground().setColorFilter(null);
+				}
 			}
+			if(bottomDlgLayout!=null)
+				bottomDlgLayout.setBackgroundColor(GlobalOptions.isDark?0xFF454545:a.AppWhite);
 			if (Searchbar != null) {
 				Searchbar.setBackgroundColor(a.MainAppBackground);
 			}
 			MainColorStamp = a.MainAppBackground;
+			dataChanged();
 		}
 	}
 	
-	public void refresh(boolean firstAttach, int bForcePin) {
+	public void reform(boolean firstAttach, int bForcePin) {
+		CMN.debug("reform", "firstAttach = [" + firstAttach + "], bForcePin = [" + bForcePin + "]");
 		//if(!isDirty) return;
 		//isDirty=false;
 		scrollThis();
@@ -216,35 +242,34 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				else if(bForcePin==1) pin=true;
 				bForcePin = 0;
 			}
-			LinearLayout dialogLayout = this.dialogLayout;
+			LinearLayout pane = this.dialogContent;
 			LinearSplitView splitView = this.splitView;
-			if(pin ^ dialogLayout.getParent()==splitView) {
+			if(pin ^ pane.getParent()==splitView) {
 				MainColorStamp = 0; //todo opt
 				//TextViewmy rcntSchList = settingsLayout.findViewById(R.id.rcntSchList);
 				//ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) rcntSchList.getLayoutParams();
 				if (pin) {
-					if(undockLayout==null) undockLayout = dialogLayout.getLayoutParams();
-					if(ViewUtils.removeIfParentBeOrNotBe(dialogLayout, splitView, false)) {
-						splitView.addView(dialogLayout, 0, dockLayout==null?undockLayout:dockLayout);
+					if(ViewUtils.removeIfParentBeOrNotBe(pane, splitView, false)) {
+						splitView.addView(pane, 0, dockParms ==null? undockParms : dockParms);
 					}
-					if(dockLayout!=null) {
-						dialogLayout.setLayoutParams(dockLayout);
+					if(dockParms !=null) {
+						pane.setLayoutParams(dockParms);
 					} else {
-						dockLayout = (LinearLayout.LayoutParams) dialogLayout.getLayoutParams();
-						dockLayout.height = -1;
-						dockLayout.width = 0;
-						dockLayout.weight = (float) (1 / (1-0.375) * 0.375);
+						dockParms = (LinearLayout.LayoutParams) pane.getLayoutParams();
+						dockParms.height = -1;
+						dockParms.width = 0;
+						dockParms.weight = (float) (1 / (1-0.375) * 0.375);
 						//dockLayout.width = (int) (135 * GlobalOptions.density);
 						//CMN.Log("黄金比例？", (int) (135 * GlobalOptions.density), a.root.getWidth());
-						dockLayout.bottomMargin = dockLayout.topMargin = 0;
+						dockParms.bottomMargin = dockParms.topMargin = 0;
 					}
 					splitView.installHandle(splitter);
 					View handle = splitView.handle;
 					handle.getLayoutParams().width = (int) (28 * GlobalOptions.density);
 					handle.getLayoutParams().height = (int) (28 * GlobalOptions.density);
 					handle.setBackgroundResource(R.drawable.ic_split_handle);
+					pane.setBackgroundResource(R.drawable.popup_background3_split);
 					handle.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
-					dialogLayout.setBackgroundResource(R.drawable.popup_background3_split);
 					//rcntSchList.setPadding(0,0,0,0);
 					//rcntSchList.setMaxLines(1);
 					int pad = (int) (5*GlobalOptions.density);
@@ -252,10 +277,14 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					//layoutParams.rightMargin=pad;
 				}
 				else {
-					if(ViewUtils.removeIfParentBeOrNotBe(dialogLayout, settingsLayout, false)) {
-						settingsLayout.addView(dialogLayout, 0, undockLayout);
+					ViewGroup layout =  bottomDlg && bottomDlgLayout != null ? bottomDlgLayout : dialogLayout;
+					if(ViewUtils.removeIfParentBeOrNotBe(pane, layout, false)) {
+						layout.addView(pane, 0, bottomDlg?bottomDlgParms:undockParms);
 					}
-					dialogLayout.setBackgroundResource(R.drawable.popup_background3);
+					if (!bottomDlg) {
+						ViewUtils.addViewToParent(layout, root);
+					}
+					pane.setBackground(null);
 					int pad = (int) (5*GlobalOptions.density);
 					//rcntSchList.setPadding(0,pad*2,0,pad);
 					//rcntSchList.setMaxLines(3);
@@ -266,12 +295,15 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				dataChanged();
 				pinBtn_setChecked(pin);
 				refresh();
+				ViewUtils.setVisible(tweakBtn, !pin);
 			}
 			ViewUtils.setVisible(splitter, pin);
 			if(pin) {
 //				a.dialogHolder.setVisibility(View.GONE);
-				dismiss();
-			} else {
+				dismissImmediate();
+				pdictBtmBG.setAlpha(255);
+			}
+			else {
 				if(animation==null)
 					animation = (AnimationSet) AnimationUtils.loadAnimation(a, R.anim.dp_dialog_enter);
 				animation.getAnimations().get(0).setDuration(firstAttach ? 200 : 200);
@@ -279,6 +311,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 //				a.dialogHolder.setVisibility(View.VISIBLE);
 				if(!isVisible())
 					toggle(a.root, null, -1);
+				pdictBtmBG.setAlpha(bottomDlg?0:255);
+				if(bottomDlg) ViewUtils.addViewToParent(dialogContent, bottomDlgLayout);
+				else ViewUtils.addViewToParent(dialogContent, dialogLayout);
 			}
 		}
 		
@@ -286,7 +321,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		
 		//autoBtn.setAlpha(a.isCombinedSearching?0.2f:1);
 	}
-
+	
 	public HomeAdapter adapter(){
 		return mAdapter;
 	}
@@ -297,12 +332,12 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			if (dialogLayout==null) {
 				init(a, a.root);
 			}
-			boolean show=dialogLayout.getParent()==splitView;
+			boolean show=dialogContent.getParent()==splitView;
 			if(show) {
 				ViewUtils.removeView(dialogLayout);
 				ViewUtils.setVisible(splitter, false);
 			} else {
-				refresh(false, 0);
+				reform(false, 0);
 				if (autoScroll) {
 					scrollThis();
 				}
@@ -321,7 +356,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	@Override
 	protected void onShow() {
-		Resize();
+		resize();
 	}
 	
 	final boolean act() {
@@ -371,8 +406,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		}
 	}
 	
-	private void Resize() {
-		if (!pinBtn.isChecked()) {
+	public void resize() {
+		if (!pinBtn.isChecked() && false) {
 			Resources res = a.mResource;
 			int littleIdeal  = Math.min(a.dm.widthPixels, (int)res.getDimension(R.dimen.idealdpdp)*55/45);
 			int factor=1;
@@ -385,6 +420,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			if (GlobalOptions.isSmall) {
 				mlarp.bottomMargin= mlarp.topMargin;
 			}
+		}
+		if (bottomDlg) {
+			refreshExpand();
 		}
 	}
 	
@@ -483,6 +521,17 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		}
 	}
 	
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		PDICMainAppOptions.pickDictScrMid(bottomDlg = !bottomDlg);
+		dismissImmediate();
+		reform(false, 0);
+		if(!isVisible())
+			toggle();
+		popupMenuHelper.dismiss();
+		return false;
+	}
+	
 	// click
 	@Override
 	public void onClick(View v) {
@@ -517,7 +566,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					mAdapter.notifyItemChanged(position);
 				}
 				if (bShouldCloseAfterChoose) {
-					v.post(this::dismiss);
+					v.post(this::dismissImmediate);
 				}
 			}
 		}
@@ -532,13 +581,26 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			case R.id.dictName:
 				scrollThis();
 				break;
+			case R.id.pickTweak:
+				PopupMenuHelper popupMenu = a.getPopupMenu();
+				int[] texts = new int[]{
+					R.string.centre_dlg
+				};
+				popupMenu.initLayout(texts, this);
+				int[] vLocationOnScreen = new int[2];
+				v.getLocationOnScreen(vLocationOnScreen);
+				int x=0, y=0;
+				popupMenu.show(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+				break;
 			case R.id.pinBtn:
 				CheckableImageView cb = (CheckableImageView) v;
 				cb.toggle();
 				pin(cb.isChecked());
 				pinShow(cb.isChecked());
 				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
-				refresh(false, 0);
+				reform(false, 0);
+				if(!cb.isChecked() && !isVisible())
+					toggle(a.root, null, -1);
 				break;
 			case R.id.autoBtn:{
 				cb = (CheckableImageView)v;
@@ -586,7 +648,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 						a.imm.showSoftInput(etSearchDict, InputMethodManager.SHOW_IMPLICIT);
 					};
 					etSearchDict.postDelayed(showImmAby, 200);
-				} else {
+				}
+				else {
 					if (v == Searchbar.getNavigationBtn()) {
 						ViewUtils.setVisible(Searchbar, false);
 						a.imm.hideSoftInputFromWindow(wtSearch, 0);
@@ -630,7 +693,10 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 									}
 									if (scrollView != null) {
 										event.offsetLocation(0, diffY);
+										float x = event.getX(); boolean b1=event.getX() > mRecyclerView.getWidth();
+										if (b1) event.setLocation(-100, event.getY());
 										scrollView.dispatchTouchEvent(event);
+										if (b1) event.setLocation(x, event.getY());
 										if (checkMove) {
 											if (ViewUtils.distance(event.getRawX() - orgX, event.getRawY() - orgY) > 45 * GlobalOptions.density) {
 												checkMove = false;
@@ -653,6 +719,15 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 							CMN.debug(e);
 						}
 					}
+					if(bottomDlg){
+						ViewUtils.removeView(dialogLayout);
+					}
+					ViewUtils.addViewToParent(Searchbar, root);
+				}
+				else if(bottomDlg){
+					ViewUtils.addViewToParent(Searchbar, bottomDlgLayout);
+				} else {
+					ViewUtils.addViewToParent(Searchbar, root);
 				}
 				if (!isVisible())
 					toggle(a.root, null, -1);
@@ -883,8 +958,63 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	public boolean onBackPressed() {
 		if (ViewUtils.isVisibleV2(Searchbar)) {
 			ViewUtils.setVisible(Searchbar, false);
+			if (pinned()) {
+				dismissImmediate();
+			}
 			return true;
 		}
 		return super.onBackPressed();
+	}
+	
+	private void refreshExpand() {
+		final View v = bottomDlgLayout;
+		if (v==null) return;
+		DisplayMetrics dm2 = a.dm;
+		int h = -1;
+		if (!a.keyboardShown)
+		{
+			if (false)
+				h = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * 0.85f);
+			else
+				h = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * dialogBtm.getBehavior().getHalfExpandedRatio() + a.getResources().getDimension(R.dimen._45_) * 1.75);
+		}
+		if (h > dm2.heightPixels) {
+			h = -1;
+		}
+		if (v.getLayoutParams().height != h) {
+			v.getLayoutParams().height = h;
+			v.requestLayout();
+		}
+		mRecyclerView.setNestedScrollingEnabled(!a.keyboardShown);
+	}
+	
+	@Override
+	protected void showDialog() {
+		//super.showDialog();
+		if (!pin() && bottomDlg) {
+			tweakDlgScreen = false;
+			BottomSheetDialog bPane = dialogBtm;
+			if (bPane == null) {
+				CMN.debug("重建底部弹出");
+				bottomDlgLayout = new FrameLayout(a);
+				bPane = dialogBtm = new PlainBottomDialog(a);
+				dialogBtm.getWindow().setDimAmount(0);
+				dialogBtm.mBackPrevention = this;
+				pdictBtmBG.setAlpha(0);
+				ViewUtils.addViewToParent(dialogContent, bottomDlgLayout);
+				dialogContent.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+				bPane.setContentView(bottomDlgLayout);
+				bPane.getWindow().setDimAmount(0.2f);
+				//CMN.recurseLogCascade(lv);
+				bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
+			}
+			dialog = dialogBtm;
+			refreshExpand();
+		} else {
+			if(dialog==dialogBtm)
+				dialog = null;
+			tweakDlgScreen = true;
+		}
+		super.showDialog();
 	}
 }

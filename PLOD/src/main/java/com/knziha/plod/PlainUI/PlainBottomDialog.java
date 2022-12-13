@@ -5,19 +5,16 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
-public class PlainDialog extends Dialog {
-	public PlainDialog(@NonNull Context context) {
-		super(context, R.style.resizeDlgTheme);
+public class PlainBottomDialog extends BottomSheetDialog {
+	public PlainBottomDialog(@NonNull Context context) {
+		super(context, R.style.resizeDlgTheme1);
 	}
 	
-	public interface BackPrevention {
-		boolean onBackPressed();
-	}
-	
-	public BackPrevention mBackPrevention;
+	public PlainDialog.BackPrevention mBackPrevention;
 	
 	@Override
 	public void onBackPressed() {

@@ -2869,6 +2869,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=46, shift=1) public static boolean sortDictManager() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=46, shift=1) public static void sortDictManager(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=45, shift=1) public static boolean pickDictScrMid() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45, shift=1) public static void pickDictScrMid(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
 	//SE

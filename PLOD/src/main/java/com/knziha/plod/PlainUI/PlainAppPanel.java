@@ -95,18 +95,20 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	}
 	
 	protected void showDialog() {
+		if (dialogDismissListener==null) {
+			dialogDismissListener = dialog -> dismissImmediate();
+		}
 		if (dialog==null) {
 			final PlainDialog d = new PlainDialog(a);
 			d.mBackPrevention = this;
 			if(settingsLayoutHolder==null) {
 				settingsLayoutHolder = new FrameLayout(a);
 				settingsLayoutHolder.setOnClickListener(v -> dismiss());
+			} else {
+				ViewUtils.removeView(settingsLayoutHolder);
 			}
+			d.setOnDismissListener(dialogDismissListener);
 			dialog = d;
-		}
-		if (dialogDismissListener==null) {
-			dialogDismissListener = dialog -> dismissImmediate();
-			dialog.setOnDismissListener(dialogDismissListener);
 		}
 		if(settingsLayoutHolder!=settingsLayout)
 			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);

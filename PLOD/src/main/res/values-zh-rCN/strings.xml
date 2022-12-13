@@ -240,5 +240,6 @@
 	<string name="switch_pick">切换选中状态</string>
 	<string name="tianjia">添加</string>
 	<string name="addTo">添加至…</string>
+	<string name="centre_dlg">切换对话框位置</string>
 	>
 </resources>

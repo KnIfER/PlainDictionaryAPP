@@ -548,6 +548,13 @@
 		<item name="android:windowSoftInputMode">adjustResize</item>
 	</style>
 
+	<style name="resizeDlgTheme1" parent="Theme.Design.BottomSheetDialog"> <!--parent="Theme.Design.Light.BottomSheetDialog"-->
+		<item name="android:windowIsFloating">false</item>
+		<item name="android:windowSoftInputMode">adjustResize</item>
+		<item name="android:windowTranslucentStatus">true</item>
+		<item name="android:statusBarColor">@color/transparent</item>
+	</style>
+
 	<style name="QRActionBarItem">
 		<item name="android:layout_height">55dp</item>
 		<item name="android:layout_width">50dp</item>

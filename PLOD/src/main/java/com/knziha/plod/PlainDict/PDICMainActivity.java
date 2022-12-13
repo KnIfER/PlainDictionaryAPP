@@ -327,7 +327,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			root.postDelayed(postOnConfigurationChanged, 200);
 	}
 	
-	
 	private boolean isLocalesEqual(Configuration oldConfig, Configuration newConfig) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			LocaleList localeA = oldConfig.getLocales();
@@ -1720,10 +1719,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					} else {
 						(isContentViewAttached()?contentUIData.webcontentlister:bottombar.getParent()).requestLayout();
 					}
-//					if(settingsPanel!=null) {
-//						GlobalOptions.softInputHeight = keyBoardHeight;
+					if(settingsPanel!=null) {
+						GlobalOptions.softInputHeight = keyBoardHeight;
 //						settingsPanel.refreshSoftMode(keyBoardHeight);
-//					}
+						settingsPanel.resize();
+					}
 				}
 				
 				if(softMode!=softModeHold) {
