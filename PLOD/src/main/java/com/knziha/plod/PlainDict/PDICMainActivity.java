@@ -3205,6 +3205,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					ret = true;
 				} else {
 					item.setChecked(opt.setRemPos(!opt.getRemPos()));
+					if (accessMan.isEnabled()) {
+						root.announceForAccessibility((opt.getRemPos()?"已开启":"已关闭")+"记忆内容页位置");
+					}
 				}
 			} break;
 			case R.id.remPagePos2:{

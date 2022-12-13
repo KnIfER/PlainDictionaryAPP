@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.NoScrollViewPager;
 
@@ -376,7 +377,7 @@ public class SelectableTextView extends TextView implements View.OnClickListener
             inflateSelectionPool();
 
             int alpha = 200;
-            if(getText().subSequence(mSStart,mSEnd).toString().trim().equals("")){
+            if(isSelectionEmpty()){
                 bNeedInvalidate=true;
                 if(mTextViewListener!=null){
                     mTextViewListener.requestJudgeText(this);
@@ -396,8 +397,12 @@ public class SelectableTextView extends TextView implements View.OnClickListener
 
             //System.gc();
     }
-
-    @Override
+	
+	private boolean isSelectionEmpty() {
+		return SU.getTrimmedLength(getText(), mSStart,mSEnd)<=0;
+	}
+	
+	@Override
     public boolean onLongClick(View v) {
         if(startInDrag)
             return false;

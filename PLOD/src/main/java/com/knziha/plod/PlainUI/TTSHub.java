@@ -89,7 +89,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 	public ColoredHighLightSpan timeHLSpan;
 	public static final float[] TTS_LEVLES_SPEED = new float[]{0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f};
 	public int TTSSpeed = 3;
-	public int TTSPitch = 2;
+	public int TTSPitch = 3;
 	public float TTSVolume = 1.f;
 	public ViewGroup controlBar;
 	
@@ -391,12 +391,12 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 				@Override
 				public void onError(String utteranceId) {
 					CMN.debug("9 onError" ,utteranceId);
-					long errId = CMN.now();
-					//if (errId - lastError > 256)
-					{
-						lastError = errId;
-						onDone(utteranceId);
-					}
+//					long errId = CMN.now();
+//					//if (errId - lastError > 256)
+//					{
+//						lastError = errId;
+//						onDone(utteranceId);
+//					}
 				}
 				@Override
 				public void onError(String utteranceId, int code) {

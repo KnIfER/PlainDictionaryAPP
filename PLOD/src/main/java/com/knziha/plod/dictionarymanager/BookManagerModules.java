@@ -516,4 +516,9 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		return filtered.size();
 	}
 	
+	@Override
+	public int selected_size() {
+		return selector.size();
+	}
+	
 }

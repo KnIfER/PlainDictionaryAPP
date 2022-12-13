@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
@@ -558,10 +559,38 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		final long resId = R.xml.menu_dict_manager;
         toolbar.inflateMenu((int)resId);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
+		AllMenus.longclickable = false;
+		AllMenus.contentDescriptor = new MenuBuilder.ContentDescriptor(){
+			public CharSequence describe(MenuItemImpl menuItem, CharSequence value){
+				if (menuItem.isCheckable()) {
+					value = menuItem.getTitle() + (menuItem.isChecked()?" 已激活":" 未激活");
+					if (menuItem.isChecked()) {
+						if (menuItem.getItemId()==R.string.multi_select && f1.selected_size()>0) {
+							value += " 当前分组已选" + f1.selected_size() + "项";
+						}
+					}
+				}
+				if (menuItem.getItemId()==R.id.clearSel) {
+					int page = viewPager.getCurrentItem();
+					value = menuItem.getTitle()+" ";
+					if (page == 0) {
+						value += f1.selected_size()==0? "当前分组无选中项": ("当前分组已选" + f1.selected_size() + "项");
+					} else if (page == 1){
+						value += f2.selected_size()==0?"未选分组" : ("已选" + f2.selected_size() + "个分组");
+					}  else if (page == 3){
+						value += f4.selected_size()==0?"未选网络词典" : ("已选" + f4.selected_size() + "个网络词典");
+					}   else if (page == 4){
+						value += f3.selected_size()==0?"全部词典无选中项" : ("全部词典已选" + f3.selected_size() + "项");
+					}
+				}
+				return value;
+			}
+		};
 		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		AllMenus.checkActDrawable = mResource.getDrawable(R.drawable.frame_checked_whiter);
 		AllMenus.twoColumn = true;
+		AllMenus.twoColumnFlipped = true;
 		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 22, 24, 23, 0, 2, 1, 19, 18, 5, 20, 27, 3, 6, 21);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 0, 3, 15);
 		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 24, 26, 13, 14, 7, 8);
@@ -667,6 +696,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
         toolbar.setTitleTextColor(Color.WHITE);
 		toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material); //ic_flag_24dp
 		toolbar.setNavigationOnClickListener(this);
+		toolbar.getNavigationBtn().setContentDescription("退出词典管理");
+		toolbar.setAccessibilityDelegate(new View.AccessibilityDelegate(){
+			@Override
+			public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+				super.onPopulateAccessibilityEvent(host, event);
+				CMN.debug("onPopulateAccessibilityEvent", host, event);
+			}
+		});
 // 		MenuItem searchItem = ViewUtils.findInMenu(Menu3, R.id.action_search);
 // 		searchItem.setShowAsAction(2);
 // 		searchView = (SearchView) searchItem.getActionView();
@@ -1030,7 +1067,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		MenuItemImpl mmi = (MenuItemImpl)item;
-		boolean isLongClicked=mmi.isLongClicked;
+		boolean isLongClicked=mmi.isLongClicked, longclickFx = PDICMainAppOptions.dictManagerFlipMenuCloumn()?!isLongClicked:isLongClicked;
 		boolean ret=isLongClicked;
 		boolean closeMenu=!isLongClicked;
 		AlertDialog d;
@@ -1054,12 +1091,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 切换f1多选模式 */
 			case R.string.multi_select:{
+				if(isLongClicked) {ret=false; break;}
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dictManager1MultiSelecting(item.isChecked());
 				f1.dataSetChanged();
 				showT(item.isChecked()?"多选模式已开启":"多选模式已关闭");
 			} break;
 			case R.id.clearSel:{
+				if(isLongClicked) {ret=false; break;}
 				try {
 					Fragment frame = fragments.get(viewPager.getCurrentItem());
 					if (frame instanceof BookManagerFragment.SelectableFragment) {
@@ -1071,7 +1110,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 			} break;
 			/* 切换all点击弹出菜单 */
-			case R.id.popup:{
+			case R.id.popup: {
+				if(isLongClicked) {ret=false; break;}
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dictManagerClickPopup(item.isChecked());
 				showT(!item.isChecked()?"点击列表项"+(viewPager.getCurrentItem()==0?"切换启用和禁用状态"
@@ -1079,6 +1119,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						:"点击列表项弹出菜单"); // ，长按排序
 			} break;
 			case R.id.popup1:{
+				if(isLongClicked) {ret=false; break;}
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dictManagerClickPopup1(item.isChecked());
 				showT(item.isChecked()?"点击列表右侧按钮弹出菜单":"右侧按钮直接添加");
@@ -1091,15 +1132,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
             case R.id.toolbar_action2:{
 				closeMenu = true;
 				if(sf1) opt.dictManager1MultiSelecting(true);
-				if(isLongClicked){
-					for (int i = 0; i < szf1; i++) {
-						f1.setPlaceSelected(i, false);
-					}
-				}
-				else {
-					for (int i = 0; i < szf1; i++) {
-						f1.setPlaceSelected(i, true);
-					}
+				for (int i = 0; i < szf1; i++) {
+					f1.setPlaceSelected(i, !longclickFx);
 				}
 				f1.dataSetChanged();
 			} break;
@@ -1117,7 +1151,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						start=tmp;
 					}
 					for (int i = start; i <= end; i++) {
-						f1.setPlaceSelected(i, !isLongClicked);
+						f1.setPlaceSelected(i, !longclickFx);
 						if(sf1) {
 							opt.dictManager1MultiSelecting(true);
 							sf1 = false;
@@ -1162,7 +1196,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 禁用选中项 | 删除选中项, f1 */
 			case R.id.del_rec:{
-				if (isLongClicked) {
+				if (longclickFx) {
 					f1.deleteSelOrOne(false);
 				} else {
 					f1.disEna(true, true, -1);
@@ -1174,9 +1208,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				int cc=0;
 				for (int i = 0; i < szf1; i++) {
 					if (CMN.getSuffix(f1.getPathAt(i)).equals(".web")) {
-						f1.setPlaceRejected(i, isLongClicked);
+						f1.setPlaceRejected(i, longclickFx);
 						cc++;
 					}
+				}
+				if (cc > 0) {
+					showT((longclickFx ? "已禁用" : "已启用") + cc + "个网络词典");
+				} else {
+					showT("当前词典无网络词典");
 				}
 				f1.dataSetChanged();
 			} break;
@@ -1214,7 +1253,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 启用全部 | 禁用全部 */
             case R.id.disenAll:
 			{
-				disenaddAll(isLongClicked?"禁用全部":"启用全部", false, isLongClicked, PDICMainAppOptions.getWarnDisenaddAll());
+				disenaddAll(isLongClicked?"禁用全部":"启用全部", false, longclickFx, PDICMainAppOptions.getWarnDisenaddAll());
 			} break;
 			case R.id.addAll:
 			{
@@ -1254,7 +1293,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 全选 | 全不选, f3 & f4 */
             case R.id.toolbar_action7:{
-				if (isLongClicked) {
+				if (longclickFx) {
 					f3.Selection.clear();
 				} else {
 					f3.enterSelectionMode();
@@ -1324,9 +1363,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				}
 			} break;
-			/* f3->f1禁用选中项目 | f3->f1删除选中项目 */
+			/* f3->f1禁用选中项目/f3->f1删除选中项目 */
             case R.id.toolbar_action10:{
-				if(isLongClicked) {
+				if(longclickFx) {
 					deleteFromF3Sel(f3);
 				} else {
 					int cc1 = 0;

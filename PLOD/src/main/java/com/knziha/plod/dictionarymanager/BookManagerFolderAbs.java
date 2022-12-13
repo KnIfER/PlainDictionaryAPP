@@ -541,4 +541,8 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		return ((BookManager) getActivity());
 	}
 	
+	public int selected_size() {
+		return Selection.size();
+	}
+	
 }

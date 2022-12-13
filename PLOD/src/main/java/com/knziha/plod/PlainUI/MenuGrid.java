@@ -11,6 +11,7 @@ import android.widget.ScrollView;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
@@ -60,6 +61,20 @@ public class MenuGrid extends PlainAppPanel {
 		
 		menu_icon5 = settingsLayout.findViewById(R.drawable.abc_ic_menu_share_mtrl_alpha);
 		menu_icon10 = settingsLayout.findViewById(R.drawable.ic_view_options);
+	}
+	
+	@Override
+	protected void onShow() {
+		super.onShow();
+		if(a.accessMan.isEnabled())
+			settingsLayout.announceForAccessibility("已弹出底部宫格菜单");
+	}
+	
+	@Override
+	protected void onDismiss() {
+		super.onDismiss();
+		if(a.accessMan.isEnabled())
+			CMN.debug("已收起底部宫格菜单");
 	}
 	
 	public boolean show(ViewGroup root, boolean contentview, int forceShowType) {

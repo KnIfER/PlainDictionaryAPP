@@ -357,7 +357,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 							init_switcher(key, false, 50, p);
 							break;
 						case "dedicated":
-							init_switcher(key, false, 54, p);
+							init_switcher(key, false, 6, p);
 							break;
 						case "zho_ver":
 							init_switcher(key, false, 53, p);

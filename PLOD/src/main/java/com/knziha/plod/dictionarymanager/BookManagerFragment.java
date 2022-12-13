@@ -26,6 +26,7 @@ import java.util.HashSet;
 
 public abstract class BookManagerFragment<T> extends ListFragment {
 	HashSet<String> selector = new HashSet<>();
+	
 	public interface SelectableFragment{
 		boolean exitSelectionMode();
 	}
@@ -216,4 +217,6 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 			CMN.debug(e);
 		}
 	}
+	
+	public abstract int selected_size();
 }

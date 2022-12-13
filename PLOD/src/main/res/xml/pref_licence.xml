@@ -9,20 +9,20 @@
 		<com.knziha.plod.preference.URLPreference
 			android:key="https://github.com/KnIfER/PlainDictionaryAPP"
 			android:summary="无限开源"
-			android:title="KnIfER/PlainDict | 开源的旧版本"/>
+			android:title="KnIfER/PlainDict | 永久开源"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/KnIfER/mdict-java"
 			android:summary="无限开源"
-			android:title="KnIfER/Mdict-Java | 开源的Java库"/>
+			android:title="KnIfER/Mdict-Java"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://gitee.com/knziha/Metaline"
-			android:title="KnIfER/Metaline | 元线注解模块"
+			android:title="KnIfER/Metaline"
 			android:summary="无限开源"
 			/>
 
@@ -31,7 +31,7 @@
 			app:allowDividerBelow="true"
 			android:key="https://bitbucket.org/xwang/"
 			android:title="xwang/python-mdict-analysis"
-			android:summary="Python写的词典格式解析（无搜索功能），初期参考很多"/>
+			android:summary="Python写的词典格式解析，初期参考很多（无搜索功能）"/>
 
 		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"

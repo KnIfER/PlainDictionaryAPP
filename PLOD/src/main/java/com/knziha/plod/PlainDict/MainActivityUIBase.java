@@ -2447,6 +2447,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (root != null) {
 			mViewRootHolder.view = root.getRootView();
 		}
+		if (AllMenus != null) {
+			AllMenus.contentDescriptor = new MenuBuilder.ContentDescriptor(){
+				public CharSequence describe(MenuItemImpl menuItem, CharSequence value){
+					if (menuItem.isCheckable()) {
+						return menuItem.getTitle() + (menuItem.isChecked()?" 已激活":" 未激活");
+					}
+					return value;
+				}
+			};
+		}
 	}
 	
 	public void populateDictionaryList() {
@@ -6671,6 +6681,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					opt.tapSch(wlh.togTapSch());
 					item.setChecked(wlh.tapSch);
+					if (accessMan.isEnabled()) {
+						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
+					}
 				}
 			} break;
 			case R.id.translate:{

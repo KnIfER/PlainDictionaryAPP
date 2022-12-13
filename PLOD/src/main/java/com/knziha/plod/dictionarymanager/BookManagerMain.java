@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
+import androidx.appcompat.view.menu.MenuItemImpl;
 
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
@@ -378,7 +379,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							d.dismiss();
 						} break;
 						case R.id.jianxuan: {//间选
-							a.onMenuItemClick(ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1));
+							MenuItemImpl menu = (MenuItemImpl) ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1);
+							menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn();
+							a.onMenuItemClick(menu);
 						} break;
 						case R.string.move_top: {//移至顶部
 							markDirty(-1);
@@ -834,7 +837,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		return loadMan.lazyMan.placeHolders;
 	}
 	
-	final int selected_size() {
+	public int selected_size() {
 		return Selection.size();
 	}
 	

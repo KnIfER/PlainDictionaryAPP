@@ -248,6 +248,23 @@ public class  SU{
 //		var res = (1 - d[n][m] / l)
 //		return res.toFixed(f)
 //	}
+public static int getTrimmedLength(CharSequence s, int start, int end) {
+	int len = s.length();
+	
+	while (start < len && s.charAt(start) <= ' ') {
+		start++;
+	}
+	
+	if (end < len) {
+		while (end > start && s.charAt(end - 1) <= ' ') {
+			end--;
+		}
+	} else {
+		return -1;
+	}
+	
+	return end - start;
+}
 }
 	
 

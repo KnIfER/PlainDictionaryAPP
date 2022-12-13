@@ -598,14 +598,6 @@ public class ViewUtils extends VU {
 	}
 	
 	
-	public static List<MenuItemImpl> MapNumberToMenu(MenuBuilder menu, int...numbers) {
-		MenuItemImpl[] items = new MenuItemImpl[numbers.length];
-		for (int i = 0; i < numbers.length; i++) {
-			items[i] = (MenuItemImpl) menu.getItem(numbers[i]);
-		}
-		return Arrays.asList(items);
-	}
-	
 	/**  */
 	public static Object getWeakRefObj(Object tag) {
 		return tag==null?null:((WeakReference)tag).get();
@@ -632,15 +624,6 @@ public class ViewUtils extends VU {
 					.setListener(null);
 			return true;
 		}
-	}
-	
-	public static MenuItem findInMenu(List<MenuItemImpl> mainMenu, int id) {
-		for (int i = 0; i < mainMenu.size(); i++) {
-			if(mainMenu.get(i).getItemId()==id) {
-				return mainMenu.get(i);
-			}
-		}
-		return null;
 	}
 	
 	public static void ResizeNavigationIcon(Toolbar toolbar) {
@@ -1076,14 +1059,6 @@ public class ViewUtils extends VU {
 		evt.setAction(MotionEvent.ACTION_CANCEL);
 		if (view!=null) view.dispatchTouchEvent(evt);
 		evt.setSource(100);
-		evt.recycle();
-	}
-	
-	public static void performClick(View view, float x, float y) {
-		MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, x, y, 0);
-		view.dispatchTouchEvent(evt);
-		evt.setAction(MotionEvent.ACTION_UP);
-		view.dispatchTouchEvent(evt);
 		evt.recycle();
 	}
 	
