@@ -1778,6 +1778,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tg
 		//com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
+		showDictionaryManager();
+		
 		
 //		try {
 //			new SettingsSearcherTest().buildIndex(this);

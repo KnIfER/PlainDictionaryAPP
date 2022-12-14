@@ -11108,8 +11108,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		webxford.remove(SubStringKey.new_hostKey(webx.getHost()));
 	}
 	
-	public WahahaTextView.ViewRootHolder mViewRootHolder = new WahahaTextView.ViewRootHolder();
-	
 	public OnTouchListener lineRightClicker = new OnTouchListener() {
 		int x0,y0;
 		int scrollY;
@@ -11165,8 +11163,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public boolean selectable;
 		
-		public ViewHolder(MainActivityUIBase a, int resId, ViewGroup parent) {
-			itemView = resId==0?parent:LayoutInflater.from(a).inflate(resId, parent, false);
+		public ViewHolder(Toastable_Activity a, int resId, ViewGroup parent) {
+			itemView = resId==0?parent:a.getLayoutInflater().inflate(resId, parent, false);
 			itemView.setId(R.id.lvitems);
 			title = itemView.findViewById(R.id.text);
 			subtitle = itemView.findViewById(R.id.subtext);
@@ -11451,16 +11449,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			annotDlgRef = new WeakReference<>(dialog);
 		}
 		dialog.show(wv, type, showAnteNotes);
-	}
-	
-	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;
-	public PopupMenuHelper getPopupMenu() {
-		PopupMenuHelper ret = popupMenuRef.get();
-		if (ret==null) {
-			ret  = new PopupMenuHelper(this, null, null);
-			popupMenuRef = new WeakReference<>(ret);
-		}
-		return ret;
 	}
 	
 	public Drawable getListChoiceBackground() {

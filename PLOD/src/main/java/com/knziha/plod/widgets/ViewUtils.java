@@ -1100,6 +1100,17 @@ public class ViewUtils extends VU {
 		return null;
 	}
 	
+	public static Object getParentOf(View v, Class clazz) {
+		ViewParent vp;
+		while(v!=null) {
+			if (clazz.isInstance(v)) {
+				return v;
+			}
+			vp = v.getParent();
+			v = vp instanceof View?(View) vp:null;
+		}
+		return null;
+	}
 	
 	public static class BaseAnimationListener implements Animation.AnimationListener {
 		@Override public void onAnimationStart(Animation animation) { }
@@ -1965,6 +1976,20 @@ public class ViewUtils extends VU {
 	
 	public static float distance(float v, float v1) {
 		return v*v+v1*v1;
+	}
+	
+	public static long saveListPos(ListView listView) {
+		View child = listView==null?null:listView.getChildAt(0);
+		if(child!=null) {
+			return listView.getFirstVisiblePosition() | (((long)child.getTop())<<32);
+		}
+		return 0;
+	}
+	
+	public static void restoreListPos(ListView listView, long pos) {
+		if(pos!=0 && listView!=null) {
+			listView.setSelectionFromTop((int)pos, (int) (pos>>32));
+		}
 	}
 	
 }

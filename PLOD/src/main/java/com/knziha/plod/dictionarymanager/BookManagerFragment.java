@@ -12,6 +12,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.ListFragment;
 
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.ListView;
 
 import java.util.HashSet;
 
@@ -39,12 +39,13 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	
 	public abstract PopupMenuHelper getPopupMenu();
 	
-	protected void showPopup(View v) {
+	protected void showPopup(View v, View rootV) {
+		if(v!=null) pressedV=v;
 		PopupMenuHelper popupMenu = getPopupMenu();
 		int[] vLocationOnScreen = new int[2];
 		if (v == null) v = listView;
 		v.getLocationOnScreen(vLocationOnScreen);
-		popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+		popupMenu.showAt(rootV!=null?rootV:v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
 	}
 	
     ArrayAdapter<T> adapter;
@@ -64,18 +65,10 @@ public abstract class BookManagerFragment<T> extends ListFragment {
         // DSLVFragment has a buildController() method.
         return R.layout.dict_dsl_main;
     }
-    
-    /**
-     * Return list item layout resource passed to the ArrayAdapter.
-     */
-    protected int getItemLayout() {
-        /*if (removeMode == DragSortController.FLING_LEFT_REMOVE || removeMode == DragSortController.SLIDE_LEFT_REMOVE) {
-            return R.layout.list_item_handle_right;
-        } else */
-
-            return 1;
-
-    }
+	
+	public int getItemLayout() {
+		return R.layout.dict_manager_dslitem;
+	}
 
     protected DragSortListView listView;
 	protected DragSortController mController;
@@ -161,7 +154,24 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 
     abstract DragSortListView.DropListener getDropListener();
 	
-	public void dataSetChanged() {
+	public void dataSetChangedAt(int pos) {
+		ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
+		vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(pos-(vh==null?-listView.getHeaderViewsCount():vh.position)), ViewHolder.class);
+		CMN.debug("dataSetChangedAt", "pos = [" + pos + "]", vh);
+		if (vh!=null) {
+			adapter.getView(pos, vh.itemView, listView);
+		}
+	}
+	
+	public void dataSetChanged(boolean structChanged) {
+		if (structChanged) {
+			if (!TextUtils.isEmpty(query)) {
+				schFilter(query, false);
+				if (getBookManager().popup != null) {
+					getBookManager().popup.dismiss();
+				}
+			}
+		}
 		if (adapter != null) {
 			adapter.notifyDataSetChanged();
 		}
@@ -174,40 +184,42 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	String query;
 	SparseArray<String> filtered = new SparseArray<>();
 	
-	public abstract int schFilter(String query);
+	public void selectPos(int position) {
+		int h;
+		if(listView.getChildAt(0)!=null) h = listView.getChildAt(0).getHeight() / 4;
+		else h = 18;
+		listView.setSelectionFromTop(position, listView.getHeight()/2 - h);
+	}
+	
+	public abstract int schFilter(String query, boolean shouldInval);
 	
 	public void schPrvNxt(String query, boolean next) {
 		try {
 			if (!query.equals(this.query)) {
-				schFilter(query);
+				schFilter(query, true);
+				a.schIndicator_setText(filtered);
 			}
 			if (filtered.size() > 0) {
 				View child = ViewUtils.findCenterYChild(listView);
-				BookManagerMain.ViewHolder  vh = (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(child, BookManagerFolderAbs.ViewHolder.class);
+				ViewHolder  vh = (ViewHolder) ViewUtils.getViewHolderInParents(child, ViewHolder.class);
 				int fvp = (vh==null?0:vh.position), found = -1;
-				if (next) {
-					for (int i = 0; i < filtered.size(); i++) {
+				for (int i = 0; i < filtered.size(); i++) {
+					if (next) {
 						if (filtered.keyAt(i) > fvp) {
 							found = i;
 							break;
 						}
-					}
-					if (found != -1) {
-						ViewUtils.stopScroll(listView, -100, -100);
-						listView.setSelectionFromTop(filtered.keyAt(found)+ listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
-					}
-				} else {
-					for (int i = 0; i < filtered.size(); i++) {
+					} else {
 						if (filtered.keyAt(i) < fvp) {
 							found = i;
 						} else {
 							break;
 						}
 					}
-					if (found != -1) {
-						ViewUtils.stopScroll(listView, -100, -100);
-						getListView().setSelectionFromTop(filtered.keyAt(found)+listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
-					}
+				}
+				if (found != -1) {
+					ViewUtils.stopScroll(listView, -100, -100);
+					listView.setSelectionFromTop(filtered.keyAt(found)+ listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
 				}
 			}
 			if ("".equals(query)) {

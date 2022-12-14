@@ -279,4 +279,6 @@
 	<string name="addTo">添加至…</string>
 	<string name="addToPrv">添加至上次添加位置</string>
 	<string name="centre_dlg">切换对话框位置</string>
+	<string name="sel_filtered">全选搜索结果</string>
+	<string name="sel_filtered_no">不全选搜索结果</string>
 </resources>

@@ -1,31 +1,22 @@
 package com.knziha.plod.dictionarymanager;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.filepicker.model.DialogConfigs;
-import com.knziha.filepicker.model.DialogProperties;
-import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -33,8 +24,6 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.BookManager.transferRunnable;
-import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -47,7 +36,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -58,19 +46,17 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 	public BookManagerModules(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
-			BookManagerMain.ViewHolder vh = (BookManagerMain.ViewHolder) ((View)buttonView.getParent()).getTag();
+			ViewHolder vh = (ViewHolder) ((View)buttonView.getParent()).getTag();
 			lastClickedPos[(++lastClickedPosIndex)%2]=vh.position;
 			String key = scanInList.get(vh.position);
 			if(isChecked)
 				selector.add(key);
 			else
 				selector.remove(key);
+			if (ViewUtils.getParentOf(vh.itemView, ListView.class)!=listView) {
+				dataSetChangedAt(vh.position);
+			}
 		};
-	}
-
-	@Override
-	public int getItemLayout() {
-		return R.layout.dict_manager_dslitem;
 	}
 
 	@Override
@@ -114,6 +100,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 
 		adapter = new MyAdapter(scanInList);
 		setListAdapter(adapter);
+		ViewUtils.restoreListPos(listView, BookManager.framePos[1]);
 	}
 
 	@Override
@@ -125,7 +112,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 	public boolean exitSelectionMode() {
 		if(selector.size()>0){
 			selector.clear();
-			adapter.notifyDataSetChanged();
+			dataSetChanged(false);
 			return true;
 		}
 		return false;
@@ -147,13 +134,23 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			BookManagerMain.ViewHolder vh;
+			ViewHolder vh;
+			if (parent != listView && convertView!=null) {
+				CMN.debug("他乡异客");
+				if (!(convertView.getTag() instanceof ViewHolder)) {
+					convertView = null;
+				}
+			}
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
-				vh = new BookManagerMain.ViewHolder(convertView);
+				vh = new ViewHolder(convertView);
 				vh.title.fixedTailTrimCount = 4;
+				if(parent != listView) {
+					ViewUtils.setVisible(vh.handle, false);
+					convertView.setBackground(null);
+				}
 			} else {
-				vh = (BookManagerMain.ViewHolder) convertView.getTag();
+				vh = (ViewHolder) convertView.getTag();
 			}
 			vh.position = position;
 			//v.getBackground().setLevel(1000);
@@ -165,18 +162,20 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
 			
-			if(query!=null && filtered.get(position)!=null)
-				vh.title.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
-			else
-				vh.title.setBackground(null);
-			
-			if(GlobalOptions.isDark) {
-				convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+			if (parent == listView) {
+				if (query != null && filtered.get(position) != null)
+					vh.title.setBackgroundResource(GlobalOptions.isDark ? R.drawable.xuxian2_d : R.drawable.xuxian2);
+				else
+					vh.title.setBackground(null);
+				ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
+				if(GlobalOptions.isDark) {
+					convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+				}
 			}
 
 			String key = scanInList.get(position);
 			vh.title.setText(key);
-
+			
 			if(true){
 				vh.ck.setVisibility(View.VISIBLE);
 				vh.ck.setOnCheckedChangeListener(null);
@@ -186,7 +185,6 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			} else
 				vh.ck.setVisibility(View.GONE);
 			
-			ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
 			return convertView;
 		}
 	}
@@ -204,7 +202,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		@Override
 		public View onCreateFloatView(int position) {
 			View v = adapter.getView(position, null, mDslv);
-			BookManagerMain.ViewHolder vh = ((BookManagerMain.ViewHolder) v.getTag());
+			ViewHolder vh = ((ViewHolder) v.getTag());
 			vh.ck.jumpDrawablesToCurrentState();
 			//v.getBackground().setLevel(20000);
 			mDslv.setFloatAlpha(1.0f);
@@ -231,7 +229,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				pressedPos = position - listView.getHeaderViewsCount();
 				pressedV = v;
 				if (PDICMainAppOptions.dictManagerClickPopup()) {
-					showPopup(v);
+					showPopup(v, null);
 				} else {
 					showLoadModuleDlg(PDICMainAppOptions.getWarnLoadModule(), position);
 				}
@@ -245,7 +243,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					boolean start = mController.startDrag(position,0, v.getHeight()/2);
 					return false;
 				} else {
-					showPopup(v);
+					showPopup(v, null);
 				}
 			}
 			return true;
@@ -265,8 +263,10 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				@Override
 				public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
 					int position = pressedPos;
+					ListView lv = (ListView) ViewUtils.getParentOf(pressedV, ListView.class);
+					boolean b1 = lv!=listView;
 					final String name = scanInList.get(position);
-					boolean isOnSelected = selector.size() > 0 && selector.contains(name);
+					boolean isOnSelected = !!b1 && selector.size() > 0 && selector.contains(name);
 					if (isLongClick) {
 						//if (view.getId() == R.id.disable) {
 						//	popupMenuHelper.dismiss();
@@ -278,7 +278,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 						case R.string.qiehan_sel: {
 							if (!selector.remove(name))
 								selector.add(name);
-							adapter.notifyDataSetChanged();
+							dataSetChangedAt(position);
 						} break;
 						/* 加载分组 */
 						case R.string.load: {
@@ -307,18 +307,15 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 									
 									boolean ret = new File(p, fn).renameTo(to);
 									if (ret) {
-										adapter.remove(name);
-										if (!doNothingToList) {
-											int newPos = position;
-											//if(newPos>1)
-											//if(adapter.getItem(newPos-1).equals(name))
-											//	newPos--;
-											String name = to.getName();
-											newPos = newPos > adapter.getCount() ? adapter.getCount() : newPos;
-											adapter.insert(name.substring(0, name.length() - 4), newPos);
-										}
+										scanInList.set(position, to.getName());
+										dataSetChangedAt(position);
 										isDirty = true;
 										a.show(R.string.renD);
+										if (b1) {
+											if (lv != null) {
+												((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
+											}
+										}
 									}
 									return ret;
 								}
@@ -349,11 +346,11 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 										scanInList.remove(nI);
 									}
 									selector.clear();
-									adapter.notifyDataSetChanged();
 								} else if (try_delete_configureLet(name)) {
 									selector.remove(name);
-									adapter.remove(name);
+									scanInList.remove(name);
 								}
+								dataSetChanged(true);
 								isDirty = true;
 								dd.dismiss();
 								a.show(R.string.delD);
@@ -381,7 +378,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 								outputChannel.close();
 								a.show(R.string.dupicateD);
 								scanInList.add(pressedPos+1, dest.getName());
-								adapter.notifyDataSetChanged();
+								dataSetChanged(true);
 							} catch (Exception e) {
 								CMN.debug(e);
 							}
@@ -389,6 +386,12 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 						} break;
 					}
 					popupMenuHelper.dismiss();
+					if (b1) {
+						dataSetChangedAt(position);
+						if (lv != null) {
+							((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
+						}
+					}
 					return true;
 				}
 			});
@@ -429,8 +432,8 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				f1.markDataDirty(false);
 				((BookManager)getActivity()).scrollTo(0);
 				a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
-				dataSetChanged();
-				f1.dataSetChanged();
+				dataSetChanged(false);
+				f1.dataSetChanged(true);
 				//a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
 				MainActivityUIBase.LazyLoadManager neoLM = a.loadMan.lazyMan;
 				CMN.debug("LoadLazySlots::", neoLM.chairCount, neoLM.CosyChair.length, neoLM.filterCount, neoLM.CosySofa.length);
@@ -463,7 +466,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			//CMN.Log("to", to);
 			//if(true) return;
 			int pos=-1, top=0;
-			BookManagerMain.ViewHolder vh = (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), BookManagerMain.ViewHolder.class);
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
 			if (vh != null) {
 				pos = vh.position;
 				top = ViewUtils.getNthParentNonNull(vh.itemView, 1).getTop();
@@ -482,12 +485,12 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					}
 				}
 				scanInList.addAll(to, md_selected);
-				adapter.notifyDataSetChanged();
+				dataSetChanged(true);
 			}
 			else if (from != to) {
 				String mdTmp = scanInList.remove(from);
 				scanInList.add(to, mdTmp);
-				adapter.notifyDataSetChanged();
+				dataSetChanged(true);
 				if (from < pos) {
 					pos--;
 				}
@@ -498,20 +501,24 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		};
 	}
 	
-	public int schFilter(String query) {
-		int prvSz = filtered.size();
-		this.query = query;
+	public int schFilter(String query, boolean shouldInval) {
+		if (!query.equals(this.query)) {
+			getBookManager().popupPos[1] = 0;
+			this.query = query;
+		}
+		int sz = filtered.size();
 		filtered.clear();
 		if (!TextUtils.isEmpty(query)) {
 			for (int i = 0; i < scanInList.size(); i++) {
 				String name = scanInList.get(i);
-				if (name.toLowerCase().indexOf(query)>0) {
+				int suffixIdx = name.lastIndexOf("."), sch=name.toLowerCase().indexOf(query);
+				if (sch>=0 && (suffixIdx==-1 || sch<suffixIdx)) {
 					filtered.put(i, name);
 				}
 			}
 		}
-		if (!(filtered.size()==0 && prvSz==0)) {
-			adapter.notifyDataSetChanged();
+		if (shouldInval && !(sz==0 && filtered.size()==0)) {
+			dataSetChanged(false);
 		}
 		return filtered.size();
 	}

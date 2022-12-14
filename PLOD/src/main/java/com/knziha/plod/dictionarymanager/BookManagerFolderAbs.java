@@ -1,14 +1,10 @@
 package com.knziha.plod.dictionarymanager;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Gravity;
@@ -24,22 +20,16 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
 
-import com.knziha.filepicker.model.DialogConfigs;
-import com.knziha.filepicker.model.DialogProperties;
-import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,12 +63,12 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	protected int pressedPos;
 	PopupMenuHelper mPopup;
 	
-	protected void showPopup(View v) {
+	protected void showPopup(View v, View rootV) {
 		PopupMenuHelper popupMenu = getPopupMenu();
 		int[] vLocationOnScreen = new int[2];
 		if (v == null) v = listView;
 		v.getLocationOnScreen(vLocationOnScreen);
-		popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+		popupMenu.showAt(rootV!=null?rootV:v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
 	}
 	
 	public PopupMenuHelper getPopupMenu() {
@@ -181,7 +171,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				lastClickedPos[0] = -1;
 				lastClickedPos[1] = -1;
 				if(oes!=null) oes.onEnterSelection(this, false);
-				adapter.notifyDataSetChanged();
+				dataSetChanged(false);
 				return true;
 			}
 		}
@@ -212,14 +202,14 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					mdTmp.children.clear();
 					hiddenParents.remove(mdTmp);
 				}
-				adapter.notifyDataSetChanged();
+				dataSetChanged(true);
 			} break;
 			case R.id.drag_handle:
 			{
 				if (PDICMainAppOptions.dictManagerClickPopup1()) {
 					pressedV = vh.itemView;
 					pressedPos = vh.position;
-					showPopup(vh.itemView);
+					showPopup(vh.itemView, null);
 				} else {
 					addIt(vh);
 				}
@@ -302,7 +292,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 //					if(lastClickedPos[lastClickedPosIndex%2]!=position) {
 //						lastClickedPos[(++lastClickedPosIndex) % 2] = position;
 //					}
-					adapter.notifyDataSetChanged();
+					dataSetChanged(false);
 				}
 				else {
 					if(mdTmp.isDirectory()) {
@@ -321,7 +311,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 //				//Selection.put(adapter.getItem(position).getAbsolutePath());
 //				listView.getOnItemClickListener().onItemClick(parent, view, position+ listView.getHeaderViewsCount(), id);
 //				adapter.notifyDataSetChanged();
-				showPopup(view);
+				showPopup(view, null);
 			}
 			return true;
 		});
@@ -337,11 +327,22 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		}
 		
 		public View getView(int pos, View convertView, ViewGroup parent) {
+			if (parent != listView && convertView!=null) {
+				if (!(convertView.getTag() instanceof BookManagerFolderlike.ViewHolder)) {
+					CMN.debug("他乡异客");
+					convertView = null;
+				}
+			}
 			View v = super.getView(pos, convertView, parent);
 			BookManagerFolderlike.ViewHolder vh;
 			if (v.getTag() == null) {
 				//Log.e("新建",""+pos);
 				vh = new BookManagerFolderlike.ViewHolder(v, BookManagerFolderAbs.this);
+				if(parent != listView) {
+					ViewUtils.setVisible(vh.folderIcon, false);
+					ViewUtils.setVisible(vh.splitterIcon, false);
+					vh.itemView.setBackground(null);
+				}
 			} else {
 				vh = (BookManagerFolderlike.ViewHolder) v.getTag();
 			}
@@ -376,54 +377,57 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			else
 				vh.text.setTextColor(Color.RED);
 			
-			if(!TextUtils.isEmpty(query)
-					&& mdTmp.getName().toLowerCase().contains(query)
-					// && filtered.get(pos)!=null
-			)
-				vh.text.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
-			else
-				vh.text.setBackground(null);
 			
-			if(mdTmp.isDirectory()) {//目录 todo opt
-				if (type==0) {
-					if (displayName != null) {
+			if (parent == listView) {
+				if (!TextUtils.isEmpty(query)
+						//&& mdTmp.getName().toLowerCase().contains(query)
+						&& filtered.get(pos) != null
+				)
+					vh.text.setBackgroundResource(GlobalOptions.isDark ? R.drawable.xuxian2_d : R.drawable.xuxian2);
+				else
+					vh.text.setBackground(null);
+				if(GlobalOptions.isDark) {
+					v.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+				}
+				if(mdTmp.isDirectory()) {//目录 todo opt
+					if (type==0) {
+						if (displayName != null) {
+							vh.text.setText(displayName);
+						} else
+							vh.text.setText(mFile.tryDeScion(mdTmp, parentFile));
+					} else {
+						vh.text.setText(mdTmp.getPath());
+					}
+					vh.folderIcon.setVisibility(View.VISIBLE);
+					vh.drag_handle.setVisibility(View.GONE);
+					vh.splitterIcon.setVisibility(View.GONE);
+					vh.text.setSingleLine(false);
+				} else {//路径
+					if(displayName!=null) {
 						vh.text.setText(displayName);
-					} else
-						vh.text.setText(mFile.tryDeScion(mdTmp, parentFile));
-				} else {
-					vh.text.setText(mdTmp.getPath());
+					} else if(mFile.isScionOf(mdTmp,parentFile)) {
+						vh.text.setPadding((int) (9*GlobalOptions.density), 0, 0, 0);
+						vh.text.setText(a.isDebug?mdTmp.getPath(): BU.unwrapMdxName(mdTmp.getName()));//BU.unwrapMdxName(mdTmp.getName())
+					} else {
+						vh.text.setPadding(0, 0, 0, 0);
+						vh.text.setText(mdTmp.getAbsolutePath());
+					}
+					mFile p = data.get(mdTmp.getParentFile().init(a.opt)); //todo opt
+					if(p!=null) {//有父文件夹节点
+						vh.text.setPadding(5, 0, 0, 0);
+						vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
+						vh.splitterIcon.setVisibility(View.VISIBLE);
+					} else {
+						//((TextView)v.findViewById(R.id.text)).setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
+						((View)v.findViewById(R.id.splitterIcon)).setVisibility(View.GONE);
+					}
+					vh.drag_handle.setVisibility(View.VISIBLE);
+					vh.folderIcon.setVisibility(View.GONE);
 				}
-				vh.folderIcon.setVisibility(View.VISIBLE);
-				vh.drag_handle.setVisibility(View.GONE);
-				vh.splitterIcon.setVisibility(View.GONE);
-				vh.text.setSingleLine(false);
-			} else {//路径
-				if(displayName!=null) {
-					vh.text.setText(displayName);
-				} else if(mFile.isScionOf(mdTmp,parentFile)) {
-					vh.text.setPadding((int) (9*GlobalOptions.density), 0, 0, 0);
-					vh.text.setText(a.isDebug?mdTmp.getPath(): BU.unwrapMdxName(mdTmp.getName()));//BU.unwrapMdxName(mdTmp.getName())
-				} else {
-					vh.text.setPadding(0, 0, 0, 0);
-					vh.text.setText(mdTmp.getAbsolutePath());
-				}
-				mFile p = data.get(mdTmp.getParentFile().init(a.opt)); //todo opt
-				if(p!=null) {//有父文件夹节点
-					vh.text.setPadding(5, 0, 0, 0);
-					vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
-					vh.splitterIcon.setVisibility(View.VISIBLE);
-				} else {
-					//((TextView)v.findViewById(R.id.text)).setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
-					((View)v.findViewById(R.id.splitterIcon)).setVisibility(View.GONE);
-				}
-				vh.drag_handle.setVisibility(View.VISIBLE);
-				vh.folderIcon.setVisibility(View.GONE);
 			}
+			
 			//((TextView)v.findViewById(R.id.text)).setTextColor(Color.parseColor("#000000"));
 			
-			if(GlobalOptions.isDark) {
-				v.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
-			}
 			return v;
 		}
 	}
@@ -475,22 +479,70 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	
 	String query;
 	SparseArray<String> filtered = new SparseArray<>();
+	SparseArray<mFile[]> filteredHelper = new SparseArray<>();
 	
-	public int schFilter(String query) {
-		int prvSz = filtered.size();
+	public void selectFilteredPos(int position) {
+		int lstPos = realFilterPos(position);
+		int h;
+		if(listView.getChildAt(0)!=null) h = listView.getChildAt(0).getHeight() / 4;
+		else h = 18;
+		listView.setSelectionFromTop(lstPos, listView.getHeight()/2 - h);
+	}
+	
+	private int realFilterPos(int dataPos) {
+		mFile[] folders = filteredHelper.get(dataPos);
+		for (int i = 0; i < folders.length; i++) {
+			if (folders[i].isHidden()) {
+				dataPos -= folders[i].children.size();
+			}
+		}
+		return dataPos;
+	}
+	
+	public void dataSetChanged(boolean structChanged) {
+		if (structChanged) {
+			String query = this.query;
+			if (!TextUtils.isEmpty(query)) {
+				this.query = "";
+				schFilter(query, false);
+				if (getBookManager().popup != null) {
+					getBookManager().popup.dismiss();
+				}
+			}
+		}
+		if (adapter != null) {
+			adapter.notifyDataSetChanged();
+		}
+	}
+	
+	public int schFilter(String query, boolean shouldInval) {
+		int sz = filtered.size();
 		filtered.clear();
-		if (!TextUtils.isEmpty(this.query = query)) {
+		if (!query.equals(this.query)) {
+			getBookManager().popupPos[this==getBookManager().f3?2:3] = 0;
+			this.query = query;
+		}
+		if (!TextUtils.isEmpty(query)) {
+			mFile item;
+			ArrayList<mFile> folders = new ArrayList<>();
 			if (adapter != null) {
-				for (int i = 0; i < adapter.getCount(); i++) {
-					String name = adapter.getItem(i).getName();
-					if (name.toLowerCase().indexOf(query)>=0) {
-						filtered.put(i, name);
+				for (int i = 0; i < data.size(); i++) {
+					item = data.getList().get(i);
+					if (item.isDirectory()) {
+						folders.add(item);
+					} else {
+						String name = item.getName();
+						int suffixIdx = name.lastIndexOf("."), sch=name.toLowerCase().indexOf(query);
+						if (sch>=0 && (suffixIdx==-1 || sch<suffixIdx)) {
+							filtered.put(i, name);
+							filteredHelper.put(i, folders.toArray(new mFile[0]));
+						}
 					}
 				}
 			}
 		}
-		if (!(filtered.size()==0 && prvSz==0)) {
-			adapter.notifyDataSetChanged();
+		if (shouldInval && !(sz==0 && filtered.size()==0)) {
+			dataSetChanged(false);
 		}
 		return filtered.size();
 	}
@@ -498,35 +550,31 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public void schPrvNxt(String query, boolean next) {
 		try {
 			if (!query.equals(this.query)) {
-				schFilter(query);
+				schFilter(query, true);
+				a.schIndicator_setText(filtered);
 			}
 			if (filtered.size() > 0) {
 				View child = ViewUtils.findCenterYChild(listView);
 				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(child, ViewHolder.class);
-				int fvp = (vh==null?0:vh.position), found = -1;
-				if (next) {
-					for (int i = 0; i < filtered.size(); i++) {
-						if (filtered.keyAt(i) > fvp) {
-							found = i;
+				int fvp = (vh==null?0:vh.position), found = -1, lstPos=0;
+				for (int i = 0; i < filtered.size(); i++) {
+					lstPos = realFilterPos(filtered.keyAt(i));
+					if (next) {
+						if (lstPos > fvp) {
+							found = lstPos;
 							break;
 						}
-					}
-					if (found != -1) {
-						ViewUtils.stopScroll(listView, -100, -100);
-						listView.setSelectionFromTop(filtered.keyAt(found)+ listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
-					}
-				} else {
-					for (int i = 0; i < filtered.size(); i++) {
-						if (filtered.keyAt(i) < fvp) {
-							found = i;
+					} else {
+						if (lstPos < fvp) {
+							found = lstPos;
 						} else {
 							break;
 						}
 					}
-					if (found != -1) {
-						ViewUtils.stopScroll(listView, -100, -100);
-						getListView().setSelectionFromTop(filtered.keyAt(found)+listView.getHeaderViewsCount(), listView.getHeight()/2-child.getHeight()/4);
-					}
+				}
+				if (found != -1) {
+					ViewUtils.stopScroll(listView, -100, -100);
+					listView.setSelectionFromTop(found + listView.getHeaderViewsCount(), listView.getHeight() / 2 - child.getHeight() / 4);
 				}
 			}
 			if ("".equals(query)) {
@@ -544,5 +592,4 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public int selected_size() {
 		return Selection.size();
 	}
-	
 }

@@ -6,6 +6,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -17,6 +19,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -40,10 +43,12 @@ import androidx.core.view.MenuCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.ListFragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
@@ -62,6 +67,8 @@ import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.ViewUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -76,15 +83,14 @@ import java.util.List;
 import java.util.Map;
 
 
-public class BookManager extends Toastable_Activity implements OnMenuItemClickListener, View.OnClickListener
-{
+public class BookManager extends Toastable_Activity implements OnMenuItemClickListener, OnClickListener, PopupMenuHelper.PopupMenuListener {
 	public final static int id = 110;
 	HashMap<String, BookPresenter> mdict_cache = new HashMap<>();
 	Intent intent = new Intent();
 	private PopupWindow mPopup;
 	//public ArrayList<PlaceHolder> slots;
 	public MainActivityUIBase.LoadManager loadMan;
-	private ArrayList<Fragment> fragments;
+	private ArrayList<ListFragment> fragments;
 	public HashMap<String, BookPresenter> app_mdict_cache;
 	//public HashMap<CharSequence,byte[]> UIProjects;
 	public HashSet<CharSequence> dirtyMap;
@@ -133,7 +139,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	public void onBookOptionsSet(boolean set) {
 		if (set) {
-			f1.dataSetChanged();
+			f1.dataSetChanged(false);
 		}
 	}
 	
@@ -155,7 +161,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
 								revertModule();
 								PDICMainAppOptions.setRevertExitManager(ck.isChecked());
-								f1.dataSetChanged();
+								f1.dataSetChanged(true);
 								if (ck.isChecked()) {
 									checkAll();
 									finish();
@@ -185,8 +191,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		boolean transfer(File to);
 		void afterTransfer();
 	}
-
-    private ViewGroup toastmaker;
+	
     private Toolbar toolbar;
     static String dictQueryWord;
     //private SearchView searchView;
@@ -194,6 +199,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
     BookManagerModules f2;
     BookManagerFolderlike f3;
 	BookManagerWebsites f4;
+	int lastPage = -1;
     ViewPager viewPager;  //对应的viewPager
     TabLayout mTabLayout;
 	LayoutInflater inflater;
@@ -222,7 +228,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 //			f1.refreshDicts(f1.mDslv.bUnfinished=false);
 			View child = f1.listView.getChildAt(f1.listView.getHeaderViewsCount());
 			if (child!=null) {
-				BookManagerMain.ViewHolder vh = (BookManagerMain.ViewHolder) child.getTag();
+				ViewHolder vh = (ViewHolder) child.getTag();
 				if (vh != null) {
 					f1.lastViewPos = vh.position;
 					f1.lastViewTop = child.getTop();
@@ -507,9 +513,27 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		int barSzBot = (int) mResource.getDimension(R.dimen.barSzBot);//opt.getBottombarSize();
 		searchbar.getChildAt(0).getLayoutParams().height = barSzBot;
 		//searchbar.setNavigationIcon(R.drawable.ic_baseline_double_arrow_24);
+		ImageView enterBtn = (ImageView) searchbar.findViewById(R.id.enter);
+		enterBtn.setImageResource(R.drawable.ic_menu_drawer_24dp);
+		enterBtn.setOnLongClickListener(new View.OnLongClickListener(){
+			@Override
+			public boolean onLongClick(View v) {
+				PopupMenuHelper popup = new PopupMenuHelper(BookManager.this, null, null);
+				popup.initLayout(new int[]{
+					R.string.sel_filtered
+					,R.string.sel_filtered_no
+				}, null);
+				View rv = root;
+				int rw = rv.getWidth(), rh = rv.getHeight();
+				popup.showAt(v, 0, (int) (v.getHeight()/2 + GlobalOptions.density*5), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+				return true;
+			}
+		});
+		
 		searchbar.setNavigationIcon(R.drawable.dragneo);
 		VU.setOnClickListenersOneDepth(searchbar, this, 999, null);
 		etSearch = searchbar.findViewById(R.id.etSearch);
+		etSearch.setText(dictQueryWord);
 		etSearch.setFilters(new InputFilter[] {
 				new InputFilter.AllCaps() {
 					@Override
@@ -522,27 +546,24 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId== EditorInfo.IME_ACTION_SEARCH||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
-					String query = v.getText().toString().trim()/*.toLowerCase()*/;
-					if(query.equals("")) query=null;
-					dictQueryWord=query;
-					if(f1.adapter!=null)
-						f1.dataSetChanged();
-					int f1_cc=0, f2_cc=0;
-					if(f3.adapter!=null)
-						f3.adapter.notifyDataSetChanged();
-					if(dictQueryWord!=null){
-						if (f1!=null) {
-							f1_cc = f1.schFilter(dictQueryWord);
+					Fragment frame = getFragment();
+					if (frame == f1 || frame == f2) {
+						String query = v.getText().toString().trim()/*.toLowerCase()*/;
+						dictQueryWord = query;
+						int f1_cc = 0, f2_cc = 0;
+						if (f1 != null) {
+							f1_cc = f1.schFilter(dictQueryWord, true);
 						}
-						if (f3!=null && f3.adapter!=null) {
-							f2_cc = f3.schFilter(dictQueryWord);
+						if (f3 != null && f3.adapter != null) {
+							f2_cc = f3.schFilter(dictQueryWord, true);
 						}
 						showTopSnack(toastmaker, (f1_cc + f2_cc) == 0 ? getResources().getString(R.string.fn)
 								: ((f1_cc == 0 ? "" : "当前分组找到" + f1_cc + "项") + (f1_cc == 0 ? "" : "，") + (f2_cc == 0 ? "" : "全部记录找到" + f2_cc + "项")));
-						
+						f1_cc += f2_cc;
+					} else {
+						searchbar.findViewById(R.id.recess).performClick();
 					}
-					f1_cc += f2_cc;
-					schIndicator.setText(f1_cc==0?"":(f1_cc+""));
+					schIndicator_setText(filtered);
 				}
 				return true;
 			}
@@ -613,6 +634,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	    
 		fragments.addAll(Arrays.asList(f1 = new BookManagerMain(), f2 = new BookManagerModules(), f4 = new BookManagerWebsites(), f3 = new BookManagerFolderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;
+		filtered = f1.filtered;
 
 		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(BookManagerFolderAbs f, boolean enter){
@@ -625,7 +647,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					if(f1.getPathAt(i).equals(path)) {
 						if(f1.getPlaceRejected(i)) {
 							f1.setPlaceRejected(i, false);
-							f1.dataSetChanged();
+							f1.dataSetChanged(false);
 							return 1;
 						}
 						found=true;
@@ -644,6 +666,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		viewPager.setAdapter(adapterf);
 	    viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout) {
 	    	@Override public void onPageSelected(int page) {
+				if (lastPage!=-1) {
+					ListFragment frame = fragments.get(lastPage);
+					if (frame != null) {
+						framePos[lastPage] = ViewUtils.saveListPos(frame.getListView());
+					}
+				}
 				Fragment fI = fragments.get(page);
 				viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), Math.max(1+page, 1)));
 				List<MenuItemImpl> menu;
@@ -652,17 +680,24 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					if (loadMan.lazyMan.lastLoadedModule!=lastLoadedModule) {
 						toolbar_setTitle(loadMan.lazyMan.lastLoadedModule);
 					}
+					filtered = f1.filtered;
 	    		} else if(fI==f2) {
 					menu = Menu2;
+					filtered = f2.filtered;
 				} else if (fI == f3) {
 					menu = f3.SelectionMode ? Menu3Sel : Menu3;
+					filtered = f3.filtered;
 				} else {
 					menu = f4.SelectionMode ? Menu3Sel : Menu3;
+					filtered = f4.filtered;
 				}
 				AllMenus.setItems(menu);
 				super.onPageSelected(CurrentPage = page);
 				opt.setDictManagerTap(CurrentPage);
-	    	}
+				schIndicator_setText(filtered);
+				lastPage = 0;
+				ViewUtils.restoreListPos(fragments.get(lastPage).getListView(), framePos[lastPage]);
+			}
 	    });
 		
 		for (String s : tabTitle) {
@@ -731,7 +766,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 //			searchView.getLayoutParams().width=-2;
 //			searchView.requestLayout();
 //			if(f1.adapter!=null) f1.dataSetChanged();
-//			if(f3.adapter!=null) f3.adapter.notifyDataSetChanged();
+//			if(f3.adapter!=null) f3.dataSetChanged();
 //			return false;
 //		});
 //		if(dictQueryWord!=null){
@@ -768,6 +803,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	//onCreate结束
 	
+	
 	// click
 	@Override
 	public void onClick(View v) {
@@ -775,24 +811,133 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			case R.id.home:
 				if (v==searchbar.getNavigationBtn()) {
 					PDICMainAppOptions.sortDictManager(!PDICMainAppOptions.sortDictManager());
-					if(f1!=null) f1.dataSetChanged();
-					if(f1!=null) f2.dataSetChanged();
+					if(f1!=null) f1.dataSetChanged(false);
+					if(f2!=null) f2.dataSetChanged(false);
 					break;
 				}
 				onBackPressed();
 			break;
+			case R.id.enter: {
+				showFilteredEntries(v);
+			} break;
+			case R.id.ivDeleteText: {
+				if(etSearch.getText()!=null)
+					etSearch.getText().clear();
+			} break;
 			case R.id.forward:
-			case R.id.recess:
-				String str = etSearch.getText().toString();
+			case R.id.recess: {
+				String str = etSearch.getText().toString().trim();
+				BookManager.dictQueryWord = str;
 				Fragment view = fragments.get(viewPager.getCurrentItem());
 				if (view instanceof BookManagerFolderAbs) {
-					((BookManagerFolderAbs) view).schPrvNxt(str, v.getId()==R.id.recess);
+					((BookManagerFolderAbs) view).schPrvNxt(str, v.getId() == R.id.recess);
+				} else {
+					((BookManagerFragment) view).schPrvNxt(str, v.getId() == R.id.recess);
 				}
-				else {
-					((BookManagerFragment) view).schPrvNxt(str, v.getId()==R.id.recess);
-				}
-			break;
+			} break;
 		}
+	}
+	
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		return false;
+	}
+	
+	public void schIndicator_setText(SparseArray<String> filtered) {
+		if (schIndicator != null) {
+			schIndicator.setText(filtered.size()==0?"":filtered.size()+"");
+		}
+	}
+	
+	SparseArray<String> filtered;
+	PopupMenuHelper popup;
+	public long[] popupPos = new long[4];
+	public static long[] framePos = new long[4];
+	private void showFilteredEntries(View v) {
+		if (filtered.size() == 0) {
+			showTopSnack("当前页面无搜索结果");
+			return;
+		}
+		popup = getPopupMenu();
+		if (popup.getListener() != this || !(popup.tag1 instanceof ListView)) {
+			popup.initLayout(ArrayUtils.EMPTY_INT_ARRAY, this);
+			ListView lv = new ListView(BookManager.this);
+			popup.lv.addView(lv);
+			popup.tag1 = lv;
+			lv.setAdapter(new BaseAdapter() {
+				@Override public int getCount() { return filtered.size(); }
+				@Override public Object getItem(int position) { return null; }
+				@Override public long getItemId(int position) { return 0;	}
+				@Override
+				public View getView(int position, View convertView, ViewGroup parent) {
+//					MainActivityUIBase.ViewHolder vh;
+//					if (convertView == null) {
+//						vh = new MainActivityUIBase.ViewHolder(BookManager.this, R.layout.listview_item01, parent);
+//						VU.setVisible(vh.preview, false);
+//						VU.setVisible(vh.subtitle, false);
+//					} else {
+//						vh = (MainActivityUIBase.ViewHolder) convertView.getTag();
+//					}
+//
+//					vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
+//					vh.title.setText(filtered.valueAt(position));
+					
+//					return vh.itemView;
+					int realPos = filtered.keyAt(position);
+					Fragment frame = getFragment();
+					if (frame instanceof BookManagerFragment) {
+						return ((BookManagerFragment) frame).adapter.getView(realPos, convertView, lv);
+					}
+					return ((BookManagerFolderAbs) frame).adapter.getView(realPos, convertView, lv);
+				}
+			});
+			lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					Fragment frame = getFragment();
+					if(frame instanceof BookManagerFragment) {
+						((BookManagerFragment) frame).selectPos(filtered.keyAt(position));
+					}
+					if(frame instanceof BookManagerFolderAbs) {
+						((BookManagerFolderAbs) frame).selectFilteredPos(filtered.keyAt(position));
+					}
+					popup.dismiss();
+				}
+			});
+			lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+				@Override
+				public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+					Fragment frame = getFragment();
+					if(frame instanceof BookManagerFragment) {
+						((BookManagerFragment) frame).pressedPos = filtered.keyAt(position);
+						((BookManagerFragment) frame).pressedV = view;
+						((BookManagerFragment) frame).showPopup(view, root);
+					}
+					if(frame instanceof BookManagerFolderAbs) {
+						((BookManagerFolderAbs) frame).pressedPos = filtered.keyAt(position);
+						((BookManagerFolderAbs) frame).pressedV = view;
+						((BookManagerFolderAbs) frame).showPopup(view, root);
+					}
+					return true;
+				}
+			});
+			popup.mPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+				@Override
+				public void onDismiss() {
+					popupPos[viewPager.getCurrentItem()] = ViewUtils.saveListPos(lv);
+				}
+			});
+		}
+		popup.sv.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE_1:null);
+		ListView lv = (ListView) popup.tag1;
+		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) lv.getLayoutParams();
+		((BaseAdapter) ((ListView) popup.tag1).getAdapter()).notifyDataSetChanged();
+		View rv = root;
+		int rw = rv.getWidth(), rh = rv.getHeight();
+		lp.width = rw*2/3;
+		lp.height = rh/2;
+		popup.showAt(v, 0, (int) (v.getHeight()/2 + GlobalOptions.density*5), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+		ViewUtils.restoreListPos(lv, popupPos[viewPager.getCurrentItem()]);
 	}
 	
 	private void toolbar_setTitle(String lastLoadedModule) {
@@ -997,8 +1142,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public boolean isDebug=false;
 
     public static class FragAdapter extends FragmentPagerAdapter {
-    	private List<Fragment> mFragments;
-    	public FragAdapter(FragmentManager fm,List<Fragment> fragments) {
+    	private List<? extends Fragment> mFragments;
+    	public FragAdapter(FragmentManager fm,List<? extends Fragment> fragments) {
     		super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
     		mFragments=fragments;
     	}
@@ -1094,7 +1239,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if(isLongClicked) {ret=false; break;}
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dictManager1MultiSelecting(item.isChecked());
-				f1.dataSetChanged();
+				f1.dataSetChanged(false);
 				showT(item.isChecked()?"多选模式已开启":"多选模式已关闭");
 			} break;
 			case R.id.clearSel:{
@@ -1135,7 +1280,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				for (int i = 0; i < szf1; i++) {
 					f1.setPlaceSelected(i, !longclickFx);
 				}
-				f1.dataSetChanged();
+				f1.dataSetChanged(false);
 			} break;
 			/* 间选 | 间不选, f1 */
 			case R.id.toolbar_action1:{
@@ -1157,7 +1302,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							sf1 = false;
 						}
 					}
-					f1.dataSetChanged();
+					f1.dataSetChanged(false);
 				}
 			} break;
 			/* 选择失效项, f1 */
@@ -1172,7 +1317,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				if (cnt > 0) {
 					if (sf1) opt.dictManager1MultiSelecting(true);
-					f1.dataSetChanged();
+					f1.dataSetChanged(false);
 					showT((isLongClicked ? "不选当前词典分组失效项" : "选择当前词典分组失效项") + "\n已处理" + cnt + "项，当前已选" + f1.Selection.size() + "项");
 				} else {
 					showT("当前分组无失效词典。");
@@ -1189,7 +1334,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				if (cnt>0) {
 					if (sf1) opt.dictManager1MultiSelecting(true);
-					f1.dataSetChanged();
+					f1.dataSetChanged(false);
 					showT((isLongClicked?"不选当前词典分组禁用项":"选择当前词典分组禁用项")+"\n已处理"+cnt+"项，当前已选"+f1.Selection.size()+"项");
 				} else
 					showT("当前分组未禁用词典，点击列表可禁用或启用。");
@@ -1217,7 +1362,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				} else {
 					showT("当前词典无网络词典");
 				}
-				f1.dataSetChanged();
+				f1.dataSetChanged(false);
 			} break;
 			/* 另存为 */
             case R.id.toolbar_action3:{
@@ -1275,7 +1420,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						i--;
 					}
 				}
-				f3.adapter.notifyDataSetChanged();
+				f3.dataSetChanged(false);
 			} break;
 			/* 展开全部 */
             case R.id.tapSch:{
@@ -1289,7 +1434,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						mdTmp.children.clear();
 					}
 				}
-				f3.adapter.notifyDataSetChanged();
+				f3.dataSetChanged(false);
 			} break;
 			/* 全选 | 全不选, f3 & f4 */
             case R.id.toolbar_action7:{
@@ -1302,7 +1447,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						f3.Selection.add(list.get(i).getRealPath());
 					}
 				}
-				f3.adapter.notifyDataSetChanged();
+				f3.dataSetChanged(false);
 			} break;
 			/* 间选 */
             case R.id.inter_sel:{
@@ -1326,7 +1471,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						}
 					}
 				}
-				f3.adapter.notifyDataSetChanged();
+				f3.dataSetChanged(false);
 			} break;
 			/* 全选失效项 */
             case R.id.toolbar_action8:{
@@ -1347,7 +1492,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				}
 				if (cnt > 0) {
-					f3.adapter.notifyDataSetChanged();
+					f3.dataSetChanged(false);
 					showT((isLongClicked ? "不选全部词典记录失效项" : "选择全部词典记录失效项") + "\n已处理" + cnt + "项，当前已选" + f3.Selection.size() + "项");
 				} else {
 					showT("全部词典无失效记录。");
@@ -1377,8 +1522,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						}
 					}
 					f1.refreshSize();
-					showT("移除完毕!("+cc1+"/"+f3.calcSelectionSz()+")");
-					f1.dataSetChanged();
+					showT("禁用完毕!("+cc1+"/"+f3.calcSelectionSz()+")");
+					f1.dataSetChanged(false);
 				}
 			} break;
 			/* 删除全部记录, f3 */
@@ -1483,7 +1628,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 //											f3.data.insertOverFlow(val.getParentFile().init(opt));
 //									}
 //								}
-//								f3.adapter.notifyDataSetChanged();
+//								f3.dataSetChanged();
 //								f3.isDirty = true;
 //
 //								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(true, true);
@@ -1692,7 +1837,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						}
 					}
 				}
-				f1.dataSetChanged();
+				f1.dataSetChanged(insert);
 				if(insert) {
 					f1.getListView().setSelectionFromTop(toPos, 0);
 				}
@@ -1750,7 +1895,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			}
 			showT("添加完毕!("+cc+"/"+count+")");
 			f1.refreshSize();
-			f1.dataSetChanged();
+			f1.dataSetChanged(cc>0);
 		}
 	}
 	
@@ -1764,11 +1909,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 			}
 		}
-		f1.refreshSize();
-		f1.dataSetChanged();
 		if (cnt > 0) {
+			f1.refreshSize();
 			if (sf1) opt.dictManager1MultiSelecting(true);
-			f1.dataSetChanged();
+			f1.dataSetChanged(false);
 			showT((disable ? "禁用当前词典选中项" : "启用当前词典选中项") + "\n已处理" + cnt + "项，当前已启用" + loadMan.lazyMan.chairCount + "项");
 		} else {
 			showT("当前分组无选中词典。");
@@ -1915,7 +2059,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					f1.setPlaceRejected(i, dis);
 				}
 			}
-			f1.dataSetChanged();
+			f1.dataSetChanged(false);
 			f1.refreshSize();
 		} else {
 			final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
@@ -1981,8 +2125,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		if (toast) {
 			showT("移除完毕!("+cc1+"/"+total+")");
 		}
-		f1.dataSetChanged();
-		f3.adapter.notifyDataSetChanged();
+		f1.dataSetChanged(cc1>0);
+		f3.dataSetChanged(!toast);
 	}
 	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){

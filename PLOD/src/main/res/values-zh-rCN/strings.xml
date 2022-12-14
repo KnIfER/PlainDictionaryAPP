@@ -241,5 +241,6 @@
 	<string name="tianjia">添加</string>
 	<string name="addTo">添加至…</string>
 	<string name="centre_dlg">切换对话框位置</string>
+	<string name="sel_filtered">全选搜索结果</string>
 	>
 </resources>

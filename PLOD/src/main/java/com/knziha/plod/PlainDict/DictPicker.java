@@ -581,7 +581,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			case R.id.dictName:
 				scrollThis();
 				break;
-			case R.id.pickTweak:
+			case R.id.tweakBtn:
 				PopupMenuHelper popupMenu = a.getPopupMenu();
 				int[] texts = new int[]{
 					R.string.centre_dlg

@@ -20,6 +20,7 @@ import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.dictionarymanager.BookManagerMain;
+import com.knziha.plod.dictionarymanager.ViewHolder;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -153,15 +154,15 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		BookManagerMain.ViewHolder vh;
+		ViewHolder vh;
 		if (convertView == null) {
 			convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_dslitem, parent, false);
-			vh = new BookManagerMain.ViewHolder(convertView);
+			vh = new ViewHolder(convertView);
 			vh.title.setOnClickListener(this);
 			vh.title.setOnLongClickListener(this);
 			vh.ck.setOnClickListener(this);
 		} else {
-			vh = (BookManagerMain.ViewHolder) convertView.getTag();
+			vh = (ViewHolder) convertView.getTag();
 		}
 		vh.position = position;
 		String bookName = helper.indexedbooks.get(position).name;
@@ -216,8 +217,8 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 	public boolean onLongClick(View v) {
 		int id = v.getId();
 		if (id == R.id.text|| id == R.id.check1) {
-			BookManagerMain.ViewHolder vh
-					= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
+			ViewHolder vh
+					= (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
 			if (vh != null) {
 				PopupMenuHelper popupMenu = a.getPopupMenu();
 				pressedBookName = vh.title.getText();
@@ -278,8 +279,8 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 				break;
 			case R.id.text:
 			case R.id.check1:
-				BookManagerMain.ViewHolder vh
-						= (BookManagerMain.ViewHolder) ViewUtils.getViewHolderInParents(v, BookManagerMain.ViewHolder.class);
+				ViewHolder vh
+						= (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
 				if (vh != null) {
 					if (schGroup != 2) {
 						if (id == R.id.check1) {

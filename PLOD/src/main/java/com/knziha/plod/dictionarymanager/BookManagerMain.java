@@ -6,19 +6,17 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -26,7 +24,6 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
 import com.knziha.filepicker.model.DialogConfigs;
@@ -46,7 +43,6 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -80,27 +76,27 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public BookManagerMain(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
-			ViewHolder vh = (ViewHolder) ((View)buttonView.getParent()).getTag();
-			if(lastClickedPos[lastClickedPosIndex%2]!=vh.position) {
-				lastClickedPos[(++lastClickedPosIndex) % 2] = vh.position;
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(buttonView, ViewHolder.class);
+			int pos = vh.position;
+			if(lastClickedPos[lastClickedPosIndex%2]!=pos) {
+				lastClickedPos[(++lastClickedPosIndex) % 2] = pos;
 			}
 			setPlaceSelected(vh.position, !getPlaceSelected(vh.position));
+			if (ViewUtils.getParentOf(vh.itemView, ListView.class)!=listView) {
+				dataSetChangedAt(pos);
+			}
 		};
 	}
-
+	
 	public void refreshSize(){
 		a.mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,loadMan.lazyMan.chairCount));
 	}
-
-	@Override
-	public int getItemLayout() {
-		return R.layout.dict_manager_dslitem;
-	}
-
+	
 	@Override
 	public void setListAdapter() {
 		adapter = new MyAdapter(loadMan.md);
 		setListAdapter(adapter);
+		ViewUtils.restoreListPos(listView, BookManager.framePos[0]);
 	}
 
 	@Override
@@ -113,7 +109,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		loadMan.md.add(null);
 		loadMan.lazyMan.placeHolders.add(new PlaceHolder(mmTmp));
 		loadMan.lazyMan.chairCount++;
-		dataSetChanged();
+		dataSetChanged(true);
 		refreshSize();
 	}
 
@@ -124,7 +120,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				setPlaceSelectedInter(ph, false);
 			}
 			Selection.clear();
-			adapter.notifyDataSetChanged();
+			dataSetChanged(false);
 //			for (int i = 0; i < loadMan.md.size(); i++) {
 //				setPlaceSelected(i, false);
 //			}
@@ -142,7 +138,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				boolean start = mController.startDrag(position,0, view.getHeight()/2);
 				return false;
 			} else {
-				showPopup(view);
+				showPopup(view, null);
 			}
 		}
 		return true;
@@ -199,11 +195,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			}
 			loadMan.md.addAll(to, md_selected);
 			loadMan.lazyMan.placeHolders.addAll(to, ph_selected);
-			adapter.notifyDataSetChanged();
+			dataSetChanged(true);
 		}
 		else if (from != to && !b1) {
 			replace(from, to);
-			adapter.notifyDataSetChanged();
+			dataSetChanged(true);
 			if (from < pos) {
 				pos--;
 			}
@@ -219,17 +215,20 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				.setTitle(getBookManager().mResource.getString(R.string.surerrecords, one?1:Selection.size()))
 				.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
 				.setPositiveButton(R.string.confirm, (dialog, which) -> {
+					int cc=0;
 					if (one) {
 						remove(pressedPos);
+						cc=1;
 					} else {
 						for (int i = szf1 - 1; i >= 0; i--) {
 							if (getPlaceSelected(i)) {
 								remove(i);
+								cc++;
 							}
 						}
 					}
 					refreshSize();
-					dataSetChanged();
+					dataSetChanged(cc > 0);
 					dialog.dismiss();
 				})
 				.create().show();
@@ -243,9 +242,19 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		@NonNull
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 			ViewHolder vh;
+			if (parent != listView && convertView!=null) {
+				if (!(convertView.getTag() instanceof ViewHolder)) {
+					CMN.debug("他乡异客");
+					convertView = null;
+				}
+			}
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
 				vh = new ViewHolder(convertView);
+				if(parent != listView) {
+					ViewUtils.setVisible(vh.handle, false);
+					convertView.setBackground(null);
+				}
 				vh.title.trimStart = false;
 			} else {
 				vh = (ViewHolder) convertView.getTag();
@@ -255,10 +264,16 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//position = position - mDslv.getHeaderViewsCount();
 			//mngr_agent_manageable mdTmp = adapter.getItem(position);
 			
-			if(query!=null && filtered.get(position)!=null)
-				vh.title.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
-			else
-				vh.title.setBackground(null);
+			if (parent == listView) {
+				if(query!=null && filtered.get(position)!=null)
+					vh.title.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
+				else
+					vh.title.setBackground(null);
+				ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
+				if(GlobalOptions.isDark) {
+					convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+				}
+			}
 
 			final String key = getPathAt(position);
 			final String name = CMN.getAssetName(key);
@@ -273,7 +288,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			} else {
 				vh.ck.setVisibility(View.GONE);
 			}
-			ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
 
 			StringBuilder rgb = new StringBuilder("#");
 			boolean disabled = getPlaceRejected(position);
@@ -321,10 +335,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			}
 			
 			vh.title.setStarLevel(0);
-			
-			if(GlobalOptions.isDark) {
-				convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
-			}
 			return convertView;
 		}
 	}
@@ -338,7 +348,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				@Override
 				public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
 					int position = pressedPos;
-					boolean isOnSelected = getPlaceSelected(position);
+					ListView lv = (ListView) ViewUtils.getParentOf(pressedV, ListView.class);
+					boolean b1 = lv!=listView;
+					boolean isOnSelected = !b1 && getPlaceSelected(position);
 					BookPresenter magent;
 					if (isLongClick) {
 						if (view.getId() == R.id.disable) {
@@ -354,7 +366,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							disEna(isOnSelected, view.getId()==R.id.disable, position);
 						} break;
 						case R.string.rename: {
-							renameFile();
+							//renameFile();
 						} break;
 						case R.id.move_sel: {
 							int from = -1;
@@ -374,11 +386,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						} break;
 						case R.string.multi_select: {//多选
 							a.opt.dictManager1MultiSelecting(!a.opt.dictManager1MultiSelecting());
-							adapter.notifyDataSetChanged();
-							a.f2.adapter.notifyDataSetChanged();
+							dataSetChanged(false);
+							a.f2.dataSetChanged(false);
 							d.dismiss();
 						} break;
 						case R.id.jianxuan: {//间选
+							if(b1) return true;
 							MenuItemImpl menu = (MenuItemImpl) ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1);
 							menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn();
 							a.onMenuItemClick(menu);
@@ -386,14 +399,14 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						case R.string.move_top: {//移至顶部
 							markDirty(-1);
 							replace(position, 0);
-							adapter.notifyDataSetChanged();
+							dataSetChanged(true);
 							getListView().setSelection(0);
 						} break;
 						case R.string.move_bottom: {//移至底部
 							markDirty(-1);
 							int last = manager_group().size() - 1;
 							replace(position, last);
-							adapter.notifyDataSetChanged();
+							dataSetChanged(true);
 							getListView().setSelection(last);
 						} break;
 						case R.id.openFolder: {//在外部管理器打开路径
@@ -472,11 +485,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 										cc++;
 									}
 								}
+								dataSetChanged(false);
 							} else {
 								cc=1;
+								dataSetChangedAt(position);
 							}
 							tweakedDict = true;
-							adapter.notifyDataSetChanged();
 							if (cc > 1) {
 								a.showT(isF ? "已设置" + magent.getDictionaryName() + "等" + cc + "个词典为点译词库" : "已取消" + magent.getDictionaryName() + "等" + cc + "个点译库");
 							} else {
@@ -542,6 +556,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 //						} break;
 					}
 					popupMenuHelper.dismiss();
+					if (b1) {
+						dataSetChangedAt(position);
+						if (lv != null) {
+							((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
+						}
+					}
 					return true;
 				}
 			});
@@ -560,12 +580,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					if(position==-1) position = i;
 				}
 			}
+			dataSetChanged(false);
 		} else if(position!=-1){
 			markDirty(position);
 			setPlaceRejected(position, off);
 			cc = 1;
+			dataSetChangedAt(position);
 		}
-		adapter.notifyDataSetChanged();
 		refreshSize();
 		if (cc > 1) {
 			a.showT(!off ? "已启用" + getNameAt(position) + "等" + cc + "个词典" : "已禁用" + getNameAt(position) + "等" + cc + "个词典");
@@ -722,11 +743,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					pressedPos = position - listView.getHeaderViewsCount();
 					pressedV = v;
 					if (PDICMainAppOptions.dictManagerClickPopup()) {
-						showPopup(v);
+						showPopup(v, null);
 					} else {
 						markDirty(pressedPos);
 						setPlaceRejected(pressedPos, !getPlaceRejected(pressedPos));
-						adapter.notifyDataSetChanged();
+						dataSetChangedAt(pressedPos);
 						refreshSize();
 					}
 				}
@@ -764,32 +785,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//do nothing; block super from crashing
 		}
 
-	}
-	
-	public static class ViewHolder{
-		public int position;
-		public View itemView;
-		public ImageView handle;
-		public FlowTextView title;
-		public CheckBox ck;
-		boolean isDark;
-
-		public ViewHolder(View v) {
-			itemView = v;
-			handle = v.findViewById(R.id.drag_handle);
-			title = v.findViewById(R.id.text);
-			ck = v.findViewById(R.id.check1);
-			v.setTag(this);
-		}
-		
-		public void tweakCheck() {
-			if (isDark!=GlobalOptions.isDark) {
-				isDark = isDark!=GlobalOptions.isDark;
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					ck.getButtonDrawable().setColorFilter(isDark?GlobalOptions.NEGATIVE_1:null);
-				}
-			}
-		}
 	}
 
 	public void refreshDicts(boolean bUnfinished) {
@@ -942,20 +937,24 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		return placeArray;
 	}
 	
-	public int schFilter(String query) {
-		int prvSz = filtered.size();
-		this.query = query;
+	public int schFilter(String query, boolean shouldInval) {
+		if (!query.equals(this.query)) {
+			getBookManager().popupPos[0] = 0;
+			this.query = query;
+		}
+		int sz = filtered.size();
 		filtered.clear();
 		if (!TextUtils.isEmpty(query)) {
 			for (int i = 0; i < manager_group().size(); i++) {
 				String name = getNameAt(i).toString();
-				if (name.toLowerCase().indexOf(query)>0) {
+				int suffixIdx = name.lastIndexOf("."), sch=name.toLowerCase().indexOf(query);
+				if (sch>=0 && (suffixIdx==-1 || sch<suffixIdx)) {
 					filtered.put(i, name);
 				}
 			}
 		}
-		if (!(filtered.size()==0 && prvSz==0)) {
-			adapter.notifyDataSetChanged();
+		if (shouldInval && !(sz==0 && filtered.size()==0)) {
+			dataSetChanged(false);
 		}
 		return filtered.size();
 	}

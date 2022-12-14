@@ -185,12 +185,12 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	
 	@Override
 	public void onClick(View v) {
-		listener.onMenuItemClick(this, v, false);
+		if(listener!=null) listener.onMenuItemClick(this, v, false);
 	}
 	
 	@Override
 	public boolean onLongClick(View v) {
-		return listener.onMenuItemClick(this, v, true);
+		return listener==null?false:listener.onMenuItemClick(this, v, true);
 	}
 	
 	public void dismiss() {

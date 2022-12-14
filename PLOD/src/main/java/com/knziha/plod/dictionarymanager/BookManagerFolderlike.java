@@ -1,8 +1,11 @@
 package com.knziha.plod.dictionarymanager;
 
+import androidx.appcompat.view.VU;
+
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -78,6 +81,7 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 		dataTree = new ArrayList<>(data.getList());
 		adapter = new MyAdapter(dataTree);
 		super.setListAdapter(adapter);
+		ViewUtils.restoreListPos(listView, BookManager.framePos[3]);
 	}
 
 

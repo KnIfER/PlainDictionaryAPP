@@ -42,6 +42,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 
+import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.ebook.Utils.BU;
@@ -55,6 +57,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
@@ -111,6 +114,8 @@ public class Toastable_Activity extends AppCompatActivity {
 	public View dv;
 	public Configuration mConfiguration;
 	boolean isDarkStamp;
+	
+	protected ViewGroup toastmaker;
 
 	SimpleTextNotifier topsnack;
 	private Animator.AnimatorListener topsnackListener;
@@ -544,7 +549,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	public void showTopSnack(Object messageVal){
-		showTopSnack(null, messageVal, 0.8f, -1, -1, 0);
+		showTopSnack(toastmaker, messageVal, 0.8f, -1, -1, 0);
 	}
 
 	public void showContentSnack(Object messageVal){
@@ -828,6 +833,18 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	public void onBookOptionsSet(boolean set) {
 	
+	}
+	
+	public WahahaTextView.ViewRootHolder mViewRootHolder = new WahahaTextView.ViewRootHolder();
+	
+	WeakReference<PopupMenuHelper> popupMenuRef = ViewUtils.DummyRef;
+	public PopupMenuHelper getPopupMenu() {
+		PopupMenuHelper ret = popupMenuRef.get();
+		if (ret==null) {
+			ret  = new PopupMenuHelper(this, null, null);
+			popupMenuRef = new WeakReference<>(ret);
+		}
+		return ret;
 	}
 }
 
