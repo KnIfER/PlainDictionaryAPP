@@ -49,7 +49,6 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
@@ -76,8 +75,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
-import androidx.appcompat.view.menu.MenuBuilder;
-import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
@@ -1981,7 +1978,7 @@ public class ViewUtils extends VU {
 	public static long saveListPos(ListView listView) {
 		View child = listView==null?null:listView.getChildAt(0);
 		if(child!=null) {
-			return listView.getFirstVisiblePosition() | (((long)child.getTop())<<32);
+			return (long)listView.getFirstVisiblePosition() | (((long)child.getTop())<<32);
 		}
 		return 0;
 	}

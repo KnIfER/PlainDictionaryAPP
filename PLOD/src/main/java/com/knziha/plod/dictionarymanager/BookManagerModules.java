@@ -100,7 +100,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 
 		adapter = new MyAdapter(scanInList);
 		setListAdapter(adapter);
-		ViewUtils.restoreListPos(listView, BookManager.framePos[1]);
+		if(a!=null)  ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
 	}
 
 	@Override

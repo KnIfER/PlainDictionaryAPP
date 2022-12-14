@@ -2268,6 +2268,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (floatApp!=null) {
 				floatApp.close();
 			}
+			CMN.sData = CMN.sDataTree = null;
 //			keyboardHeightPopupListener.dismiss();
 		}
 		if(ServiceEnhancer.isRunning) {

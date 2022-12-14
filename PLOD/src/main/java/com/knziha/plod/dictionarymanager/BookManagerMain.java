@@ -58,8 +58,6 @@ import java.util.List;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener, DragSortListView.DropListener {
-	public static int lastViewPos;
-	public static int lastViewTop;
 	HashSet<PlaceHolder> Selection = new HashSet<>();
 	BookManager aaa;
 	private boolean bDictTweakerOnceShowed;
@@ -96,7 +94,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public void setListAdapter() {
 		adapter = new MyAdapter(loadMan.md);
 		setListAdapter(adapter);
-		ViewUtils.restoreListPos(listView, BookManager.framePos[0]);
+		if(a!=null)  ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
 	}
 
 	@Override
@@ -756,7 +754,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			listView.setOnItemLongClickListener(this);
 			setListAdapter();
 			refreshSize();
-			listView.setSelectionFromTop(lastViewPos, lastViewTop);
 		}
 	}
 	

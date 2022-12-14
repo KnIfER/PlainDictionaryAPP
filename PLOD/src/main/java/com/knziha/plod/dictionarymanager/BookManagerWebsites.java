@@ -1,15 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
-
 import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
@@ -70,6 +61,5 @@ public class BookManagerWebsites extends BookManagerFolderAbs {
 		dataTree = new ArrayList<>(data.getList());
 		adapter = new MyAdapter(dataTree);
 		super.setListAdapter(adapter);
-		ViewUtils.restoreListPos(listView, BookManager.framePos[2]);
 	}
 }

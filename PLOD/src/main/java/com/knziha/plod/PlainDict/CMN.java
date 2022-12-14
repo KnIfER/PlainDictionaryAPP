@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
+import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.widgets.ViewUtils;
 
 import org.knziha.metaline.Metaline;
@@ -18,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -74,6 +77,10 @@ public class CMN{
 	
 	public static int HonestCredits=100;
 	public static WeakReference<MainActivityUIBase> pHandler;
+	
+	
+	public static Object sData;
+	public static Object sDataTree;
 	
 	public static String Log(Object... o) {
 //		if (true) {

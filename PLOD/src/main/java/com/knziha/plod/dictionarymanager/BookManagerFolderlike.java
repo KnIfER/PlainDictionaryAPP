@@ -1,10 +1,10 @@
 package com.knziha.plod.dictionarymanager;
 
-import androidx.appcompat.view.VU;
-
+import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
@@ -31,57 +31,65 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 	private void pullData() {
 		dataPrepared = true;
 		File rec = a.fRecord;
-		CMN.debug("拉取数据！", rec);
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(rec));
-			String line;
-			//int idx=0;
-			String lastMdlibPath = a.opt.lastMdlibPath.getPath();
-			while((line=in.readLine())!=null){
-				boolean isForeign=false;
-				mFile fI;
-				if(!line.startsWith("/")) {//是相对路径
-					if(line.startsWith("[:")){
-						int idx = line.indexOf("]",2);
-						if(idx>=2){
-							line = line.substring(idx+1);
+		if(CMN.sData!=null) {
+			data = (ArrayListBookTree<mFile>) CMN.sData;
+			dataTree = (ArrayList<mFile>) CMN.sDataTree;
+		} else {
+			CMN.debug("拉取数据！", rec);
+			try {
+				BufferedReader in = new BufferedReader(new FileReader(rec));
+				String line;
+				//int idx=0;
+				String lastMdlibPath = a.opt.lastMdlibPath.getPath();
+				while((line=in.readLine())!=null){
+					boolean isForeign=false;
+					mFile fI;
+					if(!line.startsWith("/")) {//是相对路径
+						if(line.startsWith("[:")){
+							int idx = line.indexOf("]",2);
+							if(idx>=2){
+								line = line.substring(idx+1);
+							}
 						}
-					}
-					if(line.contains("/")) {
-						//wtf???
-						if(line.startsWith("/")) {
-							fI = new mFile(line);
+						if(line.contains("/")) {
+							//wtf???
+							if(line.startsWith("/")) {
+								fI = new mFile(line);
+							} else {
+								fI = new mFile(a.opt.lastMdlibPath, line);
+								fI.bInIntrestedDir=true;
+							}
+							isForeign=true;
 						} else {
 							fI = new mFile(a.opt.lastMdlibPath, line);
 							fI.bInIntrestedDir=true;
 						}
-						isForeign=true;
 					} else {
-						fI = new mFile(a.opt.lastMdlibPath, line);
-						fI.bInIntrestedDir=true;
+						if(!line.startsWith(lastMdlibPath))
+							isForeign=true;
+						fI = new mFile(line);
 					}
-				} else {
-					if(!line.startsWith(lastMdlibPath))
-						isForeign=true;
-					fI = new mFile(line);
+					
+					if(data.insert(fI.init(a.opt))==-1)
+						isDirty=true;
+					else if(isForeign)
+						data.insertOverFlow(fI.getParentFile().init(a.opt));
+					//idx++;
 				}
-
-				if(data.insert(fI.init(a.opt))==-1)
-					isDirty=true;
-				else if(isForeign)
-					data.insertOverFlow(fI.getParentFile().init(a.opt));
-				//idx++;
+				in.close();
+				
+				data.insert(new mAssetFile("/ASSET/李白全集.mdx").init(a.opt));
 			}
-			in.close();
-
-			data.insert(new mAssetFile("/ASSET/李白全集.mdx").init(a.opt));
-		} catch (Exception e) {
-			CMN.debug(e);
+			catch (Exception e) {
+				CMN.debug(e);
+			}
+			dataTree = new ArrayList<>(data.getList());
+			CMN.sData = data;
+			CMN.sDataTree = dataTree;
 		}
-		dataTree = new ArrayList<>(data.getList());
 		adapter = new MyAdapter(dataTree);
 		super.setListAdapter(adapter);
-		ViewUtils.restoreListPos(listView, BookManager.framePos[3]);
+		if(a!=null) ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
 	}
 
 

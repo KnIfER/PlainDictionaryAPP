@@ -90,7 +90,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	private PopupWindow mPopup;
 	//public ArrayList<PlaceHolder> slots;
 	public MainActivityUIBase.LoadManager loadMan;
-	private ArrayList<ListFragment> fragments;
+	ArrayList<ListFragment> fragments;
 	public HashMap<String, BookPresenter> app_mdict_cache;
 	//public HashMap<CharSequence,byte[]> UIProjects;
 	public HashSet<CharSequence> dirtyMap;
@@ -199,7 +199,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
     BookManagerModules f2;
     BookManagerFolderlike f3;
 	BookManagerWebsites f4;
-	int lastPage = -1;
+	int lastPage = 0;
     ViewPager viewPager;  //对应的viewPager
     TabLayout mTabLayout;
 	LayoutInflater inflater;
@@ -214,32 +214,22 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			mPopup=null;
 			return;
 		}
-
-		int item = viewPager.getCurrentItem();
-		if(item<fragments.size() && fragments.get(item) instanceof BookManagerFragment.SelectableFragment){
-			if(((BookManagerFragment.SelectableFragment)fragments.get(item)).exitSelectionMode()){
+		
+		ListFragment frame = getFragment();
+		if (frame != null) {
+			if(((BookManagerFragment.SelectableFragment)frame).exitSelectionMode()){
 				showT("已清除选择");
 				return;
 			}
-		}
-		
-		if(f1.listView !=null) {
-//			f1.mDslv.noDraw=true;
-//			f1.refreshDicts(f1.mDslv.bUnfinished=false);
-			View child = f1.listView.getChildAt(f1.listView.getHeaderViewsCount());
-			if (child!=null) {
-				ViewHolder vh = (ViewHolder) child.getTag();
-				if (vh != null) {
-					f1.lastViewPos = vh.position;
-					f1.lastViewTop = child.getTop();
-				}
+			try {
+				framePos[viewPager.getCurrentItem()] = ViewUtils.saveListPos(frame.getListView());
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
-			
 		}
 
 		checkAll(); // 返回
 		//CMN.Log("terminating...", intent, intent.getBooleanExtra("changed", false));
-
 		super.onBackPressed();
 	}
 
@@ -666,25 +656,27 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		viewPager.setAdapter(adapterf);
 	    viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout) {
 	    	@Override public void onPageSelected(int page) {
-				if (lastPage!=-1) {
-					ListFragment frame = fragments.get(lastPage);
-					if (frame != null) {
+				ListFragment frame = fragments.get(lastPage);
+				if (frame != null) {
+					try {
 						framePos[lastPage] = ViewUtils.saveListPos(frame.getListView());
+					} catch (Exception e) {
+						CMN.debug(e);
 					}
 				}
-				Fragment fI = fragments.get(page);
+				frame = fragments.get(page);
 				viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), Math.max(1+page, 1)));
 				List<MenuItemImpl> menu;
-				if(fI==f1) {
+				if(frame==f1) {
 					menu = Menu1;
 					if (loadMan.lazyMan.lastLoadedModule!=lastLoadedModule) {
 						toolbar_setTitle(loadMan.lazyMan.lastLoadedModule);
 					}
 					filtered = f1.filtered;
-	    		} else if(fI==f2) {
+	    		} else if(frame==f2) {
 					menu = Menu2;
 					filtered = f2.filtered;
-				} else if (fI == f3) {
+				} else if (frame == f3) {
 					menu = f3.SelectionMode ? Menu3Sel : Menu3;
 					filtered = f3.filtered;
 				} else {
@@ -695,8 +687,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				super.onPageSelected(CurrentPage = page);
 				opt.setDictManagerTap(CurrentPage);
 				schIndicator_setText(filtered);
-				lastPage = 0;
-				ViewUtils.restoreListPos(fragments.get(lastPage).getListView(), framePos[lastPage]);
+				lastPage = page;
 			}
 	    });
 		
@@ -1920,7 +1911,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	
 	
-	public Fragment getFragment() {
+	public ListFragment getFragment() {
 		return fragments.get(viewPager.getCurrentItem());
 	}
 	

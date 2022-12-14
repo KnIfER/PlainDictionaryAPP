@@ -883,6 +883,7 @@ public class Drawer extends Fragment implements
 						onSelectedFilePaths(String[] files, File now) {
 							//CMN.debug(files);
 							if(now!=null) {
+								CMN.sData = CMN.sDataTree = null;
 								for(PlaceHolder phI:a.lazyLoadManager().placeHolders) {
 									mdictInternal.add(phI.getPath(a.opt).getPath());
 								}

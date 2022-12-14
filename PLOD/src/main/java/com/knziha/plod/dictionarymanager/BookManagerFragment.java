@@ -140,7 +140,7 @@ public abstract class BookManagerFragment<T> extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //CMN.show("onActivityCreated");
+		a = (BookManager) getActivity();
         listView = (DragSortListView) getListView();
 
         listView.setDropListener(getDropListener());

@@ -319,6 +319,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		List<mFile> list = data.getList();
 		dataTree = new ArrayList<>(list);
 		adapter = new MyAdapter(dataTree);
+		//ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
 	}
 	
 	protected class MyAdapter extends ArrayAdapter<mFile> {
