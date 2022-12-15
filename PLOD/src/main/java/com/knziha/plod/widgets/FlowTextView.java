@@ -28,6 +28,7 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -71,11 +72,13 @@ public class FlowTextView extends View {
 	public boolean trim = true;
 	public boolean trimStart = true;
 	public boolean ellipsis = false;
+	public int leftDrawableAlpha = 255;
 	ArrayListHolder lineObjects = new ArrayListHolder(3);
 	public int pad_right;
 	private Drawable mActiveDrawable;
 	public Drawable mRatingDrawable;
 	private Drawable mLeftDrawable;
+	private Drawable mLeftDrawableTouming;
 	private Drawable mRightDrawable;
 	public Bitmap mCoverBitmap;
 	private TextPaint mTextPaint;
@@ -393,9 +396,18 @@ public class FlowTextView extends View {
 				RStart += mLineHeight;
 			}
 			mLeftDrawable.setBounds(RStart, RTop, RStart+RWidth, RTop+RWidth);
-			if(isDark) mLeftDrawable.setColorFilter(GlobalOptions.NEGATIVE);
-			mLeftDrawable.draw(canvas);
-			if(isDark) mLeftDrawable.setColorFilter(null);
+			if (leftDrawableAlpha < 255) {
+				if (mLeftDrawableTouming == null) {
+					//mLeftDrawableTouming = mLeftDrawable.getConstantState().newDrawable().mutate();
+					mLeftDrawableTouming = new LayerDrawable(new Drawable[]{mLeftDrawable}).mutate();
+				}
+				mLeftDrawableTouming.setColorFilter(isDark ? GlobalOptions.NEGATIVE : null);
+				mLeftDrawableTouming.setAlpha(leftDrawableAlpha);
+				mLeftDrawableTouming.draw(canvas);
+			} else {
+				mLeftDrawable.setColorFilter(isDark?GlobalOptions.NEGATIVE:null);
+				mLeftDrawable.draw(canvas);
+			}
 		}
 		
 		if(mRightDrawable!=null) {
@@ -406,9 +418,8 @@ public class FlowTextView extends View {
 				RTop -= mLineHeight/6;
 			}
 			mRightDrawable.setBounds(RStart, RTop, RStart+RWidth, RTop+RWidth);
-			if(isDark) mRightDrawable.setColorFilter(GlobalOptions.NEGATIVE);
+			mRightDrawable.setColorFilter(isDark?GlobalOptions.NEGATIVE:null);
 			mRightDrawable.draw(canvas);
-			if(isDark) mRightDrawable.setColorFilter(null);
 		}
 		
 		/* tail */
@@ -660,6 +671,7 @@ public class FlowTextView extends View {
 		}
 		if (mLeftDrawable!=LeftDrawable) {
 			mLeftDrawable = LeftDrawable;
+			mLeftDrawableTouming = null;
 			inval = true;
 		}
 		if (mRightDrawable!=RightDrawable) {

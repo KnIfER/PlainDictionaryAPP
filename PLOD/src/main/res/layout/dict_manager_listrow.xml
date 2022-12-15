@@ -11,7 +11,7 @@
 	<ImageView
 		android:id="@id/drag_handle"
 		android:src="@drawable/dragneo"
-		android:layout_marginEnd="6dp"
+		android:layout_marginEnd="2dp"
 		android:paddingEnd="2dp"
 		android:paddingStart="8dp"
 		android:layout_marginStart="3dp"

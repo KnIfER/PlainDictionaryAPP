@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -94,7 +96,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public void setListAdapter() {
 		adapter = new MyAdapter(loadMan.md);
 		setListAdapter(adapter);
-		if(a!=null)  ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
+		if(a!=null)  ViewUtils.restoreListPos(listView, BookManager.listPos[a.fragments.indexOf(this)]);
 	}
 
 	@Override
@@ -210,8 +212,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public void deleteSelOrOne(boolean one) {
 		int szf1 = manager_group().size();
 		new AlertDialog.Builder(getBookManager())
-				.setTitle(getBookManager().mResource.getString(R.string.surerrecords, one?1:Selection.size()))
-				.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
+				.setWikiText("可长按弹出菜单中的“禁用”达到同样效果", null)
+				.setTitle(getBookManager().mResource.getString(R.string.surerrecords, one?1:Selection.size()).replace("彻底", ""))
+				.setMessage("从当前分组中删除记录，注意不可撤销。")
 				.setPositiveButton(R.string.confirm, (dialog, which) -> {
 					int cc=0;
 					if (one) {
@@ -267,7 +270,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					vh.title.setBackgroundResource(GlobalOptions.isDark?R.drawable.xuxian2_d:R.drawable.xuxian2);
 				else
 					vh.title.setBackground(null);
-				ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
+				if(ViewUtils.setVisibleV4(vh.handle, PDICMainAppOptions.sortDictManager()?0:1)) {
+					((ViewGroup.MarginLayoutParams)vh.title.getLayoutParams()).leftMargin = PDICMainAppOptions.sortDictManager()?0: (int) (GlobalOptions.density * 6);
+				}
 				if(GlobalOptions.isDark) {
 					convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 				}
@@ -287,16 +292,17 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				vh.ck.setVisibility(View.GONE);
 			}
 
-			StringBuilder rgb = new StringBuilder("#");
+			int color = 0xaaaaaa; //一样的亮兰色aafafa
 			boolean disabled = getPlaceRejected(position);
-			if(disabled)
-				rgb.append("aaaaaa");//一样的亮兰色aafafa
-			else
-				rgb.append(GlobalOptions.isDark?"EEEEEE":"000000");
-			if(!key.startsWith("/ASSET") && !new File(key).exists())
-				rgb.insert(1, "ff");
-			rgb.setLength(7);
-			vh.title.setTextColor(Color.parseColor(rgb.toString()));
+			if(!disabled)
+				color = GlobalOptions.isDark?0xEEEEEE:0x000000;
+			vh.title.leftDrawableAlpha = disabled?127:255;
+			if(!key.startsWith("/ASSET") && !new File(key).exists()) {
+				// if(GlobalOptions.isDark && !disabled) color = 0x888888;
+				if(GlobalOptions.isDark) color = 0xaaaaaa;
+				color = 0xff0000 | (color>>8);
+			}
+			vh.title.setTextColor(0xff000000 | color);
 			vh.title.setPadding((int) (GlobalOptions.density*25),0,0,0);
 			
 			//int tmpFlag = getPlaceFlagAt(position);
@@ -393,6 +399,35 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							MenuItemImpl menu = (MenuItemImpl) ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1);
 							menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn();
 							a.onMenuItemClick(menu);
+						} break;
+						// 添加全部词典
+						case R.string.addAllHere: {
+							if(b1) return true;
+							a.addElementsToF1(a.f3, true, true, pressedPos+1);
+						} break;
+						// 添加网络词典
+						case R.string.addWebHere: {
+							if(b1) return true;
+							a.addElementsToF1(a.f4, true, true, pressedPos+1);
+						} break;
+						case R.string.more_actions: {
+							if(b1) return true;
+							PopupMenuHelper popup = a.getPopupMenu();
+							popup.initLayout(new int[]{
+								R.string.addWebHere
+								, R.string.addAllHere
+								, R.layout.poplist_quanzhong_jinxuan
+								, R.string.addRecentPasteHere
+								, R.string.addPasteHere
+								, R.string.addPastes
+							}, this);
+							int[] vLocationOnScreen = new int[2];
+							pressedV.getLocationOnScreen(vLocationOnScreen);
+							popup.showAt(a.root, vLocationOnScreen[0], vLocationOnScreen[1]+pressedV.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+							TextMenuView tv = popup.lv.findViewById(R.id.zh1);
+							tv.showAtRight = true; tv.setActivated(PDICMainAppOptions.dictManagerTianXuan());
+							tv = popup.lv.findViewById(R.id.zh2);
+							tv.showAtRight = true; tv.setActivated(PDICMainAppOptions.dictManagerTianJinXuan());
 						} break;
 						case R.string.move_top: {//移至顶部
 							markDirty(-1);

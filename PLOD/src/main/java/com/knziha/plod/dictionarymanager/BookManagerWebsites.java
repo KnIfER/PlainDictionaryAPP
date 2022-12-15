@@ -22,6 +22,7 @@ public class BookManagerWebsites extends BookManagerFolderAbs {
 	{
 		super();
 		type = 1;
+		mName = "网络词典";
 	}
 	
 	@Override

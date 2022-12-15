@@ -19,7 +19,6 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.Toolbar;
 
-import com.knziha.plod.dictionarymanager.BookManagerMain;
 import com.knziha.plod.dictionarymanager.ViewHolder;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
@@ -156,7 +155,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder vh;
 		if (convertView == null) {
-			convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_dslitem, parent, false);
+			convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_listrow, parent, false);
 			vh = new ViewHolder(convertView);
 			vh.title.setOnClickListener(this);
 			vh.title.setOnLongClickListener(this);

@@ -1,64 +1,95 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/dialog"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:paddingStart="15dp"
-	android:paddingBottom="15dp">
+	android:paddingBottom="15dp"
+	android:gravity="bottom"
+	android:orientation="horizontal"
+	>
 
 	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="horizontal"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
 		android:gravity="center_vertical"
 		>
+
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:gravity="center_vertical"
+			>
+			<CheckBox
+				android:id="@+id/check2"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/dv_select"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:checked="true"
+				android:textColor="#fff"
+				/>
+			<CheckBox
+				android:id="@+id/check4"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="且仅选中"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:checked="true"
+				android:textColor="#fff"
+				/>
+		</LinearLayout>
 		<CheckBox
 			android:id="@+id/check1"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:text="插入至当前分组第"
-			android:textColor="#fff"
 			android:textAppearance="?android:attr/textAppearanceMedium"
 			android:checked="true"
-			/>
-		<NumberPicker
-			android:id="@+id/numberpicker"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
 			android:textColor="#fff"
-			android:background="#888888"
 			/>
-		<TextView
+		<CheckBox
+			android:id="@+id/check3"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="行"
-			android:textColor="#000"
+			android:text="重新添加"
 			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:checked="true"
+			android:textColor="#fff"
 			/>
-
 	</LinearLayout>
 
-	<CheckBox
-		android:id="@+id/check2"
+	<NumberPicker
+		android:id="@+id/numberpicker"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="@string/dv_select"
-		android:layout_marginTop="110dp"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:layout_gravity="top"
-		android:checked="true"
+		android:layout_centerInParent="true"
 		android:textColor="#fff"
+		android:background="#888888"
+		/>
+
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="行"
+		android:textColor="#fff"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:layout_gravity="center_vertical"
+		/>
+	<View
+		android:layout_width="0dp"
+		android:layout_height="0dp"
+		android:layout_weight="1"
 		/>
 	<Button
 		android:id="@+id/confirm"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_gravity="bottom|right"
 		android:text="确定"
 		style="?android:attr/buttonBarButtonStyle"
 		android:textColor="#fff"
+		android:layout_gravity="bottom|right"
 		/>
-</FrameLayout>
-
-
-
+</LinearLayout>

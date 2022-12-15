@@ -98,8 +98,8 @@
 			android:paddingBottom="4dp"
 			/>
 		<com.knziha.plod.widgets.TextMenuView
-			android:id="@+id/move_sel1"
-			android:text="添加至此"
+			android:id="@string/more_actions"
+			android:text="@string/more_actions"
 			android:layout_width="0dp"
 			android:layout_height="match_parent"
 			android:gravity="center"

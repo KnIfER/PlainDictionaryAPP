@@ -67,7 +67,7 @@ public abstract class BookManagerFragment<T> extends ListFragment {
     }
 	
 	public int getItemLayout() {
-		return R.layout.dict_manager_dslitem;
+		return R.layout.dict_manager_listrow;
 	}
 
     protected DragSortListView listView;
@@ -157,7 +157,6 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	public void dataSetChangedAt(int pos) {
 		ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
 		vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(pos-(vh==null?-listView.getHeaderViewsCount():vh.position)), ViewHolder.class);
-		CMN.debug("dataSetChangedAt", "pos = [" + pos + "]", vh);
 		if (vh!=null) {
 			adapter.getView(pos, vh.itemView, listView);
 		}

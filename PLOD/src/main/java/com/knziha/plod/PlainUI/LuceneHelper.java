@@ -14,7 +14,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymanager.BookManagerMain;
 import com.knziha.plod.dictionarymanager.ViewHolder;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
@@ -37,7 +36,6 @@ import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -49,7 +47,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
-import org.joni.Regex;
 
 import java.io.File;
 import java.io.IOException;
@@ -510,7 +507,7 @@ public class LuceneHelper {
 						public View getView(int position, View convertView, ViewGroup parent) {
 							ViewHolder vh;
 							if (convertView == null) {
-								convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_dslitem, parent, false);
+								convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_listrow, parent, false);
 								vh = new ViewHolder(convertView);
 								vh.title.setOnClickListener(onClickListener);
 								vh.ck.setOnClickListener(onClickListener);

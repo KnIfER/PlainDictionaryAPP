@@ -4,7 +4,6 @@ import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
@@ -89,12 +88,13 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 		}
 		adapter = new MyAdapter(dataTree);
 		super.setListAdapter(adapter);
-		if(a!=null) ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
+		if(a!=null) ViewUtils.restoreListPos(listView, BookManager.listPos[a.fragments.indexOf(this)]);
 	}
 
 
 	//构造
 	public BookManagerFolderlike(){
 		super();
+		mName = "全部词典";
 	}
 }

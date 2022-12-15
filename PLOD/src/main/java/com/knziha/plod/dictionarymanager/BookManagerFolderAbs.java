@@ -102,10 +102,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			} break;
 			case R.string.tianjia:{
 				//addIt(vh);
-				getBookManager().addFrameElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), false);
+				getBookManager().addElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), false, -1);
 			} break;
 			case R.string.addTo:{
-				getBookManager().addFrameElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), true);
+				getBookManager().addElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), true, -1);
 			} break;
 			case R.string.addToPrv:{
 			
@@ -147,8 +147,12 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	int lastClickedPosIndex=0;
 	
 	OnEnterSelectionListener oes;
-	
+	String mName;
 	boolean dataPrepared;
+	
+	public String getName() {
+		return mName;
+	}
 	
 	public interface OnEnterSelectionListener{
 		void onEnterSelection(BookManagerFolderAbs f, boolean enter);
@@ -587,7 +591,8 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	}
 	
 	public final BookManager getBookManager() {
-		return ((BookManager) getActivity());
+		if(a==null) a = ((BookManager) getActivity());
+		return a;
 	}
 	
 	public int selected_size() {

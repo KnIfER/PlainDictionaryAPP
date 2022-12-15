@@ -116,6 +116,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	private String lastLoadedModule;
 	private Toolbar searchbar;
 	private TextView schIndicator;
+	private int lastAddToPos;
 	
 	public BookManager() { }
 	
@@ -222,7 +223,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				return;
 			}
 			try {
-				framePos[viewPager.getCurrentItem()] = ViewUtils.saveListPos(frame.getListView());
+				listPos[viewPager.getCurrentItem()] = ViewUtils.saveListPos(frame.getListView());
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
@@ -508,7 +509,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		enterBtn.setOnLongClickListener(new View.OnLongClickListener(){
 			@Override
 			public boolean onLongClick(View v) {
-				PopupMenuHelper popup = new PopupMenuHelper(BookManager.this, null, null);
+				PopupMenuHelper popup = getPopupMenu();
 				popup.initLayout(new int[]{
 					R.string.sel_filtered
 					,R.string.sel_filtered_no
@@ -659,7 +660,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				ListFragment frame = fragments.get(lastPage);
 				if (frame != null) {
 					try {
-						framePos[lastPage] = ViewUtils.saveListPos(frame.getListView());
+						listPos[lastPage] = ViewUtils.saveListPos(frame.getListView());
 					} catch (Exception e) {
 						CMN.debug(e);
 					}
@@ -819,7 +820,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			case R.id.recess: {
 				String str = etSearch.getText().toString().trim();
 				BookManager.dictQueryWord = str;
-				Fragment view = fragments.get(viewPager.getCurrentItem());
+				Fragment view = getFragment();
 				if (view instanceof BookManagerFolderAbs) {
 					((BookManagerFolderAbs) view).schPrvNxt(str, v.getId() == R.id.recess);
 				} else {
@@ -843,13 +844,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	SparseArray<String> filtered;
 	PopupMenuHelper popup;
 	public long[] popupPos = new long[4];
-	public static long[] framePos = new long[4];
+	public static long[] listPos = new long[4];
 	private void showFilteredEntries(View v) {
 		if (filtered.size() == 0) {
 			showTopSnack("当前页面无搜索结果");
 			return;
 		}
-		popup = getPopupMenu();
+		if(popup==null)
+			popup = new PopupMenuHelper(BookManager.this, null, null);
 		if (popup.getListener() != this || !(popup.tag1 instanceof ListView)) {
 			popup.initLayout(ArrayUtils.EMPTY_INT_ARRAY, this);
 			ListView lv = new ListView(BookManager.this);
@@ -1236,7 +1238,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			case R.id.clearSel:{
 				if(isLongClicked) {ret=false; break;}
 				try {
-					Fragment frame = fragments.get(viewPager.getCurrentItem());
+					Fragment frame = getFragment();
 					if (frame instanceof BookManagerFragment.SelectableFragment) {
 						((BookManagerFragment.SelectableFragment) frame).exitSelectionMode();
 					}
@@ -1302,14 +1304,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				for (int i = 0; i < szf1; i++) {
 					String path = f1.getPathAt(i);
 					if (!path.startsWith(CMN.Assets) && !new File(path).exists()) {
-						f1.setPlaceSelected(i, !isLongClicked);
+						f1.setPlaceSelected(i, !longclickFx);
 						cnt++;
 					}
 				}
 				if (cnt > 0) {
 					if (sf1) opt.dictManager1MultiSelecting(true);
 					f1.dataSetChanged(false);
-					showT((isLongClicked ? "不选当前词典分组失效项" : "选择当前词典分组失效项") + "\n已处理" + cnt + "项，当前已选" + f1.Selection.size() + "项");
+					showT((longclickFx ? "不选当前词典分组失效项" : "选择当前词典分组失效项") + "\n已处理" + cnt + "项，当前已选" + f1.Selection.size() + "项");
 				} else {
 					showT("当前分组无失效词典。");
 				}
@@ -1319,14 +1321,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				closeMenu = true;
 				for (int i = 0; i < szf1; i++) {
 					if (f1.getPlaceRejected(i)) {
-						f1.setPlaceSelected(i, !isLongClicked);
+						f1.setPlaceSelected(i, !longclickFx);
 						cnt++;
 					}
 				}
 				if (cnt>0) {
 					if (sf1) opt.dictManager1MultiSelecting(true);
 					f1.dataSetChanged(false);
-					showT((isLongClicked?"不选当前词典分组禁用项":"选择当前词典分组禁用项")+"\n已处理"+cnt+"项，当前已选"+f1.Selection.size()+"项");
+					showT((longclickFx?"不选当前词典分组禁用项":"选择当前词典分组禁用项")+"\n已处理"+cnt+"项，当前已选"+f1.Selection.size()+"项");
 				} else
 					showT("当前分组未禁用词典，点击列表可禁用或启用。");
 			} break;
@@ -1473,7 +1475,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							&& !fI.exists()
 							&& !fI.getIsDirectory()
 					) {
-						if (!isLongClicked) {
+						if (!longclickFx) {
 							f3.Selection.add(fI.getRealPath());
 							f3.enterSelectionMode();
 						} else {
@@ -1484,17 +1486,17 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				if (cnt > 0) {
 					f3.dataSetChanged(false);
-					showT((isLongClicked ? "不选全部词典记录失效项" : "选择全部词典记录失效项") + "\n已处理" + cnt + "项，当前已选" + f3.Selection.size() + "项");
+					showT((longclickFx ? "不选全部词典记录失效项" : "选择全部词典记录失效项") + "\n已处理" + cnt + "项，当前已选" + f3.Selection.size() + "项");
 				} else {
 					showT("全部词典无失效记录。");
 				}
 			} break;
-			/* 添加 */
-            case R.id.toolbar_action9:{ // add_selection_to_set
-				if (fragments.get(viewPager.getCurrentItem()) instanceof BookManagerFolderAbs) {
-					BookManagerFolderAbs frame = (BookManagerFolderAbs) fragments.get(viewPager.getCurrentItem());
-					addFrameElementsToF1(frame, true, isLongClicked);
-					if(isLongClicked) {
+			/* 插入至… */
+            case R.id.toolbar_action9: { // add_selection_to_set
+				if (getFragment() instanceof BookManagerFolderAbs) {
+					BookManagerFolderAbs frame = (BookManagerFolderAbs) getFragment();
+					addElementsToF1(frame, true, longclickFx, -1);
+					if(longclickFx) {
 						closeMenu=false;
 					}
 				}
@@ -1755,7 +1757,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	public void addFrameElementsToF1(BookManagerFolderAbs frame, boolean useSelection, boolean pickPosition) {
+	public void addElementsToF1(BookManagerFolderAbs f3, boolean useSelection, boolean pickPosition, int initToPos) {
+		if(f3==null || f3.adapter==null || useSelection && f3.selected_size()==0) {
+			showT(f3.getName()+"无选中项");
+			return;
+		}
 		int szf1 = f1.manager_group().size(), cnt=0;
 		if (pickPosition) {
 			/* 添加到第几行 */
@@ -1764,32 +1770,47 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			NumberPicker np = dv.findViewById(R.id.numberpicker);
 			CheckBox checker1 = dv.findViewById(R.id.check1);
 			CheckBox checker2 = dv.findViewById(R.id.check2);
+			CheckBox checker3 = dv.findViewById(R.id.check3);
+			CheckBox checker4 = dv.findViewById(R.id.check4);
+			checker2.setChecked(PDICMainAppOptions.dictManagerTianXuan());
+			checker4.setChecked(PDICMainAppOptions.dictManagerTianJinXuan());
 			np.setMaxValue(szf1);
+			np.setValue(initToPos<0?lastAddToPos:Math.min(initToPos, szf1));
 			AlertDialog dTmp = builder2.setView(dv).create();
 			dv.findViewById(R.id.confirm).setOnClickListener(v -> {
-				int toPos = Math.min(szf1, np.getValue());
+				int toPos = lastAddToPos = Math.min(szf1, np.getValue());
 				int cc = 0;
-				mFile[] arr = frame.getElements(useSelection);
+				mFile[] arr = f3.getElements(useSelection);
 				Arrays.sort(arr);
 				final boolean insert = checker1.isChecked();
 				final boolean select = checker2.isChecked();
-				HashSet<String> map = new HashSet<>(arr.length);
+				final boolean jinxuan = select && checker4.isChecked();
+				final boolean reset = checker3.isChecked();
+				HashMap<String, mFile> map = new HashMap<>(arr.length);
 				ArrayList<mFile> files = new ArrayList<>(arr.length);
 				for (int i = 0; i < arr.length; i++) {
 					mFile fn = arr[i];
 					if (!fn.getIsDirectory()) {
 						files.add(fn);
 						String key = fn.getRealPath().getPath();
-						if(insert||select) map.add(key);
+						if(insert||select) map.put(key, fn);
 					}
 				}
 				if(insert) {
 					f1.markDirty(-1);
-					for (int i = 0; i < f1.manager_group().size(); i++) {
-						if (map.contains(f1.getPathAt(i))) {
+					for (int i = f1.manager_group().size()-1; i >= 0; i--) {
+						mFile fn = map.get(f1.getPathAt(i));
+						if (fn != null) {
 							f1.setPlaceRejected(i, false);
-							f1.replace(i, -1); // remove first
-							i--;
+							//CMN.debug("remove first", f1.getPathAt(i));
+							if (reset) {
+								f1.replace(i, -1);
+							} else {
+								if(select) f1.setPlaceSelected(i, true);
+								files.remove(fn);
+							}
+						} else if(jinxuan) {
+							f1.setPlaceSelected(i, false);
 						}
 					}
 					for (int i = 0; i < files.size(); i++) {
@@ -1810,7 +1831,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						} else {
 							placeHolder = mdTmp.placeHolder;
 						}
-						toPos = Math.max(0, Math.min(toPos + i, loadMan.md.size()));
+						toPos = Math.max(0, Math.min(toPos++, loadMan.md.size()));
 						loadMan.md.add(toPos, mdTmp);
 						loadMan.lazyMan.placeHolders.add(toPos, placeHolder);
 						loadMan.lazyMan.chairCount++;
@@ -1822,9 +1843,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				else if (select) {
 					for (int i = 0; i < szf1; i++) {
-						if (map.contains(f1.getPathAt(i))){
+						if (map.containsKey(f1.getPathAt(i))){
 							f1.setPlaceSelected(i, true);
 							cc++;
+						}
+						else if(jinxuan) {
+							f1.setPlaceSelected(i, false);
 						}
 					}
 				}
@@ -1847,7 +1871,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		else {
 			/* 添加到末尾 */
 			int cc = 0;
-			mFile[] arr = frame.getElements(useSelection);
+			mFile[] arr = f3.getElements(useSelection);
 			Arrays.sort(arr);
 			int count=arr.length;
 			HashMap<String, Integer> map = new HashMap<>(szf1);
@@ -1917,7 +1941,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	public void deleteFromF3Sel(BookManagerFolderAbs f3) {
 		new AlertDialog.Builder(BookManager.this)
-				.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()))
+				.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()).replace("彻底", ""))
 				.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
 				.setPositiveButton(R.string.confirm, (dialog, which) -> {
 					deleteRecordsHard(f3, true);
@@ -1933,7 +1957,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 		builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
-				.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！")
+				.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！！")
 				.setPositiveButton(R.string.confirm, (dialog, which) -> {
 					mFile[] arr = f3.Selection.toArray(new mFile[0]);
 					HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));

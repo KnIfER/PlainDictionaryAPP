@@ -100,7 +100,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 
 		adapter = new MyAdapter(scanInList);
 		setListAdapter(adapter);
-		if(a!=null)  ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
+		if(a!=null)  ViewUtils.restoreListPos(listView, BookManager.listPos[a.fragments.indexOf(this)]);
 	}
 
 	@Override
@@ -167,7 +167,9 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					vh.title.setBackgroundResource(GlobalOptions.isDark ? R.drawable.xuxian2_d : R.drawable.xuxian2);
 				else
 					vh.title.setBackground(null);
-				ViewUtils.setVisibility(vh.handle, PDICMainAppOptions.sortDictManager());
+				if(ViewUtils.setVisibleV4(vh.handle, PDICMainAppOptions.sortDictManager()?0:1)) {
+					((ViewGroup.MarginLayoutParams)vh.title.getLayoutParams()).leftMargin = PDICMainAppOptions.sortDictManager()?0: (int) (GlobalOptions.density * 6);
+				}
 				if(GlobalOptions.isDark) {
 					convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 				}
@@ -231,7 +233,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				if (PDICMainAppOptions.dictManagerClickPopup()) {
 					showPopup(v, null);
 				} else {
-					showLoadModuleDlg(PDICMainAppOptions.getWarnLoadModule(), position);
+					showLoadModuleDlg(PDICMainAppOptions.getWarnLoadModule(), pressedPos);
 				}
 			}
 		});
@@ -282,7 +284,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 						} break;
 						/* 加载分组 */
 						case R.string.load: {
-							showLoadModuleDlg(true, position);
+							showLoadModuleDlg(false, position);
 						} break;
 						/* 重命名分组 */
 						case R.string.rename: {
@@ -420,6 +422,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
 			int cc=0;
 			a.checkModuleDirty(false);
+			BookManager.listPos[0] = 0;
 			try {
 				BookManagerMain f1 = a.f1;
 				f1.markDirty(-1);
