@@ -1,6 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -50,7 +49,6 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.PlainUI.PasteBinHub;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -68,6 +66,7 @@ import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.BookOptionsDialog;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -635,7 +634,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		f1.a=f2.a=f4.a=f3.a=this;
 		filtered = f1.filtered;
 		
-		new PasteBinHub(this).show();
+		//new PasteBinHub(this).show();
 
 		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(BookManagerFolderAbs f, boolean enter){
@@ -1510,7 +1509,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
             case R.id.toolbar_action9: { // add_selection_to_set
 				if (getFragment() instanceof BookManagerFolderAbs) {
 					BookManagerFolderAbs frame = (BookManagerFolderAbs) getFragment();
-					addElementsToF1(frame, true, longclickFx, -1);
+					addElementsToF1(frame, null, true, longclickFx, -1);
 					if(longclickFx) {
 						closeMenu=false;
 					}
@@ -1772,15 +1771,40 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	public void addElementsToF1(BookManagerFolderAbs f3, boolean useSelection, boolean pickPosition, int initToPos) {
-		if(f3==null || f3.adapter==null || useSelection && f3.selected_size()==0) {
-			showT(f3.getName()+"无选中项");
+	public void addElementsToF1(BookManagerFolderAbs f3, mFile[] set, boolean useSelection, boolean pickPosition, int initToPos) {
+		if((set==null || set.length==0) && (f3==null || f3.adapter==null || useSelection && f3.selected_size()==0)) {
+			showT((f3==null?"":f3.getName())+"无选中项");
 			return;
 		}
-		int szf1 = f1.manager_group().size(), cnt=0;
+		int szf1 = f1.manager_group().size(), cnt=0, tempSz = 1;
+		String anyPreview = "";
+		try {
+			if (set != null) {
+				anyPreview = set[0].getName();
+				tempSz = set.length;
+			} else {
+				anyPreview = ((FlowTextView) f3.pressedV.findViewById(R.id.text)).getText();
+				if (useSelection) {
+					tempSz = f3.selected_size();
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		if (anyPreview.length() > 7) {
+			anyPreview = anyPreview.substring(0, 7);
+		}
 		if (pickPosition) {
 			/* 添加到第几行 */
-			AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
+			AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this).setOnDismissListener(new DialogInterface.OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface dialog) {
+					showT("已取消");
+				}
+			});
+			String msg = "将插入"+anyPreview+(tempSz==1?"":("等"+tempSz+"本词典"))+"，确认吗？";
+			//builder2.setTitle(msg);
+			showT(msg);
 			View dv = getLayoutInflater().inflate(GlobalOptions.isDark?R.layout.dialog_move_to_line_d:R.layout.dialog_move_to_line, null);
 			NumberPicker np = dv.findViewById(R.id.numberpicker);
 			CheckBox checker1 = dv.findViewById(R.id.check1);
@@ -1793,10 +1817,18 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			np.setValue(initToPos<0?lastAddToPos:Math.min(initToPos, szf1));
 			AlertDialog dTmp = builder2.setView(dv).create();
 			dv.findViewById(R.id.confirm).setOnClickListener(v -> {
+				dTmp.setOnDismissListener(null);
+				long fvp = initToPos>=0 ? ViewUtils.saveListPos(f1.listView) : 0;
 				int toPos = lastAddToPos = Math.min(szf1, np.getValue());
 				int cc = 0;
-				mFile[] arr = f3.getElements(useSelection);
-				Arrays.sort(arr);
+				mFile[] arr;
+				if (set != null) {
+					arr = set;
+					ArrayUtils.reverse(arr);
+				} else {
+					arr = f3.getElements(useSelection);
+					Arrays.sort(arr);
+				}
 				final boolean insert = checker1.isChecked();
 				final boolean select = checker2.isChecked();
 				final boolean jinxuan = select && checker4.isChecked();
@@ -1820,6 +1852,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							//CMN.debug("remove first", f1.getPathAt(i));
 							if (reset) {
 								f1.replace(i, -1);
+								if(i < toPos) {
+									toPos--;
+								}
+								if (initToPos>=0 && i<(int)fvp) {
+									fvp--;
+								}
 							} else {
 								if(select) f1.setPlaceSelected(i, true);
 								files.remove(fn);
@@ -1869,21 +1907,29 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f1.dataSetChanged(insert);
 				if(insert) {
-					f1.getListView().setSelectionFromTop(toPos, 0);
+					if (initToPos >= 0) {
+						ViewUtils.restoreListPos(f1.listView, fvp);
+					} else {
+						f1.getListView().setSelectionFromTop(toPos, 0);
+					}
 				}
 				viewPager.setCurrentItem(0);
 				showT((insert?"添加完毕!(":"已选中!(")+cc+"/"+files.size()+")");
 				toolbar.getMenu().close();
 				dTmp.dismiss();
+				if (set != null && f1.pasteBin != null) {
+					f1.pasteBin.dismissImmediate();
+				}
 			});
 			Window win = dTmp.getWindow();
 			win.setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_ld:R.drawable.popup_shadow_l);
 			dTmp.show();
+			//win.setDimAmount(0);
 			ViewGroup dvp = win.getDecorView().findViewById(R.id.dialog);
 			dvp.setPadding(0,0,0,0);
 			dv.setPadding((int) (15*opt.dm.density), 0,0,(int) (10*opt.dm.density));
 		}
-		else {
+		else if(f3!=null){
 			/* 添加到末尾 */
 			int cc = 0;
 			mFile[] arr = f3.getElements(useSelection);

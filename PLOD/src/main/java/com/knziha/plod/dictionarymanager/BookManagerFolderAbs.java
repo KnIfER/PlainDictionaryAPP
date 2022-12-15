@@ -102,10 +102,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			} break;
 			case R.string.tianjia:{
 				//addIt(vh);
-				getBookManager().addElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), false, -1);
+				getBookManager().addElementsToF1(this, null, Selection.contains(vh.dataLet.getRealPath()), false, -1);
 			} break;
 			case R.string.addTo:{
-				getBookManager().addElementsToF1(this, Selection.contains(vh.dataLet.getRealPath()), true, -1);
+				getBookManager().addElementsToF1(this, null, Selection.contains(vh.dataLet.getRealPath()), true, -1);
 			} break;
 			case R.string.addToPrv:{
 			

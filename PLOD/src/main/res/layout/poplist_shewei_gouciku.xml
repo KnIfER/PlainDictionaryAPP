@@ -96,6 +96,7 @@
 			android:background="?listChoiceBackgroundIndicator"
 			android:paddingTop="4dp"
 			android:paddingBottom="4dp"
+			android:longClickable="true"
 			/>
 		<com.knziha.plod.widgets.TextMenuView
 			android:id="@string/more_actions"

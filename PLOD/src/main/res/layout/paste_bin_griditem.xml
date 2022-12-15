@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:paddingBottom="18dp"
+	android:clipToPadding="false"
+	>
+	<TextView
+		android:id="@+id/text"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:maxLines="5"
+		android:minHeight="50dp"
+		android:ellipsize="end"
+		android:paddingLeft="18dp"
+		android:paddingRight="18dp"
+		android:paddingTop="18dp"
+		android:paddingBottom="28dp"
+		android:background="?attr/listChoiceBackgroundIndicator"
+		android:textSize="15sp"
+		/>
+	<TextView
+		android:id="@+id/more"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:ellipsize="end"
+		android:paddingLeft="18dp"
+		android:paddingRight="18dp"
+		android:text="更多操作…"
+		android:gravity="center"
+		android:layout_gravity="bottom"
+		android:paddingTop="5dp"
+		android:paddingBottom="5dp"
+		android:layout_marginBottom="-10dp"
+		android:background="?attr/listChoiceBackgroundIndicator"
+		android:textSize="12sp"
+		/>
+</FrameLayout>

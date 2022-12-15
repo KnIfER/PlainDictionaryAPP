@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat
+<LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -20,15 +20,16 @@
 			android:layout_height="match_parent"
 			android:src="@drawable/abc_ic_ab_back_material_simple_compat"
 			android:background="@drawable/abc_action_bar_item_background_material"
+			android:tint="#888"
 			/>
-		<ImageView
-			android:id="@+id/tts_expand"
-			android:layout_width="45dp"
-			android:padding="6dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/ic_add_black_24dp"
-			android:background="@drawable/abc_action_bar_item_background_material"
-			/>
+<!--		<ImageView-->
+<!--			android:id="@+id/tts_expand"-->
+<!--			android:layout_width="45dp"-->
+<!--			android:padding="6dp"-->
+<!--			android:layout_height="match_parent"-->
+<!--			android:src="@drawable/ic_add_black_24dp"-->
+<!--			android:background="@drawable/abc_action_bar_item_background_material"-->
+<!--			/>-->
 		<androidx.appcompat.widget.AppCompatTextView
 			android:id="@+id/popupText1"
 			android:layout_width="0dp"
@@ -45,33 +46,33 @@
 			android:ellipsize="end"
 			android:maxLines="1"
 			/>
-		<android.widget.ImageView
-			android:id="@+id/tts_LstUtterance"
-			android:layout_width="45dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/ic_prv_dict_chevron"
-			android:background="@drawable/surrtrip1"
-			android:padding="7dp"
-			android:tint="#888"
-			/>
-		<android.widget.ImageView
-			android:id="@+id/tts_NxtUtterance"
-			android:layout_width="45dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/ic_nxt_dict_chevron"
-			android:background="@drawable/surrtrip1"
-			android:padding="7dp"
-			android:tint="#888"
-			/>
-		<android.widget.ImageView
-			android:id="@+id/tts_play"
-			android:layout_width="45dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/sel_box_outline"
-			android:background="@drawable/surrtrip1"
-			android:padding="7dp"
-			android:tint="#888"
-			/>
+<!--		<android.widget.ImageView-->
+<!--			android:id="@+id/tts_LstUtterance"-->
+<!--			android:layout_width="45dp"-->
+<!--			android:layout_height="match_parent"-->
+<!--			android:src="@drawable/ic_prv_dict_chevron"-->
+<!--			android:background="@drawable/surrtrip1"-->
+<!--			android:padding="7dp"-->
+<!--			android:tint="#888"-->
+<!--			/>-->
+<!--		<android.widget.ImageView-->
+<!--			android:id="@+id/tts_NxtUtterance"-->
+<!--			android:layout_width="45dp"-->
+<!--			android:layout_height="match_parent"-->
+<!--			android:src="@drawable/ic_nxt_dict_chevron"-->
+<!--			android:background="@drawable/surrtrip1"-->
+<!--			android:padding="7dp"-->
+<!--			android:tint="#888"-->
+<!--			/>-->
+<!--		<android.widget.ImageView-->
+<!--			android:id="@+id/tts_play"-->
+<!--			android:layout_width="45dp"-->
+<!--			android:layout_height="match_parent"-->
+<!--			android:src="@drawable/sel_box_outline"-->
+<!--			android:background="@drawable/surrtrip1"-->
+<!--			android:padding="7dp"-->
+<!--			android:tint="#888"-->
+<!--			/>-->
 	</LinearLayout>
 
 	<androidx.recyclerview.widget.RecyclerView
@@ -85,4 +86,4 @@
 		app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
 		app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
 		/>
-</androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

@@ -1000,8 +1000,8 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			bPane.setContentView(settingsLayout);
 			bPane.getWindow().setDimAmount(0.2f);
 			//CMN.recurseLogCascade(lv);
-			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
 		}
+		bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
 		refreshExpand();
 		super.showDialog();
 	}

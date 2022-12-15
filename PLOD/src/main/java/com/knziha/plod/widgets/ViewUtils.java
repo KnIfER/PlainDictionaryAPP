@@ -46,6 +46,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Binder;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -879,6 +880,15 @@ public class ViewUtils extends VU {
 		ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
 		am.getMemoryInfo(mi);
 		return mi.threshold;
+	}
+	
+	public static int countLines(String content) {
+		int idx = -1, cc=0, last=0;
+		while ((idx = content.indexOf("\n", idx+1)) > 0) {
+			last = idx;
+			cc++;
+		}
+		return cc+(last<content.length()-1?1:0);
 	}
 	
 	public void Destory(){

@@ -169,20 +169,19 @@ public class TestHelper {
 		SQLiteStatement preparedInsertExecutor = db.compileStatement(sql);
 		db.beginTransaction();  //开启事务
 		
-		String entry="", content="", lex="";
-		int pos=0;
 		try {
 			Random rand = new Random();
-			for (pos = 0; pos < 100; pos++) {
-				for (int i = (int) (rand.nextDouble()*pos*10); i < 10; i++) {
-					content += mdict.getEntryAt(i);
+			int min = 2, max = 15, theta=1000, pos = 0;
+			while (pos < theta) {
+				String content="";
+				for (int i = pos, sz = (int) (pos+Math.max(min, Math.min(max, rand.nextFloat()*18))); i < sz; i++) {
+					content += mdict.getEntryAt(i)+"\n";
+					pos++;
 				}
-				
 				preparedInsertExecutor.bindLong(1, 0);
 				preparedInsertExecutor.bindLong(2, 0);
 				preparedInsertExecutor.bindLong(3, now);
 				preparedInsertExecutor.bindString(4, content);
-				
 				long rowId = preparedInsertExecutor.executeInsert();
 				if(rowId>=0)cc++;
 				now += 10;

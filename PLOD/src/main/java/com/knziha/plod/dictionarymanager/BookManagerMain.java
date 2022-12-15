@@ -1,12 +1,13 @@
 package com.knziha.plod.dictionarymanager;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -32,7 +33,9 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.PlainUI.PasteBinHub;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
@@ -59,6 +62,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener, DragSortListView.DropListener, View.OnClickListener, View.OnLongClickListener {
@@ -74,6 +78,8 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private Drawable mPDFDrawable;
 	private Drawable mRightDrawable;
 	private boolean tweakedDict;
+	
+	public PasteBinHub pasteBin;
 	
 	public BookManagerMain(){
 		super();
@@ -455,6 +461,16 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							deleteSelOrOne(!isOnSelected);
 							popupMenuHelper.dismiss();
 						}
+						if (view.getId() == R.id.move_sel && !b1) {
+							ArrayList<mFile> paths = new ArrayList<>();
+							for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+								if (getPlaceSelected(i)) {
+									paths.add(new mFile(getPathAt(i)));
+								}
+							}
+							a.addElementsToF1(null, paths.toArray(new mFile[0]), false, true, pressedPos+1);
+							popupMenuHelper.dismiss();
+						}
 						return false;
 					}
 					switch (view.getId()) {
@@ -497,17 +513,75 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						// 添加全部词典
 						case R.string.addAllHere: {
 							if(b1) return true;
-							a.addElementsToF1(a.f3, true, true, pressedPos+1);
+							a.addElementsToF1(a.f3, null, true, true, pressedPos+1);
 						} break;
 						// 添加网络词典
 						case R.string.addWebHere: {
 							if(b1) return true;
-							a.addElementsToF1(a.f4, true, true, pressedPos+1);
+							a.addElementsToF1(a.f4, null, true, true, pressedPos+1);
+						} break;
+						// 收入剪贴板
+						case R.string.addPastes: {
+							try {
+								if (b1) return true;
+								ArrayList<String> paths = new ArrayList<>();
+								if (isOnSelected) {
+									for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+										if (getPlaceSelected(i)) {
+											paths.add(getPathAt(i));
+										}
+									}
+								} else {
+									paths.add(getPathAt(position));
+								}
+								String content = "";
+								for (String path : paths) {
+									if (content.length() > 0) {
+										content += "\n";
+									}
+									content += path;
+								}
+								ContentValues cv = new ContentValues();
+								cv.put("chn", 0);
+								cv.put(LexicalDBHelper.FIELD_CREATE_TIME, CMN.now());
+								cv.put("content", content);
+								LexicalDBHelper.getInstance().getDB().insert(LexicalDBHelper.TABLE_PASTE_BIN, null, cv);
+								getBookManager().showT("已添加" + paths.size() + "行模板至剪剪贴板");
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
 						} break;
 						// 剪贴板列表
 						case R.string.addPasteHere: {
 							if(b1) return true;
-							a.addElementsToF1(a.f4, true, true, pressedPos+1);
+							getPastBin().show();
+						} break;
+						// 最近剪贴板
+						case R.string.addRecentPasteHere: {
+							if(b1) return true;
+							String content = "";
+							try {
+								Cursor cursor = LexicalDBHelper.getInstance().getDB().rawQuery("select seq from SQLITE_SEQUENCE where name=?", new String[]{LexicalDBHelper.TABLE_PASTE_BIN});
+								if (cursor.moveToNext()) {
+									long rowId = cursor.getLong(0);
+									Cursor cursor1 = LexicalDBHelper.getInstance().getDB().rawQuery("select content from " + LexicalDBHelper.TABLE_PASTE_BIN + " where id=?", new String[]{"" + rowId});
+									if (cursor1.moveToNext()) {
+										content = cursor1.getString(0);
+									}
+									cursor1.close();
+									if (TextUtils.isEmpty(content)) {
+										cursor1 = LexicalDBHelper.getInstance().getDB().rawQuery("select content from " + LexicalDBHelper.TABLE_PASTE_BIN + " where id<=? order by id desc limit 1", new String[]{"" + rowId});
+										if (cursor1.moveToNext()) {
+											content = cursor1.getString(0);
+										}
+										cursor1.close();
+									}
+								}
+								cursor.close();
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+							addElementsFromPasteBin(content);
 						} break;
 						case R.string.more_actions: {
 							if(b1) return true;
@@ -699,6 +773,44 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			});
 		}
 		return mPopup;
+	}
+	
+	private PasteBinHub getPastBin() {
+		if (pasteBin == null) {
+			pasteBin = new PasteBinHub(getBookManager());
+			pasteBin.wrapLns = false;
+			Pattern p = Pattern.compile("^.*/|.mdx$", Pattern.MULTILINE);
+			pasteBin.setListener(new PasteBinHub.PasteBinListener() {
+				@Override
+				public boolean doPaste(String val) {
+					addElementsFromPasteBin(val);
+					return false;
+				}
+				@Override
+				public String text(String val) {
+					return p.matcher(val).replaceAll("");
+				}
+			});
+		}
+		return pasteBin;
+	}
+	
+	private void addElementsFromPasteBin(String val) {
+		String[] arr = val.split("\n");
+		ArrayList<mFile> list = new ArrayList<>();
+		for(String str:arr) {
+			str = str.trim();
+			if (str.length() > 0) {
+				mFile ret;
+				if (!str.startsWith("/")){
+					ret = new mFile(opt.lastMdlibPath, str);
+				} else {
+					ret = new mFile(str);
+				}
+				list.add(ret);
+			}
+		}
+		getBookManager().addElementsToF1(null, list.toArray(new mFile[0]), false, true, pressedPos+1);
 	}
 	
 	public void disEna(boolean useSelection, boolean off, int position) {
