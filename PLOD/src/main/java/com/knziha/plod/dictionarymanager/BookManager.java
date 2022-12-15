@@ -48,6 +48,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.PlainUI.PasteBinHub;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -626,6 +627,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		fragments.addAll(Arrays.asList(f1 = new BookManagerMain(), f2 = new BookManagerModules(), f4 = new BookManagerWebsites(), f3 = new BookManagerFolderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;
 		filtered = f1.filtered;
+		
+		thisActType = MainActivityUIBase.ActType.BookManager;
+		new PasteBinHub(this).show();
 
 		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(BookManagerFolderAbs f, boolean enter){

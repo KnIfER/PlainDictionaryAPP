@@ -410,6 +410,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							if(b1) return true;
 							a.addElementsToF1(a.f4, true, true, pressedPos+1);
 						} break;
+						// 剪贴板列表
+						case R.string.addPasteHere: {
+							if(b1) return true;
+							a.addElementsToF1(a.f4, true, true, pressedPos+1);
+						} break;
 						case R.string.more_actions: {
 							if(b1) return true;
 							PopupMenuHelper popup = a.getPopupMenu();

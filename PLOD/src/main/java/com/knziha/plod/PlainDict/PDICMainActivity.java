@@ -98,6 +98,7 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -1698,14 +1699,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			int lastW, lastH;
 			@Override
 			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-				//CMN.debug("键盘::onLayoutChange::", root.getHeight(), dm.heightPixels);
+//				CMN.debug("键盘::onLayoutChange::", root.getHeight(), dm.heightPixels);
 				//CMN.debug("onLayoutChange::", bottom, oldBottom);
 				int keyBoardHeight = ViewUtils.keyboardHeight(root);
 				//CMN.debug("onLayoutChange::keyBoardHeight=", keyBoardHeight);
 				if(keyboardShown ^ keyBoardHeight>100) {
 					keyboardShown = !keyboardShown;
 					//softMode==softModeResize
-					//CMN.debug("键盘::onLayoutChange::keyboardShown", keyboardShown);
+					CMN.debug("键盘::onLayoutChange::keyboardShown", keyboardShown, settingsPanel);
 					UIData.appbar.strechNoBotom = keyboardShown;
 					if(keyboardShown) {
 						VU.setVisible(bottombar, false);
@@ -1779,6 +1780,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 		//com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
 		showDictionaryManager();
+//		try {
+//			TestHelper.insertMegaInPasteBin(LexicalDBHelper.getInstance().getDB(), currentDictionary.mMdict);
+//		} catch (Exception e) {
+//			CMN.debug(e);
+//		}
 		
 		
 //		try {

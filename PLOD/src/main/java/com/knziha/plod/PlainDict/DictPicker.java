@@ -357,6 +357,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	@Override
 	protected void onShow() {
 		resize();
+		if (Searchbar!=null && wordPopup!=null && !pinned()) {
+			ViewUtils.setVisibility(Searchbar, false);
+		}
 	}
 	
 	final boolean act() {
@@ -1006,9 +1009,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 				bPane.setContentView(bottomDlgLayout);
 				bPane.getWindow().setDimAmount(0.2f);
 				//CMN.recurseLogCascade(lv);
-				bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
 			}
-			dialog = dialogBtm;
+			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
+			dialog = bPane;
 			refreshExpand();
 		} else {
 			if(dialog==dialogBtm)

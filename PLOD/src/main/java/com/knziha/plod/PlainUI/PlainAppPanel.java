@@ -107,20 +107,22 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 			} else {
 				ViewUtils.removeView(settingsLayoutHolder);
 			}
-			d.setOnDismissListener(dialogDismissListener);
 			dialog = d;
 		}
+		dialog.setOnDismissListener(dialogDismissListener);
 		if(settingsLayoutHolder!=settingsLayout)
 			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);
 		if (tweakDlgScreen)
 			dialog.setContentView(settingsLayoutHolder);
-		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
+		if (a != null) {
+			ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
+		}
 //		if (resizeDlg)
 //			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 		
 		dialog.show();
 		
-		if (tweakDlgScreen) {
+		if (tweakDlgScreen && a != null) {
 			int padbot = bottomPadding;
 			if(padbot!=0) {
 				if(bottombar!=null) {
@@ -153,7 +155,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	@Override
 	protected void onDismiss() {
 		if(bShouldInterceptClickListener) {
-			if (a.mInterceptorListener==this) {
+			if (a!=null && a.mInterceptorListener==this) {
 				a.mInterceptorListener = null;
 			}
 			decorateInterceptorListener(false);
@@ -189,16 +191,18 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 				root = a.root;
 		}
 		boolean ret = super.toggle(root, parentToDismiss, forceShowType);
-		if (ret) {
-			if(bShouldInterceptClickListener) {
-				a.mInterceptorListener = this;
-				decorateInterceptorListener(true);
+		if (a!=null) {
+			if (ret) {
+				if(bShouldInterceptClickListener) {
+					a.mInterceptorListener = this;
+					decorateInterceptorListener(true);
+				}
+				a.HideSelectionWidgets(true);
+				a.settingsPanel = this;
+				a.settingsPanels.add(this);
 			}
-			a.HideSelectionWidgets(true);
-			a.settingsPanel = this;
-			a.settingsPanels.add(this);
+			else a.hideSettingsPanel(this);
 		}
-		else a.hideSettingsPanel(this);
 		return ret;
 	}
 	
@@ -212,7 +216,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	public void onAnimationEnd(Animator animation) {
 		super.onAnimationEnd(animation);
 		ValueAnimator va = (ValueAnimator) animation;
-		if (!bIsShowing && (va==null || va.getAnimatedFraction()==1)) {
+		if (!bIsShowing && (va==null || va.getAnimatedFraction()==1) && a!=null) {
 			boolean b1 = a.settingsPanel == this;
 			a.hideSettingsPanel(this);
 			if (b1 || a.settingsPanel==null) {

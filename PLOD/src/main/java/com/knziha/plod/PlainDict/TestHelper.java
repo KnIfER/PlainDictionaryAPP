@@ -157,8 +157,45 @@ public class TestHelper {
 		values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
 		long id = db.insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
 		CMN.Log("最后插入：", id, "插入时间：", CMN.pt());
-		
 	}
+	
+	
+	public static void insertMegaInPasteBin(SQLiteDatabase db, mdict mdict) throws JSONException {
+		now = CMN.now();
+		int cc=0;
+		CMN.rt();
+		String sql = "INSERT INTO "+LexicalDBHelper.TABLE_PASTE_BIN
+				+"(chn, fav, creation_time, content) VALUES(?,?,?,?)";
+		SQLiteStatement preparedInsertExecutor = db.compileStatement(sql);
+		db.beginTransaction();  //开启事务
+		
+		String entry="", content="", lex="";
+		int pos=0;
+		try {
+			Random rand = new Random();
+			for (pos = 0; pos < 100; pos++) {
+				for (int i = (int) (rand.nextDouble()*pos*10); i < 10; i++) {
+					content += mdict.getEntryAt(i);
+				}
+				
+				preparedInsertExecutor.bindLong(1, 0);
+				preparedInsertExecutor.bindLong(2, 0);
+				preparedInsertExecutor.bindLong(3, now);
+				preparedInsertExecutor.bindString(4, content);
+				
+				long rowId = preparedInsertExecutor.executeInsert();
+				if(rowId>=0)cc++;
+				now += 10;
+			}
+			db.setTransactionSuccessful();
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		db.endTransaction();  //结束事务
+		
+		CMN.Log("成功插入几条：", cc, "每秒插入：", CMN.pt()==0?"INF":cc*1000/CMN.pt());
+	}
+	
 	
 	public static void testRhino(MainActivityUIBase mainActivityUIBase) {
 //		org.mozilla.javascript.Context cx = org.mozilla.javascript.Context.enter();

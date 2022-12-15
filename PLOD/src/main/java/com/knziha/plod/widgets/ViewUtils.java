@@ -251,7 +251,7 @@ public class ViewUtils extends VU {
 	}
 	
 	/* get the list from WindowManagerGlobal. the result array list is cached */
-	public static List<View> getWindowManagerViews(MainActivityUIBase a) {
+	public static List<View> getWindowManagerViews(Toastable_Activity a) {
 		if (a.wViews!=null) {
 			return a.wViews;
 		}
@@ -275,7 +275,7 @@ public class ViewUtils extends VU {
 	
 	
 	/* 对话框是否置顶 */
-	public static boolean isTopmost(Dialog dialog, MainActivityUIBase a) {
+	public static boolean isTopmost(Dialog dialog, Toastable_Activity a) {
 		if (dialog!=null) {
 			List<View> views = getWindowManagerViews(a);
 			final int size = views.size();
@@ -303,7 +303,7 @@ public class ViewUtils extends VU {
 	}
 	
 	/* 将对话框置顶 */
-	public static boolean ensureTopmost(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+	public static boolean ensureTopmost(Dialog dialog, Toastable_Activity a, Dialog.OnDismissListener disLis) {
 		if (VU.suppressNxtDialogReorder) {
 			return false;
 		}
@@ -322,7 +322,7 @@ public class ViewUtils extends VU {
 	}
 	
 	
-	public static boolean ensureWindowType(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+	public static boolean ensureWindowType(Dialog dialog, Toastable_Activity a, Dialog.OnDismissListener disLis) {
 		int type = a.isFloatingApp() || (a.foreground&(1<<a.thisActType.ordinal()))==0?a.mDialogType:WindowManager.LayoutParams.TYPE_APPLICATION;
 		//CMN.debug("ensureWindowType::", type, WindowManager.LayoutParams.TYPE_APPLICATION);
 		boolean ret = false;

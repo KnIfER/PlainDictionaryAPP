@@ -48,6 +48,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_DATA_v2 = "data";
 	public static final String TABLE_APPID_v2 = "appid";
 	
+	/* 剪贴板 */
+	public static final String TABLE_PASTE_BIN = "pasteBin";
+	
+	
 	public static final String FIELD_CREATE_TIME = "creation_time";
 	public static final String FIELD_VISIT_TIME = "last_visit_time";
 	public static final String FIELD_EDIT_TIME = "last_edit_time";
@@ -355,6 +359,20 @@ if (!VersionUtils.AnnotOff) {
 					")";
 			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists app_name_index ON appid (name)");
+			
+			
+			// TABLE_PASTE_BIN 记录剪贴板，包括词条剪贴板、内容剪贴板、词典管理器剪贴板
+			sqlBuilder = "create table if not exists " +
+					TABLE_PASTE_BIN +
+					"(" +
+					"chn INTEGER NOT NULL" + // 0=词典管理器 1=词条 2=内容
+					", fav INTEGER DEFAULT 0 NOT NULL"+ // 等级
+					", creation_time INTEGER NOT NULL"+
+					", id INTEGER PRIMARY KEY AUTOINCREMENT" +
+					", content TEXT"+
+					")";
+			db.execSQL(sqlBuilder);
+			db.execSQL("CREATE INDEX if not exists pastbin_index ON pasteBin (chn, fav, creation_time, id)");
 			
 			if (preparedHasBookNoteForEntry ==null) {
 				preparedHasBookNoteForEntry = db.compileStatement("select id from " + TABLE_BOOK_NOTE_v2 + " where lex=? and bid=? and notesType>0");

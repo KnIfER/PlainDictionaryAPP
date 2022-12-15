@@ -31,6 +31,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +44,8 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.PlainUI.FloatApp;
+import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.Bag;
@@ -58,6 +61,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
@@ -128,7 +133,18 @@ public class Toastable_Activity extends AppCompatActivity {
 	public Resources mResource;
 	protected int btnMaxWidth;
 	
+	public static int foreground;
+	public MainActivityUIBase.ActType thisActType;
+	
 	LexicalDBHelper historyCon;
+	public List<View> wViews;
+	public ArrayList<PlainAppPanel> settingsPanels = new ArrayList<>(10);
+	public PlainAppPanel settingsPanel;
+	public PopupWindow settingsPopup;
+	public View.OnClickListener mInterceptorListener;
+	public boolean mInterceptorListenerHandled;
+	
+	public FloatApp floatApp;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -845,6 +861,24 @@ public class Toastable_Activity extends AppCompatActivity {
 			popupMenuRef = new WeakReference<>(ret);
 		}
 		return ret;
+	}
+	
+	public boolean isPanelDecorView(View view) {
+		for (int i = settingsPanels.size()-1; i >= 0; i--) {
+			PlainAppPanel panel = settingsPanels.get(i);
+			if (panel.getLastShowType()!=0 && ViewUtils.ViewIsChildOf(panel.settingsLayout, view)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public final boolean isFloating() {
+		return floatApp!=null && floatApp.isFloating();
+	}
+	
+	public final boolean isFloatingApp() {
+		return floatApp!=null && floatApp.isAppFloating();
 	}
 }
 

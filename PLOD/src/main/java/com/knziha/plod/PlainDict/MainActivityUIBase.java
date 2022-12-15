@@ -323,7 +323,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int schuiMainSchs;
 	public int schuiMain;
 	public int schuiList;
-	public List<View> wViews;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
 	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
 	SettingsSearcher settingsSearcher;
@@ -364,7 +363,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public Map<SubStringKey, String>  serverHosts;
 	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
 	public FrameLayout lvHeaderView;
-	public FloatApp floatApp;
 	public final Bag bNeverBlink = new Bag(false);
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
 	public int textFlag =0;
@@ -580,7 +578,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean bThenReadContent;
 	public WebViewmy pendingWebView;
 	public int mThenReadEntryCount;
-	public static int foreground;
 	protected boolean click_handled_not;
 
 	Runnable PhotoRunnable=new Runnable() {
@@ -643,7 +640,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private String LastMd;
 	
 	SplitView.PageSliderInf inf;
-	public ActType thisActType;
 	public int thisActMask;
 	public boolean awaiting;
 	Runnable postTask;
@@ -674,6 +670,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		PlainDict
 		, FloatSearch
 		, MultiShare
+		, BookManager
 	}
 	protected boolean lv_matched;
 	private Animation CTANIMA;
@@ -10566,12 +10563,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 	
-	public ArrayList<PlainAppPanel> settingsPanels = new ArrayList<>(10);
-	public PlainAppPanel settingsPanel;
-	public PopupWindow   settingsPopup;
-	public View.OnClickListener mInterceptorListener;
-	public boolean mInterceptorListenerHandled;
-	
 	public SearchbarTools etTools;
 	public WordCamera wordCamera;
 	
@@ -11060,26 +11051,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return titleDrawableCS.newDrawable();
 	}
 	
-	public boolean isPanelDecorView(View view) {
-		for (int i = settingsPanels.size()-1; i >= 0; i--) {
-			PlainAppPanel panel = settingsPanels.get(i);
-			if (panel.getLastShowType()!=0 && ViewUtils.ViewIsChildOf(panel.settingsLayout, view)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	public final boolean isMultiShare() {
 		return thisActType == ActType.MultiShare;
-	}
-	
-	public final boolean isFloating() {
-		return floatApp!=null && floatApp.isFloating();
-	}
-	
-	public final boolean isFloatingApp() {
-		return floatApp!=null && floatApp.isAppFloating();
 	}
 	
 	public FloatBtn getFloatBtn() {
