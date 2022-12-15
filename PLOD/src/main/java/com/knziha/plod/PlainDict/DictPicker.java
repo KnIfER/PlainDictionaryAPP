@@ -357,7 +357,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	@Override
 	protected void onShow() {
 		resize();
-		if (Searchbar!=null && wordPopup!=null && !pinned()) {
+		if (Searchbar!=null && (wordPopup!=null || a.accessMan.isEnabled()) && !pinned()) {
 			ViewUtils.setVisibility(Searchbar, false);
 		}
 	}

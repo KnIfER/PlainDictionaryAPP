@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -149,6 +151,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		if (toolbar.mNavButtonView==toolbar.mNavButtonLayout) {
 			ImageButton navBtn = toolbar.mNavButtonView;
 			ImageButton cross = new ImageButton(this);
+			cross.setContentDescription("取消修改");
 			cross.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -506,6 +509,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		searchbar.getChildAt(0).getLayoutParams().height = barSzBot;
 		//searchbar.setNavigationIcon(R.drawable.ic_baseline_double_arrow_24);
 		ImageView enterBtn = (ImageView) searchbar.findViewById(R.id.enter);
+		enterBtn.setContentDescription("弹出显示搜索结果列表");
 		enterBtn.setImageResource(R.drawable.ic_menu_drawer_24dp);
 		enterBtn.setOnLongClickListener(new View.OnLongClickListener(){
 			@Override
@@ -524,6 +528,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		
 		searchbar.setNavigationIcon(R.drawable.dragneo);
 		VU.setOnClickListenersOneDepth(searchbar, this, 999, null);
+		searchbar.mNavButtonView.setContentDescription("切换显示拖拽排序按钮");
 		etSearch = searchbar.findViewById(R.id.etSearch);
 		etSearch.setText(dictQueryWord);
 		etSearch.setFilters(new InputFilter[] {
@@ -623,12 +628,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		fragments= new ArrayList<>();
 		
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
-	    
+		
+		thisActType = MainActivityUIBase.ActType.BookManager;
+		
 		fragments.addAll(Arrays.asList(f1 = new BookManagerMain(), f2 = new BookManagerModules(), f4 = new BookManagerWebsites(), f3 = new BookManagerFolderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;
 		filtered = f1.filtered;
 		
-		thisActType = MainActivityUIBase.ActType.BookManager;
 		new PasteBinHub(this).show();
 
 		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
@@ -809,6 +815,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					PDICMainAppOptions.sortDictManager(!PDICMainAppOptions.sortDictManager());
 					if(f1!=null) f1.dataSetChanged(false);
 					if(f2!=null) f2.dataSetChanged(false);
+					if (PDICMainAppOptions.sortDictManager()) {
+						showT("已在第一和第二管页面显示拖拽排序z\n当前处于第"+(viewPager.getCurrentItem()+1)+"页面");
+					} else {
+						showT("已收起拖拽排序按钮");
+					}
 					break;
 				}
 				onBackPressed();

@@ -144,6 +144,15 @@ public abstract class BookManagerFragment<T> extends ListFragment {
         listView = (DragSortListView) getListView();
 
         listView.setDropListener(getDropListener());
+        listView.setDragListener(new DragSortListView.DragListener() {
+			@Override
+			public void drag(int from, int to) {
+				if (a.accessMan.isEnabled()) {
+					a.accessMan.interrupt();
+					a.root.announceForAccessibility("从"+from+"到"+to);
+				}
+			}
+		});
         listView.setRemoveListener(onRemove);
 
         View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);
@@ -151,8 +160,8 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	
 		opt = getBookManager().opt;
     }
-
-    abstract DragSortListView.DropListener getDropListener();
+	
+	abstract DragSortListView.DropListener getDropListener();
 	
 	public void dataSetChangedAt(int pos) {
 		ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);

@@ -16,7 +16,9 @@
     android:layout_gravity="center"
     android:visibility="gone"
     android:clickable="true"
-    android:layout_weight="0" /> 
+    android:layout_weight="0"
+	 android:contentDescription="文件夹按钮"
+	 />
  <ImageView
     android:id="@+id/splitterIcon"
     android:background="@drawable/split_folder"
@@ -51,5 +53,7 @@
     android:paddingLeft="5dp"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:layout_weight="0" />
+    android:layout_weight="0"
+  	android:contentDescription="添加按钮"
+	  />
 </LinearLayout>

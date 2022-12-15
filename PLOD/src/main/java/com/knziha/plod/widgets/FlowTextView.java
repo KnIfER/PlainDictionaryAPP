@@ -787,7 +787,6 @@ public class FlowTextView extends View {
 	
 	@Override
 	public void onPopulateAccessibilityEvent(AccessibilityEvent event) {
-		super.onPopulateAccessibilityEvent(event);
 		try {
 			CharSequence text = mText.subSequence(mStart, mLength);
 			if(earHintAhead!=null && earHintAheadMode!=1) {
@@ -803,5 +802,6 @@ public class FlowTextView extends View {
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
+		super.onPopulateAccessibilityEvent(event);
 	}
 }

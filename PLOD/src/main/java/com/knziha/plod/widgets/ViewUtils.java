@@ -1261,6 +1261,10 @@ public class ViewUtils extends VU {
 		return recyclerView.getChildAt(0);
 	}
 	
+	public static View findChild(ListView listView, int idx) {
+		return listView.getChildAt(idx-listView.getFirstVisiblePosition());
+	}
+	
 	/**
 	 * Get position of center child in Y Axes
 	 */

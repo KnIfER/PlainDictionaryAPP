@@ -151,6 +151,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		if(shunt)
 			return;
+		accessMan = ((AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE));
 		if (opt==null) opt = new PDICMainAppOptions(this);
 	   opt.dm = dm = new DisplayMetrics();
 	   mResource = getResources();
@@ -620,8 +621,8 @@ public class Toastable_Activity extends AppCompatActivity {
 			topsnack.setText(String.valueOf(messageVal));
 			topsnack.setTag(null);
 		}
-		if (accessMan!=null && accessMan.isEnabled()) {
-			topsnack.announceForAccessibility(topsnack.getText());
+		if (root!=null && accessMan.isEnabled()) {
+			root.announceForAccessibility(topsnack.getText());
 		}
 		topsnack.setGravity(gravity<0?Gravity.CENTER:gravity);
 		View snackView = topsnack.getSnackView();

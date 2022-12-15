@@ -27,6 +27,7 @@
 			android:layout_height="match_parent"
 			android:src="@drawable/abc_ic_ab_back_material_simple_compat"
 			android:background="@drawable/abc_action_bar_item_background_material"
+			android:contentDescription="退出点击翻译"
 			/>
 		<androidx.appcompat.widget.AppCompatTextView
 			android:id="@+id/popupText1"
@@ -66,6 +67,7 @@
 			android:tint="#8f8f8f"
 			android:padding="-2dp"
 			android:layout_marginEnd="1px"
+			android:contentDescription="发音"
 			/>
 		<com.knziha.plod.widgets.ActivatableImageView
 			android:id="@+id/popIvStar"
@@ -76,6 +78,7 @@
 			app:src0="@drawable/star_ic_solid_framed"
 			android:layout_marginEnd="1px"
 			tools:visibility="gone"
+			android:contentDescription="收藏"
 			/>
 		<ImageView
 			android:id="@+id/peruse"
@@ -87,6 +90,7 @@
 			android:padding="5dp"
 			android:layout_marginEnd="1px"
 			android:visibility="gone"
+			android:contentDescription="翻阅"
 			/>
 		<ImageView
 			android:id="@+id/gTrans"
@@ -105,6 +109,7 @@
 			android:background="?attr/actionBarItemBackground"
 			android:tint="#8f8f8f"
 			android:layout_marginEnd="1px"
+			android:contentDescription="最大化"
 			/>
 		<android.widget.ImageView
 			android:id="@+id/popLstDict"
@@ -114,6 +119,7 @@
 			android:background="?attr/actionBarItemBackground"
 			android:layout_marginEnd="1px"
 			android:visibility="gone"
+			android:contentDescription="上一词典"
 
 			/>
 		<android.widget.ImageView
@@ -122,6 +128,7 @@
 			android:layout_height="match_parent"
 			android:src="@drawable/chevron_bottom22"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="下一词典"
 			/>
 	</LinearLayout>
 
@@ -260,6 +267,7 @@
 				app:size="25dp"
 				app:src0="@drawable/clippin"
 				android:layout_marginStart="8dp"
+				android:contentDescription="更多操作"
 				/>
 			<com.knziha.plod.widgets.FlowTextView
 				android:id="@+id/popupText2"
@@ -280,6 +288,7 @@
 			android:layout_height="match_parent"
 			android:src="@drawable/ic_btn_multimode"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="切换搜索模式"
 			/>
 
 		<ImageView
@@ -289,6 +298,7 @@
 			android:src="@drawable/chevron_bottom2"
 			android:tint="#666"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="上一词条"
 			/>
 		<ImageView
 			android:id="@+id/popNxtE"
@@ -297,6 +307,7 @@
 			android:src="@drawable/chevron_top2"
 			android:tint="#666"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="下一词条"
 			/>
 
 		<ImageView
@@ -307,6 +318,7 @@
 			android:src="@drawable/drawer_menu_icon_setting"
 			android:layout_marginRight="5dp"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="设置"
 			/>
 
 		<ImageView
@@ -317,6 +329,7 @@
 			android:src="@drawable/recess"
 			android:tint="#666"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="倒退网页"
 			/>
 
 
@@ -328,6 +341,7 @@
 			android:src="@drawable/forward"
 			android:tint="#666"
 			android:background="?attr/actionBarItemBackground"
+			android:contentDescription="前进网页"
 			/>
 
 		</LinearLayout>

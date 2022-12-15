@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.PlainUI.PopupMenuHelper;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -39,7 +41,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class BookManagerModules extends BookManagerFragment<String> implements BookManagerFragment.SelectableFragment {
+public class BookManagerModules extends BookManagerFragment<String> implements BookManagerFragment.SelectableFragment
+		, View.OnClickListener, View.OnLongClickListener{
 	String LastSelectedPlan;
 	private ArrayList<String> scanInList;
 
@@ -141,17 +144,29 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					convertView = null;
 				}
 			}
+			boolean access = a.accessMan.isEnabled();
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
 				vh = new ViewHolder(convertView);
 				vh.title.fixedTailTrimCount = 4;
+				vh.title.setOnClickListener(BookManagerModules.this);
+				vh.title.setOnLongClickListener(BookManagerModules.this);
+				vh.title.setAccessibilityDelegate(acessAgent);
+				vh.title.earHintAhead = "分组";
 				if(parent != listView) {
 					ViewUtils.setVisible(vh.handle, false);
 					convertView.setBackground(null);
 				}
+				if (access) {
+					ViewUtils.removeView(vh.handle);
+					ViewUtils.addViewToParent(vh.handle, (ViewGroup) vh.itemView, 1);
+				}
 			} else {
 				vh = (ViewHolder) convertView.getTag();
 			}
+			vh.handle.setFocusable(access);
+			vh.title.setClickable(access);
+			vh.title.setLongClickable(access);
 			vh.position = position;
 			//v.getBackground().setLevel(1000);
 			if(scanInList.get(position).equals(LastSelectedPlan)) {
@@ -190,6 +205,54 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			return convertView;
 		}
 	}
+	
+	
+	private View.AccessibilityDelegate acessAgent = new View.AccessibilityDelegate() {
+		@Override
+		public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+			super.onPopulateAccessibilityEvent(host, event);
+			try {
+				if (host.getId() == R.id.text) {
+					ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(host, ViewHolder.class);
+					if (vh != null) {
+						String name = scanInList.get(vh.position);
+						if (selector.contains(name)) {
+							event.getText().add("已选中");
+						}
+						if (name.equals(LastSelectedPlan)) {
+							event.getText().add("是当前分组");
+						}
+					}
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+	};
+	
+	
+	@Override
+	public boolean onLongClick(View v) {
+		if (v.getId()==R.id.text) {
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+			if (vh != null) {
+				return listView.getOnItemLongClickListener().onItemLongClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	// click
+	@Override
+	public void onClick(View v) {
+		if (v.getId()==R.id.text) {
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+			if (vh != null) {
+				listView.getOnItemClickListener().onItemClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
+			}
+		}
+	}
 
 	private class MyDSController extends DragSortController {
 
@@ -211,15 +274,28 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			if(GlobalOptions.isDark) vh.title.setTextColor(Color.WHITE);
 			v.setBackgroundColor(GlobalOptions.isDark?0xFFc17d33:0xFFffff00);//TODO: get primary color
 			isDirty=true;
+			if (a.accessMan.isEnabled()) {
+				a.root.announceForAccessibility("正在拖拽 分组"+getNameAt(vh.position)+" 当前处于列表第"+vh.position+"项");
+			}
 			return v;
 		}
-
+		
 		@Override
 		public void onDestroyFloatView(View floatView) {
 			//do nothing; block super from crashing
 		}
 
 	}
+	
+	private String getNameAt(int position) {
+		String ret = scanInList.get(position);
+		int idx = ret.indexOf(".");
+		if (idx >= 0) {
+			ret = ret.substring(0, idx);
+		}
+		return ret;
+	}
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -227,7 +303,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		setListAdapter();
 		LastSelectedPlan = a.opt.getLastPlanName("LastPlanName");
 		listView.setOnItemClickListener((parent, v, position, id) -> {
-			if(position>= listView.getHeaderViewsCount()) {
+			if(position >= listView.getHeaderViewsCount()) {
 				pressedPos = position - listView.getHeaderViewsCount();
 				pressedV = v;
 				if (PDICMainAppOptions.dictManagerClickPopup()) {
@@ -469,12 +545,14 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			//CMN.Log("to", to);
 			//if(true) return;
 			int pos=-1, top=0;
+			int cc=0, initialTo=to;
 			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
 			if (vh != null) {
 				pos = vh.position;
 				top = ViewUtils.getNthParentNonNull(vh.itemView, 1).getTop();
 			}
-			if(selector.contains(scanInList.get(from))){
+			String fromPath = scanInList.get(from);
+			if(selector.contains(fromPath)){
 				ArrayList<String> md_selected = new ArrayList<>(selector.size());
 				if(to>from) to++;
 				for (int i = scanInList.size()-1; i >= 0; i--) {
@@ -482,6 +560,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					if(selector.contains(mmTmp)){
 						md_selected.add(0, scanInList.remove(i));
 						if(i<to) to--;
+						cc++;
 					}
 					if (i < pos) {
 						pos--;
@@ -497,9 +576,36 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				if (from < pos) {
 					pos--;
 				}
+				cc=1;
 			}
 			if (pos>=0) {
 				listView.setSelectionFromTop(pos + listView.getHeaderViewsCount(), top);
+			}
+			
+			if (a.accessMan.isEnabled()) {
+				if (cc > 0) {
+					int finalCc = cc, fvp = 0;
+					for (int i = 0, sz = scanInList.size(); i < sz; i++) {
+						if (scanInList.get(i).equals(fromPath)) {
+							fvp = i;
+							break;
+						}
+					}
+					View child = ViewUtils.findChild(listView, fvp + listView.getHeaderViewsCount());
+					if (child != null) {
+						((ViewHolder) child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+					}
+					a.accessMan.interrupt();
+					a.root.postDelayed(() -> {
+						a.accessMan.interrupt();
+						a.root.announceForAccessibility("已经拖拽 " + finalCc + "个分组，从" + from + "到" + initialTo);
+					}, 250);
+				} else {
+					View child = ViewUtils.findChild(listView, from+listView.getHeaderViewsCount());
+					if (child != null) {
+						((ViewHolder)child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+					}
+				}
 			}
 		};
 	}

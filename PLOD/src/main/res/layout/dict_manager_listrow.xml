@@ -17,7 +17,10 @@
 		android:layout_marginStart="3dp"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_weight="0" />
+		android:layout_weight="0"
+		android:importantForAccessibility="yes"
+		android:contentDescription="拖拽按钮"
+		/>
 	<com.knziha.plod.widgets.FlowTextView
 		android:id="@+id/text"
 		android:layout_width="0dp"
@@ -29,6 +32,7 @@
 		android:paddingStart="9dp"
 		android:gravity="center_vertical"
 		tools:text="aaaa"
+		android:importantForAccessibility="yes"
 		/>
 	<CheckBox
 		android:id="@+id/check1"

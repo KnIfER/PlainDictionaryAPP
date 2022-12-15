@@ -43,6 +43,7 @@
 						android:paddingTop="8dp"
 						android:paddingBottom="8dp"
 						android:src="@drawable/icon_denglu_close"
+						android:contentDescription="清空搜索框"
 						/>
 					<TextView
 						android:id="@+id/dictName"

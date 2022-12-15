@@ -6,6 +6,10 @@ import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +31,7 @@ import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
@@ -67,12 +73,13 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 		static ConstructorInterface<PasteBinEntryReader> readerMaker = length -> new PasteBinEntryReader();
 	}
 	
+	@SuppressLint("MissingInflatedId")
 	@Override
 	public void init(Context context, ViewGroup root) {
 		if (a!=null && settingsLayout==null) {
 			opt = a.opt;
-			//View layout = a.getLayoutInflater().inflate(R.layout.tts_sound_control, a.root, false);
-			recyclerView = new RecyclerView(a);
+			View layout = a.getLayoutInflater().inflate(R.layout.paste_bin_hub, a.root, false);
+			recyclerView = layout.findViewById(R.id.recycler_view);
 			recyclerView.setLayoutManager(new GridLayoutManager(a, 2));
 			
 			if (pageAsyncLoader == null) {
@@ -109,13 +116,52 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 				}
 			});
 			
+			int spanSz = 2;
+			recyclerView.addItemDecoration(new RecyclerView.ItemDecoration(){
+				final ColorDrawable mDivider = new ColorDrawable(Color.GRAY);
+				final int mDividerHeight = (int) (GlobalOptions.density*1);
+				@Override
+				public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+					//int rows = (int) Math.ceil(a.schHistory.size()*1.f/spanSz)-1;
+					if (mDivider != null) {
+						final int childCount = parent.getChildCount();
+						final int width = parent.getWidth();
+						final int height = parent.getHeight();
+						for (int i = 0; i < childCount; i++) {
+							final View view = parent.getChildAt(i);
+							int pos = parent.getChildViewHolder(view).getLayoutPosition();
+							if (pos%spanSz==0/* && pos/spanSz!=rows*/){
+								int top = (int) view.getY() + view.getHeight();
+								mDivider.setBounds(0, top, width, top + mDividerHeight);
+								mDivider.draw(c);
+							}
+							if ((pos+1)%spanSz!=0 && i/spanSz==0){
+								int left = (int) view.getX() + view.getWidth();
+								mDivider.setBounds(left, 0, left + mDividerHeight, height);
+								mDivider.draw(c);
+							}
+						}
+					}
+				}
+				@Override
+				public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+					int pos = parent.getChildViewHolder(view).getLayoutPosition();
+					if (true){//shouldDrawDividerBelow(view, parent)) {
+						outRect.bottom = mDividerHeight;
+					}
+					if ((pos+1)%spanSz!=0){
+						outRect.right = mDividerHeight/2;
+					}
+				}
+			});
+			
 			final String data_fields = "content";
 			
 			dataAdapter.bindTo(recyclerView)
 					.setAsyncLoader(a, pageAsyncLoader)
 					.sortBy(LexicalDBHelper.TABLE_PASTE_BIN, sortBy, true, data_fields);
 			
-			settingsLayout = (ViewGroup) recyclerView;
+			settingsLayout = (ViewGroup) layout;
 			
 			dataAdapter.startPaging(null, 0, 20, 15, this);
 			adapter.notifyDataSetChanged();

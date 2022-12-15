@@ -6,11 +6,13 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Layout;
 import android.util.AttributeSet;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
 public class TextMenuView extends TextView {
@@ -70,5 +72,17 @@ public class TextMenuView extends TextView {
 	@Override
 	public boolean isActivated() {
 		return activated;
+	}
+	
+	@Override
+	public void onPopulateAccessibilityEvent(AccessibilityEvent event) {
+		super.onPopulateAccessibilityEvent(event);
+		if (activated) {
+			try {
+				event.getText().add("已勾选");
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
 	}
 }

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -14,6 +15,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
@@ -59,7 +61,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
-		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener, DragSortListView.DropListener {
+		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener, DragSortListView.DropListener, View.OnClickListener, View.OnLongClickListener {
 	HashSet<PlaceHolder> Selection = new HashSet<>();
 	BookManager aaa;
 	private boolean bDictTweakerOnceShowed;
@@ -167,7 +169,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	
 	@Override
 	public void drop(int from, int to) {
-		//CMN.Log("to", to);
+		//CMN.debug("drop", "from = [" + from + "], to = [" + to + "]");
 		//if(true) return;
 		boolean b1 = to<0;
 		if(b1) to=-to;
@@ -177,11 +179,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			pos = vh.position;
 			top = ViewUtils.getNthParentNonNull(vh.itemView, 1).getTop();
 		}
+		int cc=0, initialTo=to;
+		String fromPath = getPathAt(from);
 		if(a.opt.dictManager1MultiSelecting() && (getPlaceSelected(from) || b1)){
 			ArrayList<BookPresenter> md_selected = new ArrayList<>(selected_size());
 			ArrayList<PlaceHolder> ph_selected = new ArrayList<>(selected_size());
 			if(to>from || b1) to++;
-			for (int i = loadMan.md.size()-1; i >= 0; i--) {
+			for (int i = manager_group().size()-1; i >= 0; i--) {
 				if(getPlaceSelected(i)){
 					md_selected.add(0, loadMan.md.remove(i));
 					ph_selected.add(0, loadMan.lazyMan.placeHolders.remove(i));
@@ -191,6 +195,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					if (i < pos) {
 						pos--;
 					}
+					cc++;
 				}
 			}
 			loadMan.md.addAll(to, md_selected);
@@ -203,9 +208,35 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			if (from < pos) {
 				pos--;
 			}
+			cc = 1;
 		}
 		if (pos>=0) {
 			listView.setSelectionFromTop(pos + listView.getHeaderViewsCount(), top);
+		}
+		if (a.accessMan.isEnabled()) {
+			if (cc > 0) {
+				int finalCc = cc, fvp = 0;
+				for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+					if (getPathAt(i).equals(fromPath)) {
+						fvp = i;
+						break;
+					}
+				}
+				View child = ViewUtils.findChild(listView, fvp + listView.getHeaderViewsCount());
+				if (child != null) {
+					((ViewHolder) child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+				}
+				a.accessMan.interrupt();
+				a.root.postDelayed(() -> {
+					a.accessMan.interrupt();
+					a.root.announceForAccessibility("已拖拽 " + finalCc + "本词典，从" + from + "到" + initialTo);
+				}, 250);
+			} else {
+				View child = ViewUtils.findChild(listView, from+listView.getHeaderViewsCount());
+				if (child != null) {
+					((ViewHolder)child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+				}
+			}
 		}
 	}
 	
@@ -235,6 +266,57 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				.create().show();
 	}
 	
+	
+	private View.AccessibilityDelegate acessAgent = new View.AccessibilityDelegate() {
+		@Override
+		public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+			super.onPopulateAccessibilityEvent(host, event);
+			try {
+				if (host.getId() == R.id.text) {
+					ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(host, ViewHolder.class);
+					if (vh != null) {
+						if (getPlaceSelected(vh.position)) {
+							event.getText().add("已选中");
+						}
+						BookPresenter magent = getMagentAt(vh.position);
+						if (magent.getIsDedicatedFilter()) {
+							event.getText().add("已设为点击翻译词库");
+						}
+						if (magent.getAutoFold()) {
+							event.getText().add("默认折叠");
+						}
+					}
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+	};
+	
+	
+	@Override
+	public boolean onLongClick(View v) {
+		if (v.getId()==R.id.text) {
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+			if (vh != null) {
+				return listView.getOnItemLongClickListener().onItemLongClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	// click
+	@Override
+	public void onClick(View v) {
+		if (v.getId()==R.id.text) {
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+			if (vh != null) {
+				listView.getOnItemClickListener().onItemClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
+			}
+		}
+	}
+	
 	private class MyAdapter extends ArrayAdapter<BookPresenter> {
 		public MyAdapter(List<BookPresenter> mdicts) {
 			super(getActivity(), getItemLayout(), R.id.text, mdicts);
@@ -249,6 +331,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					convertView = null;
 				}
 			}
+			boolean access = a.accessMan.isEnabled();
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
 				vh = new ViewHolder(convertView);
@@ -256,10 +339,21 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					ViewUtils.setVisible(vh.handle, false);
 					convertView.setBackground(null);
 				}
+				vh.title.setOnClickListener(BookManagerMain.this);
+				vh.title.setOnLongClickListener(BookManagerMain.this);
+				vh.title.setAccessibilityDelegate(acessAgent);
 				vh.title.trimStart = false;
+				vh.title.earHintAhead = "词典";
+				if (access) {
+					ViewUtils.removeView(vh.handle);
+					ViewUtils.addViewToParent(vh.handle, (ViewGroup) vh.itemView, 1);
+				}
 			} else {
 				vh = (ViewHolder) convertView.getTag();
 			}
+			vh.handle.setFocusable(access);
+			vh.title.setClickable(access);
+			vh.title.setLongClickable(access);
 			vh.position=position;
 			//v.getBackground().setLevel(1000);
 			//position = position - mDslv.getHeaderViewsCount();
@@ -809,11 +903,16 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		@Override
 		public View onCreateFloatView(int position) {
 			View v=adapter.getView(position, null, mDslv);
-			((ViewHolder)v.getTag()).ck.jumpDrawablesToCurrentState();
+			ViewHolder vh = ((ViewHolder)v.getTag());
+			vh.ck.jumpDrawablesToCurrentState();
 			//v.getBackground().setLevel(500);
 			mDslv.setFloatAlpha(1.0f);
 			v.setBackgroundColor(GlobalOptions.isDark?0xFFc17d33:0xFFffff00);//TODO: get primary color
 			markDirty(-1);
+			int sel = getPlaceSelected(vh.position)?Selection.size():1;
+			if (a.accessMan.isEnabled()) {
+				a.root.announceForAccessibility("正在拖拽 "+(sel>1?sel+"本":"")+"词典"+getNameAt(vh.position)+" 当前处于列表第"+vh.position+"项");
+			}
 			return v;
 		}
 

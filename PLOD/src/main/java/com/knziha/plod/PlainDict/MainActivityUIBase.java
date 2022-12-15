@@ -838,12 +838,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			showBuildIndexInterface(showBuildIndex);
 		}
-		root.announceForAccessibility("当前词典 "+currentDictionary.getDictionaryName());
-		if (!currentDictionary.isMergedBook()) {
-			String entry = currentDictionary.getRowTextAt(result.lvPos);
-			if (entry != null) {
-				root.announceForAccessibility("当前词条 "+entry);
-			}
+		if (accessMan.isEnabled()) {
+			BookPresenter finalResult = result;
+			accessMan.interrupt();
+			root.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					accessMan.interrupt();
+					root.announceForAccessibility("当前词典 "+currentDictionary.getDictionaryName());
+					if (!currentDictionary.isMergedBook()) {
+						String entry = currentDictionary.getRowTextAt(finalResult.lvPos);
+						if (entry != null) {
+							root.announceForAccessibility("当前词条 "+entry);
+						}
+					}
+				}
+			}, 550);
 		}
 		return true;
 	}
@@ -1303,7 +1313,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(shunt) return;
 		AgentApplication.activities[thisActType.ordinal()] = new WeakReference<>(this);
 		wordPopup.opt = opt;
-		accessMan = ((AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE));
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
