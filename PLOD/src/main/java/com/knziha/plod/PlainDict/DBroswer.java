@@ -305,7 +305,7 @@ public class DBroswer extends DialogFragment implements
 				HistoryDatabaseReader reader = (HistoryDatabaseReader) holder.tag;
 				// CMN.debug("saveListPosition::", holder.getLayoutPosition());
 				if (holder.getLayoutPosition() > 0) {
-					savedPositions.put(getFragmentId(), new long[]{reader.sort_number, view.getTop()});
+					savedPositions.put(getFragmentId(), new long[]{reader.sort_number, view.getTop(), holder.getLayoutPosition()});
 				} else {
 					savedPositions.remove(getFragmentId());
 				}
@@ -458,6 +458,11 @@ public class DBroswer extends DialogFragment implements
 			if(bNeedInvalidate) {
 				//lv.postDelayed(mAdapter::notifyDataSetChanged, 150);
 				mAdapter.notifyDataSetChanged();
+				long[] pos = savedPositions.get(getFragmentId());
+				//CMN.debug("getFragmentId()::", getFragmentId(), pos);
+				if (pos != null) {
+					((LinearLayoutManager)lv.getLayoutManager()).scrollToPositionWithOffset((int)pos[2], (int)pos[1]);
+				}
 				String foldername;
 				if(type==DB_FAVORITE) {
 					foldername = mLexiDB.getFavoriteNoteBookNameById(mAdapter.data.fid);

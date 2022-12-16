@@ -357,6 +357,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		}
 	}
 	
+	// todo use multi field pading adaptor
 	void rebuildCursor(MainActivityUIBase a, long folderId) {
 		boolean bSingleThreadLoadAll = false;
 		DBroswer browser = browserHolder.get();
