@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
@@ -16,7 +15,6 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
@@ -259,7 +257,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		viewdata.text1.setText(text.trim());
 		if(a.opt.debuggingDBrowser()>1) {
 			viewdata.text1.setText(position+" ::"+text.trim());
-			CMN.debug("onBindViewHolder::", position, text.trim(), ivk);
+			if(a.opt.debuggingDBrowser()>2) CMN.debug("onBindViewHolder::", position, text.trim(), ivk);
 		}
 		
 		int textColor=a.AppBlack, backgroundColor=0;
@@ -352,11 +350,14 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	public void onLoaded(PagingAdapterInterface adapter) {
 		DBroswer browser = browserHolder.get();
 		if (browser!=null) {
+			if (adapter.getCount() == 0) {
+				adapter.growUp(browser.lv);
+			}
 			browser.lv.suppressLayout(false);
 		}
 	}
 	
-	void rebuildCursor(MainActivityUIBase a) {
+	void rebuildCursor(MainActivityUIBase a, long folderId) {
 		boolean bSingleThreadLoadAll = false;
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
@@ -364,13 +365,13 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		if (bSingleThreadLoadAll) {
 			Cursor cursor;
 			if (browser.type==DB_FAVORITE) {
-				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
+				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{folderId+""});
 			} else {
 				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
 			}
 			CMN.Log("查询个数::"+cursor.getCount());
 			data.dataAdapter = displaying = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
-			browser.notifyDataSetChanged();
+			browser.dataSetChanged();
 		} else {
 			if (browser.pageAsyncLoader==null) {
 				browser.pageAsyncLoader = new ImageView(a);
@@ -384,16 +385,16 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 					.setAsyncLoader(a, browser.pageAsyncLoader)
 					.sortBy(browser.getTableName(), FIELD_VISIT_TIME, true, "lex, books, ivk");
 			if (browser.getFragmentType()==DB_FAVORITE) {
-				dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
+				dataAdapter.where("folder=?", new String[]{folderId+""});
 			}
-			long[] pos = browser.savedPositions.get(browser.getFragmentType());
+			long[] pos = DBroswer.savedPositions.get(browser.getFragmentId());
 			long lastTm=0, offset=0;
 			if (pos!=null) {
 				lastTm = pos[0];
 				offset = pos[1];
 			}
 			dataAdapter.startPaging(lastTm, offset, 20, 15, this);
-			CMN.debug("rebuildCursor::savedPositions::read::", browser.getFragmentType()+" "+new Date(lastTm).toLocaleString());
+			CMN.debug("rebuildCursor::savedPositions::read::", browser.getFragmentId()+" "+new Date(lastTm).toLocaleString());
 		}
 		//CMN.Log("mAdapter.rebuildCursor!!!");
 		//todo 记忆 lastFirst

@@ -209,7 +209,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	public void onLoaded(PagingAdapterInterface pagingAdapterInterface) {
 		recyclerView.suppressLayout(false);
 		if (dataAdapter.getCount()==0) {
-			recyclerView.post(((MultiFieldPagingCursorAdapter)dataAdapter).mGrowRunnableUp);
+			dataAdapter.growUp(recyclerView);
 		}
 	}
 	

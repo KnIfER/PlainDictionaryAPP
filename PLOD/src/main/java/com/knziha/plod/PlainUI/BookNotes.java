@@ -336,7 +336,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			weblistHandler = new WebViewListHandler(a, contentUIData, a.schuiMain);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			weblistHandler.setUpContentView(a.cbar_key);
-			weblistHandler.setFetchWord(PDICMainAppOptions.dbCntFetcingWord()?2:0, null);
+			weblistHandler.setFetchWord(PDICMainAppOptions.dbCntFetcingWord()?2:0);
 		}
 		weblistHandler.checkUI();
 	}

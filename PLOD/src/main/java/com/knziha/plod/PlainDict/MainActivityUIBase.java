@@ -80,7 +80,6 @@ import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.accessibility.AccessibilityManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -164,7 +163,6 @@ import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
-import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NewTitlebar;
@@ -6765,7 +6763,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}  break;
 			case R.id.fetchWord: {
 				if(wlh!=null)
-					wlh.setFetchWord(-2, null);
+					wlh.setFetchWord(-2);
 			}  break;
 			/* 从内容页跳转翻阅模式 */
 			case R.id.peruseMode:{
@@ -7131,7 +7129,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				weblistHandler.resetScrollbar();
 			}
 			if (!random) {
-				randomPageHandler.setFetchWord(0, null);
+				randomPageHandler.setFetchWord(0);
 			}
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
@@ -7155,7 +7153,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(!refresh) refresh = randomPageHandler.fetchWord == 0;
 			if(refresh)
 			{
-				randomPageHandler.setFetchWord(-1, null);
+				randomPageHandler.setFetchWord(-1);
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
@@ -9910,7 +9908,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					view.post(() -> {
 						finalD.dismiss();
 						if(reason1==0)
-							show(R.string.currFavor,CMN.unwrapDatabaseName(name));
+							showT("已切换至收藏夹："+name);
 					});
 				}
 			});

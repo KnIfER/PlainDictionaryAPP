@@ -33,6 +33,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
@@ -634,8 +635,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		f1.a=f2.a=f4.a=f3.a=this;
 		filtered = f1.filtered;
 		
-		//new PasteBinHub(this).show();
-
 		f3.oes = f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(BookManagerFolderAbs f, boolean enter){
 				//AllMenus.setItems(enter?Menu3Sel:Menu3);
@@ -815,7 +814,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					if(f1!=null) f1.dataSetChanged(false);
 					if(f2!=null) f2.dataSetChanged(false);
 					if (PDICMainAppOptions.sortDictManager()) {
-						showT("已在第一和第二管页面显示拖拽排序z\n当前处于第"+(viewPager.getCurrentItem()+1)+"页面");
+						showT("已在第一和第二管页面显示拖拽排序按钮\n当前处于第"+(viewPager.getCurrentItem()+1)+"页面");
 					} else {
 						showT("已收起拖拽排序按钮");
 					}
@@ -956,7 +955,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	protected void showRenameDialog(final String lastPlanName,final transferRunnable tr) {//哈哈这么长的代码。。。
 		View dialog = getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
-        final ListView lv = dialog.findViewById(R.id.lv);
+        final AlertController.RecycleListView lv = dialog.findViewById(R.id.lv);
         final EditText et = dialog.findViewById(R.id.et);
         ImageView iv = dialog.findViewById(R.id.confirm);
         File fSearchFile = new File(ConfigFile, lastPlanName);//查找旧plan
@@ -1065,6 +1064,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	            
 	            String name = setsArr.get(position).getName();
 	            holder.tv.setText(name.substring(0,name.length()-4));
+	            holder.tv.setTextColor(AppBlack);
 				return convertView;
 			}
 			private void decorateByViewHolder(myHolder holder) {
@@ -1143,6 +1143,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		});
 		d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> iv.performClick());
         // d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
+		
+		float pad = 2.8f * getResources().getDimension(R.dimen._50_) * (dm.widthPixels>GlobalOptions.realWidth?1:1.45f);
+		lv.mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
+		
 	}
 	
 	
@@ -1924,7 +1928,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			Window win = dTmp.getWindow();
 			win.setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_ld:R.drawable.popup_shadow_l);
 			dTmp.show();
-			//win.setDimAmount(0);
+			win.setDimAmount(0);
 			ViewGroup dvp = win.getDecorView().findViewById(R.id.dialog);
 			dvp.setPadding(0,0,0,0);
 			dv.setPadding((int) (15*opt.dm.density), 0,0,(int) (10*opt.dm.density));

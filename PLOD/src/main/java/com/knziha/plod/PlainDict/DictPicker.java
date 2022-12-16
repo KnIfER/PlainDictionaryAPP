@@ -557,7 +557,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 				}
 				mAdapter.notifyItemChanged(tmpPos);
 				mAdapter.notifyItemChanged(position);
-				dismiss();
+				dismissImmediate();
 			}
 			else {//当前词典
 				int tmpPos = adapter_idx;

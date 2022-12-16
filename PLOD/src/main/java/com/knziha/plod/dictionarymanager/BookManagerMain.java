@@ -348,6 +348,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				vh.title.setOnClickListener(BookManagerMain.this);
 				vh.title.setOnLongClickListener(BookManagerMain.this);
 				vh.title.setAccessibilityDelegate(acessAgent);
+				vh.title.setMaxLines(1);
 				vh.title.trimStart = false;
 				vh.title.earHintAhead = "词典";
 				if (access) {

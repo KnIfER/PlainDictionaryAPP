@@ -27,6 +27,8 @@ public class AppUIProject {
 				, R.drawable.ic_prv_dict_chevron
 				, R.drawable.ic_nxt_dict_chevron
 				, R.drawable.ic_fulltext_reader
+				, R.drawable.book_bundle
+				, R.drawable.favoriteg
 				, 4
 				, 6
 				, 9

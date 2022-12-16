@@ -26,7 +26,6 @@
 	<string name="maniDel">已取消  %1$d/%2$d 项收藏!</string>
 	<string name="maniFavor">%1$s (%2$d项收藏)</string>
 	<string name="maniFavor2">%1$s (%2$d项记录)</string>
-	<string name="currFavor">切换至: %s</string>
 	<string name="resCount">搜索完成！结果数目： %s</string>
 	<string name="searchFailed">搜索失败: %s</string>
 

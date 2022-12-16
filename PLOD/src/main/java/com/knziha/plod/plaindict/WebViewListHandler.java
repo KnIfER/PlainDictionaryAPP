@@ -1247,20 +1247,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	public DBroswer dBroswer;// ...
-	
-	public void setFetchWord(int mode, DBroswer dBroswer) {
+	public void setFetchWord(int mode) {
 		if (mode == -2) {
-			if (this.dBroswer != null && this != a.weblistHandler) {
+			if (this != a.weblistHandler) {
 				// 是 DBrower 的页面处理者，只有两态切换哦
 				boolean v = !PDICMainAppOptions.dbCntFetcingWord();
 				PDICMainAppOptions.dbCntFetcingWord(v);
-				setFetchWord(v ? 2 : 0, null);
+				setFetchWord(v ? 2 : 0);
 			}
 			else {
 				MenuItemImpl tagHolder = a.getMenuSTd(R.id.fetchWord);//alloydPanel.fetchWordMenu;
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
-				this.dBroswer = dBroswer;
 				if(dd==null) {
 					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
 						@Override
@@ -1269,12 +1266,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 							if(which==2) which = 0;
 							else which++;
 							if (which>=0) {
-								if (wlh.dBroswer != null && wlh==a.weblistHandler) {
-									wlh.dBroswer.setFetchWord(which);
-									wlh.dBroswer = null;
-								} else {
-									wlh.setFetchWord(which, null);
-								}
+								wlh.setFetchWord(which);
 							}
 							dialog.dismiss();
 						}

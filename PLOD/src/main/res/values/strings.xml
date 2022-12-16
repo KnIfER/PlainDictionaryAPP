@@ -28,7 +28,6 @@
     <string name="maniDel">Canceled %1$d/%2$d item(s) collected!</string>
     <string name="maniFavor">%1$s (%2$d items)</string>
     <string name="maniFavor2">%1$s (%2$d records)</string>
-    <string name="currFavor">Current collection name: %s</string>
     <string name="resCount">Search done!Found %s items</string>
     <string name="searchFailed">Search failed: %s</string>
 

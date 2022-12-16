@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/navHorBtns"
+	android:layout_width="wrap_content"
+	android:layout_height="match_parent"
+	android:orientation="horizontal"
+	android:divider="@drawable/divider2"
+	android:showDividers="middle"
+	android:clipChildren="false"
+	android:clipToPadding="false"
+	>
+	<android.widget.TextView
+		android:text="2131231asdsadsddsadsdsadsadsdsadsaddsdsdsadasdsd23"
+		android:textColor="#000"
+		android:id="@+id/cropBtn"
+		android:layout_width= "wrap_content"
+		android:layout_height="match_parent"
+		android:maxWidth="100dp"
+		/>
+	<android.widget.ImageView
+		android:id="@+id/cameraBtn"
+		android:layout_width= "60dp"
+		android:layout_height="match_parent"
+		android:background="@drawable/item_selector_circle1"
+		android:src="@drawable/ic_baseline_photo_camera_24"
+		android:clickable="true"
+		android:tint="#3B7DB1"
+		android:padding="10dp"
+		/>
+</LinearLayout>

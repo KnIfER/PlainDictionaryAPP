@@ -321,7 +321,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public long getLong(String key, long def) {
 		if (mModified.size() > 0) {
 			Object ret = mModified.get(key);
-			if (ret != null) {
+			if (ret instanceof Long) {
 				return (Long) ret;
 			}
 		}
@@ -335,10 +335,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	public PDICMainAppOptions putLong(String key, long val) {
 		try {
-			if (defaultReader.getLong(key, val)==val) {
+			if (defaultReader.getLong(key, val+1)==val) {
 				return this;
 			}
 		} catch (Exception e) {
+			CMN.Log(e);
 			tmpEdit().remove(key);
 		}
 		tmpEdit().putLong(key, val);

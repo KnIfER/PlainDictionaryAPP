@@ -3,7 +3,7 @@ package com.knziha.plod.PlainUI;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.LongSparseArray;
-import android.util.SparseArray;
+import android.view.View;
 
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorReader;
@@ -66,6 +66,9 @@ public class AnnotRangeAdapter<T extends CursorReader> implements PagingAdapterI
 	
 	@Override
 	public void close() {
+	}
+	
+	public void growUp(View recyclerView) {
 	}
 	
 	@Override

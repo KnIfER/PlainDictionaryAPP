@@ -476,7 +476,7 @@ public class RLContainerSlider extends FrameLayout{
 					if (WebContext!=null) {
 						calcWebWidth();
 					}
-					CMN.debug("ACTION_DOWN");
+					//CMN.debug("ACTION_DOWN");
 					if (touch_id!=first_touch_id) {
 						detector.onTouchEvent(ev);
 						if (tapZoom
@@ -532,7 +532,7 @@ public class RLContainerSlider extends FrameLayout{
 									dragged = true;
 								}
 							}
-							CMN.debug("theta", theta, dx);
+							//CMN.debug("theta", theta, dx);
 						}
 					}
 				break;

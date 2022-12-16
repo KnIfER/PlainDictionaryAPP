@@ -381,6 +381,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				vh.text.setTextColor(GlobalOptions.isDark? Color.WHITE:Color.BLACK);
 			else
 				vh.text.setTextColor(Color.RED);
+			vh.text.setMaxLines(1);
 			
 			
 			if (parent == listView) {

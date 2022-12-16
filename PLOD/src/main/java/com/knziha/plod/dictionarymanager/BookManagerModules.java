@@ -1,8 +1,12 @@
 package com.knziha.plod.dictionarymanager;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -344,7 +348,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					ListView lv = (ListView) ViewUtils.getParentOf(pressedV, ListView.class);
 					boolean b1 = lv!=listView;
 					final String name = scanInList.get(position);
-					boolean isOnSelected = !!b1 && selector.size() > 0 && selector.contains(name);
+					boolean isOnSelected = !b1 && selector.size() > 0 && selector.contains(name);
 					if (isLongClick) {
 						//if (view.getId() == R.id.disable) {
 						//	popupMenuHelper.dismiss();
@@ -408,32 +412,46 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 						} break;
 						/* 删除 */
 						case R.string.delete: {
-							View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.dialog_about, null);
-							AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-							TextView tvtv = dialog1.findViewById(R.id.title);
-							tvtv.setText(isOnSelected ? getResources().getString(R.string.warnDeleteMultiple, selector.size())
-									: getResources().getString(R.string.warnDelete, name)
-							);
-							tvtv.setPadding(50, 50, 0, 0);
-							builder.setView(dialog1);
+							AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+									.setTitle(isOnSelected ? getResources().getString(R.string.warnDeleteMultiple, selector.size())
+											: getResources().getString(R.string.warnDelete, name)
+									)
+									.setMessage("不可撤销！但会备份分组文件至PLOD文件夹，可手动恢复。")
+									.setWikiText("打开备份文件夹", new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int which) {
+											File folder = a.fileToSet("beifen");
+											StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+											try {
+												startActivity(new Intent(Intent.ACTION_VIEW)
+														.setDataAndType(Uri.fromFile(folder), "resource/folder")
+														.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+												);
+											} catch (Exception e) {
+											
+											}
+											getBookManager().showT(folder.getPath());
+										}
+									})
+									.setPositiveButton("确认", (dialog, which) -> {
+										if (isOnSelected) {
+											for (String nI : selector) {
+												try_delete_configureLet(nI);
+												scanInList.remove(nI);
+											}
+											selector.clear();
+										} else if (try_delete_configureLet(name)) {
+											selector.remove(name);
+											scanInList.remove(name);
+										}
+										dataSetChanged(true);
+										isDirty = true;
+										dialog.dismiss();
+										a.show(R.string.delD);
+									});
 							final AlertDialog dd = builder.create();
-							dialog1.findViewById(R.id.cancel).setOnClickListener(v -> {
-								if (isOnSelected) {
-									for (String nI : selector) {
-										try_delete_configureLet(nI);
-										scanInList.remove(nI);
-									}
-									selector.clear();
-								} else if (try_delete_configureLet(name)) {
-									selector.remove(name);
-									scanInList.remove(name);
-								}
-								dataSetChanged(true);
-								isDirty = true;
-								dd.dismiss();
-								a.show(R.string.delD);
-							});
 							dd.show();
+							dd.getWindow().setDimAmount(0);
 						} break;
 						/* 复制 */
 						case R.string.duplicate: {
@@ -492,7 +510,9 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 						showLoadModuleDlg(false, position);
 					})
 					.setNeutralButton(R.string.cancel, null);
+			AlertDialog dlg = builder2.create();
 			builder2.create().show();
+			dlg.getWindow().setDimAmount(0);
 		} else {
 			String name = adapter.getItem(position);
 			File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
@@ -529,7 +549,20 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 	}
 
 	private boolean try_delete_configureLet(String name) {
-		return a.fileToSet(name).delete();
+		File importantFile =  a.fileToSet(name);
+		File backup =  a.fileToSet("/beifen/"+name);
+		try {
+			backup.getParentFile().mkdirs();
+			FileChannel inputChannel = new FileInputStream(importantFile).getChannel();
+			FileChannel outputChannel = new FileOutputStream(backup).getChannel();
+			outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+			inputChannel.close();
+			outputChannel.close();
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		// todo trim backup
+		return importantFile.delete();
 	}
 
 	DragSortListView.DropListener getDropListener() {

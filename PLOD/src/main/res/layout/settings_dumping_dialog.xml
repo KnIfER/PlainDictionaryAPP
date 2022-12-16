@@ -22,7 +22,7 @@ android:layout_height="match_parent"
         android:layout_marginLeft="-50dp"
         android:layout_marginTop="-5dp"
         />
-    <ListView
+    <view class="androidx.appcompat.app.AlertController$RecycleListView"
         android:id="@+id/lv"
         android:layout_width="match_parent" 
         android:layout_height="wrap_content"

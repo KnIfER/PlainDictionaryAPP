@@ -7,10 +7,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.PowerManager;
+import android.text.TextUtils;
 
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.text.HtmlCompat;
 
+import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static com.knziha.plod.plaindict.MainActivityUIBase.digestKey;
 import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
 
@@ -367,6 +370,33 @@ public class TestHelper {
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
+		}
+	}
+	
+	public static void PagingVerdict(MainActivityUIBase a, PagingAdapterInterface<DeckListAdapter.HistoryDatabaseReader> dataAdapter, long id) {
+		try {
+			Cursor cursor = LexicalDBHelper.getInstance().getDB().rawQuery("select lex from "
+					+ (id == -1 ? LexicalDBHelper.TABLE_HISTORY_v2 : (LexicalDBHelper.TABLE_FAVORITE_v2 + " where folder=? "))
+					+ " order by "+FIELD_VISIT_TIME+" desc ", id == -1 ? null : new String[]{id + ""});
+			int realCnt = cursor.getCount();
+			CMN.debug("PagingVerdict", "dataAdapter = [" + dataAdapter + "], id = [" + id + "]");
+			String ret = "";
+			ret += CMN.debug("PagingVerdict 个数对比::", dataAdapter.getCount(), realCnt) + "\n";
+			int misIdx = -1;
+			for (int i = 0; i < Math.min(realCnt, dataAdapter.getCount()); i++) {
+				cursor.moveToPosition(i);
+				if (!TextUtils.equals(cursor.getString(0), dataAdapter.getReaderAt(i).record)) {
+					ret += CMN.debug("PagingVerdict misIdx=", misIdx) + "\n";
+					misIdx = i;
+					ret += CMN.debug("PagingVerdict missed!!!", i, cursor.getString(0), dataAdapter.getReaderAt(i)) + "\n";
+					break;
+				}
+			}
+			ret += CMN.debug("PagingVerdict misIdx=", misIdx) + "";
+			if (dataAdapter.getCount() == realCnt && misIdx == -1) a.showT("PagingVerdict 全部一致！");
+			else a.showT(ret);
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 }

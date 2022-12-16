@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 
-
 //android.applicationVariants.all { variant ->
 //    variant.mergeResources.doFirst {
 //        def isReleaseMode = false
@@ -229,11 +228,19 @@ dependencies {
 
     //api 'com.ibm.icu:icu4j:70.1'
 
-
-
     implementation 'org.jsoup:jsoup:1.15.3'
 
    // implementation fileTree(dir: 'lib', include: ['*.jar'])
+}
 
-
+afterEvaluate {
+    gradle.buildFinished{ BuildResult buildResult ->
+        if (buildResult.failure) {
+            ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\error.wav").PlaySync();"""].execute()
+            println("failed doing task")
+        } else {
+            ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\muse_SchivoNo.2.wav").PlaySync();"""].execute()
+            println("build finished")
+        }
+    }
 }

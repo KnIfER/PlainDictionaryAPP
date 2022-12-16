@@ -16,6 +16,10 @@ public class ShelfLinearLayout extends LinearLayout {
 	Paint p = new Paint();
 	private int selectedToolIdx;
 	
+	public int getSelectedToolIdx() {
+		return selectedToolIdx;
+	}
+	
 	public Paint getPaint(){return p;}
 	Rect r = new Rect();
 	public boolean drawRectOver=false;

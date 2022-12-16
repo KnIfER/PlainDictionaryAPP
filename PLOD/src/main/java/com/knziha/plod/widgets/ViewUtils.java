@@ -1143,7 +1143,7 @@ public class ViewUtils extends VU {
 			//CMN.debug("setListViewScrollbarColor::", ScrollbarDrawable, mListView);
 			ScrollbarDrawable.setColorFilter(red?RED:GREY);
 		} catch (Exception e) {
-			CMN.debug("setListViewScrollbarColor::", e);
+			CMN.debug("setListViewScrollbarColor::", e.getLocalizedMessage());
 		}
 	}
 	
