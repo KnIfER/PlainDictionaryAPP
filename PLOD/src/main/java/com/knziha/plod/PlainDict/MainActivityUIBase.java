@@ -3832,9 +3832,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		String ret=books==null?"":books;
 		if (wlh.isViewSingle()) {
 			WebViewmy wv = wlh.getWebContext();
-			String url = wv.getUrl();
+			String url = wv.url;
+			//CMN.debug("collectDisplayingBooks", url, wv.mdbr, wv.merge);
 			if (url!=null) {
-				wv.recUrl(url);
+				//wv.recUrl(url);
 				long bid = -1;
 				if(wv.mdbr) {
 					if (wv.merge) {
@@ -3851,7 +3852,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else {
 						int schemaIdx = url.indexOf(":");
-						if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
+						if (url.charAt(schemaIdx+8)=='d') {
+							int slashIdx = url.indexOf("/", schemaIdx+7);
+							bid = IU.parseLong(url.substring(schemaIdx+9, slashIdx));
+						}
+						else if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
 							int idx = schemaIdx + 12 + 7 + 1, ed=url.indexOf("_", idx);
 							//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
 							bid = getMdictServer().getBookIdByURLPath(url, idx, ed);
@@ -10148,6 +10153,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (ret==null) {
 			CMN.Log("空的::", key);
 		}
+		//else CMN.Log("来了::", key);
 		return ret==null?"":ret;
 	}
 	

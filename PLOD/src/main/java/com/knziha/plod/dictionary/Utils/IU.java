@@ -146,15 +146,11 @@ the valueOf method.
 			while (i < len) {
 				// Accumulating negatively avoids surprises near MAX_VALUE
 				digit = Character.digit(s.charAt(i++),10);
-				if (digit < 0) {
-					return val;
-				}
-				if (result < multmin) {
-					return val;
-				}
-				result *= 10;
-				if (result < limit + digit) {
-					return val;
+				if (digit < 0
+						|| result < multmin
+						|| (result *= 10) < limit + digit) {
+					if(i>(negative?1:0)) break;
+					else return val;
 				}
 				result -= digit;
 			}

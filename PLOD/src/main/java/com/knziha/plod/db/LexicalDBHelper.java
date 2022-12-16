@@ -516,6 +516,7 @@ if(!VersionUtils.AnnotOff)
 				values.put("lex", lex);
 				
 				if (weblist!=null) {
+					//CMN.debug("insert fav books = ", a.collectDisplayingBooks(books, weblist));
 					values.put("books", a.collectDisplayingBooks(books, weblist));
 				}
 				
