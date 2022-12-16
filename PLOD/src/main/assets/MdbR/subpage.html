@@ -17,6 +17,10 @@
 		-ms-user-select:text;
 		-khtml-user-select:text;
 		user-select:text;
+	}
+</style>
+<style id='_pd_mh'>
+	html, body {
 		min-height: unset!important;
 	}
 </style>
@@ -94,15 +98,18 @@ function wrappedOnLoadFunc(){
 		if(_app && inf.img) {
 			pw.LoadIMG(inf);
 		}
-	} else if(_app){
-		w.shzh=_app.rcsp(sid.get());
-		var lnks = document.links;
-		for(var i=0,max=Math.min(lnks.length,10);i<max;i++) {
-			if(lnks[i].href.startsWith("sound")) {
-				lnks=1; break;
-			}
-		} 
-		_app.maySound(sid.get(), lnks===1);
+	} else {
+		ge('_pd_mh').innerText='';
+		if(_app){
+			w.shzh=_app.rcsp(sid.get());
+			var lnks = document.links;
+			for(var i=0,max=Math.min(lnks.length,10);i<max;i++) {
+				if(lnks[i].href.startsWith("sound")) {
+					lnks=1; break;
+				}
+			} 
+			_app.maySound(sid.get(), lnks===1);
+		}
 	}
 	if(!remarked) {
 		if(fe) {

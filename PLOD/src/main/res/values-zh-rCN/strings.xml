@@ -247,5 +247,6 @@
 	<string name="addRecentPasteHere">添加最近剪贴板内容至此</string>
 	<string name="addPasteHere">添加剪贴板内容至此</string>
 	<string name="addPastes">收入剪贴板</string>
+	<string name="dingzhi_gongju">定制底部工具栏</string>
 	>
 </resources>

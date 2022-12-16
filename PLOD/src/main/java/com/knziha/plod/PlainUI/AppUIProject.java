@@ -161,7 +161,7 @@ public class AppUIProject {
 		boolean tint = bottombar_project.getTint();
 		if(tint&&this_.ForegroundFilter==null)
 			this_.ForegroundFilter = new PorterDuffColorFilter(this_.ForegroundTint, PorterDuff.Mode.SRC_IN);
-		if(appproject==null) appproject="0|1|2|3|4|5";
+		if(appproject==null) appproject="0|1|2|3|4|5|6";
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
 		//appproject="9|10|11|13|14|15";

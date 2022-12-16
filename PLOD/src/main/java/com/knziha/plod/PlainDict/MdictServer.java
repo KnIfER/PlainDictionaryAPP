@@ -831,6 +831,15 @@ public abstract class MdictServer extends NanoHTTPD {
 				presenter.ApplyPadding(MdPageBuilder);
 				MdPageBuilder.append("}</style>");
 			}
+			if (presenter.zhoAny()!=0) {
+				MdPageBuilder.append("<style>");
+				MdPageBuilder.append("html{min-height:").append(presenter.zhoHigh() ? "92%" : "100%")
+						.append(";display:flex;")
+						.append(presenter.zhoVer() ? "align-items:center;" : "")
+						.append(presenter.zhoHor() ? "justify-content:center;" : "")
+						.append("}");
+				MdPageBuilder.append("</style>");
+			}
 			MdPageBuilder.append("</head>")
 					.append(record)
 					.append(MdPage_fragment3)

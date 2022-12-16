@@ -5801,7 +5801,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				moveTaskToBack(false);
 			} break;
 			case R.drawable.customize_bars: {
-				showIconCustomizator();
+				showBottombarsTweaker();
 			} break;
 			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
 				shareUrlOrText(true);
@@ -9942,7 +9942,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int ForegroundTint = 0xffffffff;
 	public PorterDuffColorFilter ForegroundFilter;
 
-	void showIconCustomizator() {
+	void showBottombarsTweaker() {
 		int pos = defbarcustpos;
 		if(PeruseViewAttached()){
 			pos = 2;

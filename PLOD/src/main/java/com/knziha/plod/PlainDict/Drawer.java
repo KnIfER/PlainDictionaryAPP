@@ -182,6 +182,7 @@ public class Drawer extends Fragment implements
 						, R.string.addd
 						, R.string.pick_main
 						, R.string.pick_audio_dir
+						, R.string.dingzhi_gongju
 						, R.string.manager
 						, R.string.switch_favor
 						, 0
@@ -208,6 +209,7 @@ public class Drawer extends Fragment implements
 						, R.string.addd
 						, R.string.pick_main
 						, R.string.pick_audio_dir
+						, R.string.dingzhi_gongju
 						, R.string.manager
 						, R.string.switch_favor
 				};
@@ -1191,6 +1193,10 @@ public class Drawer extends Fragment implements
 					}
 				});
 				dialog1.show();
+			} break;
+			//选择发音库目录
+			case R.string.dingzhi_gongju:  {
+				a.showBottombarsTweaker();
 			} break;
 			//选择发音库目录
 			case R.string.pick_audio_dir:  {

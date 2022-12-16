@@ -98,7 +98,6 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
-import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -2984,7 +2983,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		switch(v.getId()) {
 			case R.id.home:{
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
-				showIconCustomizator();
+				showBottombarsTweaker();
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
@@ -3069,7 +3068,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				// nimp
 			} return false;
 			case R.id.drawer_layout:{
-				showIconCustomizator();
+				showBottombarsTweaker();
 			}  return true;
 		}
 		return false;
