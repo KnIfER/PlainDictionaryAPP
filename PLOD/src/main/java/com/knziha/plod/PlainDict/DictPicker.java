@@ -140,7 +140,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			//if(itemAnimator instanceof SimpleItemAnimator)
 			//	((SimpleItemAnimator)itemAnimator).setSupportsChangeAnimations(false);
 			mRecyclerView.setItemAnimator(null);
-			bottomDlg = PDICMainAppOptions.pickDictScrMid();
+			bottomDlg = wordPopup==null?PDICMainAppOptions.pickDictOnBottom():PDICMainAppOptions.pickDictOnBottomTapSch();
 			
 			mRecyclerView.setMinimumWidth(a.dm.widthPixels*2/3);
 			mRecyclerView.setVerticalScrollBarEnabled(true);
@@ -334,7 +334,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			}
 			boolean show=dialogContent.getParent()==splitView;
 			if(show) {
-				ViewUtils.removeView(dialogLayout);
+				ViewUtils.removeView(dialogContent);
 				ViewUtils.setVisible(splitter, false);
 			} else {
 				reform(false, 0);
@@ -526,7 +526,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	
 	@Override
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
-		PDICMainAppOptions.pickDictScrMid(bottomDlg = !bottomDlg);
+		if(wordPopup==null) PDICMainAppOptions.pickDictOnBottom(bottomDlg = !bottomDlg);
+		else PDICMainAppOptions.pickDictOnBottomTapSch(bottomDlg = !bottomDlg);
 		dismissImmediate();
 		reform(false, 0);
 		if(!isVisible())

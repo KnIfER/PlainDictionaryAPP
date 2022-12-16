@@ -170,6 +170,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		this.src = src;
 		hDataSinglePage.webviewHolder = webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
+		a.yaoji.add(new WeakReference<>(this));
 		if(WHP.getScrollViewListener()==null) {
 			/** 这里绑定自己到底栏，以获取上下文 see{@link MainActivityUIBase#showScrollSet} */
 			contentUIData.bottombar2.setTag(this);
@@ -1366,6 +1367,20 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					((WebViewmy) child).evaluateJavascript(exp,null);
 				}
 			}
+		}
+	}
+	
+	public void unload() {
+		webSingleholder.removeAllViews();
+		webholder.removeAllViews();
+		if (mMergedFrame != null) {
+			mMergedFrame.shutDown();
+		}
+		if (dictView != null) {
+			dictView.shutDown();
+		}
+		if (scrollFocus != null) {
+			scrollFocus.shutDown();
 		}
 	}
 	

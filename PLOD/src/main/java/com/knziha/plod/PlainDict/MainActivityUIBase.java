@@ -418,6 +418,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ViewGroup mainF;
 	
 	public ContentviewBinding contentUIData;
+	public ArrayList<WeakReference<WebViewListHandler>> yaoji = new ArrayList<>(8);
 	public WebViewListHandler weblistHandler;
 	/** 点击设置按钮、设置时更新这个变量。 */
 	public WebViewListHandler weblist;
@@ -3395,17 +3396,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						mdTmp.unload();
 					}
 				}
-				mdict_cache.clear();
-				if(webSingleholder!=null) {
-					webSingleholder.removeAllViews();
-					weblistHandler.removeAllViews();
+				for (WeakReference<WebViewListHandler> zhi : yaoji) {
+					WebViewListHandler hulu = zhi.get();
+					if (hulu != null) {
+						hulu.unload();
+					}
 				}
-				
+				mdict_cache.clear();
+				yaoji.clear();
 				if(ucc!=null) {
 					ucc.invoker=null;
 					ucc=null;
 				}
-				if(ttsHub.tts !=null){
+				if(ttsHub.tts != null){
 					ttsHub.tts.stop();
 					ttsHub.tts.shutdown();
 				}

@@ -3961,7 +3961,7 @@ function debug(e){console.log(e)};
 	}
 
 	public void unload() {
-		//CMN.Log("unload::", this);
+		//CMN.debug("unload::", this);
 		if (a!=null && isDirty)
 			saveStates(a, a.prepareHistoryCon());
 		if(mWebView!=null) {

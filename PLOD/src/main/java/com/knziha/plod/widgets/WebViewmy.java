@@ -422,20 +422,22 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 	public void shutDown() {
 		bPageStarted = false;
-		setWebChromeClient(null);
-		setWebViewClient(null);
-		//todo 空指针
-		bPageStarted = false;
-		setOnScrollChangedListener(null);
-		setOnTouchListener(null);
-		setOnLongClickListener(null);
-		removeAllViews();
-		if(getParent() instanceof ViewGroup)
-			((ViewGroup) getParent()).removeView(this);
-		stopLoading();
-		getSettings().setJavaScriptEnabled(false);
-		clearHistory();
-		destroy();
+		if (wvclient!=null) {
+			setWebChromeClient(null);
+			setWebViewClient(null);
+			//todo 空指针
+			bPageStarted = false;
+			//setOnScrollChangedListener(null);
+			//setOnTouchListener(null);
+			//setOnLongClickListener(null);
+			removeAllViews();
+			if(getParent() instanceof ViewGroup)
+				((ViewGroup) getParent()).removeView(this);
+			stopLoading();
+			getSettings().setJavaScriptEnabled(false);
+			//clearHistory();
+			destroy();
+		}
 	}
 	
 	public void SafeScrollTo(int x, int y) {
