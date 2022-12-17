@@ -291,8 +291,8 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
-import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_FAVORITE;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServer.hasRemoteDebugServer;
 import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
@@ -562,7 +562,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	WeakReference<AlertDialog> ChooseFavorDialog = ViewUtils.DummyRef;
 	WeakReference<DBroswer> DBrowserHolder = ViewUtils.DummyRef;
 	DBroswer DBrowser;
-	DeckListAdapter.DeckListData[] DBrowserDatas = new DeckListAdapter.DeckListData[2];
+	DBListAdapter.DeckListData[] DBrowserDatas = new DBListAdapter.DeckListData[2];
 	
 	ViewGroup PhotoPagerHolder;
 	ViewPager PhotoPager;
@@ -3423,7 +3423,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(hI!=null)
 						hI.clear();
 				}
-				for(DeckListAdapter.DeckListData dI: DBrowserDatas){
+				for(DBListAdapter.DeckListData dI: DBrowserDatas){
 					if(dI!=null) dI.close();
 				}
 				AgentApplication.activities[thisActType.ordinal()].clear();
@@ -6267,9 +6267,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bNeedUpdate = true;
 		}
 		DBrowserHolder.clear();
-		for(DeckListAdapter.DeckListData dI: DBrowserDatas){
+		for(DBListAdapter.DeckListData dI: DBrowserDatas){
 			if(dI!=null) dI.close();
-			DBrowserDatas = new DeckListAdapter.DeckListData[2];
+			DBrowserDatas = new DBListAdapter.DeckListData[2];
 		}
 		dbCon = prepareHistoryCon();
 		//if(bNeedUpdate)

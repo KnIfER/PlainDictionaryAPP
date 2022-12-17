@@ -293,11 +293,13 @@ if (!VersionUtils.AnnotOff) {
 			if (!columnExists(db, TABLE_FAVORITE_v2, "hid")) {
 				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN hid INTEGER DEFAULT 0 NOT NULL");
 			}
+			db.execSQL("DROP INDEX if exists favorite_folder_index");
+			db.execSQL("DROP INDEX if exists favorite_time_index");
 			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex, folder)"); // query view
 			//db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
-			db.execSQL("CREATE INDEX if not exists favorite_folder_index ON favorite (folder, last_visit_time)"); // folder view
+			db.execSQL("CREATE INDEX if not exists favorite_folder_index1 ON favorite (folder, level, last_visit_time, id)"); // folder view
 			//db.execSQL("CREATE INDEX if not exists favorite_filter_index ON favorite (folder, visit_count, level,last_visit_time)"); // filter view
-			db.execSQL("CREATE INDEX if not exists favorite_time_index ON favorite (last_visit_time)"); // all view
+			db.execSQL("CREATE INDEX if not exists favorite_time_index1 ON favorite (level, last_visit_time, id)"); // all view
 			
 			
 			// TABLE_HISTORY_v2 记录历史
@@ -323,10 +325,12 @@ if (!VersionUtils.AnnotOff) {
 				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN ivk INTEGER DEFAULT 0 NOT NULL");
 			}
 			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex, ivk)"); // query view
-			db.execSQL("DROP INDEX if exists history_time_index"); // main view
-			db.execSQL("CREATE INDEX if not exists history_time_index_1 ON history (last_visit_time, visit_count, src)"); // main view
+			db.execSQL("DROP INDEX if exists history_time_index");
+			db.execSQL("DROP INDEX if exists history_time_index_1");
+			db.execSQL("DROP INDEX if exists history_visit_index");
+			db.execSQL("CREATE INDEX if not exists history_time_index2 ON history (last_visit_time, id, visit_count, src)"); // main view
 			try {
-				db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
+				db.execSQL("CREATE INDEX if not exists history_visit_index1 ON history (visit_count, last_visit_time, id) where visit_count>0"); // visit_count view
 			} catch (SQLException e) {
 				CMN.debug(e);
 			}

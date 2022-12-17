@@ -37,7 +37,7 @@
 			android:layout_width="1dp"
 			android:layout_height="match_parent"
 			android:layout_toRightOf="@+id/sideBarp"
-			android:background="#2b43c1"
+			android:background="#888888"
 			/>
 
 		<ScrollView
@@ -271,6 +271,7 @@
 			android:textColor="@color/colorHeaderBlue"
 			android:layout_alignParentBottom="true"
 			android:layout_centerHorizontal="true"
+			android:visibility="gone"
 			/>
 
 		<FrameLayout

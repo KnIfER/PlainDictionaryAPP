@@ -5,8 +5,7 @@ import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
-import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_FAVORITE;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
 import android.animation.Animator;
@@ -52,11 +51,9 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.ColorUtils;
 
-import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
-import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;

@@ -63,7 +63,7 @@ public class BookmarkAdapter extends BaseAdapter{
 		public int position;
 		
 		@Override
-		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long sortNum) {
 			position = (int) cursor.getLong(2);
 			entryName = cursor.getString(3);
 			if (rowID!=-1) {

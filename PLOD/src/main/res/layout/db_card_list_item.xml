@@ -9,11 +9,12 @@
 		android:clickable="true"
 		android:descendantFocusability="beforeDescendants"
 		tools:background="#fff"
+		tools:layout_height="100dp"
 		>
 		<ImageView
 			android:id="@+id/icon"
-			android:layout_width="35dp"
-			android:layout_height="35dp"
+			android:layout_width="31dp"
+			android:layout_height="31dp"
 			android:layout_centerVertical="true"
 			android:padding="2dp"
 			tools:src="@drawable/ic_history_black_24dp"
@@ -24,7 +25,8 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
 			android:background="@drawable/listviewselector0"
-			android:paddingStart="35dp"
+			android:paddingStart="33dp"
+			android:paddingEnd="5dp"
 			>
 			<com.knziha.ankislicer.customviews.WahahaTextView
 				android:id="@android:id/text1"
@@ -35,7 +37,7 @@
 				android:layout_marginTop="5dp"
 				android:layout_marginBottom="2dp"
 				android:textColor="#000"
-				android:textSize="@dimen/lvtextsize"
+				android:textSize="19sp"
 				android:focusable="true"
 				android:textIsSelectable="true"
 				/>
@@ -46,14 +48,15 @@
 				android:layout_marginTop="2dp"
 				android:paddingBottom ="5dp"
 				android:textSize="@dimen/lvsubtextsize"
-				android:textColor="#2b4391"
+				android:textColor="#888888"
 				android:layout_below="@+id/text"
 				/>
 		</LinearLayout>
 		<ImageView
 			android:layout_width="match_parent"
 			android:layout_height="1dp"
-			android:background="#2b4391"
+			android:layout_alignParentBottom="true"
+			android:background="#45888888"
 			/>
 
 		<ImageView

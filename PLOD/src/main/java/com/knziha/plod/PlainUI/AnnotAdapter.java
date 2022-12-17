@@ -115,21 +115,21 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	
 	public static class AnnotationMultiSortReader extends AnnotationReader implements CursorReaderMultiSortNum{
 		@Override
-		public void ReadCursor(Cursor cursor, long rowID, long[] sortNums) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long[] sortNums) {
 			multiSorts = sortNums.length - 1;
 			sort_numbers = sortNums;
 			//sort_numbers = new long[sortNums.length];
 			//System.arraycopy(sortNums, 0, sort_numbers, 0, sortNums.length);
-			ReadCursor(cursor, rowID, sortNums[0]);
+			ReadCursor(adapter, cursor, rowID, sortNums[0]);
 		}
 		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationMultiSortReader();
 	}
 	
 	
 	public static class AnnotationRangeReader extends AnnotationReader{
-		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long sortNum) {
 			multiSorts = -2;
-			super.ReadCursor(cursor, rowID, sortNum);
+			super.ReadCursor(adapter, cursor, rowID, sortNum);
 		}
 		static ConstructorInterface<AnnotationReader> readerMaker = length -> new AnnotationRangeReader();
 	}
@@ -150,7 +150,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		int multiSorts = 0;
 		
 		@Override
-		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long sortNum) {
 			if (rowID!=-1) {
 				row_id = rowID;
 				sort_number = sortNum;

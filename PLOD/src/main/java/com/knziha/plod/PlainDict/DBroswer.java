@@ -5,15 +5,16 @@ import android.app.Dialog;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
+import android.icu.util.Calendar;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
-import android.util.SparseLongArray;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -59,17 +60,22 @@ import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
-import com.knziha.plod.plaindict.databinding.DeckBrowserBinding;
+import com.knziha.plod.plaindict.databinding.DbBrowserBinding;
 import com.knziha.plod.settings.History;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SimpleDialog;
+import com.knziha.plod.widgets.TitleItemDecoration;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,7 +89,7 @@ import static com.knziha.plod.db.LexicalDBHelper.TABLE_HISTORY_v2;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
-import static com.knziha.plod.plaindict.DeckListAdapter.*;
+import static com.knziha.plod.plaindict.DBListAdapter.*;
 
 //  todo 分表显示
 @SuppressLint("SetTextI18n")
@@ -95,10 +101,11 @@ public class DBroswer extends DialogFragment implements
 	protected boolean initialized;
 	private boolean isDarkStamp;
 	private boolean bIsCombinedSearch;
-	DeckBrowserBinding UIData;
+	DbBrowserBinding UIData;
 	WebViewListHandler weblistHandler;
 	ContentviewBinding contentUIData;
 	PeruseView peruseView;
+	TitleItemDecoration decoration;
 	
 	/** type[act|ui|db], long[]{pos, view offset} */
 	public final static LongSparseArray<long[]> savedPositions = new LongSparseArray();
@@ -107,10 +114,11 @@ public class DBroswer extends DialogFragment implements
 	int lastDragPos=-1;
 	//long favFolderId=-1;
 	
-	DeckListAdapter mAdapter;
+	DBListAdapter mAdapter;
 	ImageView pageAsyncLoader;
 	Date date = new Date();
-
+	SimpleDateFormat dateFormat = new SimpleDateFormat("MM月dd日");
+	
 	protected PDICMainAppOptions opt;
 
 	public String currentDisplaying = "";
@@ -126,6 +134,19 @@ public class DBroswer extends DialogFragment implements
 
 	InputMethodManager imm;
 	private int MainAppBackground;
+//	private static long _24hMillis;
+//	static {
+//		try {
+//			Calendar calender = Calendar.getInstance();
+//			calender.set(0, 0, 0);
+//			long day1 = calender.getTimeInMillis();
+//			calender.set(0, 0, 1);
+//			_24hMillis = Math.abs(day1 - calender.getTimeInMillis());
+//		} catch (Exception e) {
+//			_24hMillis = 24*60*60*1000;
+//			CMN.debug(e);
+//		}
+//	}
 	
 	/** see {@link #toggleFavor}*/
 	public int try_goBack(){
@@ -236,7 +257,7 @@ public class DBroswer extends DialogFragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		if(UIData==null) {
-			UIData = DeckBrowserBinding.inflate(inflater, container, false);
+			UIData = DbBrowserBinding.inflate(inflater, container, false);
 			//CMN.Log("onCreateView!!!");
 			lv = UIData.mainList;
 			UIData.fastScroller.setRecyclerView(lv);
@@ -287,7 +308,6 @@ public class DBroswer extends DialogFragment implements
 	boolean newStart;
 	long last_listHolder_tt;
 
-	int lastFirst = 0;
 	LexicalDBHelper mLexiDB;
 	
 	@Override
@@ -304,10 +324,15 @@ public class DBroswer extends DialogFragment implements
 				ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) view.getTag();
 				HistoryDatabaseReader reader = (HistoryDatabaseReader) holder.tag;
 				// CMN.debug("saveListPosition::", holder.getLayoutPosition());
+				long view_savid = getFragmentId();
 				if (holder.getLayoutPosition() > 0) {
-					savedPositions.put(getFragmentId(), new long[]{reader.sort_number, view.getTop(), holder.getLayoutPosition()});
+					long[] sortBy = new long[reader.sort_numbers.length+2];
+					System.arraycopy(reader.sort_numbers, 0, sortBy, 0, sortBy.length-2);
+					sortBy[sortBy.length-2] = view.getTop();
+					sortBy[sortBy.length-1] = holder.getLayoutPosition();
+					savedPositions.put(view_savid, sortBy);
 				} else {
-					savedPositions.remove(getFragmentId());
+					savedPositions.remove(view_savid);
 				}
 				CMN.debug("savedPositions::save::", getFragmentId()+" "+reader.record+" "+new Date(reader.sort_number).toLocaleString());
 			}
@@ -364,7 +389,7 @@ public class DBroswer extends DialogFragment implements
 		super.onActivityCreated(savedInstanceState);
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(!initialized) {
-			DeckListAdapter adapter = new DeckListAdapter(a, this);
+			DBListAdapter adapter = new DBListAdapter(a, this);
 			lv.setAdapter(adapter);
 			RecyclerView.RecycledViewPool pool = lv.getRecycledViewPool();
 			pool.setMaxRecycledViews(0,10);
@@ -379,6 +404,46 @@ public class DBroswer extends DialogFragment implements
 			opt = a.opt;
 			imm = a.imm;
 			initialized = true;
+			
+			decoration = new TitleItemDecoration(a, new TitleItemDecoration.TitleDecorationCallback() {
+				@Override
+				public boolean isSameGroup(int prvPos, int thPos) {
+					//return prvPos/5==thPos/5;
+					
+					try {
+						HistoryDatabaseReader reader1 = mAdapter.data.dataAdapter.getReaderAt(prvPos);
+						HistoryDatabaseReader reader2 = mAdapter.data.dataAdapter.getReaderAt(thPos);
+						Instant instant1 = Instant.EPOCH.plusMillis(reader1.sort_number);
+						Instant instant2 = Instant.EPOCH.plusMillis(reader2.sort_number);
+						
+						LocalDateTime t1 = LocalDateTime.ofInstant(instant1, ZoneId.systemDefault());
+						LocalDateTime t2 = LocalDateTime.ofInstant(instant2, ZoneId.systemDefault());
+						
+						if (t1.getYear() == t2.getYear()) {
+							return t1.getDayOfYear() == t2.getDayOfYear();
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+					return true;
+				}
+				@Override
+				public String getGroupName(int position) {
+					//return "group"+position;
+					try {
+						HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(position);
+						return dateFormat.format(new Date(reader.sort_number));
+					} catch (Exception e) {
+						CMN.debug(e);
+						return "error "+e;
+					}
+				}
+			}, isDarkStamp?0xFFc17d33:Color.RED, a.AppWhite);
+			lv.addItemDecoration(decoration);
+			decoration.bPinTitle = true;
+			//decoration.textBackground = a.MainAppBackground;
+			decoration.textCorner = GlobalOptions.density * 3;
+			decoration.paddingLeft = GlobalOptions.density*30;
 			
 			if(pendingType!=0) {
 				setType(a, pendingType, true);
@@ -460,8 +525,8 @@ public class DBroswer extends DialogFragment implements
 				mAdapter.notifyDataSetChanged();
 				long[] pos = savedPositions.get(getFragmentId());
 				//CMN.debug("getFragmentId()::", getFragmentId(), pos);
-				if (pos != null) {
-					((LinearLayoutManager)lv.getLayoutManager()).scrollToPositionWithOffset((int)pos[2], (int)pos[1]);
+				if (pos != null && pos.length>3) {
+					((LinearLayoutManager)lv.getLayoutManager()).scrollToPositionWithOffset((int)pos[pos.length-1], (int)pos[pos.length-2]);
 				}
 				String foldername;
 				if(type==DB_FAVORITE) {
@@ -510,6 +575,8 @@ public class DBroswer extends DialogFragment implements
 			}
 			if(initialized) {
 				dataSetChanged();
+				decoration.bgPaint.setColor(AppWhite);
+				decoration.textPaint.setColor(isDarkStamp?0xFFc17d33:Color.RED);
 			}
 		}
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
@@ -913,7 +980,7 @@ public class DBroswer extends DialogFragment implements
 					lm.scrollToPositionWithOffset(pos,offset);
 				break;
 			case R.id.browser_widget1:
-				if (a.opt.debuggingDBrowser() > 1) {
+				if (a.opt.debuggingDBrowser() > 0) {
 					TestHelper.PagingVerdict(a, mAdapter.data.dataAdapter, getFragmentId());
 				} else {
 					UIData.toolbar.getNavigationBtn().performClick();
@@ -1216,7 +1283,7 @@ public class DBroswer extends DialogFragment implements
 		}
 		int lastClickedPosBefore = position - adelta;
 		ScrollerRecord pagerec = null;
-		DeckListAdapter.HistoryDatabaseReader reader = mAdapter.getReaderAt(currentPos = position);
+		DBListAdapter.HistoryDatabaseReader reader = mAdapter.getReaderAt(currentPos = position);
 		long rowId = currentRowId = reader.row_id;
 		currentDisplaying = reader.record;
 		
@@ -1828,13 +1895,13 @@ public class DBroswer extends DialogFragment implements
 				}
 			} break;
 			case R.id.tapSch: {
-				SelectionMode = SelectionMode_fetchWord;
+				opt.setDBMode(SelectionMode = SelectionMode_fetchWord);
 				PDICMainAppOptions.dbFetchWord(2);
 				refreshFetchWordUI();
 				msg = "取词模式 - " + "点击翻译";
 			} break;
 			case R.id.fetchWord: {
-				SelectionMode = SelectionMode_fetchWord;
+				opt.setDBMode(SelectionMode = SelectionMode_fetchWord);
 				PDICMainAppOptions.dbFetchWord(1);
 				refreshFetchWordUI();
 				msg = "取词模式 - " + "直接取词";

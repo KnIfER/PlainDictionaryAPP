@@ -75,10 +75,10 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 		public long[] sort_numbers; // fav, time, id
 		String content;
 		@Override
-		public void ReadCursor(Cursor cursor, long l, long l1) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long l, long l1) {
 		}
 		@Override
-		public void ReadCursor(Cursor cursor, long rowID, long[] sortNums) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long[] sortNums) {
 			row_id = rowID;
 			sort_numbers = sortNums;
 			content = cursor.getString(4);

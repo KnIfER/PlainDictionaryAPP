@@ -45,7 +45,7 @@ public class AnnotRangeAdapter<T extends CursorReader> implements PagingAdapterI
 					cursor = database.rawQuery("select "+AnnotAdapter.data_fields+" from " + LexicalDBHelper.TABLE_BOOK_ANNOT_v2 + " where id=? limit 1", new String[]{"" + id});
 					if (cursor.moveToNext()) {
 						ret = readerMaker.newInstance(0);
-						ret.ReadCursor(cursor, id, 0);
+						ret.ReadCursor(this, cursor, id, 0);
 						readers.put(id, ret);
 					}
 				} catch (Exception e) {

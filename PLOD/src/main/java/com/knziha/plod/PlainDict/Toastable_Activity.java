@@ -164,6 +164,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
 		   GlobalOptions.realHeight = Math.max(dm.widthPixels, dm.heightPixels);
 		   GlobalOptions.density = dm.density;
+		   //GlobalOptions.density = mResource.getDisplayMetrics().scaledDensity;
 		   //GlobalOptions.densityDpi = dm.densityDpi;
 		   opt.getInDarkMode();
 		   if(Build.VERSION.SDK_INT>=29 && !PDICMainAppOptions.systemDarked()){
@@ -248,6 +249,9 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected void onResume() {
 		try {
 			super.onResume();
+//			if (mResource!=null) {
+//				GlobalOptions.density = mResource.getDisplayMetrics().scaledDensity;
+//			}
 		} catch (Exception ignored) { /*无敌*/ }
 	}
 

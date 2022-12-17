@@ -1082,6 +1082,11 @@ public class ViewUtils extends VU {
 		return null;
 	}
 	
+	public static RecyclerView.ViewHolder getFirstViewHolder(RecyclerView recyclerView) {
+		View child = recyclerView.getChildAt(0);
+		return child==null?null:recyclerView.getChildViewHolder(child);
+	}
+	
 	public static View getParentByClass(View v, Class clazz) {
 		ViewParent vp;
 		while(v!=null) {

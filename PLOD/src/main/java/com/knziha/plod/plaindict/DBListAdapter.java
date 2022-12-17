@@ -29,10 +29,12 @@ import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorAdapter;
 import com.knziha.paging.CursorReader;
+import com.knziha.paging.CursorReaderMultiSortNum;
+import com.knziha.paging.MultiFieldPagingCursorAdapter;
 import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.PlainUI.AppInfoDBBean;
-import com.knziha.plod.plaindict.databinding.CardListItemBinding;
+import com.knziha.plod.plaindict.databinding.DbCardListItemBinding;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -43,7 +45,7 @@ import java.util.Date;
 //for main list
 //参见：live down
 //参见：P.L.O.D -> float search view -> HomeAdapter  main_list_Adapter
-class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<CardListItemBinding>> implements IDragSelectAdapter, PagingCursorAdapter.OnLoadListener {
+class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCardListItemBinding>> implements IDragSelectAdapter, PagingCursorAdapter.OnLoadListener {
 	@NonNull WeakReference<DBroswer> browserHolder;
 	public final static int DB_FAVORITE = 1;
 	public final static int DB_HISTORY = 2;
@@ -51,7 +53,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	final static int SelectionMode_peruseview=1;
 	final static int SelectionMode_fetchWord =2;
 	final static int SelectionMode_select=3;
-	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new DeckListAdapter.HistoryDatabaseReader();
+	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new DBListAdapter.HistoryDatabaseReader();
 	private RequestBuilder<Drawable> iconLoader;
 	
 	public final WahahaTextView.ViewRootHolder viewRootHolder = new WahahaTextView.ViewRootHolder();
@@ -59,15 +61,18 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	public interface OnItemLongClickListener{
 		boolean onItemLongClick(View view,int position);
 	}
-	public static class HistoryDatabaseReader implements CursorReader {
+	public static class HistoryDatabaseReader implements CursorReader, CursorReaderMultiSortNum {
 		long row_id;
 		long sort_number;
+		long[] sort_numbers;
 		String books;
 		String record;
 		String time_text;
 		long ivk;
+		int fav;
+		@Deprecated
 		@Override
-		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long sortNum) {
 			record = cursor.getString(2);
 			books = cursor.getString(3);
 			ivk = cursor.getLong(4);
@@ -80,12 +85,28 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 				sort_number = cursor.getLong(1);
 			}
 		}
-		
 		@Override
 		public String toString() {
 			return "WebAnnotationCursorReader{" +
 					"lex='" + record + '\'' +
 					'}';
+		}
+		@Override
+		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long[] sortNums) {
+			boolean dbFav = ((MultiFieldPagingCursorAdapter) adapter).id != -1;
+			int base = sortNums.length + 1;
+			record = cursor.getString(base+0);
+			books = cursor.getString(base+1);
+			ivk = cursor.getLong(base+2);
+			sort_numbers = sortNums;
+			row_id = rowID;
+			//CMN.Log("ReadCursor::ivk::", record, ivk); null return zero
+			if (dbFav) {
+				sort_number = sortNums[1];
+				fav = (int) sortNums[0];
+			} else {
+				sort_number = sortNums[0];
+			}
 		}
 	}
 	
@@ -116,7 +137,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	Date day_;
 	
 	//构造
-	DeckListAdapter(MainActivityUIBase a, DBroswer broswer){
+	DBListAdapter(MainActivityUIBase a, DBroswer broswer){
 		date = new SimpleDateFormat("yyyy-MM-dd/HH:mm:ss");
 		day_ = new Date();
 		this.a = a;
@@ -176,9 +197,9 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	//Create
 	@NonNull
 	@Override
-	public ViewUtils.ViewDataHolder<CardListItemBinding> onCreateViewHolder(ViewGroup parent, int viewType)
+	public ViewUtils.ViewDataHolder<DbCardListItemBinding> onCreateViewHolder(ViewGroup parent, int viewType)
 	{
-		ViewUtils.ViewDataHolder<CardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(CardListItemBinding.inflate(a.getLayoutInflater(), parent, false));
+		ViewUtils.ViewDataHolder<DbCardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(DbCardListItemBinding.inflate(a.getLayoutInflater(), parent, false));
 		//holder.setIsRecyclable(false);
 		//if Recyclable, then setText in onBindViewHolder makes textviews unSelectable.
 		//details on this bug:
@@ -204,9 +225,9 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	}
 	
 	@Override
-	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, int position)
+	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<DbCardListItemBinding> holder, int position)
 	{
-		CardListItemBinding viewdata = holder.data;
+		DbCardListItemBinding viewdata = holder.data;
 		//if(true) return;
 		String text;long time, ivk=-1;
 		
@@ -259,6 +280,11 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			viewdata.text1.setText(position+" ::"+text.trim());
 			if(a.opt.debuggingDBrowser()>2) CMN.debug("onBindViewHolder::", position, text.trim(), ivk);
 		}
+		
+		
+		((ViewGroup.MarginLayoutParams) viewdata.text1.getLayoutParams()).bottomMargin = (int) (GlobalOptions.density * 10);
+		((ViewGroup.MarginLayoutParams) viewdata.text1.getLayoutParams()).topMargin = (int) (GlobalOptions.density * 9);
+		ViewUtils.setVisible(viewdata.subtext1, false);
 		
 		int textColor=a.AppBlack, backgroundColor=0;
 		if(holder.colorStates[0]!=textColor){
@@ -363,9 +389,10 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
 		data.dataAdapter.close();
+		boolean dbFav = browser.type==DB_FAVORITE;
 		if (bSingleThreadLoadAll) {
 			Cursor cursor;
-			if (browser.type==DB_FAVORITE) {
+			if (dbFav) {
 				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{folderId+""});
 			} else {
 				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
@@ -377,41 +404,37 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			if (browser.pageAsyncLoader==null) {
 				browser.pageAsyncLoader = new ImageView(a);
 			}
-			PagingCursorAdapter<HistoryDatabaseReader> dataAdapter = new PagingCursorAdapter<>(db
+			MultiFieldPagingCursorAdapter<HistoryDatabaseReader> dataAdapter = new MultiFieldPagingCursorAdapter<>(db
 					//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
 					, HistoryDatabaseReaderConstructor
 					, HistoryDatabaseReader[]::new);
 			data.dataAdapter = displaying = dataAdapter;
+			String[] sortBy;
+			if (dbFav) {
+				sortBy = new String[]{"level", FIELD_VISIT_TIME, "id"};
+			} else { // 词典时间
+				sortBy = new String[]{FIELD_VISIT_TIME, "id"};
+			}
+			dataAdapter.id = browser.getFragmentId();
 			dataAdapter.bindTo(browser.lv)
 					.setAsyncLoader(a, browser.pageAsyncLoader)
-					.sortBy(browser.getTableName(), FIELD_VISIT_TIME, true, "lex, books, ivk");
-			if (browser.getFragmentType()==DB_FAVORITE) {
+					.sortBy(browser.getTableName(), sortBy, true, "lex, books, ivk");
+			if (dbFav) {
 				dataAdapter.where("folder=?", new String[]{folderId+""});
 			}
 			long[] pos = DBroswer.savedPositions.get(browser.getFragmentId());
 			long lastTm=0, offset=0;
-			if (pos!=null) {
-				lastTm = pos[0];
-				offset = pos[1];
+			if(pos!=null && pos.length < sortBy.length+1) {
+				pos = null;
 			}
-			dataAdapter.startPaging(lastTm, offset, 20, 15, this);
+			if (pos!=null) {
+				offset = pos[sortBy.length];
+				lastTm = pos[dbFav?1:0];
+			}
+			//browser.lv.removeItemDecoration(browser.decoration);
+			dataAdapter.startPaging(pos, offset, 20, 15, this);
 			CMN.debug("rebuildCursor::savedPositions::read::", browser.getFragmentId()+" "+new Date(lastTm).toLocaleString());
 		}
 		//CMN.Log("mAdapter.rebuildCursor!!!");
-		//todo 记忆 lastFirst
-//		int offset = 0;
-//		lastFirst = 0;
-//		if(true)
-//		{
-//			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
-//			if(lcibdfn!=null)
-//			{
-//				lastFirst = Math.min(lcibdfn.key, dataAdapter.getCount());
-//				offset =  lcibdfn.value;
-//			}
-//		}
-//		notifyDataSetChanged();
-//		lm.scrollToPositionWithOffset(lastFirst,offset);
-//		lm.setInitialPrefetchItemCount(10);
 	}
 }

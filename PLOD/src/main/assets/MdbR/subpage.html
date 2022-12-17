@@ -20,9 +20,7 @@
 	}
 </style>
 <style id='_pd_mh'>
-	html, body {
-		min-height: unset!important;
-	}
+	
 </style>
 
 <script>
@@ -98,8 +96,8 @@ function wrappedOnLoadFunc(){
 		if(_app && inf.img) {
 			pw.LoadIMG(inf);
 		}
+		ge('_pd_mh').innerText ='html, body {min-height: unset!important;}';
 	} else {
-		ge('_pd_mh').innerText='';
 		if(_app){
 			w.shzh=_app.rcsp(sid.get());
 			var lnks = document.links;

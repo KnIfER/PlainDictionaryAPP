@@ -99,6 +99,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
 		// Checks the orientation of the screen
 		GlobalOptions.density = dm.density;
+		GlobalOptions.scaledDensity = dm.scaledDensity;
 		if(settingsPanel!=null)
 			root.postDelayed(postOnConfigurationChanged, 200);
 	}
