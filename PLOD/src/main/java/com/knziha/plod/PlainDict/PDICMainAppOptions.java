@@ -2879,8 +2879,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=49, shift=1) public static boolean dictManagerTianJinXuan() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=49, shift=1) public static void dictManagerTianJinXuan(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=48, shift=1) public static boolean pickDictOnBottomTapSch() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=48, shift=1) public static void pickDictOnBottomTapSch(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static boolean pickDictOnBottomTapSch() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static void pickDictOnBottomTapSch(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=51) public static boolean dbLongPressSelect(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=51) public static void dbLongPressSelect(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////

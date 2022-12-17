@@ -18,5 +18,7 @@
 
 	<!--4--><item android:id="@+id/icon" android:icon="@drawable/ic_search_24k" android:title="显示应用图标" app:showAsAction="never" android:checkable="true" />
 
+	<!--5--><item android:id="@+id/longPressSelect" android:icon="@drawable/ic_search_24k" android:title="长按直接多选" app:showAsAction="never" android:checkable="true" />
+
 
 </menu>

@@ -248,5 +248,9 @@
 	<string name="addPasteHere">添加剪贴板内容至此</string>
 	<string name="addPastes">收入剪贴板</string>
 	<string name="dingzhi_gongju">定制底部工具栏</string>
+	<string name="start_longpress_sel">开始多选拖动</string>
+	<string name="view">查看</string>
+	<string name="elevate_fav">提升收藏星级</string>
+	<string name="decrease_fav">降低收藏星级</string>
 	>
 </resources>

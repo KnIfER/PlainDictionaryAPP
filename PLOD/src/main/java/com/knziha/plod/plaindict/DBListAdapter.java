@@ -58,9 +58,6 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 	
 	public final WahahaTextView.ViewRootHolder viewRootHolder = new WahahaTextView.ViewRootHolder();
 	
-	public interface OnItemLongClickListener{
-		boolean onItemLongClick(View view,int position);
-	}
 	public static class HistoryDatabaseReader implements CursorReader, CursorReaderMultiSortNum {
 		long row_id;
 		long sort_number;
@@ -173,27 +170,24 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 		return displaying.getCount();
 	}
 	
-	private RecyclerViewmy.OnItemClickListener mOnItemClickListener;
-	private OnItemLongClickListener mOnItemLongClickListener;
+	private View.OnClickListener clickListener = v -> {
+		DBroswer browser = browserHolder.get();
+		if (browser!=null) {
+			browser.onItemClick(v, -1);
+		}
+	};
+	
 	private OnLongClickListener longClicker = new OnLongClickListener() {
 		@Override
 		public boolean onLongClick(View v) {
-			//return mOnItemLongClickListener.onItemLongClick(v, (Integer) v.getTag(R.id.position));
-			return true;
+			DBroswer browser = browserHolder.get();
+			if (browser!=null) {
+				return browser.onItemLongClick(v);
+			}
+			return false;
 		}
 	};
-
-	//点击
-	public void setOnItemClickListener(RecyclerViewmy.OnItemClickListener mOnItemClickListener)
-	{
-		this.mOnItemClickListener = mOnItemClickListener;
-	}
-	//长按
-	public void setOnItemLongClickListener(OnItemLongClickListener mOnItemLongClickListener)
-	{
-		this.mOnItemLongClickListener = mOnItemLongClickListener;
-	}
-
+	
 	//Create
 	@NonNull
 	@Override
@@ -318,10 +312,10 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 //			viewdata.text1.setBackground(null);
 
 		if(browser.SelectionMode==SelectionMode_select) {
-			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, 0));
+			viewdata.p.setOnClickListener(clickListener);
 			viewdata.p.setVisibility(View.VISIBLE);
 		} else {
-			holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, 0));
+			holder.itemView.setOnClickListener(clickListener);
 			viewdata.p.setVisibility(View.GONE);
 		}
 	}

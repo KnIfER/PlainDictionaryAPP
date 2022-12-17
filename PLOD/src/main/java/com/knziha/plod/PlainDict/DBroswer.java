@@ -2,6 +2,7 @@ package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -51,6 +53,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
 import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -61,6 +64,7 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.plaindict.databinding.DbBrowserBinding;
+import com.knziha.plod.plaindict.databinding.DbCardListItemBinding;
 import com.knziha.plod.settings.History;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
@@ -94,7 +98,7 @@ import static com.knziha.plod.plaindict.DBListAdapter.*;
 //  todo 分表显示
 @SuppressLint("SetTextI18n")
 public class DBroswer extends DialogFragment implements
-		View.OnClickListener, OnLongClickListener, RecyclerViewmy.OnItemClickListener, OnItemLongClickListener, Toolbar.OnMenuItemClickListener {
+		View.OnClickListener, OnLongClickListener, Toolbar.OnMenuItemClickListener, PopupMenuHelper.PopupMenuListener {
 	public int pendingDBClickPos=-1;
 	public int type;
 	public int pendingType;
@@ -110,7 +114,7 @@ public class DBroswer extends DialogFragment implements
 	/** type[act|ui|db], long[]{pos, view offset} */
 	public final static LongSparseArray<long[]> savedPositions = new LongSparseArray();
 	
-	RecyclerView lv;
+	DragSelectRecyclerView lv;
 	int lastDragPos=-1;
 	//long favFolderId=-1;
 	
@@ -134,6 +138,8 @@ public class DBroswer extends DialogFragment implements
 
 	InputMethodManager imm;
 	private int MainAppBackground;
+	private int pressedRow;
+	private View pressedView;
 //	private static long _24hMillis;
 //	static {
 //		try {
@@ -396,8 +402,6 @@ public class DBroswer extends DialogFragment implements
 			for(int index =0;index < 10;index++) {
 				pool.putRecycledView(adapter.createViewHolder(lv,0));
 			}
-			adapter.setOnItemClickListener(this);
-			adapter.setOnItemLongClickListener(this);
 			mAdapter = adapter;
 			
 			mLexiDB = a.prepareHistoryCon();
@@ -500,6 +504,8 @@ public class DBroswer extends DialogFragment implements
 			};
 			if(PDICMainAppOptions.dbShowIcon())
 				menu.findItem(R.id.icon).setChecked(true);
+			if(PDICMainAppOptions.dbLongPressSelect())
+				menu.findItem(R.id.longPressSelect).setChecked(true);
 		}
 		else {
 			boolean bNeedInvalidate=false;
@@ -1245,193 +1251,300 @@ public class DBroswer extends DialogFragment implements
 		avoyagerIdx=adelta=0;
 	}
 	
-	@Override
-	public boolean onItemLongClick(View view, int position) {
-		//if(lastDragPos!=-1)((DragSelectRecyclerView)lv).setDragSelectActive(false, lastDragPos);
-		((DragSelectRecyclerView)lv).setDragSelectActive(true, lastDragPos = position);
-		if(SelectionMode!=SelectionMode_select) {
-			int tmpVal = SelectionMode;
-			View target = UIData.tools1;
-			target.setTag(false);
-			target.performClick();
-			lastFallBackTarget=tmpVal;
-			boolean alreadyselected = Selection.contains(mAdapter.getReaderAt(position).row_id);
-			if(!alreadyselected) {
-				view.performClick();
+	private void initLongPressSelect(View view, int position) {
+		try {
+			lv.setDragSelectActive(true, lastDragPos = position);
+			if (SelectionMode != SelectionMode_select) {
+				int tmpVal = SelectionMode;
+				View target = UIData.tools1;
+				target.setTag(false);
+				target.performClick();
+				lastFallBackTarget = tmpVal;
+				boolean alreadyselected = Selection.contains(mAdapter.getReaderAt(position).row_id);
+				if (!alreadyselected) {
+					view.performClick();
+				}
 			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
+	private String getRowText() {
+		ViewUtils.ViewDataHolder<DbCardListItemBinding> vh = (ViewUtils.ViewDataHolder<DbCardListItemBinding>) ViewUtils.getViewHolderInParents(pressedView);
+		if (vh!=null) {
+			return vh.data.text1.getText().toString();
+		}
+		return "sunshine";
+	}
+	
+	private void modifyFavLevel(int i) {
+		saveListPosition();
+		if (mAdapter.data.fid!=-1) {
+			HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(pressedRow);
+			ContentValues contentValues = new ContentValues();
+			int level = reader.fav + i;
+			contentValues.put("level", level);
+			int ret = LexicalDBHelper.getInstance().getDB().update(TABLE_FAVORITE_v2, contentValues, "id=?", new String[]{"" + reader.row_id});
+			CMN.debug("modifyFavLevel", ret);
+			getMainActivity().showT("已"+(i>0?"升":"降")+"为"+level+"颗星");
+			restartPaging(); // 修改星级
+		}
+	}
+	
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		try {
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			switch (v.getId()) {
+				case R.string.start_longpress_sel: {
+					initLongPressSelect(pressedView, pressedRow);
+				}
+				break;
+				case R.string.tapSch:
+					a.popupWord(getRowText(), null, -1, null);
+					break;
+				case R.string.page_ucc:
+					if (isLongClick) {
+						a.copyText(getRowText(), true);
+					} else {
+						a.getVtk().setInvoker(null, null, null, getRowText());
+						a.getVtk().onClick(null);
+					}
+					break;
+				case R.string.copy:
+					a.copyText(getRowText(), true);
+					break;
+				case R.string.peruse_mode:
+					a.JumpToPeruseModeWithWord(getRowText());
+					break;
+				case R.string.view:
+					if (isLongClick) {
+						a.copyText(getRowText(), true);
+					} else {
+						int prem = SelectionMode;
+						SelectionMode = SelectionMode_pan;
+						onItemClick(pressedView, -1);
+						SelectionMode = prem;
+					}
+					break;
+				case R.string.elevate_fav: {
+					modifyFavLevel(1);
+				} break;
+				case R.string.decrease_fav: {
+					modifyFavLevel(-1);
+				} break;
+			}
+			popupMenuHelper.dismiss();
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return true;
+	}
+	
+	// longclick
+	public boolean onItemLongClick(View view) {
+		ViewUtils.ViewDataHolder<DbCardListItemBinding> vh = (ViewUtils.ViewDataHolder<DbCardListItemBinding>) ViewUtils.getViewHolderInParents(view);
+		int position = vh.getLayoutPosition();
+		//CMN.debug("onItemLongClick", "view = [" + view + "], position = [" + position + "]");
+		//if(lastDragPos!=-1)(lv.setDragSelectActive(false, lastDragPos);
+		if (PDICMainAppOptions.dbLongPressSelect()) {
+			initLongPressSelect(view, position);
 			return false;
+		} else if(!lv.getDragSelectActive()) {
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			if (a == null) return false;
+			pressedRow = position;
+			pressedView = view;
+			PopupMenuHelper popupMenu = a.getPopupMenu();
+			popupMenu.initLayout(new int[]{
+					R.string.view
+					, R.string.tapSch
+					, R.string.peruse_mode
+					, R.string.page_ucc
+					, R.string.elevate_fav
+					, R.string.decrease_fav
+					//, R.string.copy
+					, R.string.start_longpress_sel
+			}, this);
+			int[] vLocationOnScreen = new int[2];
+			view.getLocationOnScreen(vLocationOnScreen); //todo 校准弹出位置
+			popupMenu.showAt(view, vLocationOnScreen[0], vLocationOnScreen[1]+view.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
 		}
 		return true;
 	}
 	
 	// click
 	public void onItemClick(View view, int position) {
-		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if (a == null) return;
-		/*if (true) */{ // 点灭选区！
-			View v = mDialog!=null && mDialog.isShowing()?mDialog.getCurrentFocus():a.getCurrentFocus();
-			if (v!=null && v.getClass()==WahahaTextView.class && ((WahahaTextView) v).hasSelection()) {
-				v.clearFocus();
-				return;
-			}
-		}
-		if (view != null) {
-			adelta = 0;
-			//TODO retrieve from sibling views
-			currentDisplaying = String.valueOf(((TextView) view.findViewById(android.R.id.text1)).getText());
-			position = ((ViewUtils.ViewDataHolder) view.getTag()).getLayoutPosition();
-		}
-		int lastClickedPosBefore = position - adelta;
-		ScrollerRecord pagerec = null;
-		DBListAdapter.HistoryDatabaseReader reader = mAdapter.getReaderAt(currentPos = position);
-		long rowId = currentRowId = reader.row_id;
-		currentDisplaying = reader.record;
-		
-		switch (SelectionMode) {
-			case SelectionMode_select: {
-				if (!Selection.remove(rowId)) {
-					Selection.add(rowId);
-				}
-				UIData.counter.setText(Selection.size() + "/" + getItemCount());
-				UIData.counter.setVisibility(View.VISIBLE);
-				mAdapter.notifyItemChanged(position);
-			}
-			break;
-			case SelectionMode_pan: {
-				//toimpl
-				boolean rendered = false;
-				{
-					String texts = reader.books;
-					CMN.Log("复活::", texts);
-					if (texts != null) {
-						String[] textsArr = texts.split(";");
-						if (textsArr.length == 1) {
-							rendered = queryAndShowOneDictionary(a.getBookById(IU.parseLong(textsArr[0], -1)), currentDisplaying, position, false);
-						} else if (textsArr.length > 1) {
-							rendered = queryAndShowMultipleDictionary(textsArr, currentDisplaying, position, false);
-						}
-					}
-					if (rendered) {
-						break;
-					}
-				}
-				if (bIsCombinedSearch) {
-					rendered = queryAndShowMultipleDictionary(null, currentDisplaying, position, true);
-					if (!rendered) {
-						if (a.main.getChildCount() == 1) {
-							show(R.string.searchFailed, currentDisplaying);
-						} else {
-							a.show(R.string.searchFailed, currentDisplaying);
-							ViewGroup anothorHolder = a.webSingleholder;
-							int remcount = anothorHolder.getChildCount() - 1;
-							if (remcount > 0) anothorHolder.removeViews(1, remcount);
-						}
-					}
-				}
-				else {
-					CMN.debug("单独搜索模式");
-					rendered = queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
-					if (!rendered) {
-						if (a.main.getChildCount() == 1) {
-							show(R.string.searchFailed, currentDisplaying);
-						} else {
-							a.show(R.string.searchFailed, currentDisplaying);
-							ViewGroup anothorHolder = weblistHandler;
-							//anothorHolder.removeAllViews();
-						}
-					}
+		ViewUtils.ViewDataHolder<DbCardListItemBinding> vh = (ViewUtils.ViewDataHolder<DbCardListItemBinding>) ViewUtils.getViewHolderInParents(view);
+		if(position==-1 && vh!=null)
+			position = vh.getLayoutPosition();
+		if (position>=0 && position<mAdapter.getItemCount()) {
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			if (a == null) return;
+			/*if (true) */{ // 点灭选区！
+				View v = mDialog!=null && mDialog.isShowing()?mDialog.getCurrentFocus():a.getCurrentFocus();
+				if (v!=null && v.getClass()==WahahaTextView.class && ((WahahaTextView) v).hasSelection()) {
+					v.clearFocus();
+					return;
 				}
 			}
-			break;
-			case SelectionMode_peruseview: {
-				ArrayList<Long> records = new ArrayList<>();
-				additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying, records);
-				ArrayList<additiveMyCpr1> data = new ArrayList<>();
-				data.add(datalet);
-				String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
-				boolean reorded = false;
-				if (peruseView != null) {
-					dismiss();
+			if (vh != null) {
+				adelta = 0;
+				currentDisplaying = vh.data.text1.getText()+"";
+			}
+			int lastClickedPosBefore = position - adelta;
+			ScrollerRecord pagerec = null;
+			DBListAdapter.HistoryDatabaseReader reader = mAdapter.getReaderAt(currentPos = position);
+			long rowId = currentRowId = reader.row_id;
+			currentDisplaying = reader.record;
+			
+			switch (SelectionMode) {
+				case SelectionMode_select: {
+					if (!Selection.remove(rowId)) {
+						Selection.add(rowId);
+					}
+					UIData.counter.setText(Selection.size() + "/" + getItemCount());
+					UIData.counter.setVisibility(View.VISIBLE);
+					mAdapter.notifyItemChanged(position);
 				}
-				long bid;
-				{
-					String texts = reader.books;
-					CMN.Log("复活::", texts);
-					if (texts != null) {
-						String[] textsArr = texts.split(";");
-						for (String strId : textsArr) {
-							if ((bid = IU.parseLong(strId, -1)) >= 0) records.add(bid);
-						}
-					}
-				}
-				CMN.Log(records);
-				Collection<Long> avoidLet = null;
-				
-				MainActivityUIBase.LoadManager loadManager = a.loadManager;
-				int size = loadManager.md_size;
-				
-				if (records.size() > 0)
-					avoidLet = size >= 32 ? new HashSet<>(records) : records;
-				for (int i = 0; i < size; i++) {//联合搜索
-					int dIdx = i;
-					bid = a.loadManager.getBookIdAt(i);
-					if (avoidLet != null && avoidLet.contains(bid)) {
-						continue;
-					}
-					if (opt.getPeruseAddAll()) {
-						records.add(bid);
-						continue;
-					}
-					if (!bIsCombinedSearch) {
-						if (dIdx == 0)
-						if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < size) {
-							dIdx = a.dictPicker.adapter_idx;
-							reorded = true;
-						} else if (reorded) if (dIdx <= a.dictPicker.adapter_idx) {
-							dIdx -= 1;
-						}
-					}
-					BookPresenter presenter = a.loadManager.md_get(dIdx);
+				break;
+				case SelectionMode_pan: {
+					//toimpl
+					boolean rendered = false;
 					{
-						int idx = presenter.bookImpl.lookUp(currentDisplaying__);
-						if (idx >= 0)
-							while (idx < presenter.bookImpl.getNumberEntries()) {
-								if (mdict.replaceReg.matcher(presenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-									records.add(presenter.getId());
-								} else
-									break;
-								idx++;
+						String texts = reader.books;
+						CMN.Log("复活::", texts);
+						if (texts != null) {
+							String[] textsArr = texts.split(";");
+							if (textsArr.length == 1) {
+								rendered = queryAndShowOneDictionary(a.getBookById(IU.parseLong(textsArr[0], -1)), currentDisplaying, position, false);
+							} else if (textsArr.length > 1) {
+								rendered = queryAndShowMultipleDictionary(textsArr, currentDisplaying, position, false);
 							}
-					}
-				}
-				a.JumpToPeruseMode(currentDisplaying, records, -2, true);
-			}
-			break;
-			case SelectionMode_fetchWord: {
-				EditText target = null;
-				if (PDICMainAppOptions.dbFetchWord()==2) {
-					a.popupWord(currentDisplaying, null, -1, null);
-				} else {
-					if (a.thisActType == ActType.MultiShare) {
-						if (a.peruseView != null) {
-							target = a.peruseView.etSearch;
-						} else {
-							a.getVtk().setInvoker(null, null, null, currentDisplaying);
 						}
-					} else {
-						a.lastEtString = String.valueOf(a.etSearch.getText());
-						target = a.etSearch;
-						a.etSearch_ToToolbarMode(2);
+						if (rendered) {
+							break;
+						}
 					}
-					if (target != null) {
-						target.setText(currentDisplaying);
+					if (bIsCombinedSearch) {
+						rendered = queryAndShowMultipleDictionary(null, currentDisplaying, position, true);
+						if (!rendered) {
+							if (a.main.getChildCount() == 1) {
+								show(R.string.searchFailed, currentDisplaying);
+							} else {
+								a.show(R.string.searchFailed, currentDisplaying);
+								ViewGroup anothorHolder = a.webSingleholder;
+								int remcount = anothorHolder.getChildCount() - 1;
+								if (remcount > 0) anothorHolder.removeViews(1, remcount);
+							}
+						}
 					}
-					a.DetachDBrowser();
+					else {
+						CMN.debug("单独搜索模式");
+						rendered = queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
+						if (!rendered) {
+							if (a.main.getChildCount() == 1) {
+								show(R.string.searchFailed, currentDisplaying);
+							} else {
+								a.show(R.string.searchFailed, currentDisplaying);
+								ViewGroup anothorHolder = weblistHandler;
+								//anothorHolder.removeAllViews();
+							}
+						}
+					}
 				}
+				break;
+				case SelectionMode_peruseview: {
+					ArrayList<Long> records = new ArrayList<>();
+					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying, records);
+					ArrayList<additiveMyCpr1> data = new ArrayList<>();
+					data.add(datalet);
+					String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+					boolean reorded = false;
+					if (peruseView != null) {
+						dismiss();
+					}
+					long bid;
+					{
+						String texts = reader.books;
+						CMN.Log("复活::", texts);
+						if (texts != null) {
+							String[] textsArr = texts.split(";");
+							for (String strId : textsArr) {
+								if ((bid = IU.parseLong(strId, -1)) >= 0) records.add(bid);
+							}
+						}
+					}
+					CMN.Log(records);
+					Collection<Long> avoidLet = null;
+					
+					MainActivityUIBase.LoadManager loadManager = a.loadManager;
+					int size = loadManager.md_size;
+					
+					if (records.size() > 0)
+						avoidLet = size >= 32 ? new HashSet<>(records) : records;
+					for (int i = 0; i < size; i++) {//联合搜索
+						int dIdx = i;
+						bid = a.loadManager.getBookIdAt(i);
+						if (avoidLet != null && avoidLet.contains(bid)) {
+							continue;
+						}
+						if (opt.getPeruseAddAll()) {
+							records.add(bid);
+							continue;
+						}
+						if (!bIsCombinedSearch) {
+							if (dIdx == 0)
+								if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < size) {
+									dIdx = a.dictPicker.adapter_idx;
+									reorded = true;
+								} else if (reorded) if (dIdx <= a.dictPicker.adapter_idx) {
+									dIdx -= 1;
+								}
+						}
+						BookPresenter presenter = a.loadManager.md_get(dIdx);
+						{
+							int idx = presenter.bookImpl.lookUp(currentDisplaying__);
+							if (idx >= 0)
+								while (idx < presenter.bookImpl.getNumberEntries()) {
+									if (mdict.replaceReg.matcher(presenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+										records.add(presenter.getId());
+									} else
+										break;
+									idx++;
+								}
+						}
+					}
+					a.JumpToPeruseMode(currentDisplaying, records, -2, true);
+				}
+				break;
+				case SelectionMode_fetchWord: {
+					EditText target = null;
+					if (PDICMainAppOptions.dbFetchWord()==2) {
+						a.popupWord(currentDisplaying, null, -1, null);
+					} else {
+						if (a.thisActType == ActType.MultiShare) {
+							if (a.peruseView != null) {
+								target = a.peruseView.etSearch;
+							} else {
+								a.getVtk().setInvoker(null, null, null, currentDisplaying);
+							}
+						} else {
+							a.lastEtString = String.valueOf(a.etSearch.getText());
+							target = a.etSearch;
+							a.etSearch_ToToolbarMode(2);
+						}
+						if (target != null) {
+							target.setText(currentDisplaying);
+						}
+						a.DetachDBrowser();
+					}
+				}
+				break;
+				default:
+					throw new IllegalStateException("Unexpected value: " + SelectionMode);
 			}
-			break;
-			default:
-				throw new IllegalStateException("Unexpected value: " + SelectionMode);
 		}
 	}
 	
@@ -1909,7 +2022,12 @@ public class DBroswer extends DialogFragment implements
 			case R.id.icon: {
 				item.setChecked(!item.isChecked());
 				PDICMainAppOptions.dbShowIcon(item.isChecked());
-				mAdapter.notifyDataSetChanged();
+				dataSetChanged();
+			} break;
+			case R.id.longPressSelect: {
+				item.setChecked(!item.isChecked());
+				PDICMainAppOptions.dbLongPressSelect(item.isChecked());
+				a.showT(item.isChecked()?"长按列表直接开启选择模式":"长按列表弹出菜单");
 			} break;
 		}
 		if(closeMenu)
