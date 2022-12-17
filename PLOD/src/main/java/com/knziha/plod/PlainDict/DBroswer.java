@@ -464,12 +464,12 @@ public class DBroswer extends DialogFragment implements
 							final int starTop = (int) (top + (height - mStarWidth)/2);
 							final int starBottom = starTop+mStarWidth;
 							final int padding = (int) (mStarWidth*2/3+2*GlobalOptions.density);
-							int i = 0, starLeft;
+							int i = 0, starLeft, lvl = Math.min(9, reader.fav); // 九星强者恐怖如斯
 							if(labelSz==-1) {
 								labelSz = textPaint.measureText(name);
 							}
 							starLeft = (int) (x + labelSz + padY);
-							for (; i < reader.fav; i++) {
+							for (; i < lvl; i++) {
 								mActiveDrawable.setBounds(starLeft, starTop, starLeft+mStarWidth, starBottom);
 								mActiveDrawable.draw(canvas);
 								starLeft += padding;

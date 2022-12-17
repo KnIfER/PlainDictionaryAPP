@@ -14,6 +14,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -183,6 +184,7 @@ public class Drawer extends Fragment implements
 						, R.string.pick_main
 						, R.string.pick_audio_dir
 						, R.string.dingzhi_gongju
+						, R.string.open_accessibility
 						, R.string.manager
 						, R.string.switch_favor
 						, 0
@@ -210,6 +212,7 @@ public class Drawer extends Fragment implements
 						, R.string.pick_main
 						, R.string.pick_audio_dir
 						, R.string.dingzhi_gongju
+						, R.string.open_accessibility
 						, R.string.manager
 						, R.string.switch_favor
 				};
@@ -1197,6 +1200,15 @@ public class Drawer extends Fragment implements
 			//选择发音库目录
 			case R.string.dingzhi_gongju:  {
 				a.showBottombarsTweaker();
+			} break;
+			case R.string.open_accessibility:  {
+				Intent settingsIntent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+				settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				try {
+					startActivity(settingsIntent);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			} break;
 			//选择发音库目录
 			case R.string.pick_audio_dir:  {

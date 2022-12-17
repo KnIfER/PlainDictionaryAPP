@@ -1784,8 +1784,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		} catch (Exception e) {
 //			CMN.debug(e);
 //		}
-		
-		
+
+
+
 //		try {
 //			new SettingsSearcherTest().buildIndex(this);
 //		} catch (Exception e) {

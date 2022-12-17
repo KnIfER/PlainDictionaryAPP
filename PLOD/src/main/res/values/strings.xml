@@ -291,4 +291,5 @@
 	<string name="view">查看</string>
 	<string name="elevate_fav">提升收藏星级</string>
 	<string name="decrease_fav">降低收藏星级</string>
+	<string name="open_accessibility">打开系统辅助功能</string>
 </resources>
