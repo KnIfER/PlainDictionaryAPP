@@ -623,6 +623,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static int PreferredToolId=-1;
 	private Runnable mOpenImgRunnable;
 	private Drawable mActiveDrawable;
+	private Drawable mStarDrawable;
 	private Drawable mRatingDrawable;
 	private Drawable mTickDrawable;
 	private int CurrentDictInfoIdx;
@@ -3662,6 +3663,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public Drawable getActiveStarDrawable() {
 		if(mActiveDrawable!=null) return mActiveDrawable;
 		return mActiveDrawable=getResources().getDrawable(R.drawable.star_ic_solid);
+	}
+	
+	public Drawable getStarDrawable() {
+		if(GlobalOptions.isDark) return getActiveStarDrawable();
+		if(mStarDrawable==null) {
+			if(mActiveDrawable==null) mActiveDrawable=getResources().getDrawable(R.drawable.star_ic_solid);
+			mStarDrawable = mActiveDrawable.getConstantState().newDrawable().mutate();
+			mStarDrawable.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+		}
+		return mStarDrawable;
 	}
 	
 	public Drawable getRatingDrawable() {

@@ -35,6 +35,7 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 	public interface TitleDecorationCallback {
 		boolean isSameGroup(int prevPos, int thePos);
 		String getGroupName(int position);
+		void postDrawText(Canvas canvas, float top, float x, float y, float labelSz, Paint textPaint, int position, String name);
 	}
 
     public TitleItemDecoration(Context context
@@ -87,26 +88,31 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 					break;
 				}
 				final String name = callback.getGroupName(position);
-                float top = bottom - titleHeight;
+                final float top = bottom - titleHeight;
 				float x = view.getPaddingLeft() + paddingLeft;
 				float y = top + titleHeight/2 - (textPaint.descent() + textPaint.ascent()) / 2;
 				
 				
                 canvas.drawRect(left, top, right, bottom, bgPaint);
+				float labelSz = -1;
 				if (textBackground!=0) {
 					bgPaint1.setColor(textBackground);
 					float pad = 5f * GlobalOptions.density;
 					float padY = titleHeight/8;
+					labelSz = textPaint.measureText(name)+pad;
 					if (textCorner != 0) {
-						tmpRect.set(x-pad, top+padY, x+textPaint.measureText(name)+pad, bottom-padY);
+						tmpRect.set(x-pad, top+padY, x+labelSz, bottom-padY);
 						canvas.drawRoundRect(tmpRect
 								, textCorner, textCorner, bgPaint1);
 					} else {
-						canvas.drawRect(x-pad, top+padY, x+textPaint.measureText(name)+pad, bottom-padY, bgPaint1);
+						canvas.drawRect(x-pad, top+padY, x+labelSz, bottom-padY, bgPaint1);
 					}
 				}
 				
 				canvas.drawText(name, x, y, textPaint);
+	
+				// todo 这样调用真的好吗，抑或无感
+				callback.postDrawText(canvas, top, x, y, labelSz, textPaint, position, name);
             }
 			viewAbove = view;
         }
@@ -147,20 +153,24 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 			float x = left + firstView.getPaddingLeft() + paddingLeft;
 			float y = top + titleHeight/2 - (textPaint.descent() + textPaint.ascent()) / 2;
 			
+			float labelSz = -1;
 			if (textBackground!=0) {
 				bgPaint1.setColor(textBackground);
 				float pad = 5f * GlobalOptions.density;
 				float padY = titleHeight/8;
+				labelSz = textPaint.measureText(name)+pad;
 				if (textCorner != 0) {
-					tmpRect.set(x-pad, top+padY, x+textPaint.measureText(name)+pad, bottom-padY);
+					tmpRect.set(x-pad, top+padY, x+labelSz, bottom-padY);
 					canvas.drawRoundRect(tmpRect
 							, textCorner, textCorner, bgPaint1);
 				} else {
-					canvas.drawRect(x-pad, top+padY, x+textPaint.measureText(name)+pad, bottom-padY, bgPaint);
+					canvas.drawRect(x-pad, top+padY, x+labelSz, bottom-padY, bgPaint);
 				}
 			}
 			
 			canvas.drawText(name, x, y, textPaint);
+			
+			callback.postDrawText(canvas, top, x, y, labelSz, textPaint, position, name);
 		}
     }
 
@@ -168,4 +178,8 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
     private boolean isFirst(int position) {
 		return position == 0 || !callback.isSameGroup(position - 1, position);
     }
+	
+	public int getHeight() {
+		return titleHeight;
+	}
 }

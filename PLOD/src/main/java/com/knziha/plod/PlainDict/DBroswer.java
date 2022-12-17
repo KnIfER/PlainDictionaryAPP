@@ -9,8 +9,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.icu.util.Calendar;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -66,7 +66,6 @@ import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.plaindict.databinding.DbBrowserBinding;
 import com.knziha.plod.plaindict.databinding.DbCardListItemBinding;
 import com.knziha.plod.settings.History;
-import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.TitleItemDecoration;
@@ -417,6 +416,15 @@ public class DBroswer extends DialogFragment implements
 					try {
 						HistoryDatabaseReader reader1 = mAdapter.data.dataAdapter.getReaderAt(prvPos);
 						HistoryDatabaseReader reader2 = mAdapter.data.dataAdapter.getReaderAt(thPos);
+						
+						if(reader1.fav > 0 ^ reader2.fav>0) {
+							return false;
+						}
+						
+						if(reader1.fav > 0 && reader1.fav==reader2.fav && true) {
+							return true;
+						}
+						
 						Instant instant1 = Instant.EPOCH.plusMillis(reader1.sort_number);
 						Instant instant2 = Instant.EPOCH.plusMillis(reader2.sort_number);
 						
@@ -436,10 +444,39 @@ public class DBroswer extends DialogFragment implements
 					//return "group"+position;
 					try {
 						HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(position);
+						//if(reader.fav > 0 && true) return "";
 						return dateFormat.format(new Date(reader.sort_number));
 					} catch (Exception e) {
 						CMN.debug(e);
 						return "error "+e;
+					}
+				}
+				@Override
+				public void postDrawText(Canvas canvas, float top, float x, float y, float labelSz, Paint textPaint, int position, String name) {
+					try { // todo 此处 getReaderAt 不应触发分页
+						HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(position);
+						if (reader.fav > 0) {
+							/** 画星星 see {@link com.knziha.plod.widgets.FlowTextView#drawStars} */
+							Drawable mActiveDrawable = a.getStarDrawable();
+							int height = decoration.getHeight();
+							float padY = height/8;
+							int mStarWidth = (int) (GlobalOptions.density*25);
+							final int starTop = (int) (top + (height - mStarWidth)/2);
+							final int starBottom = starTop+mStarWidth;
+							final int padding = (int) (mStarWidth*2/3+2*GlobalOptions.density);
+							int i = 0, starLeft;
+							if(labelSz==-1) {
+								labelSz = textPaint.measureText(name);
+							}
+							starLeft = (int) (x + labelSz + padY);
+							for (; i < reader.fav; i++) {
+								mActiveDrawable.setBounds(starLeft, starTop, starLeft+mStarWidth, starBottom);
+								mActiveDrawable.draw(canvas);
+								starLeft += padding;
+							}
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
 					}
 				}
 			}, isDarkStamp?0xFFc17d33:Color.RED, a.AppWhite);
