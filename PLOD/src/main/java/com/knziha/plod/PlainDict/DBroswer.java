@@ -57,6 +57,7 @@ import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -93,6 +94,7 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 import static com.knziha.plod.plaindict.DBListAdapter.*;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 //  todo 分表显示
 @SuppressLint("SetTextI18n")
@@ -108,7 +110,7 @@ public class DBroswer extends DialogFragment implements
 	WebViewListHandler weblistHandler;
 	ContentviewBinding contentUIData;
 	PeruseView peruseView;
-	TitleItemDecoration decoration;
+	TitleItemDecoration mDecorator;
 	
 	/** type[act|ui|db], long[]{pos, view offset} */
 	public final static LongSparseArray<long[]> savedPositions = new LongSparseArray();
@@ -139,6 +141,8 @@ public class DBroswer extends DialogFragment implements
 	private int MainAppBackground;
 	private int pressedRow;
 	private View pressedView;
+	private LocalDateTime today;
+
 //	private static long _24hMillis;
 //	static {
 //		try {
@@ -408,20 +412,25 @@ public class DBroswer extends DialogFragment implements
 			imm = a.imm;
 			initialized = true;
 			
-			decoration = new TitleItemDecoration(a, new TitleItemDecoration.TitleDecorationCallback() {
+			Instant instant1 = Instant.EPOCH.plusMillis(CMN.now());
+			today = LocalDateTime.ofInstant(instant1, ZoneId.systemDefault());
+			
+			mDecorator = new TitleItemDecoration(a, new TitleItemDecoration.TitleDecorationCallback() {
 				@Override
 				public boolean isSameGroup(int prvPos, int thPos) {
 					//return prvPos/5==thPos/5;
 					
 					try {
-						HistoryDatabaseReader reader1 = mAdapter.data.dataAdapter.getReaderAt(prvPos);
-						HistoryDatabaseReader reader2 = mAdapter.data.dataAdapter.getReaderAt(thPos);
+						HistoryDatabaseReader reader1 = mAdapter.getReaderAt(prvPos);
+						HistoryDatabaseReader reader2 = mAdapter.getReaderAt(thPos);
+						//CMN.debug("isSameGroup??", thPos, reader1.record, reader2.record);
 						
 						if(reader1.fav > 0 ^ reader2.fav>0) {
+							//CMN.debug("reader1.fav > 0 ^ reader2.fav>0", reader1.fav  ,  reader2.fav);
 							return false;
 						}
 						
-						if(reader1.fav > 0 && reader1.fav==reader2.fav && true) {
+						if(reader1.fav > 0 && reader1.fav==reader2.fav && false) { // dbMergeSameLevelSepDays
 							return true;
 						}
 						
@@ -432,6 +441,8 @@ public class DBroswer extends DialogFragment implements
 						LocalDateTime t2 = LocalDateTime.ofInstant(instant2, ZoneId.systemDefault());
 						
 						if (t1.getYear() == t2.getYear()) {
+							//if(!(t1.getDayOfYear() == t2.getDayOfYear()))
+							//CMN.debug("t1.getDayOfYear() ! t2.getDayOfYear()", t1.getDayOfYear(), t2.getDayOfYear(), reader1.record, reader2.record);
 							return t1.getDayOfYear() == t2.getDayOfYear();
 						}
 					} catch (Exception e) {
@@ -443,7 +454,7 @@ public class DBroswer extends DialogFragment implements
 				public String getGroupName(int position) {
 					//return "group"+position;
 					try {
-						HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(position);
+						HistoryDatabaseReader reader = mAdapter.getReaderAt(position);
 						//if(reader.fav > 0 && true) return "";
 						return dateFormat.format(new Date(reader.sort_number));
 					} catch (Exception e) {
@@ -452,23 +463,64 @@ public class DBroswer extends DialogFragment implements
 					}
 				}
 				@Override
-				public void postDrawText(Canvas canvas, float top, float x, float y, float labelSz, Paint textPaint, int position, String name) {
-					try { // todo 此处 getReaderAt 不应触发分页
-						HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(position);
+				public void postDrawText(Canvas canvas, float top, float bottom, float x, float y, float labelSz, Paint textPaint, int position, String name) {
+					try {
+						HistoryDatabaseReader reader = mAdapter.getReaderAt(position);
+						Instant instant1 = Instant.EPOCH.plusMillis(reader.sort_number);
+						LocalDateTime t1 = LocalDateTime.ofInstant(instant1, ZoneId.systemDefault());
+						long daysBefore = DAYS.between(t1, today);
+						if(labelSz==-1) {
+							labelSz = textPaint.measureText(name);
+						}
+						x = x + labelSz;
+						int height = mDecorator.getHeight();
+						float padY = height/8;
+						String label;
+						if(true) {
+							boolean drawBackground = daysBefore <= 30;
+							//CMN.debug("daysBefore::", daysBefore, t1.getDayOfWeek(), today.getDayOfWeek());
+							label  = daysBefore+"天前";
+							if(daysBefore<3) {
+								int deltaDay = Math.abs(t1.getDayOfWeek().ordinal()-today.getDayOfWeek().ordinal());
+								//CMN.debug("deltaDay::", deltaDay);
+								if(deltaDay > 3) {
+									deltaDay = 7-deltaDay; // 好烦
+								}
+								if (deltaDay==0) {
+									label = "今天";
+								}
+								if (deltaDay==1) {
+									label = "昨天";
+								}
+							}
+							int bg = GlobalOptions.isDark ? 0xFFc17d33 : a.MainAppBackground;
+							int fontColor = GlobalOptions.isDark ? Color.WHITE : a.AppWhite;
+							if(!drawBackground) {
+								fontColor = GlobalOptions.isDark ? 0xFFc17d33 : Color.RED;
+								bg = 0;
+							}
+							x = mDecorator.drawLabel(canvas, label, x+padY*3, y, top, bottom, fontColor, bg);
+							
+							if (daysBefore<7) {
+								int day = t1.getDayOfWeek().getValue();
+								label  = day==7? "周天" : ("周"+SU.days.charAt(day-1));
+								x = mDecorator.drawLabel(canvas, label, x+padY*3, y, top, bottom, fontColor, bg);
+							}
+							if (daysBefore == 0) {
+								float rad = GlobalOptions.density*4.1f;
+								mDecorator.textPaint1.setColor(bg);
+								canvas.drawCircle(rad/2 + mDecorator.paddingLeft/2, height/2+top, rad, mDecorator.textPaint1);
+							}
+						}
 						if (reader.fav > 0) {
 							/** 画星星 see {@link com.knziha.plod.widgets.FlowTextView#drawStars} */
 							Drawable mActiveDrawable = a.getStarDrawable();
-							int height = decoration.getHeight();
-							float padY = height/8;
 							int mStarWidth = (int) (GlobalOptions.density*25);
 							final int starTop = (int) (top + (height - mStarWidth)/2);
 							final int starBottom = starTop+mStarWidth;
 							final int padding = (int) (mStarWidth*2/3+2*GlobalOptions.density);
 							int i = 0, starLeft, lvl = Math.min(9, reader.fav); // 九星强者恐怖如斯
-							if(labelSz==-1) {
-								labelSz = textPaint.measureText(name);
-							}
-							starLeft = (int) (x + labelSz + padY);
+							starLeft = (int) (x + padY);
 							for (; i < lvl; i++) {
 								mActiveDrawable.setBounds(starLeft, starTop, starLeft+mStarWidth, starBottom);
 								mActiveDrawable.draw(canvas);
@@ -480,11 +532,12 @@ public class DBroswer extends DialogFragment implements
 					}
 				}
 			}, isDarkStamp?0xFFc17d33:Color.RED, a.AppWhite);
-			lv.addItemDecoration(decoration);
-			decoration.bPinTitle = true;
+			lv.addItemDecoration(mDecorator);
+			
+			mDecorator.bPinTitle = true;
 			//decoration.textBackground = a.MainAppBackground;
-			decoration.textCorner = GlobalOptions.density * 3;
-			decoration.paddingLeft = GlobalOptions.density*30;
+			mDecorator.textCorner = GlobalOptions.density * 3;
+			mDecorator.paddingLeft = GlobalOptions.density*30;
 			
 			if(pendingType!=0) {
 				setType(a, pendingType, true);
@@ -618,8 +671,8 @@ public class DBroswer extends DialogFragment implements
 			}
 			if(initialized) {
 				dataSetChanged();
-				decoration.bgPaint.setColor(AppWhite);
-				decoration.textPaint.setColor(isDarkStamp?0xFFc17d33:Color.RED);
+				mDecorator.bgPaint.setColor(AppWhite);
+				mDecorator.textPaint.setColor(isDarkStamp?0xFFc17d33:Color.RED);
 			}
 		}
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
@@ -909,6 +962,7 @@ public class DBroswer extends DialogFragment implements
 						.setIcon(android.R.drawable.ic_dialog_alert)
 						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
 							lv.suppressLayout(true); // important
+							lv.setDragSelectActive(false, lastDragPos);
 							//PagingCursorAdapter.simulateSlowIO = true;
 							saveListPosition(); // 删除
 							String sql = "DELETE FROM "+ getTableName()+" WHERE id = ? ";
@@ -1037,6 +1091,7 @@ public class DBroswer extends DialogFragment implements
 	}
 	
 	private void restartPaging() {
+		lv.suppressLayout(true);
 		mAdapter.rebuildCursor(getMainActivity(), getFragmentId());
 		//notifyDataSetChanged();
 		//lv.scrollToPosition(0);
@@ -1318,7 +1373,7 @@ public class DBroswer extends DialogFragment implements
 	private void modifyFavLevel(int i) {
 		saveListPosition();
 		if (mAdapter.data.fid!=-1) {
-			HistoryDatabaseReader reader = mAdapter.data.dataAdapter.getReaderAt(pressedRow);
+			HistoryDatabaseReader reader = mAdapter.getReaderAt(pressedRow);
 			ContentValues contentValues = new ContentValues();
 			int level = reader.fav + i;
 			contentValues.put("level", level);
@@ -1394,13 +1449,14 @@ public class DBroswer extends DialogFragment implements
 			pressedRow = position;
 			pressedView = view;
 			PopupMenuHelper popupMenu = a.getPopupMenu();
+			boolean b1 = getFragmentId()==-1;
 			popupMenu.initLayout(new int[]{
 					R.string.view
 					, R.string.tapSch
 					, R.string.peruse_mode
 					, R.string.page_ucc
-					, R.string.elevate_fav
-					, R.string.decrease_fav
+					, b1?0:R.string.elevate_fav
+					, b1?0:R.string.decrease_fav
 					//, R.string.copy
 					, R.string.start_longpress_sel
 			}, this);

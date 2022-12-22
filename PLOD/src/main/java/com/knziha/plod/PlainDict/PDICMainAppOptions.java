@@ -249,7 +249,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 						.append(defaultReader.getInt("dkTD", 80))
 						.append("%)");
 			}
-			
+			if (true) {
+				sb.append("}.PLOD_HL{");
+				sb.append("-webkit-filter:invert(100%);color:#fff;").append(";");
+			}
 			mDarkModeJs = sb.append(sDarkModeIncantation).toString();
 			CMN.debug("mDarkModeJs::", mDarkModeJs);
 			a.CommonAssets.put("dk.js", mDarkModeJs.getBytes());
@@ -336,6 +339,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public PDICMainAppOptions putLong(String key, long val) {
 		try {
 			if (defaultReader.getLong(key, val+1)==val) {
+				mModified.remove(key);
 				return this;
 			}
 		} catch (Exception e) {

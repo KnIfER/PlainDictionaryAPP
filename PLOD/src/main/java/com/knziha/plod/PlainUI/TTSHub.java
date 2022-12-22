@@ -1,6 +1,8 @@
 package com.knziha.plod.PlainUI;
 
+import static androidx.appcompat.app.GlobalOptions.NEGATIVE_1;
 import static androidx.appcompat.app.GlobalOptions.density;
+import static androidx.appcompat.app.GlobalOptions.isDark;
 
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_TTS;
 
@@ -12,16 +14,22 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -49,7 +57,9 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
+import com.knziha.plod.widgets.DescriptiveImageView;
 import com.knziha.plod.widgets.NoScrollViewPager;
+import com.knziha.plod.widgets.SpeedTagShape;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.text.ColoredHighLightSpan;
@@ -67,7 +77,7 @@ import java.util.List;
 import java.util.Locale;
 
 @SuppressLint("ResourceType")
-public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuListener {
+public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuListener, View.OnLongClickListener {
 	MainActivityUIBase a;
 	NoScrollViewPager viewPager;
 	View[] viewList;
@@ -77,7 +87,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 	
 	public View floatBasic;
 	
-	public SelectableTextView tv;
+	public SelectableTextView textView;
 	public TextView tvHandle;
 	public TTSMoveToucher TTSController_moveToucher;
 	public ImageView playBtn;
@@ -87,9 +97,9 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 //	public CircleCheckBox TTSController_ck2;
 	
 	public ColoredHighLightSpan timeHLSpan;
-	public static final float[] TTS_LEVLES_SPEED = new float[]{0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f};
-	public int TTSSpeed = 3;
-	public int TTSPitch = 3;
+	public static final float[] TTS_LEVLES_SPEED = new float[]{0.5f, 0.75f, 1f, 1.5f, 2f};
+	public int TTSSpeed = 2;
+	public int TTSPitch = 2;
 	public float TTSVolume = 1.f;
 	public ViewGroup controlBar;
 	
@@ -112,6 +122,9 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 	private int mTtsChoiceVer;
 	private boolean hubExpanded;
 	private boolean playing;
+	private View tiaoJieView;
+	private Runnable tiaoJieRun;
+	private boolean dirty;
 	
 	public TTSHub(MainActivityUIBase a) {
 		super(a, false);
@@ -299,10 +312,12 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 	Runnable mUpdateTextRunnable = new Runnable() {
 		@Override
 		public void run() {
-			if(tv !=null && speakText instanceof String) {
-				tv.setText(new SpannableStringBuilder((String) speakText).append("\n\n\n\n"), TextView.BufferType.SPANNABLE);
-				speakText = tv.getText();
-				tv.clearSelection();
+			if (textView != null && speakText instanceof String) {
+				textView.setText(new SpannableStringBuilder((String) speakText).append("\n\n\n\n"), TextView.BufferType.SPANNABLE);
+				speakText = textView.getText();
+				textView.clearSelection();
+			} else if(textView == null){
+				dirty = true;
 			}
 		}
 	};
@@ -323,11 +338,13 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			speakPoolIndex = 0;
 			cachedEndIndex = doneEndIndex = -1;
 			speakScaler = null;
-			if(anyVisible()){
-				if(Thread.currentThread()!= Looper.getMainLooper().getThread())
+			if (anyVisible()) {
+				if (Thread.currentThread() != Looper.getMainLooper().getThread())
 					a.root.post(mUpdateTextRunnable);
 				else
 					mUpdateTextRunnable.run();
+			} else {
+				dirty = true;
 			}
 			mCurrentReadContext = mWebView;
 		}
@@ -451,7 +468,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 		boolean isNewHolder=false;
 		boolean isInit=false;
 		// 初始化核心组件
-		if(tv == null){
+		if(textView == null){
 			isInit=isNewHolder=true;
 		}
 		
@@ -507,8 +524,12 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 		}
 	};
 	
+	ShapeDrawable da, xiao;
+	DescriptiveImageView[] volPitSpd;
+	
 	private View initFloatBasic() {
 		if (floatBasic == null) {
+			volPitSpd = new DescriptiveImageView[3];
 			floatBasic = a.getLayoutInflater().inflate(R.layout.float_tts_basic, a.root, false);
 			TTSController_ = (ViewGroup) floatBasic;
 			TTSController_.setOnClickListener(ViewUtils.DummyOnClick);
@@ -523,58 +544,81 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			controlBar = (ViewGroup) TTSController_.getChildAt(2);
 			if(!opt.getTTSCtrlPinned())
 				controlBar.setVisibility(View.GONE);
-			SeekBar.OnSeekBarChangeListener controller_controller=new SeekBar.OnSeekBarChangeListener() {
-				@Override
-				public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-					seekBar.setTag(false);
-					switch (seekBar.getId()){
-						case R.id.sb1:
-							TTSVolume=progress*1.f/100;
-							tvHandle.setText("音量："+ progress);
-							break;
-						case R.id.sb2:
-							float _TTS_Pitch=TTS_LEVLES_SPEED[TTSPitch=progress];
-							if (tts != null) tts.setPitch(_TTS_Pitch);
-							tvHandle.setText("音调："+_TTS_Pitch);
-							break;
-						case R.id.sb3:
-							float _TTS_Speed=TTS_LEVLES_SPEED[TTSSpeed=progress];
-							if (tts != null) tts.setSpeechRate(_TTS_Speed);
-							tvHandle.setText("语速："+_TTS_Speed);
-							break;
-					}
+//			SeekBar.OnSeekBarChangeListener controller_controller=new SeekBar.OnSeekBarChangeListener() {
+//				@Override
+//				public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//					seekBar.setTag(false);
+//					switch (seekBar.getId()){
+//						case R.id.sb1:
+//							TTSVolume=progress*1.f/100;
+//							tvHandle.setText("音量："+ progress);
+//							break;
+//						case R.id.sb2:
+//							float _TTS_Pitch=TTS_LEVLES_SPEED[TTSPitch=progress];
+//							if (tts != null) tts.setPitch(_TTS_Pitch);
+//							tvHandle.setText("音调："+_TTS_Pitch);
+//							break;
+//						case R.id.sb3:
+//							float _TTS_Speed=TTS_LEVLES_SPEED[TTSSpeed=progress];
+//							if (tts != null) tts.setSpeechRate(_TTS_Speed);
+//							tvHandle.setText("语速："+_TTS_Speed);
+//							break;
+//					}
+//				}
+//				@Override public void onStartTrackingTouch(SeekBar seekBar) { }
+//				@Override
+//				public void onStopTrackingTouch(SeekBar seekBar) {
+//					if(seekBar.getTag()==null){
+//						onProgressChanged(seekBar, seekBar.getProgress(), false);
+//					} else {
+//						pauseTTS();
+//						switch (seekBar.getId()) {
+//							case R.id.sb1:
+//								if(playing) sendText();
+//								break;
+//							case R.id.sb2:
+//							case R.id.sb3:
+//								if(playing) ReadText(null, mCurrentReadContext);
+//								break;
+//						}
+//					}
+//					seekBar.setTag(null);
+//				}
+//			};
+//			SeekBar seekBar = (SeekBar) controlBar.getChildAt(0);
+//			seekBar.setProgress((int) (TTSVolume *100));
+//			seekBar.setOnSeekBarChangeListener(controller_controller);
+//			seekBar = (SeekBar) controlBar.getChildAt(2);
+//			seekBar.setProgress(TTSPitch);
+//			seekBar.setMax(TTS_LEVLES_SPEED.length-1);
+//			seekBar.setOnSeekBarChangeListener(controller_controller);
+//			seekBar = (SeekBar) controlBar.getChildAt(4);
+//			seekBar.setProgress(TTSSpeed);
+//			seekBar.setMax(TTS_LEVLES_SPEED.length-1);
+//			seekBar.setOnSeekBarChangeListener(controller_controller);
+			TextPaint textPainter = DescriptiveImageView.newTextPainter();
+			textPainter.setColor(0xFF44A0D3);
+			boolean isLTR = controlBar.getContext().getResources().getConfiguration().getLayoutDirection()==
+					View.LAYOUT_DIRECTION_LTR;
+			float height = 0.75f;
+			da = new ShapeDrawable(new SpeedTagShape(isLTR?0:1, height));
+			xiao = new ShapeDrawable(new SpeedTagShape(!isLTR?0:1, height));
+			da.getPaint().setColor(isDark?0xff6699bb:0xFF44A0D3);
+			xiao.getPaint().setColor(isDark?0xff6699bb:0xFF44A0D3);
+			for (int i = 0, sz = controlBar.getChildCount(), cc=0; i < sz; i++) {
+				View child = controlBar.getChildAt(i);
+				if (child instanceof DescriptiveImageView) {
+					((DescriptiveImageView) child).textPainter = textPainter;
+					volPitSpd[cc++] = (DescriptiveImageView) child;
+					
+				} else if (child instanceof TextView) {
+					LayerDrawable ld = new LayerDrawable(new Drawable[]{child.getBackground(), child.getId()==R.id.spddn?xiao:da
+							});
+					child.setBackground(ld);
+					child.setOnLongClickListener(this);
 				}
-				@Override public void onStartTrackingTouch(SeekBar seekBar) { }
-				@Override
-				public void onStopTrackingTouch(SeekBar seekBar) {
-					if(seekBar.getTag()==null){
-						onProgressChanged(seekBar, seekBar.getProgress(), false);
-					} else {
-						pauseTTS();
-						switch (seekBar.getId()) {
-							case R.id.sb1:
-								if(playing) sendText();
-								break;
-							case R.id.sb2:
-							case R.id.sb3:
-								if(playing) ReadText(null, mCurrentReadContext);
-								break;
-						}
-					}
-					seekBar.setTag(null);
-				}
-			};
-			SeekBar seekBar = (SeekBar) controlBar.getChildAt(0);
-			seekBar.setProgress((int) (TTSVolume *100));
-			seekBar.setOnSeekBarChangeListener(controller_controller);
-			seekBar = (SeekBar) controlBar.getChildAt(2);
-			seekBar.setProgress(TTSPitch);
-			seekBar.setMax(TTS_LEVLES_SPEED.length-1);
-			seekBar.setOnSeekBarChangeListener(controller_controller);
-			seekBar = (SeekBar) controlBar.getChildAt(4);
-			seekBar.setProgress(TTSSpeed);
-			seekBar.setMax(TTS_LEVLES_SPEED.length-1);
-			seekBar.setOnSeekBarChangeListener(controller_controller);
+				child.setOnClickListener(this);
+			}
 			
 			tv.setBackgroundColor(Color.TRANSPARENT);
 			ScrollViewHolder svmy = middle.findViewById(R.id.sv);
@@ -604,7 +648,10 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			// 缩放逻辑
 			tv.viewPager = viewPager;
 			tv.setTheme(a.AppWhite, a.AppBlack, 0x883b53f1, 0x883b53f1);
-			this.tv = tv;
+			//textCover2.highLightBg = isDark ? 0x77c17d33 : Color.YELLOW;
+			highLightBG = isDark ? 0x77c17d33 : Color.YELLOW;
+			if(timeHLSpan!=null) timeHLSpan.mColor = highLightBG;
+			this.textView = tv;
 		}
 		return floatBasic;
 	}
@@ -801,6 +848,11 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 				refreshTTSEngLst(false);
 			}
 		}
+		if (dirty) {
+			initFloatBasic();
+			mUpdateTextRunnable.run();
+			dirty = false;
+		}
 	}
 	
 	@Override
@@ -810,7 +862,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 	
 	@Override
 	public void refresh() {
-		//CMN.debug("bookNotes::refresh");
+		CMN.debug("TTSHub::refresh");
 		if (MainAppBackground != a.MainAppBackground)
 		{
 			// 刷新颜色变化（黑暗模式或者设置更改）
@@ -824,12 +876,56 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
 				gray = ColorUtils.blendARGB(a.MainAppBackground, Color.WHITE, 0.1f);
 			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
-			tv.setTheme(a.AppWhite, a.AppBlack, 0x883b53f1, 0x883b53f1);
+			if (textView != null) {
+				textView.setTheme(a.AppWhite, a.AppBlack, 0x883b53f1, 0x883b53f1);
+				//textView.textCover2.highLightBg = isDark ? 0x77c17d33 : Color.YELLOW;
+				highLightBG = isDark ? 0x77c17d33 : Color.YELLOW;
+				floatBasic.getBackground().setColorFilter(isDark?NEGATIVE_1:null);
+				
+				da.getPaint().setColor(isDark?0xff6699bb:0xFF44A0D3);
+				xiao.getPaint().setColor(isDark?0xff6699bb:0xFF44A0D3);
+			}
+			if (ttsTweaker != null) {
+				ttsTweaker.refresh();
+			}
 		}
 		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
 				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
 			ViewUtils.makeFullscreenWnd(dialog.getWindow());
 		}
+	}
+	
+	
+	// longclick
+	@Override
+	public boolean onLongClick(View v) {
+		tiaoJieView = v;
+		if (tiaoJieRun == null) {
+			tiaoJieRun = new Runnable() {
+				@Override
+				public void run() {
+					if (tiaoJieView != null) {
+						tiaoJie(tiaoJieView);
+						a.root.postDelayed(this, 350);
+					}
+				}
+			};
+		}
+		if (controlBar.getTag()==null) {
+			controlBar.setTag(new View.OnTouchListener() {
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					int act = event.getActionMasked();
+					if (act==MotionEvent.ACTION_UP || act==MotionEvent.ACTION_CANCEL) {
+						tiaoJieView = null;
+					}
+					return false;
+				}
+			});
+		}
+		v.setOnTouchListener((View.OnTouchListener) controlBar.getTag());
+		tiaoJieRun.run();
+		return true;
 	}
 	
 	// click
@@ -847,6 +943,15 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 //				checker.toggle(false);
 //				opt.setTTSHighlightWebView(checker.isChecked());
 //			} break;
+			case R.id.volumn:
+			case R.id.pitch:
+			case R.id.speed: {
+				a.showT("未实现");
+			} break;
+			case R.id.spddn:
+			case R.id.spdup: {
+				tiaoJie(v);
+			} break;
 			case R.id.voice: {
 				if (ttsTweaker != null) {
 					mTtsChoiceVer = ++ttsChoiceVer;
@@ -955,6 +1060,48 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 				runSendText(true);
 				//sendText();
 			} break;
+		}
+	}
+	
+	private void tiaoJie(View v) {
+		DescriptiveImageView tweak = null;
+		boolean b1 = v.getId()==R.id.spdup;
+		int i = controlBar.indexOfChild(v), d=b1?1:-1;
+		View tag = controlBar.getChildAt(i - d);
+		for (i = 0; i < 3; i++) {
+			if(volPitSpd[i]==tag) { tweak=volPitSpd[i]; break; }
+		}
+		float value;
+		if (tweak != null) {
+			if (tweak.getId()==R.id.volumn) {
+				value=Math.max(0, Math.min(TTSVolume*100+d*25, 100));
+				TTSVolume = value/100;
+				tweak.setText(""+((int)value));
+				a.showT("音量" + ((int)value) + "%");
+			}
+			else if (tweak.getId()==R.id.pitch) {
+				TTSPitch=Math.max(0, Math.min(TTSPitch+d, TTS_LEVLES_SPEED.length-1));
+				value=TTS_LEVLES_SPEED[TTSPitch];
+				a.showT("音调 " + value);
+				tweak.setText(""+value);
+				if (tts != null) tts.setPitch(value);
+			}
+			else if (tweak.getId()==R.id.speed) {
+				TTSSpeed=Math.max(0, Math.min(TTSSpeed+d, TTS_LEVLES_SPEED.length-1));
+				value=TTS_LEVLES_SPEED[TTSSpeed];
+				tweak.setText(""+value);
+				a.showT("语速"+ value + "倍");
+				if (tts != null) tts.setSpeechRate(value);
+			}
+			if (playing && tts != null) {
+				tts.stop();
+				cachedEndIndex = -1;
+				//sendText();
+				ReadText(null, mCurrentReadContext);
+			}
+			if (a.m_currentToast != null) {
+				a.m_currentToast.setGravity(Gravity.BOTTOM, 0, 175*2);
+			}
 		}
 	}
 	

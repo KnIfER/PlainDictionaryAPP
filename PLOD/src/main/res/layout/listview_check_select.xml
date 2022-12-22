@@ -26,6 +26,20 @@
 		android:checked="false"
 		/>
 
+	<TextView
+		tools:text="无等级"
+		android:id="@android:id/text2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:minHeight="?attr/listPreferredItemHeightSmall"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:textColor="#000"
+		android:gravity="center_vertical"
+		android:paddingStart="7dp"
+		android:paddingEnd="7dp"
+		android:drawablePadding="20dp"
+		/>
+
 	<ImageView
 		android:id="@+id/ivDeleteText_ADA"
 		android:layout_width="wrap_content"

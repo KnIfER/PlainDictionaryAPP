@@ -159,7 +159,7 @@ public class BookmarkAdapter extends BaseAdapter{
 		//else
 		try {
 			//LexicalText=md.bookImpl.getEntryAt(testDBV2?cr.getInt(2):cr.getInt(0));
-			BookmarkDatabaseReader reader = dataAdapter.getReaderAt(position);
+			BookmarkDatabaseReader reader = dataAdapter.getReaderAt(position, true);
 			vh.entry_position = reader.position;
 			LexicalText=reader.entryName==null?reader.url:reader.entryName;
 			PlainWeb webx = presenter.getWebx();
@@ -186,7 +186,7 @@ public class BookmarkAdapter extends BaseAdapter{
 	@Override
 	public Object getItem(int position) {
 		try {
-			return dataAdapter.getReaderAt(position);
+			return dataAdapter.getReaderAt(position, true);
 		} catch (Exception e) {
 			CMN.Log(e);
 			return null;

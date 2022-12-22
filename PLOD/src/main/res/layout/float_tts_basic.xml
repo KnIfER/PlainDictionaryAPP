@@ -123,77 +123,68 @@
 
 	<LinearLayout
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
+		android:layout_height="30dp"
 		android:orientation="horizontal"
+		android:clipToPadding="false"
 		>
-		<SeekBar
-			android:id="@+id/sb1"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:maxHeight="@dimen/_35_"
-			android:minHeight="@dimen/_35_"
-			android:layout_weight="1"
-			android:theme="@style/seekBarStyle"
-			android:splitTrack="false"
-			android:max="100"
-			android:contentDescription="音量滑块"
-			/>
-		<ImageView
+		<TextView
+			android:id="@+id/spddn"
+			android:text="—"
+			android:paddingStart="5dp"
+			style="@style/btn_adj" />
+		<com.knziha.plod.widgets.DescriptiveImageView
 			android:id="@+id/volumn"
-			android:layout_width="30dp"
-			android:layout_height="match_parent"
-			android:padding="4dp"
 			android:src="@drawable/voice_ic_big"
-			android:layout_marginRight="5dp"
+			android:text="音量"
 			android:contentDescription="音量按钮"
-			android:tint="#44A0D3"
-			android:background="?attr/actionBarItemBackground"
-			/>
-		<SeekBar
-			android:id="@+id/sb2"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:maxHeight="@dimen/_35_"
-			android:minHeight="@dimen/_35_"
-			android:layout_weight="1"
-			android:theme="@style/seekBarStyle"
-			android:splitTrack="false"
-			android:max="20"
-			android:contentDescription="音调滑块"
-			/>
-		<ImageView
+			style="@style/btn_spd_indicator" />
+		<TextView
+			android:id="@+id/spdup"
+			android:text="+"
+			style="@style/btn_adj"
+			android:paddingEnd="5dp"/>
+
+		<View android:layout_width="12dp" android:layout_height="match_parent" />
+
+
+		<TextView
+			android:id="@+id/spddn"
+			android:text="—"
+			style="@style/btn_adj"
+			android:paddingStart="5dp"/>
+		<com.knziha.plod.widgets.DescriptiveImageView
 			android:id="@+id/pitch"
-			android:layout_width="30dp"
-			android:layout_height="match_parent"
-			android:padding="4dp"
 			android:src="@drawable/ic_baseline_signal_cellular_alt_24"
-			android:layout_marginRight="5dp"
+			android:text="音调"
 			android:contentDescription="音调按钮"
-			android:background="?attr/actionBarItemBackground"
-			android:tint="#44A0D3"
+			style="@style/btn_spd_indicator"
 			/>
-		<SeekBar
-			android:id="@+id/sb3"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:maxHeight="@dimen/_35_"
-			android:minHeight="@dimen/_35_"
-			android:layout_weight="1"
-			android:theme="@style/seekBarStyle"
-			android:splitTrack="false"
-			android:max="20"
-			android:contentDescription="语速滑块"
-			/>
-		<ImageView
+		<TextView
+			android:id="@+id/spdup"
+			android:text="+"
+			style="@style/btn_adj"
+			android:paddingEnd="5dp"/>
+
+		<View android:layout_width="12dp" android:layout_height="match_parent" />
+
+
+		<TextView
+			android:id="@+id/spddn"
+			android:text="—"
+			style="@style/btn_adj"
+			android:paddingStart="5dp"/>
+		<com.knziha.plod.widgets.DescriptiveImageView
 			android:id="@+id/speed"
-			android:layout_width="30dp"
-			android:layout_height="match_parent"
-			android:padding="4dp"
-			android:src="@drawable/ic_baseline_directions_run_24"
-			android:layout_marginRight="5dp"
+			android:text="语速"
 			android:contentDescription="语速按钮"
-			android:background="?attr/actionBarItemBackground"
-			android:tint="#44A0D3"
+			style="@style/btn_spd_indicator"
+			android:src="@drawable/ic_baseline_directions_run_24"
 			/>
+		<TextView
+			android:id="@+id/spdup"
+			android:text="+"
+			style="@style/btn_adj"
+			android:paddingEnd="5dp"/>
+
 	</LinearLayout>
 </LinearLayout>

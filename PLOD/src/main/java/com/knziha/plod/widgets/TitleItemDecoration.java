@@ -12,6 +12,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.databinding.DbCardListItemBinding;
 
 /** TimelineDecoration. org. author: Endeavor et al. date: 2018/9/25
  *  https://www.jianshu.com/p/8a51039d9e68
@@ -28,6 +29,7 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 	public final Paint bgPaint = new Paint();
 	public final Paint bgPaint1 = new Paint();
 	public final Paint textPaint = new Paint();
+	public final Paint textPaint1 = new Paint();
 	//public final Rect textRect = new Rect();
 	public final RectF tmpRect = new RectF();
 	private TitleDecorationCallback callback;
@@ -35,7 +37,7 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 	public interface TitleDecorationCallback {
 		boolean isSameGroup(int prevPos, int thePos);
 		String getGroupName(int position);
-		void postDrawText(Canvas canvas, float top, float x, float y, float labelSz, Paint textPaint, int position, String name);
+		void postDrawText(Canvas canvas, float top, float bottom, float x, float y, float labelSz, Paint textPaint, int position, String name);
 	}
 
     public TitleItemDecoration(Context context
@@ -52,6 +54,9 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
         textPaint.setAntiAlias(true);
         textPaint.setColor(textColor);
 	
+		textPaint1.setTextSize(titleFontSz);
+		textPaint1.setAntiAlias(true);
+	
 		//descent = (int) textPaint.getFontMetrics().descent;
 
 		bgPaint.setAntiAlias(true);
@@ -61,8 +66,10 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
     // 这个方法用于给item隔开距离，类似直接给item设padding
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-        int position = ((RecyclerView.LayoutParams) view.getLayoutParams()).getViewLayoutPosition();
+        int position = ((RecyclerView.LayoutParams) view.getLayoutParams()).getBindingAdapterPosition(); // important here. not getViewLayoutPosition
         if (isFirst(position)) {
+			//ViewUtils.ViewDataHolder<DbCardListItemBinding> vh = (ViewUtils.ViewDataHolder<DbCardListItemBinding>) ViewUtils.getViewHolderInParents(view);
+			//CMN.debug("getItemOffsets::", position, vh.data.text1.getText());
             outRect.top = titleHeight;
         } else {
             outRect.top = 1;
@@ -112,7 +119,7 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 				canvas.drawText(name, x, y, textPaint);
 	
 				// todo 这样调用真的好吗，抑或无感
-				callback.postDrawText(canvas, top, x, y, labelSz, textPaint, position, name);
+				callback.postDrawText(canvas, top, bottom, x, y, labelSz, textPaint, position, name);
             }
 			viewAbove = view;
         }
@@ -170,7 +177,7 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 			
 			canvas.drawText(name, x, y, textPaint);
 			
-			callback.postDrawText(canvas, top, x, y, labelSz, textPaint, position, name);
+			callback.postDrawText(canvas, top, bottom, x, y, labelSz, textPaint, position, name);
 		}
     }
 
@@ -182,4 +189,24 @@ public class TitleItemDecoration extends RecyclerView.ItemDecoration {
 	public int getHeight() {
 		return titleHeight;
 	}
+	
+	public float drawLabel(Canvas canvas, String text, float x, float y, float top, float bottom, int textColor, int background) {
+		textPaint1.setColor(textColor);
+		float pad = 5f * GlobalOptions.density;
+		float padY = titleHeight/8;
+		float labelSz = textPaint1.measureText(text) + pad;
+		if (background != 0) {
+			bgPaint1.setColor(background);
+			if (textCorner != 0) {
+				tmpRect.set(x-pad, top+padY, x+labelSz, bottom-padY);
+				canvas.drawRoundRect(tmpRect
+						, textCorner, textCorner, bgPaint1);
+			} else {
+				canvas.drawRect(x-pad, top+padY, x+labelSz, bottom-padY, bgPaint1);
+			}
+		}
+		canvas.drawText(text, x, y, textPaint1);
+		return x+labelSz;
+	}
+	
 }

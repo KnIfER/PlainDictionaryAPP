@@ -8,7 +8,7 @@ try {
 	debug('searchJs');
 	var ta=document.getElementById('inputText');
 	if (ta) {
-		ta.value = '%s';
+		ta.value = \"%s\";
 		document.getElementsByClassName('blue-btn')[0].click();
 		succ = 1;
 		//window._tweakedHXCL = false; setTimeout(window._tweakHXCL, 350);

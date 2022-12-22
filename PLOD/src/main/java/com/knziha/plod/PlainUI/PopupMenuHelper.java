@@ -77,11 +77,11 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 		}
 		int padding = (int) (11* GlobalOptions.density);
 		int padding1 = (int) (32.8*GlobalOptions.density);
+		final int tc = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
 		for (int menuPos = 0; menuPos < texts.length; menuPos++) {
 			int resId = texts[menuPos];
 			//context.getResources().getResourceTypeName()
-			CMN.debug("initLayout::", Integer.toHexString(resId), "resId");
-			int tc = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
+			//CMN.debug("initLayout::", Integer.toHexString(resId), "resId");
 			if(resId>=0x7f100000) {
 				TextMenuView tv;
 				if (bRecycle && menuPos<tvArr.size()) {
@@ -106,7 +106,9 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 				tv.setTextColor(tc);
 				tv.leftDrawable = leftDrawable;
 				lv.addView(tv);
-			} else {
+			}
+			else {
+				if(resId==0) continue;
 				try {
 					View view = LayoutInflater.from(context).inflate(resId, lv, false);
 					if (view.isClickable()) {

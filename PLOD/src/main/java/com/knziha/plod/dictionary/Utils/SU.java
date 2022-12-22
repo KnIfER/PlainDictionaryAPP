@@ -35,6 +35,7 @@ public class  SU{
     public static boolean debug = true;//StringUtils
 	public static byte[] EmptyBytes = new byte[0];
 	public static long mid;
+	public static String days = "一二三四五六七";
 	
 	public static String trimStart(String input) {
 		int len = input.length();

@@ -34,7 +34,7 @@ public class AnnotRangeAdapter<T extends CursorReader> implements PagingAdapterI
 	}
 	
 	@Override
-	public T getReaderAt(int position) {
+	public T getReaderAt(int position, boolean triggerPaging) {
 		long id = IU.parseLong(rowIds.get(position), -1);
 		if (id != -1) {
 			T ret = readers.get(id);
@@ -87,5 +87,13 @@ public class AnnotRangeAdapter<T extends CursorReader> implements PagingAdapterI
 			rowIds.remove(position);
 			readers.remove(id);
 		}
+	}
+	
+	public boolean getTopReached() {
+		return true;
+	}
+	
+	public int getPageIdx(int position) {
+		return 0;
 	}
 }

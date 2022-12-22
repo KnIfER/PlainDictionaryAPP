@@ -275,7 +275,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				if (PDICMainAppOptions.tapEditAnteNote() || v.getId()==R.id.editNoteBtn) {
 					try {
 						AnnotAdapter.VueHolder vh = (AnnotAdapter.VueHolder) v.getTag();
-						AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position);
+						AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position, false);
 						pressedRowId = reader.row_id;
 						editPressedNote();
 					} catch (Exception e) {
@@ -426,7 +426,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		pressedV = new WeakReference<>(v);
 		try {
 			AnnotAdapter.VueHolder vh = (AnnotAdapter.VueHolder) v.getTag();
-			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position);
+			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position, false);
 			pressedRowId = reader.row_id;
 			View rv = noteDlg.getView();
 			View vp = (View) v.getParent();
@@ -880,7 +880,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		try {
 			View v = pressedV.get();
 			AnnotAdapter.VueHolder vh = (AnnotAdapter.VueHolder) v.getTag();
-			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position);
+			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position, false);
 			setEditingNote(reader.row_id);
 			JSONObject json = reader.getAnnot();
 			String note = reader.notes!=null?reader.notes:JsonNames.readString(json, JsonNames.note);

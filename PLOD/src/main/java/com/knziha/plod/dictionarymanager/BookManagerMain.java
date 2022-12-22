@@ -522,7 +522,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							a.addElementsToF1(a.f4, null, true, true, pressedPos+1);
 						} break;
 						// 收入剪贴板
-						case R.string.addPastes: {
+						case R.string.addToPasteBin: {
 							try {
 								if (b1) return true;
 								ArrayList<String> paths = new ArrayList<>();
@@ -535,10 +535,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 								} else {
 									paths.add(getPathAt(position));
 								}
-								String content = "";
+								String content = "", tPath = opt.lastMdlibPath.getPath()+"/";
 								for (String path : paths) {
 									if (content.length() > 0) {
 										content += "\n";
+									}
+									if(path.startsWith(tPath)) {
+										path = path.substring(tPath.length());
 									}
 									content += path;
 								}
@@ -593,7 +596,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 								, R.layout.poplist_quanzhong_jinxuan
 								, R.string.addRecentPasteHere
 								, R.string.addPasteHere
-								, R.string.addPastes
+								, R.string.addToPasteBin
 							}, this);
 							int[] vLocationOnScreen = new int[2];
 							pressedV.getLocationOnScreen(vLocationOnScreen);

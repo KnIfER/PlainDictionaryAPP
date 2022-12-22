@@ -141,6 +141,7 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 		browserHolder = new WeakReference<>(broswer);
 		resetDataCache(broswer.type);
 		pm = a.getPackageManager();
+		setHasStableIds(true);
 	}
 	
 	public boolean resetDataCache(int type) {
@@ -227,7 +228,7 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 		
 		long rowId = position;
 		
-		HistoryDatabaseReader reader = displaying.getReaderAt(position);
+		HistoryDatabaseReader reader = displaying.getReaderAt(position, true);
 		holder.tag = reader;
 		try {
 			text=reader.record;
@@ -271,7 +272,7 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 		viewdata.text1.setTextIsSelectable(PDICMainAppOptions.dbTextSelectable());
 		viewdata.text1.setText(text.trim());
 		if(a.opt.debuggingDBrowser()>1) {
-			viewdata.text1.setText(position+" ::"+text.trim());
+			viewdata.text1.setText(data.dataAdapter.getPageIdx(position)+" :: "+position+" ::"+text.trim());
 			if(a.opt.debuggingDBrowser()>2) CMN.debug("onBindViewHolder::", position, text.trim(), ivk);
 		}
 		
@@ -319,35 +320,39 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 			viewdata.p.setVisibility(View.GONE);
 		}
 	}
-
+	
 	@Override
 	public void setSelected(int index, boolean selected) {
-		long posId = displaying.getReaderAt(index).row_id;
-		DBroswer browser = browserHolder.get();
-		boolean alreadyselected=browser.Selection.contains(posId);
-		boolean needUpdate = false;
-		if(a.opt.getInRemoveMode()) {//bIsInverseSelecting
-			if(selected && alreadyselected) {
-				browser.Selection.remove(posId);
-				needUpdate=true;
-			} else if(!selected && !alreadyselected) {
-				browser.Selection.add(posId);
-				needUpdate=true;
+		try {
+			long posId = displaying.getReaderAt(index, false).row_id;
+			DBroswer browser = browserHolder.get();
+			boolean alreadyselected = browser.Selection.contains(posId);
+			boolean needUpdate = false;
+			if (a.opt.getInRemoveMode()) {//bIsInverseSelecting
+				if (selected && alreadyselected) {
+					browser.Selection.remove(posId);
+					needUpdate = true;
+				} else if (!selected && !alreadyselected) {
+					browser.Selection.add(posId);
+					needUpdate = true;
+				}
+			} else {
+				if (selected && !alreadyselected) {
+					browser.Selection.add(posId);
+					needUpdate = true;
+				} else if (!selected && alreadyselected) {
+					browser.Selection.remove(posId);
+					needUpdate = true;
+				}
 			}
-		} else {
-			if(selected && !alreadyselected) {
-				browser.Selection.add(posId);
-				needUpdate=true;
-			} else if(!selected && alreadyselected) {
-				browser.Selection.remove(posId);
-				needUpdate=true;
+			
+			if (needUpdate) {
+				notifyItemChanged(index);
+				browser.UIData.counter.setVisibility(View.VISIBLE);
+				browser.UIData.counter.setText(browser.Selection.size() + "/" + displaying.getCount());
 			}
-		}
-
-		if(needUpdate) {
-			notifyItemChanged(index);
-			browser.UIData.counter.setVisibility(View.VISIBLE);
-			browser.UIData.counter.setText(browser.Selection.size()+"/"+ displaying.getCount());
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 
@@ -357,7 +362,7 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 	}
 	
 	public HistoryDatabaseReader getReaderAt(int i) {
-		return displaying.getReaderAt(i);
+		return displaying.getReaderAt(i, false);
 	}
 	
 	//@Override
@@ -430,5 +435,16 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 			CMN.debug("rebuildCursor::savedPositions::read::", browser.getFragmentId()+" "+new Date(lastTm).toLocaleString());
 		}
 		//CMN.Log("mAdapter.rebuildCursor!!!");
+	}
+	
+	@Override
+	public long getItemId(int position) {
+		try {
+			HistoryDatabaseReader reader = displaying.getReaderAt(position, false);
+			return reader.row_id;
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return super.getItemId(position);
 	}
 }

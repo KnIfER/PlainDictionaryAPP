@@ -17,8 +17,10 @@ import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
+import com.knziha.plod.dictionary.Utils.StrId;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.settings.SettingsActivity;
@@ -55,9 +57,7 @@ public class AgentApplication extends Application {
 	public Handler[] handles = new Handler[3];
 	public FloatApp floatApp;
 //	public FloatBtn floatBtn;
-	/** 退出全部实例时关闭、清理 */
-	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
-	ArrayList<MyPair<String, Long>> AppDatabasesV2 = new ArrayList<>();
+	ArrayList<StrId> AppDatabasesV2 = new ArrayList<>();
 	/** 退出全部实例时仍然保留 */
 	HashMap<String, MyIntPair> databaseConext = new HashMap<>();
 	public final static WeakReference<MainActivityUIBase>[] activities = new WeakReference[3];
@@ -185,14 +185,6 @@ public class AgentApplication extends Application {
 
 	public void closeDataBases() {
 		CMN.debug("关闭数据库");
-		LexicalDBHelper vI;
-		for(MyPair<String, LexicalDBHelper> itemI:AppDatabases){
-			vI = itemI.value;
-			if(vI!=null){
-				itemI.value=null;
-				vI.close();
-			}
-		}
 		if (historyCon!=null) {
 			historyCon.close();
 			historyCon = null;

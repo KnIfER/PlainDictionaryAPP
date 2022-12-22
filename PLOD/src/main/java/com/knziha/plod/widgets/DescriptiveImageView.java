@@ -17,6 +17,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.R;
@@ -32,16 +33,14 @@ public class DescriptiveImageView extends ImageView {
 	public boolean bDrawShadow=false;
 	public RectF bShadowRect;
 	
+	
+	
 	public DescriptiveImageView(Context context) {
 		this(context, null);
 	}
 	
 	public DescriptiveImageView(Context context, @Nullable AttributeSet attrs) {
-		this(context, attrs, 0);
-	}
-	
-	public DescriptiveImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
+		super(context, attrs);
 		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DescriptiveImageViewSty);
 		mText = a.getString(R.styleable.DescriptiveImageViewSty_android_text);
 		setContentDescription(mText);
@@ -49,6 +48,7 @@ public class DescriptiveImageView extends ImageView {
 		textPainter = createTextPainter(false);
 		a.recycle();
 	}
+	
 	
 	static TextPaint global_painter;
 	
@@ -83,7 +83,8 @@ public class DescriptiveImageView extends ImageView {
 		super.onDraw(canvas);
 		if(mText!=null&&textPainter!=null) {
 			Paint.FontMetrics fontMetrics = textPainter.getFontMetrics();
-			canvas.drawText(mText,(getWidth()-textPainter.measureText(mText))/2,offsetY==-1?
+			canvas.drawText(mText,(getWidth()-textPainter.measureText(mText))/2
+					,offsetY==-1?
 					(getMeasuredHeight()-fontMetrics.bottom-fontMetrics.top)/2
 					:(offsetY+getHeight()-getPaddingBottom()-getPaddingTop()+fontMetrics.bottom-fontMetrics.ascent)
 			, textPainter);

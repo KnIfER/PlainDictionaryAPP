@@ -60,7 +60,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
-import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.view.ActionMode;
 import android.view.DragEvent;
@@ -139,7 +138,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerListener;
@@ -163,6 +161,7 @@ import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
+import com.knziha.plod.PlainUI.FavoriteHub;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NewTitlebar;
@@ -191,6 +190,7 @@ import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.StrId;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
@@ -460,7 +460,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public resultRecorderDiscrete EmptySchResults;
 	
 	public Dialog taskd;
-	DArrayAdapter AppFunAdapter;
+	public com.knziha.plod.plaindict.FavFolderAdapter favFolderAdapter;
 	BufferedWriter output;
 	BufferedWriter output2;
 	public final static String ce_on="document.body.contentEditable=!0";
@@ -558,7 +558,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	
 	WeakReference<AlertDialog> setchooser = ViewUtils.DummyRef;
-	private WeakReference<BottomSheetDialog> bottomPlaylist = ViewUtils.DummyRef;
 	WeakReference<AlertDialog> ChooseFavorDialog = ViewUtils.DummyRef;
 	WeakReference<DBroswer> DBrowserHolder = ViewUtils.DummyRef;
 	DBroswer DBrowser;
@@ -1414,7 +1413,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public TTSHub ttsHub = new TTSHub(this);
 	
 	public void fix_pw_color() {
-		bottomPlaylist.clear();
 		ChooseFavorDialog.clear();
 	}
 
@@ -3419,7 +3417,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(hdl!=null) {
 					hdl.clearActivity();
 				}
-				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser, bottomPlaylist};
+				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser};
 				for(WeakReference hI:holders){
 					if(hI!=null)
 						hI.clear();
@@ -5711,6 +5709,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			DBrowser = DBrowserHolder.get();
 			if(DBrowser==null || opt.debuggingDBrowser()>0){
 				CMN.debug("重建收藏夹历史记录视图");
+				//showT("DEBUG : 已经重建视图！");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
@@ -5918,25 +5917,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					etSearch.setText(lastEtString);
 					//etSearch_ToToolbarMode(3);
 				}
-			}break;
+			} break;
 			/* 选择.删除.收藏夹 */
 			case R.id.ivDeleteText_ADA: {
 				View p = (View) v.getParent();
-				DArrayAdapter.ViewHolder vh = (DArrayAdapter.ViewHolder) p.getTag();
+				com.knziha.plod.plaindict.FavFolderAdapter.ViewHolder vh = (com.knziha.plod.plaindict.FavFolderAdapter.ViewHolder) p.getTag();
 				int position = vh.position;
 				int id_ = ((ViewGroup)p.getParent()).getId();
-				MyPair<String, Long> item = AppFunAdapter.notebooksV2.get(position);
+				StrId folder = favFolderAdapter.folders.get(position);
 				if(p.getParent() instanceof ViewGroup)
-					//选择收藏夹
 					if(id_==R.id.favorList) {
-						putCurrFavoriteNoteBookId(item.value);
-						AppFunAdapter.notifyDataSetChanged();
+						CMN.debug("选择收藏夹::", folder.id);
+						putCurrFavoriteNoteBookId(folder.id);
+						favFolderAdapter.notifyDataSetChanged();
+						showT("已选用 "+folder.data + " 为收藏夹");
 					}
 					//删除收藏夹
 					else if(id_==R.id.click_remove) {
-						if (prepareHistoryCon().removeFolder(item.value)>=0) {
-							AppFunAdapter.remove(position);
-						}
+						showT("qwer");
+//						if (prepareHistoryCon().removeFolder(folder.id)>=0) {
+//							favFolderAdapter.remove(position);
+//						}
 					}
 			}break;
 			//返回
@@ -6259,93 +6260,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public boolean getUsingDataV2() {
 		return prepareHistoryCon().testDBV2;
-	}
-	
-	public void activateDataV2() {
-		opt.setUseDatabaseV2(true);
-		LexicalDBHelper dbCon;
-		dbCon = favoriteCon;
-		AgentApplication app = ((AgentApplication) getApplication());
-		if(dbCon!=null && !dbCon.testDBV2) {
-			favoriteCon = null;
-			dbCon.close();
-		}
-		dbCon = historyCon;
-		boolean bNeedUpdate = false;
-		if(dbCon!=null && !dbCon.testDBV2) {
-			app.historyCon = historyCon = null;
-			dbCon.close();
-			bNeedUpdate = true;
-		}
-		DBrowserHolder.clear();
-		for(DBListAdapter.DeckListData dI: DBrowserDatas){
-			if(dI!=null) dI.close();
-			DBrowserDatas = new DBListAdapter.DeckListData[2];
-		}
-		dbCon = prepareHistoryCon();
-		//if(bNeedUpdate)
-		{
-			// prepare book id for updating
-			HashSet<File> mdns = new HashSet<>();
-			ArrayList<BookPresenter> mds = new ArrayList<>(md);
-			mds.addAll(mdict_cache.values());
-			for(BookPresenter bookPresenter:md) {
-				if (bookPresenter!=null && bookPresenter.bookImpl.getBooKID()==-1) {
-					BookPresenter.keepBook(this, bookPresenter.bookImpl);
-					CMN.debug("激活DBV2::", bookPresenter.bookImpl);
-					mdns.add(bookPresenter.bookImpl.getFile());
-				}
-			}
-			File ConfigFile = opt.fileToConfig();
-			File rec = opt.fileToDecords(ConfigFile);
-			if(rec.exists())
-			try {
-				BufferedReader in = new BufferedReader(new FileReader(rec));
-				String line;
-				while((line=in.readLine())!=null){
-					File check;
-					if(!line.startsWith("/"))
-						check=new File(opt.lastMdlibPath,line);
-					else
-						check=new File(line);
-					mdns.add(check);
-				}
-				in.close();
-			} catch (Exception e2) {
-				CMN.debug(e2);
-			}
-			File[] mdnsArr = mdns.toArray(new File[mdns.size()]);
-			for(File bookName:mdnsArr) {
-				CMN.debug("激活DBV2::", bookName);
-				String path = bookName.getPath();
-				String name = bookName.getName();
-				try {
-					path = bookName.getCanonicalPath();
-				} catch (IOException e) {
-					CMN.debug(e);
-				}
-				dbCon.getBookID(path, name);
-			}
-			DArrayAdapter favAdapter = new DArrayAdapter(this, true);
-			for(MyPair<String, LexicalDBHelper> cp:favAdapter.notebooks)
-			{
-				String name = cp.key;
-				LexicalDBHelper favCon = cp.value;
-				if (favCon==null) {
-					favCon = new LexicalDBHelper(getApplicationContext(), opt, name, false);
-				}
-				long folder = dbCon.ensureNoteBookByName(name);
-				if (folder==-1) {
-					folder = 0;
-				}
-				DBUpgradeHelper.upgradeFavToFavFolder(favCon, dbCon, folder);
-				cp.value = null;
-				favCon.close();
-			}
-			LexicalDBHelper historyCon = new LexicalDBHelper(getApplicationContext(), opt, null, false);
-			DBUpgradeHelper.upgradeHistoryToDBV2(historyCon, dbCon);
-			historyCon.close();
-		}
 	}
 	
 	private Runnable putNameRunnable = () -> {
@@ -9748,13 +9662,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	protected DArrayAdapter FavoriteNoteBooksAdapter() {
-		if(AppFunAdapter ==null)
-			AppFunAdapter = new DArrayAdapter(this, false);
-		return AppFunAdapter;
+	public com.knziha.plod.plaindict.FavFolderAdapter FavoriteNoteBooksAdapter() {
+		if(favFolderAdapter ==null)
+			favFolderAdapter = new FavFolderAdapter(this);
+		return favFolderAdapter;
 	}
 
-	protected void showCreateNewFavoriteDialog(int width) {
+	public void showCreateNewFavoriteDialog(int width) {
 		ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.fp_edittext, root, false);
 		EditText etNew = dv.findViewById(R.id.edt_input);
 		View btn_Done = dv.findViewById(R.id.done);
@@ -9763,7 +9677,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dd.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		dd.setContentView(dv);
 		btn_Done.setOnClickListener(v121 -> {
-			AppFunAdapter.createNewDatabase(etNew.getText().toString());
+			favFolderAdapter.createNewDatabase(etNew.getText().toString());
 			dd.dismiss();
 		});
 		etNew.setOnEditorActionListener((v1212, actionId, event) -> {
@@ -9786,99 +9700,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	WeakReference<FavoriteHub> favoriteHubRef = EmptyRef;
+	
 	public void showMultipleCollection(String text, ViewGroup webviewholder) {
-		BottomSheetDialog bPane = bottomPlaylist.get();
-		if(bPane==null) {
-			CMN.debug("重建底部弹出");
-			bottomPlaylist = new WeakReference<>(bPane = new BottomSheetDialog(this));
-			View ll = LayoutInflater.from(this).inflate(R.layout.bottom_favorite_sheet, null);
-			ListView lv = ll.findViewById(R.id.favorList);
-			lv.setAdapter(FavoriteNoteBooksAdapter());
-			lv.setOnItemClickListener((parent, view, position, id) -> {
-				CheckedTextView tv = view.findViewById(android.R.id.text1);
-				tv.toggle();
-				tv.jumpDrawablesToCurrentState();
-				AppFunAdapter.setChecked(position, tv.isChecked());
-			});
-			BottomSheetDialog final_bottomPlaylist = bPane;
-			OnClickListener clicker = v -> {
-				switch (v.getId()) {
-					case R.id.cancel:
-						final_bottomPlaylist.dismiss();
-						break;
-					case R.id.confirm:
-						Long[] selectionArr = AppFunAdapter.selectedPositionsArr;
-						ArrayList<MyPair<String, Long>> items = AppFunAdapter.notebooksV2;
-						HashSet<Long> selection = AppFunAdapter.selectedPositions;
-						if(selection.size()>0) {
-							int delCnt=0, delNum=0, addCnt=0, addNum=0;
-							for(Long oldFav:selectionArr) {
-								if (!selection.contains(oldFav)) {
-									delNum++;
-									try {
-										if(prepareHistoryCon().remove(text, oldFav)>=0) {
-											delCnt++;
-										}
-									} catch (Exception e) { CMN.debug(e); }
-								}
-							}
-							selection.removeAll(Arrays.asList(selectionArr));
-							addNum = selection.size();
-							selectionArr = selection.toArray(new Long[addNum]);
-							for(Long newFav:selectionArr) {
-								try {
-									if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
-										addCnt++;
-									}
-								} catch (Exception e) { CMN.debug(e); }
-							}
-							String msg = "";
-							if (addNum>0) {
-								msg += " 添加完毕！(" + addCnt + "/" + addNum + ")";
-							}
-							if (delNum>0) {
-								if (!TextUtils.isEmpty(msg)) {
-									msg += "\t";
-								}
-								msg += " 移除完毕！(" + delCnt + "/" + delNum + ")";
-							}
-							if (!TextUtils.isEmpty(msg)) {
-								showT(msg);
-							}
-							selection.clear();
-						}
-						final_bottomPlaylist.dismiss();
-						break;
-					case R.id.new_folder:
-						showCreateNewFavoriteDialog((int) (ll.getWidth() - getResources().getDimension(R.dimen._35_)));
-						break;
-				}
-			};
-			ll.findViewById(R.id.cancel).setOnClickListener(clicker);
-			ll.findViewById(R.id.confirm).setOnClickListener(clicker);
-			ll.findViewById(R.id.new_folder).setOnClickListener(clicker);
-			bPane.setContentView(ll);
-			bPane.getWindow().setDimAmount(0.2f);
-			//bottomPlaylist.getWindow().setBackgroundDrawable(null);
-			//bottomPlaylist.getWindow().getDecorView().setBackground(null);
-			////bottomPlaylist.getWindow().findViewById(R.id.design_bottom_sheet).setBackground(null);
-			//fix_full_screen(bottomPlaylist.getWindow().getDecorView());
-			bPane.getWindow().getDecorView().setTag(lv);
-			//CMN.recurseLogCascade(lv);
-			bPane.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
-			if(GlobalOptions.isDark) {
-				ll.setBackgroundColor(Color.BLACK);
-				((TextView)ll.findViewById(R.id.title)).setTextColor(Color.WHITE);
-				ll.findViewById(R.id.bottombar).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-			}
+		FavoriteHub hub = favoriteHubRef.get();
+		if (hub == null) {
+			hub = new FavoriteHub(this);
+			favoriteHubRef = new WeakReference<>(hub);
 		}
-		FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
-		View v = (View) bPane.getWindow().getDecorView().getTag();
-		DisplayMetrics dm2 = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
-		v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * bPane.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
-		v.requestLayout();
-		bPane.show();
+		hub.show(text);
 	}
 	
 	public void showSoundTweaker() {
@@ -9907,9 +9737,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			litsView.setOnItemClickListener((parent, view, position, id) -> {
 				int reason1 = (int) parent.getTag();
 				String name;
-				MyPair<String, Long> nb = AppFunAdapter.notebooksV2.get(position);
-				name = nb.key;
-				long NID = nb.value;
+				StrId folder = favFolderAdapter.folders.get(position);
+				name = folder.data;
+				long NID = folder.id;
 				if (DBrowser!=null) {
 					if(reason1!=2 && DBrowser.type==DB_FAVORITE) {
 						//CMN.Log("// 加载收藏夹", NID);
@@ -9932,8 +9762,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			});
 			d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v1 -> {
-				AppFunAdapter.showDelete = !AppFunAdapter.showDelete;
-				AppFunAdapter.notifyDataSetChanged();
+				favFolderAdapter.showDelete = !favFolderAdapter.showDelete;
+				favFolderAdapter.notifyDataSetChanged();
 			});
 			d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 			d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(MainActivityUIBase.this,R.color.colorHeaderBlue));

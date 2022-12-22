@@ -377,7 +377,7 @@ public class TestHelper {
 		try {
 			Cursor cursor = LexicalDBHelper.getInstance().getDB().rawQuery("select lex from "
 					+ (id == -1 ? LexicalDBHelper.TABLE_HISTORY_v2 : (LexicalDBHelper.TABLE_FAVORITE_v2 + " where folder=? "))
-					+ " order by "+FIELD_VISIT_TIME+" desc ", id == -1 ? null : new String[]{id + ""});
+					+ " order by "+(id!=-1 ?"level desc, ":"")+"last_visit_time desc, id desc ", id == -1 ? null : new String[]{id + ""});
 			int realCnt = cursor.getCount();
 			CMN.debug("PagingVerdict", "dataAdapter = [" + dataAdapter + "], id = [" + id + "]");
 			String ret = "";
@@ -385,10 +385,10 @@ public class TestHelper {
 			int misIdx = -1;
 			for (int i = 0; i < Math.min(realCnt, dataAdapter.getCount()); i++) {
 				cursor.moveToPosition(i);
-				if (!TextUtils.equals(cursor.getString(0), dataAdapter.getReaderAt(i).record)) {
+				if (!TextUtils.equals(cursor.getString(0), dataAdapter.getReaderAt(i, false).record)) {
 					ret += CMN.debug("PagingVerdict misIdx=", misIdx) + "\n";
 					misIdx = i;
-					ret += CMN.debug("PagingVerdict missed!!!", i, cursor.getString(0), dataAdapter.getReaderAt(i)) + "\n";
+					ret += CMN.debug("PagingVerdict missed!!!", i, cursor.getString(0), dataAdapter.getReaderAt(i, false)) + "\n";
 					break;
 				}
 			}

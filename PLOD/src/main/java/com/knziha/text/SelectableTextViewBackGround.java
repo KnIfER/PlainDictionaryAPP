@@ -15,7 +15,7 @@ public class SelectableTextViewBackGround extends View {
 	public int highLightBg2;
 	SelectableTextView tv;
     ScrollViewHolder sv;
-    Paint highLightPainter;
+	public Paint highLightPainter;
     SparseIntArray rectPool = new SparseIntArray();
     SparseIntArray rectPool2 = new SparseIntArray();
 

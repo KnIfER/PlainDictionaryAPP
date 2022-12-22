@@ -545,7 +545,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		String lex, entry, bookName;
 		AnnotationReader reader = null;
 		try {
-			reader = dataAdapter.getReaderAt(position);
+			reader = dataAdapter.getReaderAt(position, true);
 			lex=reader.annotText;
 			entry=reader.entryName;
 			bookName=a.getBookInLstNameByIdNoCreation(reader.bid);
@@ -611,7 +611,7 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 	@Override
 	public long getItemId(int position) {
 		try {
-			return dataAdapter.getReaderAt(position).row_id;
+			return dataAdapter.getReaderAt(position, false).row_id;
 		} catch (Exception e) {
 			CMN.debug(e);
 			return 0;

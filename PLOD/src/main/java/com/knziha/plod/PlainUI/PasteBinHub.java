@@ -122,7 +122,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 					PasteBinEntryReader reader = null;
 					String content;
 					try {
-						reader = dataAdapter.getReaderAt(position);
+						reader = dataAdapter.getReaderAt(position, true);
 						content=reader.content;
 					} catch (Exception e) {
 						content="!!!Error: "+e.getLocalizedMessage();
@@ -259,7 +259,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 					pressedV = v;
 					pressedPos = ViewUtils.getViewHolderInParents(v).getLayoutPosition();
 					if (mPasteBinListener!=null
-							&& mPasteBinListener.doPaste(dataAdapter.getReaderAt(pressedPos).content)) {
+							&& mPasteBinListener.doPaste(dataAdapter.getReaderAt(pressedPos, false).content)) {
 						dismissImmediate();
 					}
 				} break;
@@ -285,7 +285,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	private void refreshList() {
 		View v = recyclerView.getChildAt(0);
 		int fvp = ViewUtils.getViewHolderInParents(v).getLayoutPosition();
-		PasteBinEntryReader reader = dataAdapter.getReaderAt(fvp);
+		PasteBinEntryReader reader = dataAdapter.getReaderAt(fvp, false);
 		resumeTo = reader.sort_numbers;
 		resumeToPos = v.getTop();
 		rebuildCursor();
@@ -300,14 +300,14 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 			try {
 				switch (v.getId()) {
 					case R.string.page_del_this: {
-						PasteBinEntryReader reader = dataAdapter.getReaderAt(pressedPos);
+						PasteBinEntryReader reader = dataAdapter.getReaderAt(pressedPos, false);
 						int ret = database.delete(LexicalDBHelper.TABLE_PASTE_BIN, "id=?", new String[]{"" + reader.row_id});
 						CMN.debug("ret::", ret);
 						refreshList();
 					}
 					break;
 					case R.string.page_del_prev: {
-						PasteBinEntryReader reader = dataAdapter.getReaderAt(pressedPos);
+						PasteBinEntryReader reader = dataAdapter.getReaderAt(pressedPos, false);
 						database.delete(LexicalDBHelper.TABLE_PASTE_BIN, "chn=? and fav<=? and creation_time<=? and id<=?"
 								, new String[]{"" + 0, "" + reader.sort_numbers[0], "" + reader.sort_numbers[1], "" + reader.row_id});
 						refreshList();

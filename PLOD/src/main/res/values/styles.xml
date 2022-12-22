@@ -573,6 +573,29 @@
 		<item name="android:shadowRadius">2</item>
 	</style>
 
+	<style name="btn_adj">
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:layout_width">0dp</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:singleLine">true</item>
+		<item name="android:gravity">center</item>
+		<item name="android:textSize">20dp</item>
+		<item name="android:textColor">#fff</item>
+		<item name="android:background">?android:attr/listChoiceBackgroundIndicator</item>
+		<item name="android:longClickable">true</item>
+	</style>
+
+	<style name="btn_spd_indicator">
+		<item name="android:layout_width">30dp</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:tint">#44A0D3</item>
+		<item name="android:background">?attr/actionBarItemBackground</item>
+		<item name="android:paddingLeft">6dp</item>
+		<item name="android:paddingRight">6dp</item>
+		<item name="android:paddingBottom">7dp</item>
+		<item name="android:layout_y">-9.4dp</item>
+	</style>
+
 </resources>
 
 

@@ -13,7 +13,7 @@ try {
 	debug('searchJs');
 	var ta=document.querySelector('#textarea');
 	if (ta) {
-		ta.value = '%s';
+		ta.value = \"%s\";
 		ta.dispatchEvent(new Event('input', {
 			bubbles: true
 		}));

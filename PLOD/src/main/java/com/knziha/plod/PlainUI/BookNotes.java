@@ -504,7 +504,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		int pos = vh.getLayoutPosition();
 		AnnotAdapter.AnnotationReader reader = null;
 		try {
-			reader = annotAdapter.dataAdapter.getReaderAt(pos);
+			reader = annotAdapter.dataAdapter.getReaderAt(pos, false);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

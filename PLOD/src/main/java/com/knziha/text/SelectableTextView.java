@@ -552,7 +552,7 @@ public class SelectableTextView extends TextView implements View.OnClickListener
 
     public void setTheme(int bgColor, int textColor, int heightLightColor, int heightLightColor2) {
         BackGroundColor = bgColor;
-        setTextColor(Color.BLACK);
+        setTextColor(textColor);
         if(textCover2!=null)textCover2.highLightBg=heightLightColor;
         handleLeft.setColorFilter(heightLightColor2, PorterDuff.Mode.SRC_IN);
         handleRight.setColorFilter(heightLightColor2, PorterDuff.Mode.SRC_IN);

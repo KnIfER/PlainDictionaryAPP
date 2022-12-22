@@ -134,12 +134,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		database = getWritableDatabase();
 		pathName = database.getPath();
 		oldVersion=CMN.dbVersionCode;
-		if(this.testDBV2)instance = this;
-		else {
-			String sql = "select rowid from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
-			preparedGetIsFavoriteWord = database.compileStatement(sql);
-		}
-		
+		instance = this;
 	}
 	
 	public static LexicalDBHelper getInstance() {
@@ -295,10 +290,9 @@ if (!VersionUtils.AnnotOff) {
 			}
 			db.execSQL("DROP INDEX if exists favorite_folder_index");
 			db.execSQL("DROP INDEX if exists favorite_time_index");
-			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex, folder)"); // query view
-			//db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
+			db.execSQL("DROP INDEX if exists favorite_term_index");
+			db.execSQL("CREATE INDEX if not exists favorite_term_index1 ON favorite (lex, folder, level)"); // query view
 			db.execSQL("CREATE INDEX if not exists favorite_folder_index1 ON favorite (folder, level, last_visit_time, id)"); // folder view
-			//db.execSQL("CREATE INDEX if not exists favorite_filter_index ON favorite (folder, visit_count, level,last_visit_time)"); // filter view
 			db.execSQL("CREATE INDEX if not exists favorite_time_index1 ON favorite (level, last_visit_time, id)"); // all view
 			
 			
@@ -387,7 +381,7 @@ if (!VersionUtils.AnnotOff) {
 				preparedGetBookOptions = db.compileStatement("select options from "+TABLE_BOOK_v2+" where id=?");
 				preparedBookIdChecker = db.compileStatement("select id from "+TABLE_BOOK_v2+" where id=?");
 				
-				String sql = "select id from " + TABLE_FAVORITE_v2 + " where lex=?";
+				String sql = "select level from " + TABLE_FAVORITE_v2 + " where lex=?";
 				preparedGetIsFavoriteWordInFolder = db.compileStatement(sql+" and folder=?");
 				preparedGetIsFavoriteWord = db.compileStatement(sql);
 				
@@ -426,34 +420,38 @@ if(!VersionUtils.AnnotOff)
     }
 
     /////
+	
 	/** has text term in the favorite table */
-    public boolean GetIsFavoriteTerm(@NonNull String lex, long folder) {
-    	if (folder==-2) {
+	public long GetFavoriteLevel(@NonNull String lex, long folder) {
+		if (folder==-2) {
 			folder = favoriteFolderId;
 		}
-    	if (folder>=0) {
-    		// Get Is Favorite Term For Folder
+		if (folder>=0) {
+			// Get Is Favorite Term For Folder
 			preparedGetIsFavoriteWordInFolder.bindString(1, lex);
 			preparedGetIsFavoriteWordInFolder.bindLong(2, folder);
 			try {
 				//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-				preparedGetIsFavoriteWordInFolder.simpleQueryForLong();
-				return true;
+				return preparedGetIsFavoriteWordInFolder.simpleQueryForLong();
 			} catch(Exception e) {
 				//CMN.Log(e);
 			}
 		} else {
-    		// for all
+			// for all
 			preparedGetIsFavoriteWord.bindString(1, lex);
 			try {
 				//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-				preparedGetIsFavoriteWord.simpleQueryForLong();
-				return true;
+				return preparedGetIsFavoriteWord.simpleQueryForLong();
 			} catch(Exception e) {
 				//CMN.Log(e);
 			}
 		}
-		return false;
+		return Long.MIN_VALUE;
+	}
+	
+	/** has text term in the favorite table */
+    public boolean GetIsFavoriteTerm(@NonNull String lex, long folder) {
+		return GetFavoriteLevel(lex, folder)!=Long.MIN_VALUE;
 	}
 
 	public boolean containsRaw(String lex) {
@@ -513,7 +511,6 @@ if(!VersionUtils.AnnotOff)
 						CMN.debug(e);
 					}
 				}
-				
 				c.close();
 				
 				ContentValues values = new ContentValues();

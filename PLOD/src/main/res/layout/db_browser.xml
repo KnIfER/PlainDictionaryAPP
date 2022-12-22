@@ -1,336 +1,337 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:fitsSystemWindows="true"
-	>
-	<androidx.appcompat.widget.Toolbar
-		android:id="@+id/toolbar"
+	<LinearLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:app="http://schemas.android.com/apk/res-auto"
+		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="match_parent"
-		android:layout_height="@dimen/barSize"
-		android:minHeight="?attr/actionBarSize"
-		android:theme="@style/toolbarBaseTheme"
-		app:contentInsetLeft="0dp"
-		app:contentInsetStart="0dp"
-		app:contentInsetStartWithNavigation="0dp"
-		android:background="?attr/colorPrimary"
-		app:titleTextColor="#fff"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:fitsSystemWindows="true"
 		>
-	</androidx.appcompat.widget.Toolbar>
-
-	<RelativeLayout
-		android:id="@+id/root"
-		android:layout_width="match_parent"
-		android:layout_height="0dp"
-		android:layout_weight="1"
-		android:descendantFocusability="beforeDescendants"
-		android:background="@android:color/white"
-		>
-
-		<View
-			android:id="@+id/shelfright"
-			android:layout_width="1dp"
-			android:layout_height="match_parent"
-			android:layout_toRightOf="@+id/sideBarp"
-			android:background="#888888"
-			/>
-
-		<ScrollView
-			android:id="@+id/sideBarp"
-			android:layout_width="@dimen/_35_"
-			android:layout_height="match_parent"
-			android:scrollbars="@null"
+		<androidx.appcompat.widget.Toolbar
+			android:id="@+id/toolbar"
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/barSize"
+			android:minHeight="?attr/actionBarSize"
+			android:theme="@style/toolbarBaseTheme"
+			app:contentInsetLeft="0dp"
+			app:contentInsetStart="0dp"
+			app:contentInsetStartWithNavigation="0dp"
+			android:background="?attr/colorPrimary"
+			app:titleTextColor="#fff"
 			>
-			<com.knziha.ankislicer.customviews.ShelfLinearLayout
-				android:id="@+id/sideBar"
-				android:layout_width="match_parent"
+		</androidx.appcompat.widget.Toolbar>
+
+		<RelativeLayout
+			android:id="@+id/root"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			android:descendantFocusability="beforeDescendants"
+			android:background="@android:color/white"
+			>
+
+			<View
+				android:id="@+id/shelfright"
+				android:layout_width="1dp"
 				android:layout_height="match_parent"
-				android:orientation="vertical"
-				android:showDividers="middle"
-				android:divider="@drawable/divider"
+				android:layout_toRightOf="@+id/sideBarp"
+				android:background="#888888"
+				/>
+
+			<ScrollView
+				android:id="@+id/sideBarp"
+				android:layout_width="@dimen/_35_"
+				android:layout_height="match_parent"
+				android:scrollbars="@null"
 				>
-				<View
-					android:id="@+id/tools0"
+				<com.knziha.ankislicer.customviews.ShelfLinearLayout
+					android:id="@+id/sideBar"
 					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:background="@drawable/ic_pan_tool_black_24dp"
-					android:padding="5dp"
-					/>
-				<View
-					android:id="@+id/tools001"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:background="@drawable/ic_peruse_pan"
-					android:padding="5dp"
-					/>
-				<View
-					android:id="@+id/toolbar_action2"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:background="@drawable/txtdropper"
-					/>
-				<View
-					android:id="@+id/tools1"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:background="@drawable/select"
-					android:longClickable="true"
-					android:padding="5dp"
-					/>
-				<View
-					android:layout_width="match_parent"
-					android:layout_height="0dp"
-					/>
-
-				<com.knziha.plod.widgets.ActivatableImageView
-					android:id="@+id/toolbar_action1"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:src="@drawable/ic_btn_siglemode"
-					app:src0="@drawable/ic_btn_multimode"
-					app:activedSR="false"
-					android:tint="#000"
-					android:background="@drawable/surrtrip2"
-					/>
-
-				<ImageView
-					android:id="@+id/tools3"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:src="@drawable/delete"
-					android:padding="5dp"
-					android:background="@drawable/surrtrip2"
-					/>
-
-
-				<ImageView
-					android:id="@+id/search"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:src="@drawable/ic_search"
-					android:backgroundTint="#000000"
-					android:background="@drawable/surrtrip2"
-					android:alpha="0.2"
-					android:enabled="false"
-					/>
-
-				<FrameLayout
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:background="@drawable/bookmark"
+					android:layout_height="match_parent"
+					android:orientation="vertical"
+					android:showDividers="middle"
+					android:divider="@drawable/divider"
 					>
 					<View
-						android:id="@+id/bookmark0"
+						android:id="@+id/tools0"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:background="@drawable/ic_pan_tool_black_24dp"
+						android:padding="5dp"
+						/>
+					<View
+						android:id="@+id/tools001"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:background="@drawable/ic_peruse_pan"
+						android:padding="5dp"
+						/>
+					<View
+						android:id="@+id/toolbar_action2"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:background="@drawable/txtdropper"
+						/>
+					<View
+						android:id="@+id/tools1"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:background="@drawable/select"
+						android:longClickable="true"
+						android:padding="5dp"
+						/>
+					<View
 						android:layout_width="match_parent"
 						android:layout_height="0dp"
 						/>
-					<View
-						android:id="@+id/bookmark"
+
+					<com.knziha.plod.widgets.ActivatableImageView
+						android:id="@+id/toolbar_action1"
 						android:layout_width="match_parent"
-						android:layout_height="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:src="@drawable/ic_btn_siglemode"
+						app:src0="@drawable/ic_btn_multimode"
+						app:activedSR="false"
+						android:tint="#000"
 						android:background="@drawable/surrtrip2"
+						/>
+
+					<ImageView
+						android:id="@+id/tools3"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:src="@drawable/delete"
+						android:padding="5dp"
+						android:background="@drawable/surrtrip2"
+						/>
+
+
+					<ImageView
+						android:id="@+id/search"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:src="@drawable/ic_search"
+						android:backgroundTint="#000000"
+						android:background="@drawable/surrtrip2"
+						android:alpha="0.2"
+						android:enabled="false"
+						/>
+
+					<FrameLayout
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:background="@drawable/bookmark"
+						android:alpha="0.2"
+						>
+						<View
+							android:id="@+id/bookmark0"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							/>
+						<View
+							android:id="@+id/bookmark"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:background="@drawable/surrtrip2"
+							android:longClickable="true"
+							/>
+					</FrameLayout>
+
+
+
+					<ToggleButton
+						android:id="@+id/tg2"
+						android:layout_width="match_parent"
+						android:layout_height="@dimen/_35_"
+						android:textOn="Ø"
+						android:textOff=""
+						android:textColor="#ffaaaa"
+						android:textSize="25sp"
+						android:gravity="center"
+						android:background="@drawable/ver"
 						android:longClickable="true"
 						/>
-				</FrameLayout>
+
+
+					<ImageView
+						android:id="@+id/choosed"
+						android:layout_width="match_parent"
+						android:layout_height="45dp"
+						android:src="@drawable/choosed"
+						android:background="@drawable/surrtrip2"
+						/>
+					<ImageView
+						android:id="@+id/changed"
+						android:layout_width="match_parent"
+						android:layout_height="45dp"
+						android:src="@drawable/movec"
+						android:background="@drawable/surrtrip2"
+						/>
+				</com.knziha.ankislicer.customviews.ShelfLinearLayout>
+			</ScrollView>
+
+
+			<com.afollestad.dragselectrecyclerview.DragSelectRecyclerView
+				android:id="@+id/main_list"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:layout_toEndOf="@+id/shelfright"
+				/>
+
+			<com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy
+				android:id="@+id/fast_scroller"
+				android:layout_width="@dimen/_35_"
+				android:layout_height="match_parent"
+				android:layout_alignParentEnd="true"
+				android:layout_marginEnd="2dp"
+				app:rfs_handleBackground="@drawable/ic_pen"
+				/>
 
 
 
-				<ToggleButton
-					android:id="@+id/tg2"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_35_"
-					android:textOn="Ø"
-					android:textOff=""
-					android:textColor="#ffaaaa"
-					android:textSize="25sp"
-					android:gravity="center"
-					android:background="@drawable/ver"
-					android:longClickable="true"
-					/>
+			<!--	<androidx.appcompat.widget.Toolbar-->
+			<!--		android:id="@+id/toolbar"-->
+			<!--		android:layout_width="match_parent"-->
+			<!--		android:layout_height="40dp"-->
+			<!--		android:minHeight="40dp"-->
+			<!--		android:theme="@style/ToolBarTheme"-->
+			<!--		android:background="#a0a0a0ae"-->
+			<!--		android:visibility="gone"-->
+			<!--		android:layout_marginStart="@dimen/_35_"-->
+			<!--		/>-->
 
-
-				<ImageView
-					android:id="@+id/choosed"
-					android:layout_width="match_parent"
-					android:layout_height="45dp"
-					android:src="@drawable/choosed"
-					android:background="@drawable/surrtrip2"
-					/>
-				<ImageView
-					android:id="@+id/changed"
-					android:layout_width="match_parent"
-					android:layout_height="45dp"
-					android:src="@drawable/movec"
-					android:background="@drawable/surrtrip2"
-					/>
-			</com.knziha.ankislicer.customviews.ShelfLinearLayout>
-		</ScrollView>
-
-
-		<com.afollestad.dragselectrecyclerview.DragSelectRecyclerView
-			android:id="@+id/main_list"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:layout_toEndOf="@+id/shelfright"
-			/>
-
-		<com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy
-			android:id="@+id/fast_scroller"
-			android:layout_width="@dimen/_35_"
-			android:layout_height="match_parent"
-			android:layout_alignParentEnd="true"
-			android:layout_marginEnd="2dp"
-			app:rfs_handleBackground="@drawable/ic_pen"
-			/>
-
-
-
-		<!--	<androidx.appcompat.widget.Toolbar-->
-		<!--		android:id="@+id/toolbar"-->
-		<!--		android:layout_width="match_parent"-->
-		<!--		android:layout_height="40dp"-->
-		<!--		android:minHeight="40dp"-->
-		<!--		android:theme="@style/ToolBarTheme"-->
-		<!--		android:background="#a0a0a0ae"-->
-		<!--		android:visibility="gone"-->
-		<!--		android:layout_marginStart="@dimen/_35_"-->
-		<!--		/>-->
-
-		<ProgressBar
-			android:id="@+id/progress_bar"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical|center_horizontal"
-			android:layout_centerVertical="true"
-			android:layout_centerHorizontal="true"
-			android:visibility="gone"
-			/>
-
-		<View
-			android:id="@+id/browser_widget15"
-			android:layout_width="52dp"
-			android:layout_height="110dp"
-			android:layout_alignParentBottom="true"
-			android:layout_alignParentEnd="true"
-			android:clickable="true"
-			android:visibility="gone"
-			/>
-
-		<android.widget.ImageView
-			android:id="@+id/browser_widget14"
-			android:layout_width="34dp"
-			android:layout_height="34dp"
-			android:background="@drawable/listviewselector2"
-			android:clickable="true"
-			android:src="@drawable/chevron_up"
-			android:layout_alignParentBottom="true"
-			android:layout_alignParentEnd="true"
-			android:layout_marginBottom="64dp"
-			android:layout_marginEnd="10dp"
-			android:visibility="gone"
-			/>
-
-		<android.widget.ImageView
-			android:id="@+id/browser_widget13"
-			android:layout_width="34dp"
-			android:layout_height="34dp"
-			android:background="@drawable/listviewselector2"
-			android:clickable="true"
-			android:src="@drawable/chevron_btm"
-			android:layout_alignParentBottom="true"
-			android:layout_alignParentEnd="true"
-			android:layout_marginBottom="20dp"
-			android:layout_marginEnd="10dp"
-			android:visibility="gone"
-			/>
-
-		<TextView
-			android:id="@+id/counter"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:clickable="true"
-			android:text="0/1000000"
-			android:textColor="@color/colorHeaderBlue"
-			android:layout_alignParentBottom="true"
-			android:layout_alignParentEnd="true"
-			android:layout_marginBottom="0dp"
-			android:layout_marginEnd="10dp"
-			/>
-
-		<TextView
-			android:id="@+id/smallLabel"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:clickable="true"
-			android:text="历史记录"
-			android:textColor="@color/colorHeaderBlue"
-			android:layout_alignParentBottom="true"
-			android:layout_centerHorizontal="true"
-			android:visibility="gone"
-			/>
-
-		<FrameLayout
-			android:id="@+id/toast_layout_rootmy"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			>
-			<TextView
-				android:id="@+id/message"
+			<ProgressBar
+				android:id="@+id/progress_bar"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:padding="5dp"
-				android:background="@drawable/popup_background7"
-				android:layout_marginBottom="65dp"
-				tools:text="favorite"
-				android:textColor="#ffffff"
-				android:layout_gravity="bottom|center"
+				android:layout_gravity="center_vertical|center_horizontal"
+				android:layout_centerVertical="true"
+				android:layout_centerHorizontal="true"
 				android:visibility="gone"
 				/>
-		</FrameLayout>
 
-		<FrameLayout
-			android:id="@+id/snack_root"
+			<View
+				android:id="@+id/browser_widget15"
+				android:layout_width="52dp"
+				android:layout_height="110dp"
+				android:layout_alignParentBottom="true"
+				android:layout_alignParentEnd="true"
+				android:clickable="true"
+				android:visibility="gone"
+				/>
+
+			<android.widget.ImageView
+				android:id="@+id/browser_widget14"
+				android:layout_width="34dp"
+				android:layout_height="34dp"
+				android:background="@drawable/listviewselector2"
+				android:clickable="true"
+				android:src="@drawable/chevron_up"
+				android:layout_alignParentBottom="true"
+				android:layout_alignParentEnd="true"
+				android:layout_marginBottom="64dp"
+				android:layout_marginEnd="10dp"
+				android:visibility="gone"
+				/>
+
+			<android.widget.ImageView
+				android:id="@+id/browser_widget13"
+				android:layout_width="34dp"
+				android:layout_height="34dp"
+				android:background="@drawable/listviewselector2"
+				android:clickable="true"
+				android:src="@drawable/chevron_btm"
+				android:layout_alignParentBottom="true"
+				android:layout_alignParentEnd="true"
+				android:layout_marginBottom="20dp"
+				android:layout_marginEnd="10dp"
+				android:visibility="gone"
+				/>
+
+			<TextView
+				android:id="@+id/counter"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:clickable="true"
+				android:text="0/1000000"
+				android:textColor="@color/colorHeaderBlue"
+				android:layout_alignParentBottom="true"
+				android:layout_alignParentEnd="true"
+				android:layout_marginBottom="0dp"
+				android:layout_marginEnd="10dp"
+				/>
+
+			<TextView
+				android:id="@+id/smallLabel"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:clickable="true"
+				android:text="历史记录"
+				android:textColor="@color/colorHeaderBlue"
+				android:layout_alignParentBottom="true"
+				android:layout_centerHorizontal="true"
+				android:visibility="gone"
+				/>
+
+			<FrameLayout
+				android:id="@+id/toast_layout_rootmy"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				>
+				<TextView
+					android:id="@+id/message"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:padding="5dp"
+					android:background="@drawable/popup_background7"
+					android:layout_marginBottom="65dp"
+					tools:text="favorite"
+					android:textColor="#ffffff"
+					android:layout_gravity="bottom|center"
+					android:visibility="gone"
+					/>
+			</FrameLayout>
+
+			<FrameLayout
+				android:id="@+id/snack_root"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:layout_toEndOf="@+id/sideBarp" />
+
+		</RelativeLayout>
+
+		<LinearLayout
+			android:id="@+id/bottombar"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:layout_toEndOf="@+id/sideBarp" />
+			android:layout_height="@dimen/_45_"
+			android:layout_gravity="bottom"
+			android:gravity="center_vertical|fill_horizontal"
+			android:orientation="horizontal"
+			android:background="?attr/colorPrimary"
+			>
+			<ImageView
+				android:id="@+id/browser_widget1"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:background="@drawable/surrtrip1"
+				android:src="@drawable/back_ic"
+				android:clickable="true"
+				/>
+			<ImageView
+				android:id="@+id/menu"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:background="@drawable/surrtrip1"
+				android:src="@drawable/ic_menu_24dp"
+				android:clickable="true"
+				android:enabled="false"
+				android:alpha="0.2"
+				/>
+		</LinearLayout>
 
-	</RelativeLayout>
-
-	<LinearLayout
-		android:id="@+id/bottombar"
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/_45_"
-		android:layout_gravity="bottom"
-		android:gravity="center_vertical|fill_horizontal"
-		android:orientation="horizontal"
-		android:background="?attr/colorPrimary"
-		>
-		<ImageView
-			android:id="@+id/browser_widget1"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:background="@drawable/surrtrip1"
-			android:src="@drawable/back_ic"
-			android:clickable="true"
-			/>
-		<ImageView
-			android:id="@+id/menu"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:background="@drawable/surrtrip1"
-			android:src="@drawable/ic_menu_24dp"
-			android:clickable="true"
-			android:enabled="false"
-			android:alpha="0.2"
-			/>
 	</LinearLayout>
-
-</LinearLayout>
 </layout>

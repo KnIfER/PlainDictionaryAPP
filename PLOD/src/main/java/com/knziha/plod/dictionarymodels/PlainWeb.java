@@ -1504,7 +1504,7 @@ public class PlainWeb extends DictionaryAdapter {
 				// 检验、应用搜索搜索词
 				if (searchJs!=null)
 				{
-					return searchJs.replace("%s", StringEscapeUtils.escapeJava(searchKey));
+					return searchJs.replace("%s", StringEscapeUtils.escapeJava(searchKey)); // here 应用搜索词
 				}
 				return null;
 			}
@@ -1751,7 +1751,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		} else {
 //			jsLoader = jsLoaderInJson;
 //		}
-		if(GlobalOptions.debug)CMN.Log("加载网页::", url, dopt/*, jsLoader*/);
+		if(GlobalOptions.debug)CMN.Log("getVirtualRecordAt::加载网页::", url, dopt/*, jsLoader*/);
 		return currentUrl=url;
 	}
 	

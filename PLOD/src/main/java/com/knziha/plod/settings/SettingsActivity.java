@@ -157,17 +157,17 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 	
 	@Override
 	public void notifyChanged(Preference preference) {
-		if (pHandler!=null) {
+		try {
 			pHandler.onSettingsChanged(this, preference);
-		} else {
+		} catch (Exception e) {
 			showT("请从主程序打开设置界面！");
 		}
 	}
 	
 	public void showSearchSettingsDlg() {
-		if (pHandler!=null) {
+		try {
 			pHandler.showSearchSettingsDlg(this, realm_id);
-		} else {
+		} catch (Exception e) {
 			showT("请从主程序打开设置界面！");
 		}
 	}
