@@ -35,7 +35,6 @@ import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.PlainUI.AppInfoDBBean;
 import com.knziha.plod.plaindict.databinding.DbCardListItemBinding;
-import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.lang.ref.WeakReference;
@@ -50,7 +49,7 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 	public final static int DB_FAVORITE = 1;
 	public final static int DB_HISTORY = 2;
 	final static int SelectionMode_pan=0;
-	final static int SelectionMode_peruseview=1;
+	final static int SelectionMode_learncard =1;
 	final static int SelectionMode_fetchWord =2;
 	final static int SelectionMode_select=3;
 	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new DBListAdapter.HistoryDatabaseReader();

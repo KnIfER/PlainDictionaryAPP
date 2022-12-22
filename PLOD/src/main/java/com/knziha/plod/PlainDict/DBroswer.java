@@ -211,7 +211,7 @@ public class DBroswer extends DialogFragment implements
 			if(SelectionMode==SelectionMode_select) {
 				int taregtID=0;
 				switch(lastFallBackTarget) {
-					case SelectionMode_peruseview:
+					case SelectionMode_learncard:
 						taregtID=R.id.tools001;
 					break;
 					case SelectionMode_fetchWord:
@@ -299,7 +299,9 @@ public class DBroswer extends DialogFragment implements
 				toolbar.getMenu().findItem(R.id.text).setChecked(true);
 			}
 			menuTapsch = toolbar.getMenu().findItem(R.id.tapSch);
+			menuPeruse = toolbar.getMenu().findItem(R.id.peruse);
 			menuFetchWord = toolbar.getMenu().findItem(R.id.fetchWord);
+			menuLearnCard = toolbar.getMenu().findItem(R.id.learnCard);
 			
 //			if (container.getContext() instanceof MainActivityUIBase) {
 ////			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
@@ -926,11 +928,11 @@ public class DBroswer extends DialogFragment implements
 				opt.setDBMode(1);
 				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
-				SelectionMode=SelectionMode_peruseview;
+				SelectionMode= SelectionMode_learncard;
 				UIData.sideBar.selectToolView(v);
 				dataSetChanged();
 				if(v.getTag()==null)
-					msg = "点击翻阅模式";
+					msg = "学习卡片模式";
 				else
 					v.setTag(null);
 				refreshFetchWordUI();
@@ -1548,74 +1550,16 @@ public class DBroswer extends DialogFragment implements
 					}
 				}
 				break;
-				case SelectionMode_peruseview: {
-					ArrayList<Long> records = new ArrayList<>();
-					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying, records);
-					ArrayList<additiveMyCpr1> data = new ArrayList<>();
-					data.add(datalet);
-					String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
-					boolean reorded = false;
-					if (peruseView != null) {
-						dismiss();
-					}
-					long bid;
-					{
-						String texts = reader.books;
-						CMN.Log("复活::", texts);
-						if (texts != null) {
-							String[] textsArr = texts.split(";");
-							for (String strId : textsArr) {
-								if ((bid = IU.parseLong(strId, -1)) >= 0) records.add(bid);
-							}
-						}
-					}
-					CMN.Log(records);
-					Collection<Long> avoidLet = null;
-					
-					MainActivityUIBase.LoadManager loadManager = a.loadManager;
-					int size = loadManager.md_size;
-					
-					if (records.size() > 0)
-						avoidLet = size >= 32 ? new HashSet<>(records) : records;
-					for (int i = 0; i < size; i++) {//联合搜索
-						int dIdx = i;
-						bid = a.loadManager.getBookIdAt(i);
-						if (avoidLet != null && avoidLet.contains(bid)) {
-							continue;
-						}
-						if (opt.getPeruseAddAll()) {
-							records.add(bid);
-							continue;
-						}
-						if (!bIsCombinedSearch) {
-							if (dIdx == 0)
-								if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < size) {
-									dIdx = a.dictPicker.adapter_idx;
-									reorded = true;
-								} else if (reorded) if (dIdx <= a.dictPicker.adapter_idx) {
-									dIdx -= 1;
-								}
-						}
-						BookPresenter presenter = a.loadManager.md_get(dIdx);
-						{
-							int idx = presenter.bookImpl.lookUp(currentDisplaying__);
-							if (idx >= 0)
-								while (idx < presenter.bookImpl.getNumberEntries()) {
-									if (mdict.replaceReg.matcher(presenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-										records.add(presenter.getId());
-									} else
-										break;
-									idx++;
-								}
-						}
-					}
-					a.JumpToPeruseMode(currentDisplaying, records, -2, true);
+				case SelectionMode_learncard: {
+					// todo///
 				}
 				break;
 				case SelectionMode_fetchWord: {
 					EditText target = null;
 					if (PDICMainAppOptions.dbFetchWord()==2) {
 						a.popupWord(currentDisplaying, null, -1, null);
+					} else if (PDICMainAppOptions.dbFetchWord()==3) {
+						enterPeruseMode(a, reader);
 					} else {
 						if (a.thisActType == ActType.MultiShare) {
 							if (a.peruseView != null) {
@@ -1639,6 +1583,70 @@ public class DBroswer extends DialogFragment implements
 					throw new IllegalStateException("Unexpected value: " + SelectionMode);
 			}
 		}
+	}
+	
+	private void enterPeruseMode(MainActivityUIBase a, HistoryDatabaseReader reader) {
+		ArrayList<Long> records = new ArrayList<>();
+		additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying, records);
+		ArrayList<additiveMyCpr1> data = new ArrayList<>();
+		data.add(datalet);
+		String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+		boolean reorded = false;
+		if (peruseView != null) {
+			dismiss();
+		}
+		long bid;
+		{
+			String texts = reader.books;
+			CMN.Log("复活::", texts);
+			if (texts != null) {
+				String[] textsArr = texts.split(";");
+				for (String strId : textsArr) {
+					if ((bid = IU.parseLong(strId, -1)) >= 0) records.add(bid);
+				}
+			}
+		}
+		CMN.Log(records);
+		Collection<Long> avoidLet = null;
+		
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
+		int size = loadManager.md_size;
+		
+		if (records.size() > 0)
+			avoidLet = size >= 32 ? new HashSet<>(records) : records;
+		for (int i = 0; i < size; i++) {//联合搜索
+			int dIdx = i;
+			bid = a.loadManager.getBookIdAt(i);
+			if (avoidLet != null && avoidLet.contains(bid)) {
+				continue;
+			}
+			if (opt.getPeruseAddAll()) {
+				records.add(bid);
+				continue;
+			}
+			if (!bIsCombinedSearch) {
+				if (dIdx == 0)
+					if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < size) {
+						dIdx = a.dictPicker.adapter_idx;
+						reorded = true;
+					} else if (reorded) if (dIdx <= a.dictPicker.adapter_idx) {
+						dIdx -= 1;
+					}
+			}
+			BookPresenter presenter = a.loadManager.md_get(dIdx);
+			{
+				int idx = presenter.bookImpl.lookUp(currentDisplaying__);
+				if (idx >= 0)
+					while (idx < presenter.bookImpl.getNumberEntries()) {
+						if (mdict.replaceReg.matcher(presenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+							records.add(presenter.getId());
+						} else
+							break;
+						idx++;
+					}
+			}
+		}
+		a.JumpToPeruseMode(currentDisplaying, records, -2, true);
 	}
 	
 	private boolean queryAndShowMultipleDictionary(String[] texts, String currentDisplaying, int position, boolean queryAll) {
@@ -2106,11 +2114,22 @@ public class DBroswer extends DialogFragment implements
 				refreshFetchWordUI();
 				msg = "取词模式 - " + "点击翻译";
 			} break;
+			case R.id.peruse: {
+				opt.setDBMode(SelectionMode = SelectionMode_fetchWord);
+				PDICMainAppOptions.dbFetchWord(3);
+				refreshFetchWordUI();
+				msg = "取词模式 - " + "翻阅模式";
+			} break;
 			case R.id.fetchWord: {
 				opt.setDBMode(SelectionMode = SelectionMode_fetchWord);
 				PDICMainAppOptions.dbFetchWord(1);
 				refreshFetchWordUI();
-				msg = "取词模式 - " + "直接取词";
+				msg = "直接取词";
+			} break;
+			case R.id.learnCard: {
+				opt.setDBMode(SelectionMode = SelectionMode_learncard);
+				refreshFetchWordUI();
+				msg = "学习卡片模式";
 			} break;
 			case R.id.icon: {
 				item.setChecked(!item.isChecked());
@@ -2133,10 +2152,12 @@ public class DBroswer extends DialogFragment implements
 	
 	private void refreshFetchWordUI() {
 		boolean b1 = SelectionMode == SelectionMode_fetchWord;
+		menuPeruse.setChecked(b1 && PDICMainAppOptions.dbFetchWord()==3);
 		menuTapsch.setChecked(b1 && PDICMainAppOptions.dbFetchWord()==2);
 		menuFetchWord.setChecked(b1 && PDICMainAppOptions.dbFetchWord()==1);
-		if (b1 && UIData.sideBar.getSelectedToolIdx()!=SelectionMode_fetchWord) {
-			UIData.sideBar.selectToolIndex(SelectionMode_fetchWord);
+		menuLearnCard.setChecked(SelectionMode == SelectionMode_learncard);
+		if (UIData.sideBar.getSelectedToolIdx()!=SelectionMode) {
+			UIData.sideBar.selectToolIndex(SelectionMode);
 		}
 	}
 	
@@ -2185,8 +2206,10 @@ public class DBroswer extends DialogFragment implements
 	}
 	
 	
+	private MenuItem menuLearnCard;
 	private MenuItem menuFetchWord;
 	private MenuItem menuTapsch;
+	private MenuItem menuPeruse;
 	
 	public void setFetchWord(int mode) {
 		if (mode == -1) {

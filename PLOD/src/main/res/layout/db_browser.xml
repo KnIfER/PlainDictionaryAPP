@@ -65,7 +65,7 @@
 						android:id="@+id/tools001"
 						android:layout_width="match_parent"
 						android:layout_height="@dimen/_35_"
-						android:background="@drawable/ic_peruse_pan"
+						android:background="@drawable/ic_card_learn"
 						android:padding="5dp"
 						/>
 					<View

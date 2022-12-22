@@ -3,14 +3,17 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
 	context="com.knziha.plod.plaindict.DBroswer"
 	>
-	<!--1--><item android:id="@+id/search"  android:enabled="false" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="always"/>
+	<!--1--><item android:id="@+id/search"  android:enabled="false" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="never"/>
 
-	<!--0--><item android:id="@+id/text" android:icon="@drawable/ic_text_selection" android:title="自由选择文本" app:showAsAction="always" android:checkable="true" />
+	<!--0--><item android:id="@+id/text" android:icon="@drawable/ic_text_selection" android:title="自由选择文本" app:showAsAction="never" android:checkable="true" />
 
-	<!--6--><item android:title="直接取词" android:id="@+id/tapSch" android:icon="@drawable/ic_tap_sch" app:showAsAction="always" android:checkable="true" />
+	<!--6--><item android:title="点击翻译" android:id="@+id/tapSch" android:icon="@drawable/ic_tap_sch" app:showAsAction="always" android:checkable="true" />
 
-	<!--7--><item android:title="点击翻译" android:id="@+id/fetchWord" android:icon="@drawable/ic_baseline_colorize_24" app:showAsAction="always" android:checkable="true" />
+	<!--5--><item android:title="翻阅取词" android:id="@+id/peruse" android:icon="@drawable/ic_peruse_pan_svg" app:showAsAction="always" android:checkable="true"  />
 
+	<!--7--><item android:title="直接取词" android:id="@+id/fetchWord" android:icon="@drawable/ic_quci" app:showAsAction="always" android:checkable="true" />
+
+	<!--7--><item android:title="学习卡片" android:id="@+id/learnCard" android:icon="@drawable/ic_card_learn" app:showAsAction="always" android:checkable="true" android:tint="#fff" />
 
 	<!--2--><item android:id="@+id/back" android:icon="@drawable/ic_search_24k" android:title="返回" app:showAsAction="never"/>
 
@@ -19,6 +22,7 @@
 	<!--4--><item android:id="@+id/icon" android:icon="@drawable/ic_search_24k" android:title="显示应用图标" app:showAsAction="never" android:checkable="true" />
 
 	<!--5--><item android:id="@+id/longPressSelect" android:icon="@drawable/ic_search_24k" android:title="长按直接多选" app:showAsAction="never" android:checkable="true" />
+
 
 
 </menu>
