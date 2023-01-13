@@ -78,6 +78,14 @@
 			app:inlineSummary="true"
 			app:hasCheck="true"
 			/>
+		<Preference
+			android:defaultValue="80"
+			android:key="rawImg"
+			android:title="显示原图则"
+			android:enabled="false"
+			app:inlineSummary="true"
+			app:summary="设为0%、100%"
+			/>
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="img"-->
 <!--			android:persistent="false"-->

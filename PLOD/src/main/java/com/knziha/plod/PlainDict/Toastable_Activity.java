@@ -50,6 +50,7 @@ import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.ViewUtils;
@@ -884,6 +885,40 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	public final boolean isFloatingApp() {
 		return floatApp!=null && floatApp.isAppFloating();
+	}
+	
+	View EmptyView;
+	public View anyView(int id) {
+		if (EmptyView==null) {
+			EmptyView = new View(this);
+		}
+		EmptyView.setId(id);
+		return EmptyView;
+	}
+	
+	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
+		if(settingsPanel==panel) {
+			//CMN.Log("hideSettingsPanel", panel, settingsPanel);
+			if (settingsPanel!=null) {
+				settingsPanel.dismiss(); // 反调
+				if(settingsPanel==panel) {
+					settingsPanels.remove(settingsPanel);
+					settingsPanel = ViewUtils.getLast(settingsPanels);
+					if(settingsPanel!=null) {
+						settingsPopup = settingsPanel.pop;
+						settingsPanel.onResume();
+					}
+				}
+			}
+			else if(settingsPopup!=null) settingsPopup = null;
+		}
+	}
+	
+	public void HideSelectionWidgets(boolean hideSel) {
+//		WebFrameLayout layout = this.currentViewImpl;
+//		if (layout!=null) {
+//			layout.suppressSelection(hideSel);
+//		}
 	}
 }
 

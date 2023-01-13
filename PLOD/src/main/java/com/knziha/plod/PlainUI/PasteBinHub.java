@@ -11,8 +11,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
-import android.text.TextUtils;
-import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
@@ -35,14 +33,12 @@ import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
 @SuppressLint("ResourceType")
 public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuListener, PagingCursorAdapter.OnLoadListener {
-	Toastable_Activity a;
 	RecyclerView recyclerView;
 	private boolean hubExpanded = false;
 	private PagingAdapterInterface<PasteBinEntryReader> DummyReader = new CursorAdapter<>(EmptyCursor, new PasteBinEntryReader());
@@ -58,14 +54,14 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	
 	public boolean wrapLns = true;
 	
-	public PasteBinHub(Toastable_Activity a) {
+	public PasteBinHub(Toastable_Activity ta) {
 		super();
 		this.bottomPadding = 0;
 		this.bPopIsFocusable = true;
 		this.bFadeout = -2;
 		this.bAnimate = false;
 		this.tweakDlgScreen = false;
-		this.a = a;
+		this.ta = ta;
 		setShowInDialog();
 	}
 	
@@ -89,8 +85,8 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	static class GridItemHolder extends RecyclerView.ViewHolder {
 		TextView tv;
 		TextView tv1;
-		public GridItemHolder(Toastable_Activity a) {
-			super(a.getLayoutInflater().inflate(R.layout.paste_bin_griditem, a.root, false));
+		public GridItemHolder(Toastable_Activity ta) {
+			super(ta.getLayoutInflater().inflate(R.layout.paste_bin_griditem, ta.root, false));
 			tv = itemView.findViewById(R.id.text);
 			tv1 = itemView.findViewById(R.id.more);
 		}
@@ -98,21 +94,21 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	@SuppressLint("MissingInflatedId")
 	@Override
 	public void init(Context context, ViewGroup root) {
-		if (a!=null && settingsLayout==null) {
-			opt = a.opt;
-			View layout = a.getLayoutInflater().inflate(R.layout.paste_bin_hub, a.root, false);
+		if (ta!=null && settingsLayout==null) {
+			opt = ta.opt;
+			View layout = ta.getLayoutInflater().inflate(R.layout.paste_bin_hub, ta.root, false);
 			recyclerView = layout.findViewById(R.id.recycler_view);
-			recyclerView.setLayoutManager(new GridLayoutManager(a, 2));
+			recyclerView.setLayoutManager(new GridLayoutManager(ta, 2));
 			
 			if (pageAsyncLoader == null) {
-				pageAsyncLoader = new ImageView(a);
+				pageAsyncLoader = new ImageView(ta);
 			}
 			
 			recyclerView.setAdapter(adapter = new RecyclerView.Adapter<GridItemHolder>() {
 				@NonNull
 				@Override
 				public GridItemHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-					GridItemHolder vh = new GridItemHolder(a);
+					GridItemHolder vh = new GridItemHolder(ta);
 					vh.tv.setOnClickListener(PasteBinHub.this);
 					vh.tv1.setOnClickListener(PasteBinHub.this);
 					return vh;
@@ -128,8 +124,8 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 						content="!!!Error: "+e.getLocalizedMessage();
 					}
 					vh.tv.getLayoutParams().width = wrapLns?-1:999999;
-					vh.tv.setTextColor(a.AppBlack);
-					vh.tv1.setTextColor(a.AppBlack);
+					vh.tv.setTextColor(ta.AppBlack);
+					vh.tv1.setTextColor(ta.AppBlack);
 					vh.tv1.setTextColor(Color.GRAY);
 					vh.tv.setText(mPasteBinListener==null?content:mPasteBinListener.text(content));
 					vh.tv1.setText("共"+ViewUtils.countLines(content)+"行，更多操作…");
@@ -147,7 +143,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 				final int mDividerHeight = (int) (GlobalOptions.density*1);
 				@Override
 				public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-					//int rows = (int) Math.ceil(a.schHistory.size()*1.f/spanSz)-1;
+					//int rows = (int) Math.ceil(ta.schHistory.size()*1.f/spanSz)-1;
 					if (mDivider != null) {
 						final int childCount = parent.getChildCount();
 						final int width = parent.getWidth();
@@ -193,7 +189,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 			this.dataAdapter = dataAdapter;
 			final String data_fields = "content";
 			dataAdapter.bindTo(recyclerView)
-					.setAsyncLoader(a, pageAsyncLoader)
+					.setAsyncLoader(ta, pageAsyncLoader)
 					.sortBy(LexicalDBHelper.TABLE_PASTE_BIN, sortBy, true, data_fields)
 					.where("chn=?", new String[]{""+0})
 			;
@@ -215,18 +211,17 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	
 	private void refreshExpand() {
 		View v = settingsLayout;
-		DisplayMetrics dm2 = a.dm;
+		DisplayMetrics dm2 = ta.dm;
 		if (hubExpanded)
 			v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * 0.85f);
 		else
-			v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * ((BottomSheetDialog) dialog).getBehavior().getHalfExpandedRatio() + a.getResources().getDimension(R.dimen._45_) * 1);
+			v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * ((BottomSheetDialog) dialog).getBehavior().getHalfExpandedRatio() + ta.getResources().getDimension(R.dimen._45_) * 1);
 		v.requestLayout();
 	}
 	
 	@Override
 	protected void onShow() {
 		refresh();
-		
 	}
 	
 	@Override
@@ -237,15 +232,15 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	@Override
 	public void refresh() {
 		//CMN.debug("bookNotes::refresh");
-		if (MainAppBackground != a.MainAppBackground)
+		if (MainAppBackground != ta.MainAppBackground)
 		{
 			// 刷新颜色变化（黑暗模式或者设置更改）
-			//toolbar.setTitleTextColor(a.AppWhite);
-			MainAppBackground = a.MainAppBackground;
-			settingsLayout.setBackgroundColor(a.AppWhite);
+			//toolbar.setTitleTextColor(ta.AppWhite);
+			MainAppBackground = ta.MainAppBackground;
+			settingsLayout.setBackgroundColor(ta.AppWhite);
 		}
-		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
-				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
+		if (ViewUtils.ensureTopmost(dialog, ta, dialogDismissListener)
+				|| ViewUtils.ensureWindowType(dialog, ta, dialogDismissListener)) {
 			ViewUtils.makeFullscreenWnd(dialog.getWindow());
 		}
 	}
@@ -266,7 +261,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 				case R.id.more: {
 					pressedV = v;
 					pressedPos = ViewUtils.getViewHolderInParents(v).getLayoutPosition();
-					PopupMenuHelper popup = new PopupMenuHelper(a, null, null);
+					PopupMenuHelper popup = new PopupMenuHelper(ta, null, null);
 					popup.initLayout(new int[]{
 							R.string.page_del_this
 							, R.string.page_del_prev
@@ -324,9 +319,9 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 	
 	public void show() {
 		if (!isVisible()) {
-			toggle(a.root, null, -1);
+			toggle(ta.root, null, -1);
 		} else if (getLastShowType()==2) {
-			ViewUtils.ensureTopmost(dialog, a, dialogDismissListener);
+			ViewUtils.ensureTopmost(dialog, ta, dialogDismissListener);
 		}
 	}
 	
@@ -336,7 +331,7 @@ public class PasteBinHub extends PlainAppPanel implements PopupMenuHelper.PopupM
 		BottomSheetDialog bPane = (BottomSheetDialog) dialog;
 		if(bPane==null) {
 			CMN.debug("重建底部弹出");
-			dialog = bPane = new BottomSheetDialog(a);
+			dialog = bPane = new BottomSheetDialog(ta);
 			bPane.setContentView(settingsLayout);
 			bPane.getWindow().setDimAmount(0.2f);
 			//CMN.recurseLogCascade(lv);

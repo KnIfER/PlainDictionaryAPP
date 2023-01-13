@@ -17,6 +17,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
 import androidx.fragment.app.DialogFragment;
 
+import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -84,7 +85,8 @@ public class BookOptionsDialog extends DialogFragment {
 	@Override
 	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 		Dialog ret = super.onCreateDialog(savedInstanceState);
-		if (getActivity() instanceof MainActivityUIBase)
+		boolean b1 = getActivity() instanceof MainActivityUIBase;
+		if (b1)
 			ViewUtils.ensureWindowType(ret, (MainActivityUIBase) getActivity(), this);
 		
 		Window win = ret.getWindow();
@@ -107,7 +109,9 @@ public class BookOptionsDialog extends DialogFragment {
 			};
 			win.getDecorView().addOnLayoutChangeListener(layout);
 			layout.onLayoutChange(null, 0, 0, 0, 0, 0, 0, 0, 0);
-			win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+			if (!GlobalOptions.isDark && b1) {
+				win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+			}
 		}
 		
 		return ret;

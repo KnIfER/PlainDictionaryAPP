@@ -245,7 +245,7 @@
 	<string name="addWebHere">添加“网络词典”选中项至此</string>
 	<string name="addAllHere">添加“全部词典”选中项至此</string>
 	<string name="addRecentPasteHere">添加最近剪贴板内容至此</string>
-	<string name="addPasteHere">添加剪贴板内容至此</string>
+	<string name="addPasteHere">添加剪贴板内容……</string>
 	<string name="addToPasteBin">收入剪贴板</string>
 	<string name="dingzhi_gongju">定制底部工具栏</string>
 	<string name="start_longpress_sel">开始多选拖动</string>

@@ -56,8 +56,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 103
-        versionName "7.6"
+        versionCode 104
+        versionName "7.6.1"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
 
@@ -198,7 +198,7 @@ dependencies {
     implementation "io.noties.markwon:core:4.5.0"
     //api ('com.github.barteksc:pdfium-android:1.9.0')
 
-    implementation 'com.bytedance.boost_multidex:boost_multidex:1.0.1'
+//    implementation 'com.bytedance.boost_multidex:boost_multidex:1.0.1'
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'
     //implementation 'org.simpleframework:simple-xml:2.7.1'

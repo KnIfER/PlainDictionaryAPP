@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -50,6 +51,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.PlainUI.PasteBinHub;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -66,6 +68,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
@@ -457,11 +460,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			name = name.substring(parent.length()+1);
 		int flag = f1.getPlaceFlagAt(position);
 		if(flag!=0) {
-			out.write("[:");
+			out.write("[");
 			if(PDICMainAppOptions.getTmpIsFiler(flag))
-				out.write("F");
+				out.write(":F");
 			else if(PDICMainAppOptions.getTmpIsAudior(flag))
-				out.write("A");
+				out.write(":A");
 			if(PDICMainAppOptions.getTmpIsClicker(flag))
 				out.write(":C");
 			if(PDICMainAppOptions.getTmpIsCollapsed(flag))
@@ -1513,7 +1516,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
             case R.id.toolbar_action9: { // add_selection_to_set
 				if (getFragment() instanceof BookManagerFolderAbs) {
 					BookManagerFolderAbs frame = (BookManagerFolderAbs) getFragment();
-					addElementsToF1(frame, null, true, longclickFx, -1);
+					addElementsToF1(frame, null, true, longclickFx, -1, null);
 					if(longclickFx) {
 						closeMenu=false;
 					}
@@ -1775,7 +1778,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	public void addElementsToF1(BookManagerFolderAbs f3, mFile[] set, boolean useSelection, boolean pickPosition, int initToPos) {
+	public void addElementsToF1(BookManagerFolderAbs f3, mFile[] set
+			, boolean useSelection, boolean pickPosition, int initToPos
+			, SparseIntArray rejectMap) {
 		if((set==null || set.length==0) && (f3==null || f3.adapter==null || useSelection && f3.selected_size()==0)) {
 			showT((f3==null?"":f3.getName())+"无选中项");
 			return;
@@ -1835,6 +1840,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				final boolean insert = checker1.isChecked();
 				final boolean select = checker2.isChecked();
+				/** to select only those will be inserted. */
 				final boolean jinxuan = select && checker4.isChecked();
 				final boolean reset = checker3.isChecked();
 				HashMap<String, mFile> map = new HashMap<>(arr.length);
@@ -1848,14 +1854,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				}
 				if(insert) {
+					boolean rejected;
 					f1.markDirty(-1);
 					for (int i = f1.manager_group().size()-1; i >= 0; i--) {
 						mFile fn = map.get(f1.getPathAt(i));
 						if (fn != null) {
-							f1.setPlaceRejected(i, false);
 							//CMN.debug("remove first", f1.getPathAt(i));
-							if (reset) {
-								f1.replace(i, -1);
+							if (reset) { // 重新添加
+								f1.replace(i, -2);
 								if(i < toPos) {
 									toPos--;
 								}
@@ -1863,6 +1869,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 									fvp--;
 								}
 							} else {
+								f1.setPlaceRejected(i, false);
 								if(select) f1.setPlaceSelected(i, true);
 								files.remove(fn);
 							}
@@ -1871,6 +1878,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						}
 					}
 					for (int i = 0; i < files.size(); i++) {
+						rejected = rejectMap!=null && rejectMap.indexOfKey(i)>=0;
 						mFile fn = files.get(i);
 						if (fn.exists() || fn.webAsset!=null) {
 							cc++;
@@ -1894,6 +1902,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						loadMan.lazyMan.chairCount++;
 						if(select){
 							f1.setPlaceSelected(toPos, true);
+						}
+						if(rejected){
+							f1.setPlaceRejected(toPos, true);
 						}
 					}
 					f1.refreshSize();
@@ -1921,8 +1932,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				showT((insert?"添加完毕!(":"已选中!(")+cc+"/"+files.size()+")");
 				toolbar.getMenu().close();
 				dTmp.dismiss();
-				if (set != null && f1.pasteBin != null) {
-					f1.pasteBin.dismissImmediate();
+				if (set != null && settingsPanel instanceof PasteBinHub) {
+					settingsPanel.dismissImmediate();
 				}
 			});
 			Window win = dTmp.getWindow();

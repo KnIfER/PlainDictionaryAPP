@@ -641,7 +641,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int thisActMask;
 	public boolean awaiting;
 	Runnable postTask;
-	View EmptyView;
 	public static boolean debugging_webx = false;
 	public static boolean debugging_annot = true;
 	
@@ -6481,14 +6480,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 	
-	public View anyView(int id) {
-		if (EmptyView==null) {
-			EmptyView = new View(this);
-		}
-		EmptyView.setId(id);
-		return EmptyView;
-	}
-	
 	public MenuItemImpl anyMenu(int id, WebViewListHandler weblist) {
 		MenuBuilder builder = new MenuBuilder(this);
 		builder.tag = weblist;
@@ -10422,24 +10413,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public SearchbarTools etTools;
 	public WordCamera wordCamera;
 	
-	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
-		if(settingsPanel==panel) {
-			//CMN.Log("hideSettingsPanel", panel, settingsPanel);
-			if (settingsPanel!=null) {
-				settingsPanel.dismiss(); // 反调
-				if(settingsPanel==panel) {
-					settingsPanels.remove(settingsPanel);
-					settingsPanel = ViewUtils.getLast(settingsPanels);
-					if(settingsPanel!=null) {
-						settingsPopup = settingsPanel.pop;
-						settingsPanel.onResume();
-					}
-				}
-			}
-			else if(settingsPopup!=null) settingsPopup = null;
-		}
-	}
-	
 	public void embedPopInCoordinatorLayout(PlainAppPanel panel, PopupWindow pop, boolean show, ViewGroup root) {
 		if (show)
 			settingsPopup = pop;
@@ -10496,13 +10469,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			// PeruseViewAttached()? peruseView.root: this.root
 			pop.showAtLocation(svp, Gravity.TOP, 0, topY);
 		}
-	}
-	
-	public void HideSelectionWidgets(boolean hideSel) {
-//		WebFrameLayout layout = this.currentViewImpl;
-//		if (layout!=null) {
-//			layout.suppressSelection(hideSel);
-//		}
 	}
 	
 	public void fixFocusHiddenSelectionWidgets(Object d) {

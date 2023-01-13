@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.text.TextUtils;
+import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,8 +80,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private Drawable mRightDrawable;
 	private boolean tweakedDict;
 	
-	public PasteBinHub pasteBin;
-	
 	public BookManagerMain(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
@@ -146,7 +145,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				boolean start = mController.startDrag(position,0, view.getHeight()/2);
 				return false;
 			} else {
-				showPopup(view, null);
+				if (PDICMainAppOptions.dictManagerClickPopup()) {
+					PopupMenuHelper popupMenu = getPopupMenu();
+					popupMenu.getListener().onMenuItemClick(popupMenu, getBookManager().anyView(R.string.more_actions), false);
+				} else {
+					showPopup(view, null);
+				}
 			}
 		}
 		return true;
@@ -175,7 +179,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	
 	@Override
 	public void drop(int from, int to) {
-		//CMN.debug("drop", "from = [" + from + "], to = [" + to + "]");
+		CMN.debug("drop", "from = [" + from + "], to = [" + to + "]");
 		//if(true) return;
 		boolean b1 = to<0;
 		if(b1) to=-to;
@@ -457,19 +461,20 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					boolean b1 = lv!=listView;
 					boolean isOnSelected = !b1 && getPlaceSelected(position);
 					BookPresenter magent;
-					if (isLongClick) {
+					if (isLongClick) { // 长按
 						if (view.getId() == R.id.disable) {
 							deleteSelOrOne(!isOnSelected);
 							popupMenuHelper.dismiss();
 						}
 						if (view.getId() == R.id.move_sel && !b1) {
+							// 移动选中项至此
 							ArrayList<mFile> paths = new ArrayList<>();
 							for (int i = 0, sz = manager_group().size(); i < sz; i++) {
 								if (getPlaceSelected(i)) {
 									paths.add(new mFile(getPathAt(i)));
 								}
 							}
-							a.addElementsToF1(null, paths.toArray(new mFile[0]), false, true, pressedPos+1);
+							a.addElementsToF1(null, paths.toArray(new mFile[0]), false, true, pressedPos+1, null);
 							popupMenuHelper.dismiss();
 						}
 						return false;
@@ -514,43 +519,52 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						// 添加全部词典
 						case R.string.addAllHere: {
 							if(b1) return true;
-							a.addElementsToF1(a.f3, null, true, true, pressedPos+1);
+							a.addElementsToF1(a.f3, null, true, true, pressedPos+1, null);
 						} break;
 						// 添加网络词典
 						case R.string.addWebHere: {
 							if(b1) return true;
-							a.addElementsToF1(a.f4, null, true, true, pressedPos+1);
+							a.addElementsToF1(a.f4, null, true, true, pressedPos+1, null);
 						} break;
 						// 收入剪贴板
 						case R.string.addToPasteBin: {
 							try {
 								if (b1) return true;
-								ArrayList<String> paths = new ArrayList<>();
-								if (isOnSelected) {
-									for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+								int lines=0;
+								String pfx = null;
+								String content = "", line, tPath = opt.lastMdlibPath.getPath()+"/";
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									line = null;
+									if (isOnSelected) {
 										if (getPlaceSelected(i)) {
-											paths.add(getPathAt(i));
+											line = getPathAt(i);
 										}
+									} else {
+										line = getPathAt(i=position);
 									}
-								} else {
-									paths.add(getPathAt(position));
-								}
-								String content = "", tPath = opt.lastMdlibPath.getPath()+"/";
-								for (String path : paths) {
-									if (content.length() > 0) {
-										content += "\n";
+									if (line != null) {
+										if (content.length() > 0) {
+											content += "\n";
+										}
+										if(line.startsWith(tPath)) {
+											line = line.substring(tPath.length());
+										}
+										if (PDICMainAppOptions.getTmpIsHidden(getPlaceFlagAt(i))) {
+											line = "[:H]"+line;
+										}
+										lines++;
+										content += line;
 									}
-									if(path.startsWith(tPath)) {
-										path = path.substring(tPath.length());
+									if (!isOnSelected) {
+										break;
 									}
-									content += path;
 								}
 								ContentValues cv = new ContentValues();
 								cv.put("chn", 0);
 								cv.put(LexicalDBHelper.FIELD_CREATE_TIME, CMN.now());
 								cv.put("content", content);
 								LexicalDBHelper.getInstance().getDB().insert(LexicalDBHelper.TABLE_PASTE_BIN, null, cv);
-								getBookManager().showT("已添加" + paths.size() + "行模板至剪剪贴板");
+								getBookManager().showT("已添加" + lines + "行模板至剪剪贴板");
 							} catch (Exception e) {
 								CMN.debug(e);
 							}
@@ -587,6 +601,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							}
 							addElementsFromPasteBin(content);
 						} break;
+						// 更多操作
 						case R.string.more_actions: {
 							if(b1) return true;
 							PopupMenuHelper popup = a.getPopupMenu();
@@ -780,6 +795,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	}
 	
 	private PasteBinHub getPastBin() {
+		PasteBinHub pasteBin = null;
 		if (pasteBin == null) {
 			pasteBin = new PasteBinHub(getBookManager());
 			pasteBin.wrapLns = false;
@@ -802,10 +818,15 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private void addElementsFromPasteBin(String val) {
 		String[] arr = val.split("\n");
 		ArrayList<mFile> list = new ArrayList<>();
+		SparseIntArray rejected = new SparseIntArray();
 		for(String str:arr) {
 			str = str.trim();
 			if (str.length() > 0) {
 				mFile ret;
+				if (str.startsWith("[:H")) {
+					str = str.substring(str.indexOf("]") + 1);
+					rejected.append(list.size(), 0);
+				}
 				if (!str.startsWith("/")){
 					ret = new mFile(opt.lastMdlibPath, str);
 				} else {
@@ -814,7 +835,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				list.add(ret);
 			}
 		}
-		getBookManager().addElementsToF1(null, list.toArray(new mFile[0]), false, true, pressedPos+1);
+		getBookManager().addElementsToF1(null, list.toArray(new mFile[0]), false, true, pressedPos+1, rejected);
 	}
 	
 	public void disEna(boolean useSelection, boolean off, int position) {

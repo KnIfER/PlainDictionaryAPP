@@ -2251,16 +2251,23 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						}
 					}
 				}
-			} else {
+			}
+			else {
 				url = getMergedFrame().getUrl();
 				if (url!=null) {
 					url = url.replace("http://mdbr.com", "http://localhost:8080");
 				}
 			}
-		} else {
-			url = scrollFocus.getUrl();
-			if (forceMerge) {
-				records = batchDisplaying();
+		}
+		else {
+			if(scrollFocus==null && webholder!=null) {
+				scrollFocus = webholder.findViewById(R.id.webviewmy);
+			}
+			if (scrollFocus != null) {
+				url = scrollFocus.getUrl();
+				if (forceMerge) {
+					records = batchDisplaying();
+				}
 			}
 		}
 		if (records!=null) {

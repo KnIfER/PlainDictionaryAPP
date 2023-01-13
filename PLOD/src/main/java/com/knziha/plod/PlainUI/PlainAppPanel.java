@@ -25,6 +25,7 @@ import com.knziha.plod.widgets.WebViewmy;
 public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrevention{
 	public /*final*/ WebViewListHandler weblistHandler;
 	protected MainActivityUIBase a;
+	protected Toastable_Activity ta;
 	protected boolean bShouldInterceptClickListener = true;
 	protected boolean showPopOnAppbar = true;
 	protected int MainColorStamp;
@@ -165,7 +166,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	protected void decorateInterceptorListener(boolean install) { }
 	
 	
-	public void toggleDummy(MainActivityUIBase a) {
+	public void toggleDummy(Toastable_Activity a) {
 		if (a!=null) {
 			if (bIsShowing=!bIsShowing) {
 				a.settingsPanel = this;
@@ -179,6 +180,8 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	
 	@Override
 	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss, int forceShowType) {
+		Toastable_Activity a = this.a;
+		if(a==null) a = ta;
 		if(forceShowType==-2 && !bIsShowing && a.settingsPanel!=null) {
 			forceShowType = a.settingsPanel.lastShowType;
 		}
