@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Window;
 
 import androidx.annotation.RequiresApi;
@@ -34,6 +35,7 @@ public class PasteActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		CMN.debug("PasteActivity::onCreate", "savedInstanceState = [" + savedInstanceState + "]");
 		super.onCreate(null);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -65,6 +67,7 @@ public class PasteActivity extends Activity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
+		CMN.debug("PasteActivity::onNewIntent");
 		paste();
 	}
 	
@@ -86,10 +89,20 @@ public class PasteActivity extends Activity {
 	};
 	
 	public void paste() {
+		CMN.debug("PasteActivity::paste");
+		
 		AgentApplication app = (AgentApplication) getApplication();
 		try {
-			app.floatApp.a.hdl.postDelayed(runn, 100);
-		} catch (Exception ignored) { }
+			CMN.debug("paste", app.handles);
+			for(Handler hdl:app.handles) {
+				if (hdl != null) {
+					hdl.postDelayed(runn, 100);
+					break;
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
 	public void ProcessIntent(Intent thisIntent) {
@@ -107,6 +120,11 @@ public class PasteActivity extends Activity {
 				}
 			}
 			CMN.debug("getPrimaryClip::", debugString);
+			if (thisIntent.hasExtra(FloatBtn.EXTRA_FETCHTEXT)) {
+				if(debugString==null) debugString="";
+				FloatBtn.sClipboard = debugString;
+				return;
+			}
 			if (debugString==null && PDICMainAppOptions.storeAppId() && true) {
 				debugString = FloatBtn.EXTRA_GETTEXT;
 			}

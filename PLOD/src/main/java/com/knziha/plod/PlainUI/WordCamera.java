@@ -190,6 +190,21 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 				PDICMainAppOptions.wordCameraRealtime(val);
 				setViewChecked((TextView) v, val);
 			} break;
+			case R.id.copy: {
+				CMN.debug("copy::");
+				TextView tv = UIData.toastTv;
+				if (tv.hasSelection()) {
+					int st = tv.getSelectionStart(), ed = tv.getSelectionEnd();
+					if (st > ed) {
+						int tmp = st;
+						st = ed;
+						ed = tmp;
+					}
+					a.copyText(tv.getText().subSequence(st, ed).toString(), true);
+				} else {
+					a.copyText(tv.getText().toString(), true);
+				}
+			} break;
 			case R.id.autoSch: {
 				boolean val = mManager.toggleAutoSch();
 				PDICMainAppOptions.wordCameraAutoSch(val);

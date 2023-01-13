@@ -114,51 +114,56 @@ public final class QRCameraManager implements SensorEventListener {
 	}
 	
 	public void ResetCameraSettings() {
-		Camera reset_camera = camera;
-		DisplayMetrics dm = mManager.dm;
-		screenResolution.x = dm.widthPixels;
-		screenResolution.y = dm.heightPixels;
-		if(mManager.isPortrait) { //竖屏更改4 preview size is always something like 480*320, other 320*480
-			screenResolution.x = dm.heightPixels;
-			screenResolution.y = dm.widthPixels;
-		}
-		findBestPreviewSizeValue(reset_camera.getParameters(), cameraResolution, screenResolution);
-		previewScale = cameraResolution.x == 0 ? 1 : screenResolution.x * 1.0f / cameraResolution.x;
-		CMN.debug("Camera resolution=" + cameraResolution, "screen resolution="+screenResolution.x+"x"+screenResolution.y, "scale="+previewScale);
-		mManager.UIData.frameView.previewScale = previewScale;
-		
-		if (requestedFramingRectWidth > 0 && requestedFramingRectHeight > 0) {
-			mManager.applyManualFramingRect(requestedFramingRectWidth, requestedFramingRectHeight);
-			requestedFramingRectWidth=requestedFramingRectHeight=0;
-		} else {
-			mManager.getFramingRect(true);
-		}
-		
-		parameters = reset_camera.getParameters();
-		
-		String parmsBackup = parameters.flatten();
-		
 		try {
-			setDesiredCameraParameters(reset_camera, false);
-		} catch (RuntimeException e) {
-			// Driver failed. Reset:
-			//CMN.Log("Camera_rejected!!!", e);
-			if (parmsBackup != null) {
-				parameters.unflatten(parmsBackup);
-				try {
-					reset_camera.setParameters(parameters);
-					setDesiredCameraParameters(reset_camera, true);
-				} catch (RuntimeException e1) {
-					parameters = reset_camera.getParameters();
-					// Well, darn. Give up
-					//CMN.Log("Camera_rejected even in safe-mode !!!", e1);
+			Camera reset_camera = camera;
+			DisplayMetrics dm = mManager.dm;
+			screenResolution.x = dm.widthPixels;
+			screenResolution.y = dm.heightPixels;
+			if (mManager.isPortrait) { //竖屏更改4 preview size is always something like 480*320, other 320*480
+				screenResolution.x = dm.heightPixels;
+				screenResolution.y = dm.widthPixels;
+			}
+			// todo fix getParameters failed (empty parameters)
+			findBestPreviewSizeValue(reset_camera.getParameters(), cameraResolution, screenResolution);
+			previewScale = cameraResolution.x == 0 ? 1 : screenResolution.x * 1.0f / cameraResolution.x;
+			CMN.debug("Camera resolution=" + cameraResolution, "screen resolution=" + screenResolution.x + "x" + screenResolution.y, "scale=" + previewScale);
+			mManager.UIData.frameView.previewScale = previewScale;
+			
+			if (requestedFramingRectWidth > 0 && requestedFramingRectHeight > 0) {
+				mManager.applyManualFramingRect(requestedFramingRectWidth, requestedFramingRectHeight);
+				requestedFramingRectWidth = requestedFramingRectHeight = 0;
+			} else {
+				mManager.getFramingRect(true);
+			}
+			
+			parameters = reset_camera.getParameters();
+			
+			String parmsBackup = parameters.flatten();
+			
+			try {
+				setDesiredCameraParameters(reset_camera, false);
+			} catch (RuntimeException e) {
+				// Driver failed. Reset:
+				//CMN.Log("Camera_rejected!!!", e);
+				if (parmsBackup != null) {
+					parameters.unflatten(parmsBackup);
+					try {
+						reset_camera.setParameters(parameters);
+						setDesiredCameraParameters(reset_camera, true);
+					} catch (RuntimeException e1) {
+						parameters = reset_camera.getParameters();
+						// Well, darn. Give up
+						//CMN.Log("Camera_rejected even in safe-mode !!!", e1);
+					}
 				}
 			}
+			ContinuousFocusing = getContinuousFocus() && getContinuousFocusing(parameters.getFocusMode());
+			mManager.applyPreviewSize();
+			decorateCameraSettings();
+			imageListener.ready();
+		} catch (Exception e) {
+			CMN.debug("出错了，头晕，暂时处理不了", e);
 		}
-		ContinuousFocusing = getContinuousFocus() && getContinuousFocusing(parameters.getFocusMode());
-		mManager.applyPreviewSize();
-		decorateCameraSettings();
-		imageListener.ready();
 	}
 	
 	private boolean getContinuousFocus() {

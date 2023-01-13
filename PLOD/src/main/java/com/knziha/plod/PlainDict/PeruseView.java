@@ -571,6 +571,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		CMN.Log("PeruseView----->onCreateDialog");
 		if(mDialog==null){
 			mDialog = new SimpleDialog(requireContext(), R.style.resizeDlgTheme);
+			dummyPanel.dialog = mDialog;
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
 				public void onBackPressed() {

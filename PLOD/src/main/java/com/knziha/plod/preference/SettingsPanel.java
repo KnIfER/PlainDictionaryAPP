@@ -279,7 +279,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	
 	public void init(Context context, ViewGroup root) {
 		//settingsLayout = getLayoutInflater().inflate(R.layout.test_settings, UIData.webcoord, false);
-		if (settingsLayout!=null||context==null) {
+		if (settingsLayout!=null||context==null||UITexts==null) {
 			return;
 		}
 		LinearLayout lv = linearLayout = hasDelegatePicker?new XYLinearLayout(context):new LinearLayout(context);
@@ -380,8 +380,13 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		//} catch (RuntimeException e) {
 		//	CMN.Log(e);
 		//}
-		if (settingsLayout==null && root!=null) {
-			init(root.getContext(), root);
+		if (settingsLayout==null) {
+			if (root != null) {
+				init(root.getContext(), root);
+			}
+			if(settingsLayout==null) {
+				return bIsShowing=!bIsShowing;
+			}
 		}
 		float targetAlpha = 1;
 		float targetTrans = 0;

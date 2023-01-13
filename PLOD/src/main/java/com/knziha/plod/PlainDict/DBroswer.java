@@ -1406,6 +1406,14 @@ public class DBroswer extends DialogFragment implements
 						a.getVtk().onClick(null);
 					}
 					break;
+				case R.string.quci:
+					try {
+						currentDisplaying = getRowText();
+						quci(mAdapter.getReaderAt(pressedRow), 0);
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+					break;
 				case R.string.copy:
 					a.copyText(getRowText(), true);
 					break;
@@ -1453,7 +1461,7 @@ public class DBroswer extends DialogFragment implements
 			PopupMenuHelper popupMenu = a.getPopupMenu();
 			boolean b1 = getFragmentId()==-1;
 			popupMenu.initLayout(new int[]{
-					R.string.view
+					R.layout.poplist_quci_fuzhi
 					, R.string.tapSch
 					, R.string.peruse_mode
 					, R.string.page_ucc
@@ -1552,36 +1560,44 @@ public class DBroswer extends DialogFragment implements
 				break;
 				case SelectionMode_learncard: {
 					// todo///
+					
 				}
 				break;
 				case SelectionMode_fetchWord: {
-					EditText target = null;
-					if (PDICMainAppOptions.dbFetchWord()==2) {
-						a.popupWord(currentDisplaying, null, -1, null);
-					} else if (PDICMainAppOptions.dbFetchWord()==3) {
-						enterPeruseMode(a, reader);
-					} else {
-						if (a.thisActType == ActType.MultiShare) {
-							if (a.peruseView != null) {
-								target = a.peruseView.etSearch;
-							} else {
-								a.getVtk().setInvoker(null, null, null, currentDisplaying);
-							}
-						} else {
-							a.lastEtString = String.valueOf(a.etSearch.getText());
-							target = a.etSearch;
-							a.etSearch_ToToolbarMode(2);
-						}
-						if (target != null) {
-							target.setText(currentDisplaying);
-						}
-						a.DetachDBrowser();
-					}
+					quci(reader, -1);
 				}
 				break;
 				default:
 					throw new IllegalStateException("Unexpected value: " + SelectionMode);
 			}
+		}
+	}
+	
+	private void quci(HistoryDatabaseReader reader, int force) {
+		EditText tv = null;
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		if (a == null) return;
+		if(force==-1) force=PDICMainAppOptions.dbFetchWord();
+		if (force==2) {
+			a.popupWord(currentDisplaying, null, -1, null);
+		} else if (force==3) {
+			enterPeruseMode(a, reader);
+		} else {
+			if (a.thisActType == ActType.MultiShare) {
+				if (a.peruseView != null) {
+					tv = a.peruseView.etSearch;
+				} else {
+					a.getVtk().setInvoker(null, null, null, currentDisplaying);
+				}
+			} else {
+				a.lastEtString = String.valueOf(a.etSearch.getText());
+				tv = a.etSearch;
+				a.etSearch_ToToolbarMode(2);
+			}
+			if (tv != null) {
+				tv.setText(currentDisplaying);
+			}
+			a.DetachDBrowser();
 		}
 	}
 	

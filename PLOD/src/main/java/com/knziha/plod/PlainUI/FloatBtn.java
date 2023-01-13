@@ -41,9 +41,11 @@ import org.apache.commons.lang3.StringUtils;
 public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	public final WindowManager wMan;
 	public final static String EXTRA_GETTEXT = "ext_clip";
+	public final static String EXTRA_FETCHTEXT = "ext_clip1";
 	public final static String EXTRA_FROMPASTE = "ext_paste";
 	public final static String EXTRA_Initialize = "ext_init";
 	public final static String EXTRA_INVOKER = "ext_invoker";
+	public static String sClipboard;
 	public final Context context;
 	public final ClipboardManager clipMan;
 	public final AgentApplication app;
@@ -301,5 +303,9 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 		this.lp = lp;
 		this.screenConfig = screenConfig;
 		return lp;
+	}
+	
+	public final boolean isFloating() {
+		return view!=null && view.getParent()!=null;
 	}
 }

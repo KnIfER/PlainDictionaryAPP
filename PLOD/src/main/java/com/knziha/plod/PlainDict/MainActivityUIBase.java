@@ -186,7 +186,6 @@ import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -5181,35 +5180,35 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		row.put(JsonNames.clr, value);
 		int noteType = 0;
 		if (annot != null) {
-			value = annot.uiData.colors[annot.uiData.toolIdx];
+			value = annot.uiStates.colors[annot.uiStates.toolIdx];
 			notes = annot.getNoteText();
 			if (TextUtils.isEmpty(notes)) {
 				notes = null;
 			}
 			lastNotes = notes;
 			if (notes!=null) {
-				noteType = annot.uiData.noteType;
+				noteType = annot.uiStates.noteType;
 				int k = PDICMainAppOptions.colorSameForNoteTypes()?0:noteType;
 				row.put(JsonNames.note, notes);
 				row.put(JsonNames.ntyp, noteType);
-				if (noteType == 1 && annot.uiData.noteOnBubble) {
+				if (noteType == 1 && annot.uiStates.noteOnBubble) {
 					row.put(JsonNames.bon, 1); // 将笔记直接显示在气泡之中
 				}
 				// 注释笔记也可以显示气泡，使其更加显著
-				boolean showBubble = annot.uiData.showBubbles[noteType];
+				boolean showBubble = annot.uiStates.showBubbles[noteType];
 				if (showBubble||noteType == 1) {
 					if(noteType!=1) row.put(JsonNames.bin, 1);
-					if (annot.uiData.bubbleColorsEnabled[k]) {
-						value = annot.uiData.bubbleColors[k];
+					if (annot.uiStates.bubbleColorsEnabled[k]) {
+						value = annot.uiStates.bubbleColors[k];
 						if (value!=0) row.put(JsonNames.bclr, value);
 					}
 				}
-				if (annot.uiData.fontColorEnabled[k]) {
-					value = annot.uiData.fontColors[k];
+				if (annot.uiStates.fontColorEnabled[k]) {
+					value = annot.uiStates.fontColors[k];
 					if (value!=0) row.put(JsonNames.fclr, value);
 				}
-				if (annot.uiData.fontSizesEnabled[k]) {
-					value = annot.uiData.fontSizes[k];
+				if (annot.uiStates.fontSizesEnabled[k]) {
+					value = annot.uiStates.fontSizes[k];
 					if (value>0) row.put(JsonNames.fsz, value);
 				}
 				noteType++;
@@ -10665,6 +10664,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (IOException e) {
 			CMN.debug(e);
 		}
+		server.loadManager = this.loadManager;
 		return server;
 	}
 	
@@ -11312,7 +11312,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 		if(cm!=null){
 			cm.setPrimaryClip(ClipData.newPlainText(null, text));
-			if(toast) showT(text);
+			if(toast) showT("已复制"+text);
 		}
 	}
 	
@@ -11436,5 +11436,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return zhTranslate((SpannableStringBuilder)text, zh);
 		}
 		return zhTranslate(String.valueOf(text), zh);
+	}
+	
+	public void onReceivedText(String text) {
+		View focus;
+		if (settingsPanel != null && settingsPanel.isVisible()) {
+			focus = settingsPanel.getCurrentFocus();
+		} else {
+			focus = getCurrentFocus();
+		}
+		CMN.debug("onReceivedText", focus, settingsPanel);
+		if (focus instanceof EditText) {
+			ViewUtils.getText((EditText) focus).append(text);
+		} else {
+			copyText(text, true);
+		}
 	}
 }

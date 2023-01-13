@@ -280,4 +280,12 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	public void onPause() {
 	
 	}
+	
+	public View getCurrentFocus() {
+		CMN.debug("getCurrentFocus", dialog, this);
+		if (dialog!=null && dialog.isShowing()) {
+			return dialog.getCurrentFocus();
+		}
+		return null;
+	}
 }

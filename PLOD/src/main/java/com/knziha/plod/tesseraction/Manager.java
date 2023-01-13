@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -94,12 +95,19 @@ public class Manager implements View.OnClickListener {
 		this.opt = opt;
 	}
 	
+	Point ptScreenSz = new Point();
+	
 	public void readScreenOrientation(Context context, boolean change) {
 		WindowManager windowService = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
 		screenRotation = windowService.getDefaultDisplay().getRotation();
 		isPortrait = screenRotation== Surface.ROTATION_0 || screenRotation == Surface.ROTATION_180;
 		if(change && cameraManager.isOpen()) {
-			cameraManager.ResetCameraSettings();
+			Point tmp = new Point();
+			windowService.getDefaultDisplay().getSize(tmp);
+			if (!tmp.equals(ptScreenSz)) {
+				ptScreenSz = tmp;
+				cameraManager.ResetCameraSettings();
+			}
 		}
 		dMan.setScrOrient(screenRotation, isPortrait);
 	}
@@ -289,20 +297,17 @@ public class Manager implements View.OnClickListener {
 						public void onShutter() {
 							suspensed = true;
 						}
-					}, null, null, new Camera.PictureCallback() {
-						@Override
-						public void onPictureTaken(byte[] data, Camera camera) {
-							Bitmap bm = BitmapFactory.decodeStream(new ByteArrayInputStream(data));
-							int bw=bm.getWidth(),bh=bm.getHeight();
-							if(bw>0 && bh>0) {
-								if(bw>bh ^ sWidth>sHeight) {
-									Matrix matrix = new Matrix();
-									matrix.postRotate(90);
-									bm = Bitmap.createBitmap(bm, 0, 0, bw, bh, matrix, true);
-								}
+					}, null, null, (data, camera) -> {
+						Bitmap bm = BitmapFactory.decodeStream(new ByteArrayInputStream(data));
+						int bw=bm.getWidth(),bh=bm.getHeight();
+						if(bw>0 && bh>0) {
+							if(bw>bh ^ sWidth>sHeight) {
+								Matrix matrix = new Matrix();
+								matrix.postRotate(90);
+								bm = Bitmap.createBitmap(bm, 0, 0, bw, bh, matrix, true);
 							}
-							setImage(bm, true);
 						}
+						setImage(bm, true);
 					});
 				} catch (Exception e) {
 					CMN.debug(e);

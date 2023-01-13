@@ -46,7 +46,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Binder;
 import android.os.Build;
 import android.provider.Settings;
-import android.text.TextUtils;
+import android.text.Editable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -2008,4 +2008,13 @@ public class ViewUtils extends VU {
 		}
 	}
 	
+	public static Editable getText(EditText edit) {
+		Editable ret = edit.getText();
+		if (ret==null) {
+			edit.setText(" ");
+			ret = edit.getText();
+			ret.clear();
+		}
+		return ret;
+	}
 }

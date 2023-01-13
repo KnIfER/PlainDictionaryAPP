@@ -384,8 +384,12 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(uri.startsWith("/PLOD/")) {
-			//SU.Log("about received : ", uri);
-			handle_search_event(session.getParameters(), session.getInputStream());
+			SU.Log("PLOD received : ", uri);
+			if (session.getParameters().get("copy")!=null) {
+				return newFixedLengthResponse(getClipboard());
+			} else {
+				handle_search_event(session.getParameters(), session.getInputStream());
+			}
 			return emptyResponse;
 		}
 		
@@ -923,6 +927,10 @@ public abstract class MdictServer extends NanoHTTPD {
 		derivedHtmlBase.append(restFragments);
 		//SU.Log(derivedHtmlBase.toString());
 		return derivedHtmlBase.toString();
+	}
+	
+	public String getClipboard() {
+		return "";
 	}
 	
 	private String getBaseHtml() {

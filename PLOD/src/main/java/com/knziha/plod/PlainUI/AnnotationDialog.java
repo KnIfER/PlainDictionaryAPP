@@ -1,21 +1,20 @@
 package com.knziha.plod.PlainUI;
 
 import android.annotation.SuppressLint;
-import android.app.Instrumentation;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.View;
@@ -59,7 +58,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class AnnotationDialog implements View.OnClickListener, ColorPickerListener, SeekBar.OnSeekBarChangeListener, AdapterView.OnItemClickListener, PopupMenuHelper.PopupMenuListener, View.OnLongClickListener {
+public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickListener, ColorPickerListener, SeekBar.OnSeekBarChangeListener, AdapterView.OnItemClickListener, PopupMenuHelper.PopupMenuListener, View.OnLongClickListener {
 	MainActivityUIBase a;
 	ColorPickerDialog noteDlg;
 	Button btnEditNotes; // ante
@@ -70,7 +69,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	public TextView etTitle;
 	public boolean uiMergeEtTools;
 	public ShelfLinearLayout2 editToolbar;
-	public EditText edit;
+	public EditText notesEditor;
 	public ViewGroup lnkPanel;
 	public ViewGroup noteTypes;
 	public View bubbleBtn;
@@ -80,7 +79,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	TextView alphaText;
 	SeekBar alphaSeek;
 	Button[] btnTypes;
-	AlertDialog tkShow;
+	AlertDialog shownVtk;
 	public WebViewmy mWebView;
 	
 	ColoredTextSpan[] spans;
@@ -90,7 +89,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	public long editingNoteId = 0;
 	private boolean keyboardShown;
 	
-	public static class UIData {
+	public final PlainAppPanel dummyPanel = new PlainAppPanel();
+	
+	public static class UIStates {
 		public int toolIdx;
 		public int[] colors = new int[8];
 		public int[] alphaLocks = new int[8];
@@ -105,18 +106,18 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		public boolean noteOnBubble;
 	}
 	
-	public UIData uiData;
+	public UIStates uiStates;
 	
 	public AnnotationDialog(MainActivityUIBase a) {
-		this.a = a;
+		this.a = dummyPanel.a = a;
 	}
 	
 	public void show(WebViewmy wv, int type, boolean showAnteNotes) {
-		tkShow = a.ucc == null || a.ucc.detached() ? null : a.ucc.getDialog();
+		shownVtk = a.ucc == null || a.ucc.detached() ? null : a.ucc.getDialog();
 		mWebView = wv;
-		if(tkShow!=null) tkShow.hide();
-		if (uiData==null) {
-			uiData = new UIData();
+		if(shownVtk !=null) shownVtk.hide();
+		if (uiStates ==null) {
+			uiStates = new UIStates();
 			readUIData();
 		}
 		final boolean b1 = type < -1;
@@ -124,12 +125,12 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			type = -2-type;
 			if (type>1) type=-1;
 		}
-		if (edit==null) {
+		if (notesEditor==null) {
 			ViewGroup cv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.create_note_view, a.root, false);
 			lnkToAdapter = new ArrayAdapter<>(a, R.layout.popup_list_item, new String[]{a.mResource.getString(R.string.lnk_note)});
 			binAdapter = new ArrayAdapter<>(a, R.layout.popup_list_item, new ArrayList<>(Collections.singletonList("展开笔记到气泡中")));
 			editPanel = (ViewGroup) ViewUtils.findViewById(cv, R.id.editPanel);
-			edit = (EditText) ViewUtils.findViewById(editPanel, R.id.edit, 1);
+			notesEditor = (EditText) ViewUtils.findViewById(editPanel, R.id.edit, 1);
 			editTools = (ViewGroup) ViewUtils.findViewById(editPanel, R.id.editTools);
 			editTools1 = (ViewGroup) ViewUtils.findViewById(editPanel, R.id.editTools1);
 			botPad = ViewUtils.findViewById(editPanel, R.id.botPad);
@@ -147,9 +148,11 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			
 			ViewUtils.setOnClickListenersOneDepth(cv, this, 999, null);
 			btnTypes = new Button[]{btnPanel.findViewById(R.id.btnH), btnPanel.findViewById(R.id.btnU)};
-			ColorPickerDialog noteDlg = ColorPickerDialog.newInstance(a, uiData.colors[uiData.toolIdx]);
+			ColorPickerDialog noteDlg = ColorPickerDialog.newInstance(a, uiStates.colors[uiStates.toolIdx]);
 			noteDlg.setContentView(cv, true);
 			this.noteDlg = noteDlg;
+			//dummyPanel.settingsLayout = noteDlg.rootView;
+			noteDlg.mOnShowListener = (DialogInterface.OnShowListener) dlg -> dummyPanel.dialog = (Dialog) dlg;
 			noteDlg.rootView.getRootView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -191,9 +194,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			noteDlg.forceAlphaLock(true);
 			noteDlg.setColorPickerListener(this);
 			alphaSeek.setOnSeekBarChangeListener(this);
-			btnTypes[type<0?uiData.toolIdx:type].performClick();
+			btnTypes[type<0? uiStates.toolIdx:type].performClick();
 			noteTypes.setTag(this);
-			noteTypes.getChildAt(uiData.noteType).performClick();
+			noteTypes.getChildAt(uiStates.noteType).performClick();
 			noteTypes.setTag(null);
 		}
 		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLockVisible());
@@ -215,9 +218,12 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		}
 		setEditingNote(-1);
 		if (b1) {
-			btnTypes[type<0?uiData.toolIdx:type].performClick();
+			btnTypes[type<0? uiStates.toolIdx:type].performClick();
 		}
 		//ViewUtils.setVisible(btnEditNotes, true);
+		if (!dummyPanel.isVisible()) {
+			dummyPanel.toggle(null, null, 0);
+		}
 	}
 	
 	public void resetMergeTools() {
@@ -251,16 +257,16 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		else if (ViewUtils.getNthParentNonNull(v,1).getId()==R.id.btnPanel) {
 			for (int k = 0; k < 2; k++) {
 				if (btnTypes[k] == v) {
-					if (uiData.toolIdx!=k) {
-						PDICMainAppOptions.currentTool(uiData.toolIdx=k);
+					if (uiStates.toolIdx!=k) {
+						PDICMainAppOptions.currentTool(uiStates.toolIdx=k);
 					}
 					btnTypes[k].setAlpha(1);
-					int lock = uiData.alphaLocks[uiData.toolIdx];
+					int lock = uiStates.alphaLocks[uiStates.toolIdx];
 					noteDlg.alphaLock(lock);
 					String zhsh = (lock * 100 / 255) + "%";
 					if(zhsh.length()<3) zhsh = "0"+zhsh;
 					alphaText.setText(zhsh);
-					noteDlg.setPreviewColor(uiData.colors[uiData.toolIdx]);
+					noteDlg.setPreviewColor(uiStates.colors[uiStates.toolIdx]);
 					alphaSeek.setProgress(lock);
 					noteDlg.datasetChanged();
 				} else {
@@ -332,23 +338,31 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				}
 				break;
 			case R.id.etPaste:
-				edit.onTextContextMenuItem(android.R.id.paste);
+				try {
+					notesEditor.onTextContextMenuItem(android.R.id.paste);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 				//getText().append(a.getFloatBtn().getPrimaryClip());
 			break;
 			case R.id.etUndo:
 			case R.id.etRedo:
 				KeyEvent control = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_Z, 0,
 						KeyEvent.META_CTRL_LEFT_ON);
-				edit.onKeyShortcut(v.getId()==R.id.etUndo?KeyEvent.KEYCODE_Z:KeyEvent.KEYCODE_Y, control);
+				try {
+					notesEditor.onKeyShortcut(v.getId() == R.id.etUndo ? KeyEvent.KEYCODE_Z : KeyEvent.KEYCODE_Y, control);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			break;
 			case R.id.bubble:
-				if (uiData.noteType!=1) {
+				if (uiStates.noteType!=1) {
 					show = editToolbar.toggleViewChecked(v);
-					uiData.showBubbles[uiData.noteType] = show;
-					if (uiData.noteType==0) {
+					uiStates.showBubbles[uiStates.noteType] = show;
+					if (uiStates.noteType==0) {
 						PDICMainAppOptions.showBubbleForEmbedNote(show);
 					}
-					else if (uiData.noteType==2) {
+					else if (uiStates.noteType==2) {
 						PDICMainAppOptions.showBubbleForFootNote(show);
 					}
 					editToolbar.invalidate();
@@ -368,18 +382,18 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				if (noteTypes.getTag() == null && v.getId()==R.id.ntyp2) {
 					if (shareListAda != binAdapter || !showedMenuPopup()) {
 						binAdapter.clear();
-						binAdapter.add(uiData.noteOnBubble ?"展开笔记到气泡中 √ ":"展开笔记到气泡中");
+						binAdapter.add(uiStates.noteOnBubble ?"展开笔记到气泡中 √ ":"展开笔记到气泡中");
 						showLiteMenuPopup(binAdapter, v);
 					}
 				}
 				for (int i = 0; i < noteTypes.getChildCount(); i++) {
 					View childAt = noteTypes.getChildAt(i);
 					editToolbar.setViewChecked(childAt, childAt==v);
-					if (childAt==v && uiData.noteType!=i) {
-						PDICMainAppOptions.currentNoteType(uiData.noteType=i);
+					if (childAt==v && uiStates.noteType!=i) {
+						PDICMainAppOptions.currentNoteType(uiStates.noteType=i);
 					}
 				}
-				editToolbar.setViewChecked(bubbleBtn, uiData.showBubbles[uiData.noteType]);
+				editToolbar.setViewChecked(bubbleBtn, uiStates.showBubbles[uiStates.noteType]);
 				editToolbar.invalidate();
 			break;
 			case R.id.bubbleColor:
@@ -506,7 +520,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	private void showSubColorPicker(int id)
 	{
 		mSubPickerId = id;
-		mSubPickerNTyp = uiData.noteType;
+		mSubPickerNTyp = uiStates.noteType;
 		ColorPickerDialog subDlg = subDlgRef.get();
 		if(subDlg==null) {
 			View cv = a.getLayoutInflater().inflate(R.layout.create_note_sub_view, a.root, false);
@@ -531,16 +545,16 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 							alpha = dialog.alphaLock();
 							color = (0xFF000000&(alpha<<24)) | (0x00FFFFFF&color);
 						}
-						uiData.bubbleColors[k] = color;
-						a.opt.putLong("nbclr"+k, (uiData.bubbleColorsEnabled[k] ? 0x100000000L : 0L) | color&0xFFFFFFFFL);
+						uiStates.bubbleColors[k] = color;
+						a.opt.putLong("nbclr"+k, (uiStates.bubbleColorsEnabled[k] ? 0x100000000L : 0L) | color&0xFFFFFFFFL);
 					} else {
-						uiData.fontColors[k] = color;
-						long val = (uiData.fontColorEnabled[k] ? 0x100000000L : 0L) | color&0xFFFFFFFFL;
+						uiStates.fontColors[k] = color;
+						long val = (uiStates.fontColorEnabled[k] ? 0x100000000L : 0L) | color&0xFFFFFFFFL;
 						a.opt.putLong("nfclr"+k, val);
 						
 						int percent = seekBar.getProgress() * 100 / 255;
-						uiData.fontSizes[k] = percent;
-						a.opt.putInt("nfntsz"+k, (uiData.fontSizesEnabled[k]?percent:-percent));
+						uiStates.fontSizes[k] = percent;
+						a.opt.putInt("nfntsz"+k, (uiStates.fontSizesEnabled[k]?percent:-percent));
 					}
 					return true;
 				}
@@ -560,9 +574,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 					}
 					if (fromUser) {
 						if (b1) {
-							uiData.bubbleColors[k] = (0xFF000000 & (lock << 24)) | (0x00FFFFFF & uiData.bubbleColors[k]);
+							uiStates.bubbleColors[k] = (0xFF000000 & (lock << 24)) | (0x00FFFFFF & uiStates.bubbleColors[k]);
 						} else {
-							uiData.fontSizes[k] = percent;
+							uiStates.fontSizes[k] = percent;
 						}
 					}
 					String indi = percent + "%";
@@ -574,7 +588,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				final boolean b1 = mSubPickerId==R.id.bubbleColor;
 				final int k = mSubPickerNTyp();
 				if (!b1) {
-					dialog.setEnabled(uiData.fontColorEnabled[k] = !uiData.fontColorEnabled[k]);
+					dialog.setEnabled(uiStates.fontColorEnabled[k] = !uiStates.fontColorEnabled[k]);
 				} else {
 					name.performClick();
 				}
@@ -583,11 +597,11 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				final boolean b1 = mSubPickerId==R.id.bubbleColor;
 				final int k = mSubPickerNTyp();
 				if (!b1) {
-					boolean vis = uiData.fontSizesEnabled[k] = !uiData.fontSizesEnabled[k];
+					boolean vis = uiStates.fontSizesEnabled[k] = !uiStates.fontSizesEnabled[k];
 					ViewUtils.setVisible(seekBar, vis);
 					ViewUtils.setVisible(value, vis);
 				} else {
-					boolean enabled = uiData.bubbleColorsEnabled[k] = !uiData.bubbleColorsEnabled[k];
+					boolean enabled = uiStates.bubbleColorsEnabled[k] = !uiStates.bubbleColorsEnabled[k];
 					seekBar.setEnabled(enabled);
 					try {
 						dialog.setEnabled(enabled);
@@ -603,14 +617,14 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 		int color;
 		final int k = mSubPickerNTyp();
 		{
-			color = (pBc?uiData.bubbleColors:uiData.fontColors)[k];
+			color = (pBc? uiStates.bubbleColors: uiStates.fontColors)[k];
 			if (color==0) {
 				if (pBc) { // 气泡颜色
 					color = 0xFFABCDEF;
 				} else { // 字体颜色
 					color = k==1?0xFFFFFFFF:0xFF000000;
 				}
-				(pBc?uiData.bubbleColors:uiData.fontColors)[k] = color;
+				(pBc? uiStates.bubbleColors: uiStates.fontColors)[k] = color;
 			}
 		}
 		View[] views = (View[]) subDlg.tag;
@@ -619,21 +633,21 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				, value = (TextView) views[2];
 		SeekBar seekBar = (SeekBar) views[3];
 		
-		final boolean vis = pBc || uiData.fontSizesEnabled[k];
+		final boolean vis = pBc || uiStates.fontSizesEnabled[k];
 		ViewUtils.setVisible(seekBar, vis);
 		ViewUtils.setVisible(value, vis);
 		name.setText(pBc?"不透明度":"字体大小");
 		pickName.setText(pBc?"点击修改气泡颜色":"点击修改笔记文本的字体颜色");
 
-		final boolean enabled = !pBc&&uiData.fontColorEnabled[k] || pBc&&uiData.bubbleColorsEnabled[k];
+		final boolean enabled = !pBc&& uiStates.fontColorEnabled[k] || pBc&& uiStates.bubbleColorsEnabled[k];
 		boolean visible = true;
 		if (pBc) { // 气泡alpha
 			seekBar.setProgress(color>>24&0xFF);
 			seekBar.setEnabled(enabled);
 		} else { // 字体大小（百分比）
-			seekBar.setProgress(uiData.fontSizes[k]*255/100);
+			seekBar.setProgress(uiStates.fontSizes[k]*255/100);
 			seekBar.setEnabled(true);
-			visible = uiData.fontSizesEnabled[k];
+			visible = uiStates.fontSizesEnabled[k];
 		}
 		VU.setVisible(seekBar, visible);
 		VU.setVisible(value, visible);
@@ -644,7 +658,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			subDlg.alphaLock(alpha);
 		//	subDlg.datasetChanged();
 		//}
-		CMN.debug("颜色::", Integer.toHexString(color), k, uiData.fontColorEnabled[k], enabled);
+		CMN.debug("颜色::", Integer.toHexString(color), k, uiStates.fontColorEnabled[k], enabled);
 		if (!subDlg.isAdded()) {
 			subDlg.show(a.getSupportFragmentManager(), "note-sub-dlg");
 		}
@@ -724,10 +738,10 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			});
 		}
 		else if (shareListAda == binAdapter) {
-			PDICMainAppOptions.noteInBubble(uiData.noteOnBubble =!uiData.noteOnBubble);
+			PDICMainAppOptions.noteInBubble(uiStates.noteOnBubble =!uiStates.noteOnBubble);
 			view.postDelayed(dismissMenuRn, 300);
 			TextView tv = view.findViewById(R.id.text1);
-			if(tv!=null) tv.setText(uiData.noteOnBubble ?"展开笔记到气泡中 √ ":"展开笔记到气泡中");
+			if(tv!=null) tv.setText(uiStates.noteOnBubble ?"展开笔记到气泡中 √ ":"展开笔记到气泡中");
 		}
 		else {
 			String note = arrNotes[position];
@@ -749,21 +763,21 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	public boolean onColorSelected(ColorPickerDialog dialogInterface, int color, boolean doubleTap) {
 		if(doubleTap) return false;
 		color = alphaLock(color);
-		int k = uiData.toolIdx;
+		int k = uiStates.toolIdx;
 		a.opt.annotColor(k, color, true);
-		uiData.colors[k] = color;
+		uiStates.colors[k] = color;
 		a.Annot(mWebView, k, this);
-		if(tkShow!=null) tkShow = null;
+		if(shownVtk !=null) shownVtk = null;
 		onDialogDismissed(null, 0);
 		getText().clear();
 		return true;
 	}
 	
 	public int alphaLock(int color) {
-		int k = uiData.toolIdx;
+		int k = uiStates.toolIdx;
 		int alpha = Color.alpha(color);
-		if(PDICMainAppOptions.forceAlphaLock() || alpha > uiData.alphaLocks[k]) {
-			alpha = uiData.alphaLocks[k];
+		if(PDICMainAppOptions.forceAlphaLock() || alpha > uiStates.alphaLocks[k]) {
+			alpha = uiStates.alphaLocks[k];
 			color = (0xFF000000&(alpha<<24)) | (0x00FFFFFF&color);
 		}
 		return color;
@@ -773,7 +787,7 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
 		if(dialogInterface==null)
 			color = noteDlg.getPreviewingColor();
-		int k = uiData.toolIdx;
+		int k = uiStates.toolIdx;
 		View btn = btnTypes[k];
 		ColoredTextSpan span = spans[k];
 		color = alphaLock(color);
@@ -786,14 +800,15 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	
 	@Override
 	public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
-		if(tkShow!=null) tkShow.show();
+		if(shownVtk !=null) shownVtk.show();
 		if (menuPopup != null) menuPopup.dismiss();
+		dummyPanel.dismissImmediate();
 	}
 	
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int lock, boolean fromUser) {
-		a.opt.alphaLock(uiData.toolIdx, lock, true);
-		uiData.alphaLocks[uiData.toolIdx] = lock;
+		a.opt.alphaLock(uiStates.toolIdx, lock, true);
+		uiStates.alphaLocks[uiStates.toolIdx] = lock;
 		String indi = (lock * 100 / 255) + "%";
 		if(indi.length()<3) indi = "0"+indi;
 		alphaText.setText(indi);
@@ -817,10 +832,10 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			//editTools.setBackgroundColor(ColorUtils.blendARGB(MainAppBackground, Color.WHITE, 0.1f));
 			int wilte = GlobalOptions.isDark ? 0xFF555555 : Color.WHITE;
 			btnPanel.setBackgroundColor(wilte);
-			edit.setBackgroundColor(wilte);
+			notesEditor.setBackgroundColor(wilte);
 			wilte = GlobalOptions.isDark ? Color.WHITE : 0xde888888;
-			edit.setHintTextColor(wilte);
-			edit.setTextColor(wilte);
+			notesEditor.setHintTextColor(wilte);
+			notesEditor.setTextColor(wilte);
 			//editToolbar.setBackgroundColor(MainAppBackground);
 			
 			//gray = 0x55888888;
@@ -832,10 +847,10 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	}
 	
 	private Editable getText() {
-		Editable ret = edit.getText();
+		Editable ret = notesEditor.getText();
 		if (ret==null) {
-			edit.setText(" ");
-			ret = edit.getText();
+			notesEditor.setText(" ");
+			ret = notesEditor.getText();
 			ret.clear();
 		}
 		return ret;
@@ -889,9 +904,9 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 			int ntyp = JsonNames.readInt(json, JsonNames.ntyp, 0);
 			CMN.debug("editPressedNote::", type, ntyp);
 			
-			uiData.toolIdx = type;
-			uiData.alphaLocks[type] = color>>24&0xFF;
-			uiData.colors[type] = color|0xFF000000;
+			uiStates.toolIdx = type;
+			uiStates.alphaLocks[type] = color>>24&0xFF;
+			uiStates.colors[type] = color|0xFF000000;
 			btnTypes[type].performClick();
 			
 			getText().clear();
@@ -900,16 +915,16 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 				getText().append(note);
 				int k = PDICMainAppOptions.colorSameForNoteTypes()?0:ntyp;
 				try {
-					uiData.noteOnBubble = json.containsKey("bon");
-					uiData.showBubbles[ntyp] = ntyp==1||JsonNames.hasKey(json, JsonNames.bin);
-					if (uiData.bubbleColorsEnabled[k] = JsonNames.hasKey(json, JsonNames.bclr)) {
-						uiData.bubbleColors[k] = JsonNames.readInt(json, JsonNames.bclr, 0);
+					uiStates.noteOnBubble = json.containsKey("bon");
+					uiStates.showBubbles[ntyp] = ntyp==1||JsonNames.hasKey(json, JsonNames.bin);
+					if (uiStates.bubbleColorsEnabled[k] = JsonNames.hasKey(json, JsonNames.bclr)) {
+						uiStates.bubbleColors[k] = JsonNames.readInt(json, JsonNames.bclr, 0);
 					}
-					if (uiData.fontColorEnabled[k] = JsonNames.hasKey(json, JsonNames.fclr)) {
-						uiData.fontColors[k] = JsonNames.readInt(json, JsonNames.fclr, 0);
+					if (uiStates.fontColorEnabled[k] = JsonNames.hasKey(json, JsonNames.fclr)) {
+						uiStates.fontColors[k] = JsonNames.readInt(json, JsonNames.fclr, 0);
 					}
-					if (uiData.fontSizesEnabled[k] = JsonNames.hasKey(json, JsonNames.fsz)) {
-						uiData.fontSizes[k] = JsonNames.readInt(json, JsonNames.fsz, 0);
+					if (uiStates.fontSizesEnabled[k] = JsonNames.hasKey(json, JsonNames.fsz)) {
+						uiStates.fontSizes[k] = JsonNames.readInt(json, JsonNames.fsz, 0);
 					}
 				} catch (Exception e) {
 					CMN.debug(e);
@@ -935,30 +950,30 @@ public class AnnotationDialog implements View.OnClickListener, ColorPickerListen
 	}
 	
 	private void readUIData() {
-		uiData.toolIdx = PDICMainAppOptions.currentTool();
-		uiData.noteType = PDICMainAppOptions.currentNoteType();
-		uiData.noteOnBubble = PDICMainAppOptions.noteInBubble();
-		uiData.showBubbles[0] = PDICMainAppOptions.showBubbleForEmbedNote();
-		uiData.showBubbles[1] = true;
-		uiData.showBubbles[2] = PDICMainAppOptions.showBubbleForFootNote();
+		uiStates.toolIdx = PDICMainAppOptions.currentTool();
+		uiStates.noteType = PDICMainAppOptions.currentNoteType();
+		uiStates.noteOnBubble = PDICMainAppOptions.noteInBubble();
+		uiStates.showBubbles[0] = PDICMainAppOptions.showBubbleForEmbedNote();
+		uiStates.showBubbles[1] = true;
+		uiStates.showBubbles[2] = PDICMainAppOptions.showBubbleForFootNote();
 		long value;
 		for (int i = 0; i < 3; i++) {
 			value = a.opt.getLong("nbclr"+i, 0);
-			uiData.bubbleColors[i] = (int) (value);
-			uiData.bubbleColorsEnabled[i] = (value&0x100000000L)>0;
+			uiStates.bubbleColors[i] = (int) (value);
+			uiStates.bubbleColorsEnabled[i] = (value&0x100000000L)>0;
 			value = a.opt.getLong("nfclr"+i, 0);
-			uiData.fontColors[i] = (int) (value);
-			uiData.fontColorEnabled[i] = (value&0x100000000L)>0;
+			uiStates.fontColors[i] = (int) (value);
+			uiStates.fontColorEnabled[i] = (value&0x100000000L)>0;
 			value = a.opt.getInt("nfntsz"+i, 100);
-			uiData.fontSizes[i] = (int) (value<0?-value:value);
-			uiData.fontSizesEnabled[i] = value > 0;
+			uiStates.fontSizes[i] = (int) (value<0?-value:value);
+			uiStates.fontSizesEnabled[i] = value > 0;
 //			uiData.bubbleColors[i] = 0;
 //			uiData.fontColors[i] = 0;
 //			uiData.fontSizes[i] = 100;
 		}
 		for (int i = 0; i < 2; i++) {
-			uiData.colors[i] = a.opt.annotColor(i, 0, false);
-			uiData.alphaLocks[i] = a.opt.alphaLock(i, 0, false);
+			uiStates.colors[i] = a.opt.annotColor(i, 0, false);
+			uiStates.alphaLocks[i] = a.opt.alphaLock(i, 0, false);
 		}
 	}
 }

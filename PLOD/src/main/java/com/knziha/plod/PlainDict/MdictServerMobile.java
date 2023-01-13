@@ -4,21 +4,32 @@ import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.StrictMode;
+import android.text.TextUtils;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.ValueCallback;
+import android.widget.TextView;
 
 import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.mdictRes_asset;
+import com.knziha.plod.widgets.CheckedTextViewmy;
+import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingConstants;
 import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
+import org.apache.commons.text.StringEscapeUtils;
 import org.knziha.metaline.StripMethods;
 import org.nanohttpd.protocols.http.HTTPSession;
 import org.xiph.speex.ByteArrayRandomOutputStream;
@@ -27,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
@@ -119,41 +131,41 @@ public class MdictServerMobile extends MdictServer {
 	
 	@Override
 	protected void handle_search_event(Map<String, List<String>> parameters, InputStream inputStream) {
-		//CMN.Log("接到了接到了");
+		CMN.debug("接到了接到了", "parameters = [" + parameters + "], inputStream = [" + inputStream + "]");
 		List<String> target = parameters.get("f");
-		if(target!=null && target.size()>0) {
+		byte[] data;
+		try {
+			data = new byte[inputStream.available()];
+			inputStream.read(data);
+		} catch (IOException e) {
+			return;
+		}
+		String text = new String(data);
+		if (target != null && target.size() > 0) {
 			int sharetype = IU.parsint(target.get(0));
 			//CMN.Log("sharetype", sharetype);
-			byte[] data;
-			try {
-				data = new byte[inputStream.available()];
-				inputStream.read(data);
-			} catch (IOException e) {
-				return;
-			}
-			String text = new String(data);
 			a.root.post(() -> {
-				if(sharetype==2) {
+				if (sharetype == 2) {
 					a.execVersatileShare(text, opt.getSendToShareTarget());
 				} else {
-					switch (PDICMainAppOptions.getSendToAppTarget())
-					{
+					switch (PDICMainAppOptions.getSendToAppTarget()) {
 						case 0:
 							a.execVersatileShare(text, 0);
-						break;
-						case 1:
-						{
+							break;
+						case 1: {
 							a.etSearch.setText(text);
 							a.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
-							if(!a.focused) {
+							if (!a.focused) {
 								ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
-								if(manager!=null) manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+								if (manager != null)
+									manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
 							}
-						} break;
-						case 2:
-						{
+						}
+						break;
+						case 2: {
 							a.JumpToFloatSearch(text);
-						} break;
+						}
+						break;
 						case 3:
 							a.execVersatileShare(text, 1);
 						break;
@@ -161,6 +173,9 @@ public class MdictServerMobile extends MdictServer {
 				}
 			});
 			CMN.Log("启动搜索 : ", text);
+		}
+		else if (parameters.get("textClip")!=null) {
+			a.onReceivedText(text);
 		}
 	}
 	
@@ -242,5 +257,108 @@ public class MdictServerMobile extends MdictServer {
 			}
 		}
 		return super.OpenMdbResourceByName(key);
+	}
+	
+	public String getClipboard() {
+		// todo 处理悬浮状态
+		if (a.isFloatingApp()) {
+		
+		}
+		int fg = MainActivityUIBase.foreground;
+		if (fg > 0) {
+			int cc=0;
+			while (fg > 0) {
+				if((fg&1)>0) {
+					MainActivityUIBase actor = AgentApplication.activities[cc].get();
+					//CMN.debug("actor::", actor);
+					if (actor != null) {
+						View focus;
+						if (actor.settingsPanel != null && actor.settingsPanel.isVisible()) {
+							focus = actor.settingsPanel.getCurrentFocus();
+						} else {
+							focus = actor.getCurrentFocus();
+						}
+						if (focus != null) {
+							CMN.debug("focus::", focus);
+							if (focus instanceof TextView) {
+								TextView tv = ((TextView) focus);
+								if (tv.hasSelection()) {
+									int st=tv.getSelectionStart(), ed=tv.getSelectionEnd();
+									if (st > ed) {
+										int tmp = st; st=ed; ed=tmp;
+									}
+									return tv.getText().subSequence(st, ed).toString();
+								}
+							}
+							else if (focus instanceof WebViewmy) {
+								WebViewmy wv = ((WebViewmy) focus);
+								if (wv.bIsActionMenuShown||wv.weblistHandler!=null && ViewUtils.isVisibleV2(wv.weblistHandler.toolsBtn)) {
+									FloatBtn.sClipboard = null;
+									actor.hdl.post(new Runnable() {
+										@Override
+										public void run() {
+											wv.evaluateJavascript("getSelection().toString()", value -> {
+												CMN.debug("value =::", value);
+												if (value.length() > 2) {
+													value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+													//CMN.debug("initQuickTranslatorsBar::getSelection=", StringEscapeUtils.escapeJava(value));
+													if (wv.presenter.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
+														value = value.replaceAll("-\n", "");
+														value = value.replaceAll("\n(?!\n)", " ");
+													}
+													FloatBtn.sClipboard = value;
+												} else {
+													FloatBtn.sClipboard = "";
+												}
+											});
+										}
+									});
+									int tWait = 0;
+									while(FloatBtn.sClipboard==null && tWait<1000) {
+										try {
+											Thread.sleep(100);
+											tWait+=100;
+										} catch (Exception e) {
+											break;
+										}
+									}
+									if (!TextUtils.isEmpty(FloatBtn.sClipboard)) {
+										return FloatBtn.sClipboard;
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+				fg>>=1;
+				cc++;
+			}
+		}
+		CharSequence tmp = a.getFloatBtn().getPrimaryClip();
+		String ret = tmp==null?null:tmp.toString();
+		CMN.debug("getClipboard", ret, TextUtils.isEmpty(ret));
+		if (TextUtils.isEmpty(ret) && (a.isFloating()||a.getFloatBtn().isFloating())) {
+			Intent newTask = new Intent(Intent.ACTION_MAIN);
+			newTask.setType(Intent.CATEGORY_DEFAULT);
+			newTask.putExtra(FloatBtn.EXTRA_FROMPASTE, true);
+			newTask.putExtra(FloatBtn.EXTRA_GETTEXT, true);
+			newTask.putExtra(FloatBtn.EXTRA_FETCHTEXT, true);
+			newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			newTask.setClass(a.getApplicationContext(), PasteActivity.class);
+			FloatBtn.sClipboard = null;
+			a.getApplicationContext().startActivity(newTask);
+			int tWait = 0;
+			while(FloatBtn.sClipboard==null && tWait<1000) {
+				try {
+					Thread.sleep(100);
+					tWait+=100;
+				} catch (Exception e) {
+					break;
+				}
+			}
+			ret = FloatBtn.sClipboard;
+		}
+		return ret;
 	}
 }
