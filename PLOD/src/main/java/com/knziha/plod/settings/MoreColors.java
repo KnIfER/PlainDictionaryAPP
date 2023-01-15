@@ -37,7 +37,7 @@ public class MoreColors extends PlainSettingsFragment implements Preference.OnPr
 					switch (key) {
 						case "oldColor":
 							init_switch_preference(this, key, PDICMainAppOptions.useOldColorsMode(), null, null, p);
-							if (!PDICMainAppOptions.useOldColorsMode()) {
+							if (PDICMainAppOptions.useOldColorsMode()) {
 								findPreference("cat_fore").setEnabled(false);
 							}
 						break;

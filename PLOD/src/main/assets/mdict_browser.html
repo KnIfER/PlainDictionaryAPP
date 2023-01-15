@@ -2932,7 +2932,7 @@
 					var sty = ge('setyle1')||craft('STYLE', 0, document.head);
 					sty.id='setyle1';
 					sty.type="text/css";
-					var s=`.dt{color:#${e.fgr}}`;
+					var s='.dt{color:#'+e.fgr+'}';
 					sty.appendChild(document.createTextNode(s));
 				}
 				ScanInDicts();

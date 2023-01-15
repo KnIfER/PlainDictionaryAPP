@@ -26,6 +26,11 @@ def zhuanXiegang(){
     return rootProject.projectDir.getPath().replace('\\', '\\\\');
 }
 
+// Load keystore
+def keystorePropertiesFile = rootProject.file("keystore.properties");
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     tasks.whenTaskAdded { task ->
         if (task.name.contains("lint")
@@ -52,12 +57,28 @@ android {
     }
     compileSdkVersion ver_compileSdkVersion
 
+    //签名设置
+    signingConfigs {
+//        release {
+//            v1SigningEnabled true
+//            v2SigningEnabled true
+//            enableV3Signing = true
+//            enableV4Signing = true
+//        }
+        debug {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
     defaultConfig {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 104
-        versionName "7.6.1"
+        versionCode 105
+        versionName "7.7"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
 
