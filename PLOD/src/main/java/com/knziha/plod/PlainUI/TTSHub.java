@@ -609,8 +609,9 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 				View child = controlBar.getChildAt(i);
 				if (child instanceof DescriptiveImageView) {
 					((DescriptiveImageView) child).textPainter = textPainter;
-					volPitSpd[cc++] = (DescriptiveImageView) child;
-					
+					final DescriptiveImageView v = (DescriptiveImageView) child;
+					volPitSpd[cc++] = v;
+					//v.tintListFilter = a.tintListFilter;
 				} else if (child instanceof TextView) {
 					LayerDrawable ld = new LayerDrawable(new Drawable[]{child.getBackground(), child.getId()==R.id.spddn?xiao:da
 							});

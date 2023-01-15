@@ -1131,14 +1131,17 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			weblistHandler.checkUI();
 			if (mWebView != null) {
 				/*opt.getTitlebarForegroundColor()*/
-				int myWebColor = isDark ? Color.WHITE : mWebView.presenter.getUseTitleForeground() ? mWebView.presenter.tfgColor : VU.sForeground;
-				mWebView.setTitlebarForegroundColor(myWebColor);
+				BookPresenter presenter = mWebView.presenter;
+				if (presenter!=null && !presenter.isMergedBook()) {
+					int myWebColor = isDark ? Color.WHITE : presenter.getUseTitleForeground() ? presenter.tfgColor : presenter.a.tintListFilter.sForeground;
+					mWebView.setTitlebarForegroundColor(myWebColor);
+				}
 			}
 			
-			int color = a.getForegroundColor();
+			int color = a.tintListFilter.sForeground;
 			if (dummyPanel.ForegroundColor != color) {
 				dummyPanel.ForegroundColor = color;
-				ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+				ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 					handle2.setElevation(a.MainLumen>0.5?10*GlobalOptions.density:0);
 				}
@@ -1158,10 +1161,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	private void setColorFilter(ImageView view) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			view.setBackgroundTintList(VU.sForegroundTint);
-		} else {
-			view.getBackground().setColorFilter(VU.sForegroundFilter);
+		MainActivityUIBase a = getMainActivity();
+		if (a!=null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				view.setBackgroundTintList(a.tintListFilter.sForegroundTint);
+			} else {
+				view.getBackground().setColorFilter(a.tintListFilter.sForegroundFilter);
+			}
 		}
 	}
 	

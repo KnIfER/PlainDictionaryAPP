@@ -94,10 +94,10 @@ public class AlloydPanel extends PlainAppPanel {
 			int bc = lumen > 0.5 ? Color.BLACK : Color.WHITE;
 			AllMenus.checkActDrawable.setColorFilter(ColorUtils.blendARGB(MainAppBackground, bc, 0.5f)&0xB9FFFFFF, PorterDuff.Mode.SRC_IN);
 		}
-		int color = a.getForegroundColor();
+		int color = a.tintListFilter.sForeground;
 		if (ForegroundColor != color) {
 			ForegroundColor = color;
-			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
 		}
 	}
 	

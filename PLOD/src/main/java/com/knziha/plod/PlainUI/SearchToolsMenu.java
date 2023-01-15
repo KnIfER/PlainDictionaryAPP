@@ -169,6 +169,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				convertView = a.getLayoutInflater().inflate(R.layout.menu_item, parent, false);
 				holder = new MenuItemViewHolder(convertView);
 				holder.tv.textPainter = menu_grid_painter;
+				holder.tv.tintListFilter = a.tintListFilter;
 				holder.tv.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 			} else {
 				holder = (MenuItemViewHolder) convertView.getTag();

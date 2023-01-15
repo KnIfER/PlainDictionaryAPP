@@ -1330,27 +1330,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			);
 		}
 		bottomBarSz.sz = (int)mResource.getDimension(R.dimen.barSzBot);
-		if (!ViewUtils.littleCake && PDICMainAppOptions.modRipple() ^ VU.sRipple!=null) {
-			if (PDICMainAppOptions.modRipple()) {
-				VU.sRipple = new RippleDrawable(ColorStateList.valueOf(Color.MAGENTA), null, null);
-				//rippleBGrippleBG.setColor(ColorStateList.valueOf(Color.WHITE));
-				try {
-					VU.sRippleState = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, VU.sRipple);
-					VU.sRippleStateField = (Field) ViewUtils.evalFieldMethod(VU.sRipple.getClass(), VU.sRipple, new String[]{"ex", "mState"}, new HashMap<>(), ViewUtils.reflectionPool);
-					TypedArray ta = obtainStyledAttributes(new int[]{android.R.attr.actionBarItemBackground});
-					VU.sRippleToolbar = (RippleDrawable) ta.getDrawable(0);
-					ta.recycle();
-					CMN.debug("mState::", VU.sRippleState, VU.sRippleStateField);
-					VU.sRippleStateToolbar = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, VU.sRippleToolbar);
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-			} else {
-				VU.sRippleState = null;
-				VU.sRippleStateToolbar = null;
-				VU.sRipple = null;
+		if (!ViewUtils.littleCake && PDICMainAppOptions.modRipple()) {
+			tintListFilter.sRipple = new RippleDrawable(ColorStateList.valueOf(Color.MAGENTA), null, null);
+			//rippleBGrippleBG.setColor(ColorStateList.valueOf(Color.WHITE));
+			try {
+				tintListFilter.sRippleState = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, tintListFilter.sRipple);
+				tintListFilter.sRippleStateField = (Field) ViewUtils.evalFieldMethod(tintListFilter.sRipple.getClass(), tintListFilter.sRipple, new String[]{"ex", "mState"}, new HashMap<>(), ViewUtils.reflectionPool);
+				TypedArray ta = obtainStyledAttributes(new int[]{android.R.attr.actionBarItemBackground});
+				tintListFilter.sRippleToolbar = (RippleDrawable) ta.getDrawable(0);
+				ta.recycle();
+				CMN.debug("mState::", tintListFilter.sRippleState, tintListFilter.sRippleStateField);
+				tintListFilter.sRippleStateToolbar = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, tintListFilter.sRippleToolbar);
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 		}
+		VU.sTintListFilter = tintListFilter;
 	}
 
 	public void onAudioPause() {
@@ -3379,6 +3374,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		for (int i = 0; i < settingsPanels.size(); i++) {
 			settingsPanels.get(i).onResume();
 		}
+		VU.sTintListFilter = tintListFilter;
 	}
 
 	@Override
@@ -11206,7 +11202,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
 			json.put("bgr", SU.toHexRGB(thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
 			json.put("dName", PDICMainAppOptions.showDictName());
-			json.put("fgr", SU.toHexRGB(getForegroundColor()));
+			json.put("fgr", SU.toHexRGB(calcForegroundColor()));
 			return json.toString();
 		}
 		return ret;
@@ -11471,6 +11467,32 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ViewUtils.getText((EditText) focus).append(text);
 		} else {
 			copyText(text, true);
+		}
+	}
+	
+	protected void calcTints() {
+		CMN.debug("lumen::", MainLumen);
+		int color = calcForegroundColor();
+		if (PDICMainAppOptions.useOldColorsMode()) {
+			tintListFilter.sForegroundFilter = null;
+			tintListFilter.sForegroundTint = null;
+		} else {
+			tintListFilter.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
+			tintListFilter.sForegroundTint = ColorStateList.valueOf(color);
+		}
+		tintListFilter.sForeground = color;
+		if (tintListFilter.sRipple!=null) {
+			color = opt.getInt("rippleColor", 0x99888888);
+			if (PDICMainAppOptions.autoRippleColor()) {
+				if (MainLumen < 0.45) {
+					CMN.debug("自动颜色::太暗啦");
+					color = opt.getInt("rippleColor1", 0xefFFFFFF);
+				}
+			}
+			if (!ViewUtils.littleCake) {
+				tintListFilter.sRipple.setColor(ColorStateList.valueOf(color));
+				if(tintListFilter.sRippleToolbar!=null) tintListFilter.sRippleToolbar.setColor(ColorStateList.valueOf(color));
+			}
 		}
 	}
 }

@@ -264,7 +264,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if (mRecycler==null) {
 			etHistoryExpanded = PDICMainAppOptions.etHistoryExpanded();
 			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.etsch_recyclerview, a.root, false);
-			ViewUtils.setForegroundColor(lv, a.getForegroundColor(), VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(lv, a.tintListFilter);
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
 			expandBtn = lv.findViewById(R.id.more);
 			ViewUtils.setOnClickListenersOneDepth((ViewGroup) expandBtn.getParent(), this, 1, 0, null);
@@ -849,11 +849,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				mRecycler.setBackgroundColor(MainAppBackground);
 			}
 		}
-		int color = a.getForegroundColor();
+		int color = a.tintListFilter.sForeground;
 		if (ForegroundColor != color) {
 			ForegroundColor = color;
-			ViewUtils.setForegroundColor(settingsLayout, color, VU.sForegroundFilter, VU.sForegroundTint);
-			if(lv!=null) ViewUtils.setForegroundColor(lv, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(settingsLayout, a.tintListFilter);
+			if(lv!=null) ViewUtils.setForegroundColor(lv, a.tintListFilter);
 		}
 	}
 	

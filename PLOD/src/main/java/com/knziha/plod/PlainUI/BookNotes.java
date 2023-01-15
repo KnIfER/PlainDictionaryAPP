@@ -260,11 +260,11 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
 			ViewUtils.makeFullscreenWnd(dialog.getWindow());
 		}
-		int color = a.getForegroundColor();
+		int color = a.tintListFilter.sForeground;
 		if (ForegroundColor != color) {
 			ForegroundColor = color;
-			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
-			ViewUtils.setForegroundColor(bottomShelf, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
+			ViewUtils.setForegroundColor(bottomShelf, a.tintListFilter);
 			int gray = 0x55888888;
 			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
 			if (a.MainLumen > 0.65) {

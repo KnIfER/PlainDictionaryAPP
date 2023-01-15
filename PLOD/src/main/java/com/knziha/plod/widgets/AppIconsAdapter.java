@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,7 +52,8 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	public final BottomSheetDialog shareDialog;
 	private final View bottomSheet;
     private final FlowTextView indicator;
-    private TextPaint textPainter;
+	private final VU.TintListFilter tintListFilter;
+	private TextPaint textPainter;
     private ArrayList<AppInfoBean> list = new ArrayList<>();
     private View.OnClickListener itemClicker;
     private PackageManager pm;
@@ -67,6 +69,8 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 		textPainter.setColor(a.AppBlack);
 		textPainter.setTextSize(GlobalOptions.density*(GlobalOptions.isLarge?19:12));
 		textPainter.setAntiAlias(true);
+		
+		tintListFilter = a.tintListFilter;
 		
         shareDialog = new BottomSheetDialog(a);
 		shareDialog.getWindow().setDimAmount(0.2f);
@@ -228,6 +232,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         ret.textImageView.textPainter=textPainter;
         ret.textImageView.bNeedShadow=true;
         ret.textImageView.tint=false;
+        ret.textImageView.tintListFilter=tintListFilter;
 		if(viewType==1) {
 			ret.textImageView.setTag(ret.itemView.findViewById(R.id.tv));
 		}

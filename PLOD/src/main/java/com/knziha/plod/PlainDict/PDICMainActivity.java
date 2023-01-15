@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -1348,8 +1347,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//widget0.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 		//ViewCompat.setBackgroundTintList(widget0, ColorStateList.valueOf(MainBackground));
 		boolean tint = PDICMainAppOptions.getTintIconForeground();
-		if(VU.sForegroundFilter==null)
-			VU.sForegroundFilter = new PorterDuffColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
 		
 		BottombarBtns[0] = UIData.browserWidget1;
 		browser_widget1 = UIData.browserWidget1;
@@ -1882,11 +1879,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				// newTitlebar.Activate(); - 横屏时合并主界面标题栏、搜索工具栏、词典标题栏。
 				
 //				new WordCamera(this, etTools).show();
-			
+
+//			if(CMN.testFLoatSearch)
+				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
+				
 			}, 350);
 			//showAppTweaker();
-			if(CMN.testFLoatSearch)
-				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		}
 		
 		if (firstInstall) {
@@ -1950,7 +1948,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			} catch (Exception e) {
 //				CMN.Log(e);
 //			}
-		int color = VU.sForeground;
+		int color = tintListFilter.sForeground;
 	}
 	
 	private void setLv1ScrollChanged() {
@@ -2259,7 +2257,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (!tb && pos==0) {
 				BottombarBtns[2].setColorFilter(null);
 			} else {
-				BottombarBtns[2].setColorFilter(VU.sForegroundFilter);
+				BottombarBtns[2].setColorFilter(tintListFilter.sForegroundFilter);
 			}
 		}
 		if(BottombarBtns[3]!=null){
@@ -2267,7 +2265,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (!tb && pos==2) {
 				BottombarBtns[3].setColorFilter(null);
 			} else {
-				BottombarBtns[3].setColorFilter(VU.sForegroundFilter);
+				BottombarBtns[3].setColorFilter(tintListFilter.sForegroundFilter);
 			}
 		}
 	}
@@ -2523,32 +2521,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		MainPageBackground = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 		
 		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
-		CMN.debug("lumen::", MainLumen);
-		int color = getForegroundColor();
-		if (PDICMainAppOptions.useOldColorsMode()) {
-			VU.sForegroundFilter = null;
-			VU.sForegroundTint = null;
-			VU.sForeground = color;
-		} else {
-			VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
-			VU.sForegroundTint = ColorStateList.valueOf(color);
-			VU.sForeground = color;
-		}
-		ViewUtils.setForegroundColor(bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
-		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
-		if (VU.sRipple!=null) {
-			color = opt.getInt("rippleColor", 0x99888888);
-			if (PDICMainAppOptions.autoRippleColor()) {
-				if (MainLumen < 0.45) {
-					CMN.debug("自动颜色::太暗啦");
-					color = opt.getInt("rippleColor1", 0xefFFFFFF);
-				}
-			}
-			if (!ViewUtils.littleCake) {
-				VU.sRipple.setColor(ColorStateList.valueOf(color));
-				if(VU.sRippleToolbar!=null) VU.sRippleToolbar.setColor(ColorStateList.valueOf(color));
-			}
-		}
+		
+		calcTints();
+		
+		ViewUtils.setForegroundColor(bottombar, tintListFilter);
+		ViewUtils.setForegroundColor(toolbar, tintListFilter);
 		
 		weblistHandler.checkUI();
 		//showT(Integer.toHexString(filteredColor)+" "+Integer.toHexString(GlobalPageBackground));

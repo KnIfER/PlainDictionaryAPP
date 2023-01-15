@@ -1033,10 +1033,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				pageSchBar.setBackgroundColor(a.MainAppBackground);
 			}
 		}
-		if (ViewUtils.checkSetVersion(versions, 4, VU.sForeground))
+		if (ViewUtils.checkSetVersion(versions, 4, a.tintListFilter.sForeground))
 		{
-			ViewUtils.setForegroundColor(contentUIData.bottombar2, VU.sForeground, VU.sForegroundFilter, VU.sForegroundTint);
-			if(pageSchBar!=null) ViewUtils.setForegroundColor(pageSchBar, VU.sForeground, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(contentUIData.bottombar2, a.tintListFilter);
+			if(pageSchBar!=null) ViewUtils.setForegroundColor(pageSchBar, a.tintListFilter);
 		}
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground) || b1) {
 			int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
@@ -1652,7 +1652,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				}
 				return true;
 			});
-			ViewUtils.setForegroundColor(pageSchBar, VU.sForeground, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(pageSchBar, a.tintListFilter);
 		}
 		boolean b1=bar.getParent()==null||forceShow==1;
 		if (b1) {

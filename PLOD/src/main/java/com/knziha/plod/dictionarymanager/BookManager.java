@@ -797,10 +797,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		setResult(RESULT_OK, intent);
         agent.clearTmp();
 		
-		int color = getForegroundColor();
-		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
-		ViewUtils.setForegroundColor(mTabLayout, color, VU.sForegroundFilter, VU.sForegroundTint);
-		ViewUtils.setForegroundColor(searchbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		int color = tintListFilter.sForeground;
+		ViewUtils.setForegroundColor(toolbar,    tintListFilter);
+		ViewUtils.setForegroundColor(mTabLayout, tintListFilter);
+		ViewUtils.setForegroundColor(searchbar,  tintListFilter);
 		
 		resetStatusForeground(null);
 	}

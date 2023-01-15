@@ -1822,7 +1822,7 @@ function debug(e){console.log(e)};
 				ColorShade[0] = colorTop;
 				toolbarBG.setColors(ColorShade);
 			}
-			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor : VU.sForeground/*opt.getTitlebarForegroundColor()*/;
+			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor : a.tintListFilter.sForeground/*opt.getTitlebarForegroundColor()*/;
 			mWebView.setTitlebarForegroundColor(myWebColor);
 		}
 		//CMN.pt("设置颜色：");

@@ -158,17 +158,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		weblistHandler.setBackgroundColor(filteredColor);
 		webSingleholder.setBackgroundColor(filteredColor);
 		
-		int color = getForegroundColor();
-//		if (PDICMainAppOptions.useOldColorsMode()) {
-//			VU.sForegroundFilter = null;
-//			VU.sForegroundTint = null;
-//			VU.sForeground = color;
-//		} else {
-//			VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
-//			VU.sForegroundTint = ColorStateList.valueOf(color);
-//			VU.sForeground = color;
-//		}
-		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
+		calcTints();
+		ViewUtils.setForegroundColor(toolbar, tintListFilter);
 	}
 	
 	@Override

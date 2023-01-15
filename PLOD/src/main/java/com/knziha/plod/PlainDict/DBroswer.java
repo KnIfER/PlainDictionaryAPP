@@ -685,11 +685,11 @@ public class DBroswer extends DialogFragment implements
 			UIData.toolbar.setBackgroundColor(MainAppBackground);
 			UIData.bottombar.setBackgroundColor(MainAppBackground);
 		}
-		int color = a.getForegroundColor();
+		int color = a.tintListFilter.sForeground;
 		if (ForegroundColor != color) {
 			color = ForegroundColor;
-			ViewUtils.setForegroundColor(UIData.toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
-			ViewUtils.setForegroundColor(UIData.bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(UIData.toolbar, a.tintListFilter);
+			ViewUtils.setForegroundColor(UIData.bottombar, a.tintListFilter);
 		}
 		if (mDialog!=null && mDialog.isShowing()) {
 			a.resetStatusForeground(mDialog.getWindow().getDecorView());

@@ -34,6 +34,7 @@ public class DescriptiveImageView extends ImageView {
 	public boolean bNeedShadow=false;
 	public boolean bDrawShadow=false;
 	public RectF bShadowRect;
+	public VU.TintListFilter tintListFilter;
 	private ColorFilter foregroundFilter;
 	public boolean tint = true;
 	
@@ -78,11 +79,14 @@ public class DescriptiveImageView extends ImageView {
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		if (tint && VU.sForegroundFilter!=foregroundFilter) {
-			foregroundFilter = VU.sForegroundFilter;
-			setColorFilter(foregroundFilter);
-			textPainter.setColorFilter(foregroundFilter);
-			//postInvalidate();
+		if (tint) {
+			if(tintListFilter==null) tintListFilter=VU.sTintListFilter;
+			if(tintListFilter.sForegroundFilter!=foregroundFilter) {
+				foregroundFilter = tintListFilter.sForegroundFilter;
+				setColorFilter(foregroundFilter);
+				textPainter.setColorFilter(foregroundFilter);
+				//postInvalidate();
+			}
 		}
 		if(bDrawShadow) {
 			float round = 25;

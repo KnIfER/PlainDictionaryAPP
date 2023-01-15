@@ -168,8 +168,6 @@ public class AppUIProject {
 		}
 		String appproject = bottombar_project.currentValue;
 		boolean tint = bottombar_project.getTint();
-		if(VU.sForegroundFilter==null)
-			VU.sForegroundFilter = new PorterDuffColorFilter(this_.ForegroundTint, PorterDuff.Mode.SRC_IN);
 		if(appproject==null) appproject="0|1|2|3|4|5|6";
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
@@ -227,7 +225,7 @@ public class AppUIProject {
 							iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
 							iv.setId(btnIcons[id]);
 							iv.setOnClickListener(this_);
-							if(tint) iv.setColorFilter(VU.sForegroundFilter);
+							if(tint) iv.setColorFilter(a.tintListFilter.sForegroundFilter);
 							if (LongclickableMap.contains(btnIcons[id])){
 								iv.setOnLongClickListener(this_);
 							} else {
@@ -235,7 +233,7 @@ public class AppUIProject {
 							}
 							BottombarBtns[id] = iv;
 							if (modRipple) {
-								VU.ModRippleColor(iv.getBackground(), VU.sRippleState);
+								a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
 							}
 						}
 						else {
@@ -244,7 +242,7 @@ public class AppUIProject {
 							if (svp != null) svp.removeView(iv);
 							iv.setContentDescription(bottombar_project.titles[i]);
 							if (modRipple) {
-								VU.ModRippleColor(iv.getBackground(), VU.sRippleState);
+								a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
 							}
 						}
 						bottombar.addView(iv);

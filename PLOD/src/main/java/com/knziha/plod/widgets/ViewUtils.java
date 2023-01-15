@@ -2021,8 +2021,8 @@ public class ViewUtils extends VU {
 		return ret;
 	}
 	
-	public static void setForegroundColor(ViewGroup view, int color, PorterDuffColorFilter ForegroundFilter, ColorStateList colorList) {
-		CMN.debug("setTitlebarForegroundColor", "color = [" + color + "], ForegroundFilter = [" + ForegroundFilter + "], colorList = [" + colorList + "]view = [" + view + "],");
+	public static void setForegroundColor(ViewGroup view, VU.TintListFilter tintListFilter) {
+		CMN.debug("setTitlebarForegroundColor", "color = [" + tintListFilter.sForeground + "], ForegroundFilter = [" + tintListFilter.sForegroundFilter + "], colorList = [" + tintListFilter.sForegroundTint + "]view = [" + view + "],");
 		LinkedList<ViewGroup> linkedList = new LinkedList<>();
 		linkedList.add(view);
 		View cI;
@@ -2037,15 +2037,15 @@ public class ViewUtils extends VU {
 				} else {
 					if(cI instanceof ImageView){
 						if(cI.getBackground() instanceof BitmapDrawable){
-							cI.getBackground().mutate().setColorFilter(ForegroundFilter);
+							cI.getBackground().mutate().setColorFilter(tintListFilter.sForegroundFilter);
 						} else {
-							((ImageView)cI).setColorFilter(ForegroundFilter);
+							((ImageView)cI).setColorFilter(tintListFilter.sForegroundFilter);
 						}
 					} else if(cI instanceof TextView){
-						((TextView)cI).setTextColor(color);
-						((TextView) cI).setCompoundDrawableTintList(colorList);
+						((TextView)cI).setTextColor(tintListFilter.sForeground);
+						((TextView) cI).setCompoundDrawableTintList(tintListFilter.sForegroundTint);
 					} else if(cI instanceof FlowTextView){
-						((FlowTextView)cI).setTextColor(color);
+						((FlowTextView)cI).setTextColor(tintListFilter.sForeground);
 					}
 				}
 			}

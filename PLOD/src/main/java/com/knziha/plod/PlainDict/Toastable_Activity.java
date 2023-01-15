@@ -41,6 +41,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.WindowInsetsControllerCompat;
 
@@ -106,6 +107,7 @@ public class Toastable_Activity extends AppCompatActivity {
     public float ColorMultiplier_Wiget=0.9f;
     public float ColorMultiplier_Web=1;
     public float ColorMultiplier_Web2=1;
+	public final VU.TintListFilter tintListFilter = new VU.TintListFilter();
 
 	public ViewGroup contentview;
 	protected ViewGroup dialog_;
@@ -952,15 +954,19 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 	}
 	
-	public int getForegroundColor() {
+	public int calcForegroundColor() {
+		tintListFilter.sForeground = 0;
 		if (PDICMainAppOptions.autoForegroundColor()) {
 			CMN.debug("lumen::", MainLumen);
 			if (MainLumen > 0.65) {
 				CMN.debug("自动颜色::太亮啦");
-				return opt.getInt("foreColor1", 0xff4F7FDF);
+				tintListFilter.sForeground = opt.getInt("foreColor1", 0xff4F7FDF);
 			}
 		}
-		return opt.getInt("foreColor", 0xFFFFFFFF);
+		if (tintListFilter.sForeground == 0) {
+			tintListFilter.sForeground = opt.getInt("foreColor", 0xFFFFFFFF);
+		}
+		return tintListFilter.sForeground;
 	}
 }
 

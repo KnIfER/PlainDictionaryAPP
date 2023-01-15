@@ -340,10 +340,10 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 		} else {
 			schLv.mMaxHeight = 0;
 		}
-		int color = a.getForegroundColor();
+		int color = a.tintListFilter.sForeground;
 		if (ForegroundColor != color) {
 			ForegroundColor = color;
-			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
 		}
 	}
 	
