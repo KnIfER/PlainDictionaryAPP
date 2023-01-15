@@ -4,8 +4,15 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	tools:context="com.knziha.plod.settings.MoreColors"
 	android:key="dark"
-	android:title="夜间模式设置"
+	android:title="更多色彩设置"
 	>
+	<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		android:key="oldColor"
+		android:persistent="false"
+		android:defaultValue="false"
+		android:title="使用旧版颜色设置"
+		app:summary="旧版颜色不允许太亮的背景主题色。"
+		/>
 	<PreferenceCategory
 		android:key="cat_fore"
 		android:title="前景色"  >

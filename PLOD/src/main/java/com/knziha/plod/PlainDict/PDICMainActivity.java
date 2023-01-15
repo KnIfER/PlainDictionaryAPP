@@ -2525,9 +2525,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
 		CMN.debug("lumen::", MainLumen);
 		int color = getForegroundColor();
-		VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
-		VU.sForegroundTint = ColorStateList.valueOf(color);
-		VU.sForeground = color;
+		if (PDICMainAppOptions.useOldColorsMode()) {
+			VU.sForegroundFilter = null;
+			VU.sForegroundTint = null;
+			VU.sForeground = color;
+		} else {
+			VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
+			VU.sForegroundTint = ColorStateList.valueOf(color);
+			VU.sForeground = color;
+		}
 		ViewUtils.setForegroundColor(bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
 		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
 		if (VU.sRipple!=null) {

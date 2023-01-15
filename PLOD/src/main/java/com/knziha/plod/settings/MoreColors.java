@@ -35,10 +35,16 @@ public class MoreColors extends PlainSettingsFragment implements Preference.OnPr
 				} else {
 					String key = p.getKey();
 					switch (key) {
+						case "oldColor":
+							init_switch_preference(this, key, PDICMainAppOptions.useOldColorsMode(), null, null, p);
+							if (!PDICMainAppOptions.useOldColorsMode()) {
+								findPreference("cat_fore").setEnabled(false);
+							}
+						break;
 						case "ripple":
 							init_switch_preference(this, key, PDICMainAppOptions.modRipple(), null, null, p);
 							if (ViewUtils.littleCake) {
-								p.getParent().setEnabled(false);
+								p.getParent().setVisible(false);
 								((TwinkleSwitchPreference)p).setChecked(false);
 							}
 						break;
@@ -67,6 +73,12 @@ public class MoreColors extends PlainSettingsFragment implements Preference.OnPr
 		switch (key){
 			case "ripple":
 				PDICMainAppOptions.modRipple((Boolean) newValue);
+				getSettingActivity().showT("重启生效");
+			break;
+			case "oldColor":
+				PDICMainAppOptions.useOldColorsMode((Boolean) newValue);
+				CMN.AppColorChangedFlag|=1<< MainActivityUIBase.ActType.PlainDict.ordinal();
+				CMN.AppColorChangedFlag|=1<<MainActivityUIBase.ActType.FloatSearch.ordinal();
 			break;
 			case "foreColor":
 			case "foreColor1":

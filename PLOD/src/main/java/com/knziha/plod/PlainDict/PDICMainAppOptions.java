@@ -2898,6 +2898,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=54, shift=1) public static boolean autoForegroundColor(){ EightFlag=EightFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=54, shift=1) public static void autoForegroundColor(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=55) public static boolean useOldColorsMode(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55) public static void useOldColorsMode(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
