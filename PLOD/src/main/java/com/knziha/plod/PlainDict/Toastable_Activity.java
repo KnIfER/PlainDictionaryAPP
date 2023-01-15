@@ -98,6 +98,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	public long[] flags = new long[8];
 	protected long layoutFlagStamp;
 	public int MainAppBackground = 0xFF03A9F4;
+	public double MainLumen = 1;
 	public int MainBackground = 0xFF03A9F4;
 	public int MainPageBackground;
 	public int AppBlack;
@@ -212,8 +213,10 @@ public class Toastable_Activity extends AppCompatActivity {
 	   //btnMaxWidth=GlobalOptions.btnMaxWidth;
 		//CMN.show("isLarge"+isLarge);
 	   isDarkStamp = GlobalOptions.isDark;
-	   AppBlack=GlobalOptions.isDark?Color.WHITE:Color.BLACK;
-	   AppWhite=GlobalOptions.isDark?Color.BLACK:Color.WHITE;
+		boolean dddd = GlobalOptions.isDark;
+	   AppBlack=dddd?Color.WHITE:Color.BLACK;
+	   AppWhite=dddd?Color.BLACK:Color.WHITE;
+		
 
 	   if(opt.getUseCustomCrashCatcher()){
 		   CrashHandler.getInstance(this, opt).TurnOff();
@@ -919,6 +922,20 @@ public class Toastable_Activity extends AppCompatActivity {
 //		if (layout!=null) {
 //			layout.suppressSelection(hideSel);
 //		}
+	}
+	
+	public void resetStatusForeground() {
+		View decorView = getWindow().getDecorView();
+		int uiOptions = decorView.getSystemUiVisibility();
+		if (MainLumen > 0.65 ^ (uiOptions&View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)!=0) {
+			// 设置状态栏图标和文字颜色为暗色
+			if (MainLumen > 0.65) {
+				uiOptions |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+			} else {
+				uiOptions &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+			}
+			decorView.setSystemUiVisibility(uiOptions);
+		}
 	}
 }
 

@@ -43,6 +43,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.core.graphics.ColorUtils;
 
 import com.alibaba.fastjson.JSONObject;
@@ -1821,7 +1822,7 @@ function debug(e){console.log(e)};
 				ColorShade[0] = colorTop;
 				toolbarBG.setColors(ColorShade);
 			}
-			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor :opt.getTitlebarForegroundColor();
+			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor : VU.sForeground/*opt.getTitlebarForegroundColor()*/;
 			mWebView.setTitlebarForegroundColor(myWebColor);
 		}
 		//CMN.pt("设置颜色：");
@@ -3170,7 +3171,7 @@ function debug(e){console.log(e)};
 			WebViewmy wv = findWebview(sid);
 			if(wv!=null) {
 				WebViewListHandler wlh = wv.weblistHandler;
-				wlh.updateInPageSch(did, keyIdx, keyz, total);
+				wlh.updateInPageSch(wv, did, keyIdx, keyz, total);
 			}
 		}
 		

@@ -2889,6 +2889,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=51) public static boolean dbLongPressSelect(){ EightFlag=EightFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=51) public static void dbLongPressSelect(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=52) public static boolean modRipple(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=52) public static void modRipple(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=53, shift=1) public static boolean autoRippleColor(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=53, shift=1) public static void autoRippleColor(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=54, shift=1) public static boolean autoForegroundColor(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54, shift=1) public static void autoForegroundColor(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////

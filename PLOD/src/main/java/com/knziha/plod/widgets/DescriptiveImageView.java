@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 
 import com.knziha.plod.plaindict.R;
 
@@ -32,7 +34,8 @@ public class DescriptiveImageView extends ImageView {
 	public boolean bNeedShadow=false;
 	public boolean bDrawShadow=false;
 	public RectF bShadowRect;
-	
+	private ColorFilter foregroundFilter;
+	public boolean tint = true;
 	
 	
 	public DescriptiveImageView(Context context) {
@@ -75,6 +78,12 @@ public class DescriptiveImageView extends ImageView {
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
+		if (tint && VU.sForegroundFilter!=foregroundFilter) {
+			foregroundFilter = VU.sForegroundFilter;
+			setColorFilter(foregroundFilter);
+			textPainter.setColorFilter(foregroundFilter);
+			//postInvalidate();
+		}
 		if(bDrawShadow) {
 			float round = 25;
 			canvas.drawRoundRect(bShadowRect, round, round, shadowPainter);

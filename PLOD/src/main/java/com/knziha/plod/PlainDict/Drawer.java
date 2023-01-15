@@ -597,8 +597,9 @@ public class Drawer extends Fragment implements
 						AlertDialog dd = (AlertDialog) ViewUtils.getWeakRefObj(aboutDlg);
 						dd.setCanceledOnTouchOutside(false);
 						dd.setCancelable(false);
-						a.wordPopup.startTask(TASK_UPD_SCH);
-						btn.setText(btn.getText()+"……");
+						//a.wordPopup.startTask(TASK_UPD_SCH);
+						//btn.setText(btn.getText()+"……");
+						a.checkUpdate(new AtomicBoolean(true));
 					});
 					//a.mDrawerLayout.closeDrawer(GravityCompat.START);
 					String infoStr = getString(R.string.infoStr, BuildConfig.VERSION_NAME+(BuildConfig.DEBUG?"工程调试版":""));
@@ -1318,6 +1319,9 @@ public class Drawer extends Fragment implements
 								| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 								| View.SYSTEM_UI_FLAG_LOW_PROFILE
 								| View.SYSTEM_UI_FLAG_IMMERSIVE;
+						 if (a.MainLumen > 0.65) {
+							 uiOptions |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+						 }
 						decorView.setSystemUiVisibility(uiOptions);
 					}
 				}else {
@@ -1325,6 +1329,9 @@ public class Drawer extends Fragment implements
 					View decorView = a.getWindow().getDecorView();
 					int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
 							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+					if (a.MainLumen > 0.65) {
+						uiOptions |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+					}
 					decorView.setSystemUiVisibility(uiOptions);
 				}
 				a.opt.setFullScreen(isChecked);

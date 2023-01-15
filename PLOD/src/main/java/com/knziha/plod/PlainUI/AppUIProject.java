@@ -1,11 +1,19 @@
 package com.knziha.plod.PlainUI;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -14,6 +22,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.ActivatableImageView;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,8 +168,8 @@ public class AppUIProject {
 		}
 		String appproject = bottombar_project.currentValue;
 		boolean tint = bottombar_project.getTint();
-		if(tint&&this_.ForegroundFilter==null)
-			this_.ForegroundFilter = new PorterDuffColorFilter(this_.ForegroundTint, PorterDuff.Mode.SRC_IN);
+		if(VU.sForegroundFilter==null)
+			VU.sForegroundFilter = new PorterDuffColorFilter(this_.ForegroundTint, PorterDuff.Mode.SRC_IN);
 		if(appproject==null) appproject="0|1|2|3|4|5|6";
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
@@ -174,6 +183,11 @@ public class AppUIProject {
 		ImageView[] BottombarBtns = bottombar_project.btns;
 		int[] btnIcons = bottombar_project.icons;
 		CMN.rt();
+//		((RippleDrawable)a.getDrawable(rippleBG)).setColor(ColorStateList.valueOf(Color.WHITE));
+		
+		
+		int rippleBG = R.drawable.abc_action_bar_item_background_material;
+		boolean modRipple = PDICMainAppOptions.modRipple();
 		for (int i = 0; i < arr.length; i++) {
 			String val = arr[i];
 			int start = 0;
@@ -209,23 +223,29 @@ public class AppUIProject {
 							}
 							iv.setContentDescription(bottombar_project.titles[i]);
 							//iv.setBackgroundResource(R.drawable.surrtrip1);
-							iv.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
+							iv.setBackgroundResource(rippleBG);
 							iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
 							iv.setId(btnIcons[id]);
 							iv.setOnClickListener(this_);
-							if(tint) iv.setColorFilter(this_.ForegroundFilter);
+							if(tint) iv.setColorFilter(VU.sForegroundFilter);
 							if (LongclickableMap.contains(btnIcons[id])){
 								iv.setOnLongClickListener(this_);
 							} else {
 								iv.setLongClickable(false);
 							}
 							BottombarBtns[id] = iv;
+							if (modRipple) {
+								VU.ModRippleColor(iv.getBackground(), VU.sRippleState);
+							}
 						}
 						else {
 							ViewGroup svp = (ViewGroup) iv.getParent();
-							iv.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
+							iv.setBackgroundResource(rippleBG);
 							if (svp != null) svp.removeView(iv);
 							iv.setContentDescription(bottombar_project.titles[i]);
+							if (modRipple) {
+								VU.ModRippleColor(iv.getBackground(), VU.sRippleState);
+							}
 						}
 						bottombar.addView(iv);
 					}

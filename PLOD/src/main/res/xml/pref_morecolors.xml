@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.knziha.plod.settings.MoreColors"
+	android:key="dark"
+	android:title="夜间模式设置"
+	>
+	<PreferenceCategory
+		android:key="cat_fore"
+		android:title="前景色"  >
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="foreColor"
+			android:title="前景色"
+			android:defaultValue="#FFFFFFFF"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="foreColor1"
+			android:title="自动切换前景色"
+			app:summary="当背景色过_亮_时自动切换至较暗的颜色"
+			android:defaultValue="#ff4F7FDF"
+			app:hasCheck="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_2"
+		android:title="水波颜色"  >
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ripple"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="修改波纹颜色 *"
+			app:summary="点击按钮时的高亮波纹"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="rippleColor"
+			android:title="波纹颜色"
+			android:defaultValue="#99888888"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="rippleColor1"
+			android:title="自动切换波纹颜色"
+			app:summary="当背景色过_暗_时自动切换至较亮的颜色"
+			android:defaultValue="#99FFFFFF"
+			app:hasCheck="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory> </PreferenceCategory>
+</PreferenceScreen>

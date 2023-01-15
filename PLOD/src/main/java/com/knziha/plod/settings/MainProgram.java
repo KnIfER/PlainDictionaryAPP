@@ -6,6 +6,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceScreen;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -16,6 +18,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class MainProgram extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	@Override
@@ -24,50 +27,90 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 		mPreferenceId = R.xml.pref_main;
 		super.onCreate(savedInstanceState);
 		
-		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null, null);
-		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null, null).setVisible(false);
 		
-		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null, null);
-		
-		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				ListPreference lp = ((ListPreference) preference);
-				if(PDICMainAppOptions.exitToBackground()){
-					lp.setEntries(R.array.conhom_info);
-					lp.setEntryValues(R.array.conhom);
-					lp.setValue((PDICMainAppOptions.getBackToHomePagePreventBack()?5:4)+"");
-				}else{
-					lp.setEntries(R.array.conext_info);
-					lp.setEntryValues(R.array.conext);
-					lp.setValue(PDICMainAppOptions.getBackPrevention()+"");
+		ArrayList<Preference> preferences = new ArrayList<>(64);
+		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
+		if(screen!=null){
+			preferences.add(screen);
+			for (int i = 0; i < preferences.size(); i++) {
+				Preference p = preferences.get(i);
+				if (p instanceof PreferenceGroup) {
+					preferences.addAll(((PreferenceGroup)p).getPreferences());
+				} else {
+					String key = p.getKey();
+					switch (key) {
+						case "noext":
+							init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null, null);
+							break;
+						case "back_web":
+							init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null, null).setVisible(false);
+							break;
+						case "conext":
+							init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null, null);
+							p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+								@Override
+								public boolean onPreferenceClick(Preference preference) {
+									ListPreference lp = ((ListPreference) preference);
+									if(PDICMainAppOptions.exitToBackground()){
+										lp.setEntries(R.array.conhom_info);
+										lp.setEntryValues(R.array.conhom);
+										lp.setValue((PDICMainAppOptions.getBackToHomePagePreventBack()?5:4)+"");
+									}else{
+										lp.setEntries(R.array.conext_info);
+										lp.setEntryValues(R.array.conext);
+										lp.setValue(PDICMainAppOptions.getBackPrevention()+"");
+									}
+									return false;
+								}
+							});
+							break;
+						case "enable_pastebin":
+							init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null, null);
+							break;
+						case "keep_screen":
+							init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null, null);
+							break;
+						case "GPBC":
+							init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null, null);
+							break;
+						case "BCM":
+							init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null, null);
+							break;
+						case "BCF":
+							init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null, null);
+							break;
+						case "f_paste_peruse":
+							init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null, null);
+							break;
+						case "f_move_bg":
+							init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null, null);
+							break;
+						case "f_hide_recent":
+							init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null, null);
+							break;
+						case "stsch":
+							init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null, null);
+							break;
+						case "f_size":
+							findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
+							break;
+						case "dev":
+						case "sspec":
+						case "vspec":
+						case "night":
+						case "multi":
+						case "more_color":
+							p.setOnPreferenceClickListener(this);
+							break;
+					}
+					p.setOnPreferenceChangeListener(this);
 				}
-				return false;
 			}
-		});
+		}
 		
-		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null, null);
-		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null, null);
-		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null, null);
-		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null, null);
-		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null, null);
 		//init_number_info_preference(this, "paste_target", PDICMainAppOptions.getPasteTarget(), R.array.paste_target_info, null);
 		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
-		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null, null);
-		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null, null);
-		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null, null);
 		
-		init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null, null);
-
-
-		findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
-		
-		findPreference("dev").setOnPreferenceClickListener(this);
-		findPreference("sspec").setOnPreferenceClickListener(this);
-		findPreference("night").setOnPreferenceClickListener(this);
-		findPreference("vspec").setOnPreferenceClickListener(this);
-		findPreference("multi").setOnPreferenceClickListener(this);
-		findPreference("backup").setOnPreferenceChangeListener(this);
 	}
 	
 	@Override
@@ -82,6 +125,9 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 			break;
 			case "night":
 				fragmentId=NightMode.id;
+			break;
+			case "more_color":
+				fragmentId= MoreColors.id;
 			break;
 			case "vspec":
 				fragmentId=Misc.id;

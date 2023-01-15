@@ -23,12 +23,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
 import android.hardware.display.VirtualDisplay;
 import android.net.Uri;
 import android.os.Build;
@@ -110,6 +114,7 @@ import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
+import com.knziha.plod.ebook.Utils.CU;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.BuildIndexTask;
@@ -122,11 +127,13 @@ import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.KeyboardHeightPopupListener;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.PageSlide;
+import com.knziha.plod.widgets.SaturationView;
 import com.knziha.plod.widgets.ScreenListener;
 import com.knziha.plod.widgets.UpdateDebugger;
 import com.knziha.plod.widgets.ViewUtils;
@@ -158,6 +165,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -919,6 +927,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP));//, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
 			shunt=true;
 		}
+		View rootView = getWindow(). getDecorView();
+		
+//		SaturationView.getInstance().saturationView(rootView, 0f); // 将整个页面置灰， rootView 代表页面的根布局
+//		SaturationView.getInstance().saturationView(rootView, 1f); // 将整个页面调整为正常色彩
+		
 		super.onCreate(null);
 		if(shunt) {
 			finish();
@@ -927,7 +940,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		LauncherInstanceCount=1;
 		Window win = getWindow();
-		
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		//if(Utils.littleCake) {
@@ -1343,8 +1355,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//widget0.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 		//ViewCompat.setBackgroundTintList(widget0, ColorStateList.valueOf(MainBackground));
 		boolean tint = PDICMainAppOptions.getTintIconForeground();
-		if(tint&&ForegroundFilter==null)
-			ForegroundFilter = new PorterDuffColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
+		if(VU.sForegroundFilter==null)
+			VU.sForegroundFilter = new PorterDuffColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
 		
 		BottombarBtns[0] = UIData.browserWidget1;
 		browser_widget1 = UIData.browserWidget1;
@@ -1945,6 +1957,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			} catch (Exception e) {
 //				CMN.Log(e);
 //			}
+		int color = VU.sForeground;
 	}
 	
 	private void setLv1ScrollChanged() {
@@ -2291,15 +2304,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	protected void scanSettings(){
-		super.scanSettings();
 		MainBackground = MainAppBackground = opt.getMainBackground();
+		super.scanSettings();
 		CMN.AppColorChangedFlag &= ~thisActMask;
 		//getWindow().setNavigationBarColor(MainBackground);
 		//文件网络
 		//SharedPreferences read = getSharedPreferences("lock", MODE_PRIVATE);
 		isCombinedSearching = opt.isCombinedSearching();
 		//opt.globalTextZoom = read.getInt("globalTextZoom",dm.widthPixels>900?50:80);
-
 		setStatusBarColor(getWindow(), MainBackground);
 	}
 
@@ -2501,6 +2513,36 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		UIData.browserWidget0.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
 		
 		MainPageBackground = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
+		
+		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
+		CMN.debug("lumen::", MainLumen);
+		int color = opt.getInt("foreColor", 0xFFFFFFFF);
+		if (PDICMainAppOptions.autoForegroundColor()) {
+			CMN.debug("lumen::", MainLumen, VU.sRipple);
+			if (MainLumen > 0.65) {
+				CMN.debug("自动颜色::太亮啦");
+				color = opt.getInt("foreColor1", 0xff4F7FDF);
+			}
+		}
+		VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
+		VU.sForegroundTint = ColorStateList.valueOf(color);
+		VU.sForeground = color;
+		ViewUtils.setTitlebarForegroundColor(bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		ViewUtils.setTitlebarForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		if (VU.sRipple!=null) {
+			color = opt.getInt("rippleColor", 0x99888888);
+			if (PDICMainAppOptions.autoRippleColor()) {
+				if (MainLumen < 0.45) {
+					CMN.debug("自动颜色::太暗啦");
+					color = opt.getInt("rippleColor1", 0xefFFFFFF);
+				}
+			}
+			if (!ViewUtils.littleCake) {
+				VU.sRipple.setColor(ColorStateList.valueOf(color));
+				if(VU.sRippleToolbar!=null) VU.sRippleToolbar.setColor(ColorStateList.valueOf(color));
+			}
+		}
+		
 		weblistHandler.checkUI();
 		//showT(Integer.toHexString(filteredColor)+" "+Integer.toHexString(GlobalPageBackground));
 		if(dictPicker.pinned()) {
@@ -2511,13 +2553,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		UIData.dictName.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
 		// UIData.dictNameFore.setTextColor(ColorUtils.blendARGB(MainAppBackground&0x88FFFFFF, 0x88FFFFFF, 0.8f));
 		resetWndColor();
+		resetStatusForeground();
 	}
 	
 	public void resetWndColor() {
 //		win.getDecorView().setBackground(Build.VERSION.SDK_INT>=23
 //				?null:new ColorDrawable(0));
+		View decorView = getWindow().getDecorView();
 		if (root.getAlpha()==1) {
-			getWindow().getDecorView().setBackground(new ColorDrawable(MainAppBackground));
+			decorView.setBackground(new ColorDrawable(MainAppBackground));
 		}
 	}
 	
@@ -3698,7 +3742,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 	
-	private void startUpdateDownload(String versionName, HashMap<String, String> resp, AlertDialog dd, Button btn, AtomicBoolean dwnldAbort) {
+	private void startUpdateDownload(@Nullable String versionName
+			, @Nullable HashMap<String, String> resp
+			,@NonNull  AlertDialog dd, @NonNull Button btn, @NonNull AtomicBoolean dwnldAbort) {
 		SeekBar seek = (SeekBar) getLayoutInflater().inflate(R.layout.purpose_bar, root, false);
 		Runnable fileRn = new Runnable() {
 			@Override
@@ -3711,7 +3757,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				showT("下载失败！");
 			}
 		};
-		if (versionName==null) {
+		if (versionName==null && (resp==null || resp.get("desc")==null)) {
+			CMN.debug("versionName==null", versionName==null , resp==null , resp.get("desc")==null);
 			fileRn.run();
 			return;
 		}
@@ -3726,11 +3773,65 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ViewUtils.replaceView(seek, btn, false);
 		seek.getLayoutParams().width = W;
 		try {
+			String downloadName = null;
+			if (desc != null) {
+				downloadName = URLDecoder.decode(desc.substring(desc.indexOf("filename=") + 9)).trim();
+				if (versionName != null) {
+					CMN.debug("downloadName::", downloadName, versionName, downloadName.endsWith(versionName));
+					if (downloadName.endsWith(versionName)) {
+						downloadName = downloadName.substring(0, downloadName.length() - versionName.length() - 1);
+					} else {
+						downloadName = null;
+					}
+				}
+			}
+			if (versionName == null) {
+				versionName = downloadName;
+				int idx = downloadName.lastIndexOf("_");
+				versionName = downloadName.substring(idx+1);
+				downloadName = downloadName.substring(0, idx);
+			} else {
+				versionName += ".apk";
+			}
 			//File target = new File(Environment.getExternalStorageDirectory(), "Download/测试.apk");
 			//File target = new File(getExternalCacheDir(), "apks/测试.apk");
-			versionName += ".apk";
 			File target = new File(getExternalCacheDir(), "apks/"+versionName);
 			File lock = new File(target.getPath() + ".lock");
+			Runnable succRn = new Runnable() {
+				@Override
+				public void run() {
+					showT("下载成功！");
+					dd.setCancelable(true);
+					ViewUtils.replaceView(btn, seek, false);
+					btn.setText("安装");
+					btn.setEnabled(true);
+					View folderBtn = dd.findViewById(android.R.id.button3);
+					VU.setVisible(folderBtn, true);
+					OnClickListener btns = new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							if (v == btn) {
+								startUpdateInstall(target);
+							} else {
+								StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+								try {
+									startActivity(new Intent(Intent.ACTION_VIEW)
+											.setDataAndType(Uri.fromFile(new File(getExternalCacheDir(), "apks/")), "resource/folder")
+											.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+									);
+								} catch (Exception e) {
+									show(R.string.no_suitable_app);
+								}
+							}
+						}
+					};
+					folderBtn.setOnClickListener(btns);
+					btn.setOnClickListener(btns);
+					if (!dwnldAbort.get()) dwnldAbort.set(true);
+					btn.performClick();
+					lock.delete();
+				}
+			};
 			if(!target.getParentFile().exists()) target.getParentFile().mkdirs();
 			String finalUrl = url;
 			finalUrl = UpdateDebugger.fakeDownloadUrl(url);
@@ -3744,47 +3845,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						//case EXTRACTING_DONE:
 						case DONE:
 							CMN.debug("DONE::", info.getState(), info.getCount());
-							hdl.post(new Runnable() {
-								@Override
-								public void run() {
-									showT("下载成功！");
-									if (info.getCount() > 0) {
-										CMN.debug("真的下载好了!");
-										BU.printFile(target.getName().getBytes(StandardCharsets.UTF_8), new File(getCacheDir(), "ver"));
-									}
-									dd.setCancelable(true);
-									ViewUtils.replaceView(btn, seek, false);
-									btn.setText("安装");
-									btn.setEnabled(true);
-									View folderBtn = dd.findViewById(android.R.id.button3);
-									VU.setVisible(folderBtn, true);
-									OnClickListener btns = new OnClickListener() {
-										@Override
-										public void onClick(View v) {
-											if (v == btn) {
-												startUpdateInstall(target);
-											} else {
-												StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
-												try {
-													startActivity(new Intent(Intent.ACTION_VIEW)
-															.setDataAndType(Uri.fromFile(new File(getExternalCacheDir(), "apks/")), "resource/folder")
-															.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-													);
-												} catch (Exception e) {
-													show(R.string.no_suitable_app);
-												}
-											}
-										}
-									};
-									folderBtn.setOnClickListener(btns);
-									btn.setOnClickListener(btns);
-									if (!dwnldAbort.get()) {
-										dwnldAbort.set(true);
-									}
-									btn.performClick();
-									lock.delete();
-								}
-							});
+							if (info.getCount() > 0) {
+								CMN.debug("真的下载好了!");
+								BU.printFile(target.getName().getBytes(StandardCharsets.UTF_8), new File(getCacheDir(), "ver"));
+							}
+							hdl.post(succRn);
 							break;
 						case RETRYING:
 							CMN.Log("fail::", info.getState(), info.getException());
@@ -3808,21 +3873,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				}
 			};
-			String downloadName = null;
-			if (desc != null) {
-				downloadName = URLDecoder.decode(desc.substring(desc.indexOf("filename=") + 9)).trim();
-				CMN.debug("downloadName::", downloadName, versionName, downloadName.endsWith(versionName));
-				if (downloadName.endsWith(versionName)) {
-					downloadName = downloadName.substring(0, downloadName.length() - versionName.length() - 1);
-				} else {
-					downloadName = null;
-				}
-			}
 			File cahcedDowloadVersion = new File(getCacheDir(), "ver");
 			cahcedDowloadVersion = UpdateDebugger.fakeCachedVer(cahcedDowloadVersion);
-			if (cahcedDowloadVersion.exists() && BU.fileToString(cahcedDowloadVersion).equals(target.getName())) {
+			if (cahcedDowloadVersion.exists()
+					&& BU.fileToString(cahcedDowloadVersion).equals(target.getName())
+					&& !lock.exists()
+					&& target.length() > 1024*1024*7 )
+			{
 				CMN.debug("下载过了!");
-				throw new IllegalStateException();
+				// throw new IllegalStateException();
+				succRn.run();
 			}
 			if (!"无限词典".equals(downloadName) && !"平典搜索".equals(downloadName)) {
 				CMN.debug("invalid file name::", downloadName);
@@ -3988,6 +4048,98 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		String lnk = null;
 		String desc = null;
 		CMN.debug("checkUpdate");
+		if (desc == null) {
+			WebViewListHandler wlh = getRandomPageHandler(true, false, null);
+			wlh.setViewMode(null, 1, null);
+			wlh.viewContent();
+			//wlh.alloydPanel.dismissImmediate();
+			View vg = ViewUtils.getNthParentNonNull(wlh.alloydPanel.settingsLayout, 1);
+			final WebViewmy randomPage = wlh.getMergedFrame();
+			randomPage.setWebViewClient(new WebViewClient() {
+				@Override
+				public boolean shouldOverrideUrlLoading(WebView view, String url) {
+					//CMN.debug("shouldOverrideUrlLoading::", view, url);
+					return false;
+				}
+				
+				@Override
+				public void onPageFinished(WebView view, String url) {
+					//view.evaluateJavascript(autoUpdateScript, null);
+				}
+			});
+			Runnable finalRn = new Runnable() {
+				@Override
+				public void run() {
+					if (wlh.alloydPanel.isVisible()) {
+						hdl.postDelayed(this, 800);
+					} else {
+						randomPage.setDownloadListener(null);
+						randomPage.setWebViewClient(myWebClient);
+						wlh.alloydPanel.dismissImmediate();
+					}
+				}
+			};
+			Bag flag = new Bag(false);
+			randomPage.setDownloadListener(new DownloadListener() {
+				@Override
+				public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+					contentDisposition = URLDecoder.decode(contentDisposition);
+					if (contentDisposition.contains("无限词典")) {
+						AtomicBoolean dwnldAbort = new AtomicBoolean();
+						randomPage.loadUrl("about:blank");
+						HashMap<String, String> resp = new HashMap();
+						resp.put("url", url);
+						resp.put("desc", contentDisposition);
+						resp.put("len", "" + contentLength);
+						CMN.debug("onDownloadStart::", resp);
+						
+						String info = "下载";//desc;
+//						info = info.substring(info.indexOf("\n", info.indexOf("==") + 2) + 1);
+//						info = "# "+name+"\n" + info + "\n\n[\\[ 手动下载 \\]]("+lnk+")";
+						AlertDialog dd = new AlertDialog.Builder(PDICMainActivity.this)
+								.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dwnldAbort.set(true);
+									}
+								})
+								.setPositiveButton("立即下载更新", null)
+								.setNeutralButton("打开文件夹", null)
+								.setMessage("关于")
+								.setTitle("发现新版本！")
+								.show();
+						Button btn = dd.findViewById(android.R.id.button1);
+						VU.setVisible(dd.findViewById(android.R.id.button3), false);
+						VU.setVisible(btn, Build.VERSION.SDK_INT >= 23);
+						btn.setOnClickListener(v1 -> { // 立即下载更新 startUpdateParse
+							dd.setCancelable(false);
+							btn.setText("请等待……");
+							btn.setEnabled(false);
+							startUpdateDownload(null, /*cachedUpdate = */resp, dd, btn, dwnldAbort);
+							ViewUtils.ensureTopmost(dd, PDICMainActivity.this, null);
+						});
+						dd.setCanceledOnTouchOutside(false);
+						TextView tv = dd.mAlert.mMessageView;
+						XYTouchRecorder xyt = PDICMainAppOptions.setAsLinkedTextView(tv, false, false);
+						xyt.clickInterceptor = (view, span) -> {
+							if (span instanceof LinkSpan) {
+								PDICMainAppOptions.interceptPlainLink(PDICMainActivity.this, ((LinkSpan) span).getURL());
+							}
+							return true;
+						};
+						Markwon markwon = Markwon.create(PDICMainActivity.this);
+						markwon.setMarkdown(tv, info);
+						tv.requestFocus();
+						wlh.alloydPanel.dismissImmediate();
+						finalRn.run();
+					}
+				}
+			});
+			randomPage.loadUrl("https://wwtm.lanzoum.com/b0a5xq7ob");
+			showT("当前版本 : " + BuildConfig.VERSION_NAME + "\n密码是ac6m，请长按输入框");
+			hdl.postDelayed(finalRn, 8 * 1000); // 解析超时
+			return;
+		}
 		try {
 			BookPresenter book = MainActivityUIBase.new_book(defDicts1[1], this);
 			PlainWeb webx = book.getWebx();

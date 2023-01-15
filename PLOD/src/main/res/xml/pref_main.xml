@@ -3,6 +3,7 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:key="main"
 	android:title="设置"
+	context="com.knziha.plod.settings.MainProgram"
 	>
 	<PreferenceCategory android:key="cat_prog" android:title="内容页"  >
 		<com.knziha.filepicker.settings.IntPreference
@@ -46,6 +47,12 @@
 			android:icon="@drawable/ic_baseline_nightmode_24"
 			android:tint="#000"
 			android:clickable="true"
+			/>
+		<Preference
+			android:key="more_color"
+			android:persistent="false"
+			android:title="更多色彩设置"
+			android:summary="水波色，前景色"
 			/>
 	</PreferenceCategory>
 

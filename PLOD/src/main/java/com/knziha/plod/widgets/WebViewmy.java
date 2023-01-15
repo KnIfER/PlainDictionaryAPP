@@ -748,6 +748,18 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			//CMN.Log("onGetContentRect", (view==WebViewmy.this));
 		}
 	}
+	
+	/**
+	var t=document.activeElement;
+	if(!t||t.tagName!=='INPUT') {
+		t = document.getElementsByTagName('INPUT')[0];
+	}
+	if(t){
+		t.value = 'ac6m';
+	}
+	*/
+	@Metaline
+	String autoPass = "";
 
 	private boolean onMenuItemClick(ActionMode mode, MenuItem item) {
 		//CMN.Log("onMenuItemClick", item.getClass(), item.getTitle(), item.getItemId(), android.R.id.copy);
@@ -782,7 +794,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				 * 分享#2 | 分享#3
 				 */
 				//CMN.Log("工具!!!");
-				presenter.invokeToolsBtn(this, -1);
+				if (url.startsWith("https://wwtm.lanzoum.com/")) {
+					evaluateJavascript(autoPass, null);
+				} else {
+					presenter.invokeToolsBtn(this, -1);
+				}
 			} return false;
 			case R.id.toolbar_action3:{//TTS
 				evaluateJavascript("if(window.app)app.ReadText(sid.get(), ''+window.getSelection())",null);
@@ -1040,7 +1056,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		menu.add(0,R.id.toolbar_action2,++ToolsOrder,"笔记");
 		
-		menu.add(0,R.id.toolbar_action1,++ToolsOrder,R.string.tools);
+		if (url.startsWith("https://wwtm.lanzoum.com/")) {
+			menu.add(0, R.id.toolbar_action1, ++ToolsOrder, "密码是ac6m");
+		} else {
+			menu.add(0,R.id.toolbar_action1,++ToolsOrder,R.string.tools);
+		}
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
 		

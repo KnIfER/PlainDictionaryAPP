@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -36,6 +37,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -265,6 +267,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -1314,7 +1317,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
 		//ViewUtils.setWebDebug(this);
-		WebView.setWebContentsDebuggingEnabled(true); //hot
+		//WebView.setWebContentsDebuggingEnabled(true); //hot
 		if (BuildConfig.isDebug) {
 			CMN.debug("android.os.Build.MODEL", android.os.Build.MODEL);
 			CMN.debug("mid", CMN.mid, getClass());
@@ -1327,6 +1330,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			);
 		}
 		bottomBarSz.sz = (int)mResource.getDimension(R.dimen.barSzBot);
+		if (!ViewUtils.littleCake && PDICMainAppOptions.modRipple() ^ VU.sRipple!=null) {
+			if (PDICMainAppOptions.modRipple()) {
+				VU.sRipple = new RippleDrawable(ColorStateList.valueOf(Color.MAGENTA), null, null);
+				//rippleBGrippleBG.setColor(ColorStateList.valueOf(Color.WHITE));
+				try {
+					VU.sRippleState = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, VU.sRipple);
+					VU.sRippleStateField = (Field) ViewUtils.evalFieldMethod(VU.sRipple.getClass(), VU.sRipple, new String[]{"ex", "mState"}, new HashMap<>(), ViewUtils.reflectionPool);
+					TypedArray ta = obtainStyledAttributes(new int[]{android.R.attr.actionBarItemBackground});
+					VU.sRippleToolbar = (RippleDrawable) ta.getDrawable(0);
+					ta.recycle();
+					CMN.debug("mState::", VU.sRippleState, VU.sRippleStateField);
+					VU.sRippleStateToolbar = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, VU.sRippleToolbar);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			} else {
+				VU.sRippleState = null;
+				VU.sRippleStateToolbar = null;
+				VU.sRipple = null;
+			}
+		}
 	}
 
 	public void onAudioPause() {
@@ -9779,7 +9803,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public AppUIProject peruseview_project;
 	
 	public int ForegroundTint = 0xffffffff;
-	public PorterDuffColorFilter ForegroundFilter;
+	public ColorStateList ForegroundTintList;
+	public int[] ForegroundTintListArr;
 
 	void showBottombarsTweaker() {
 		int pos = defbarcustpos;

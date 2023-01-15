@@ -42,6 +42,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
@@ -1030,6 +1031,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				pageSchBar.setBackgroundColor(a.MainAppBackground);
 			}
 		}
+		if (ViewUtils.checkSetVersion(versions, 4, VU.sForeground))
+		{
+			ViewUtils.setTitlebarForegroundColor(contentUIData.bottombar2, VU.sForeground, VU.sForegroundFilter, VU.sForegroundTint);
+		}
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground) || b1) {
 			int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
 			//if(widget12.getTag(R.id.image)==null)
@@ -1165,36 +1170,37 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	String schPageDid;
-	int schPagePos, schPageSz, schPageSZ;
-	public void updateInPageSch(String did, int keyIdx, int keyz, int total) {
+	int schPagePos, schPageSz, schPageTZ;
+	@AnyThread
+	public void updateInPageSch(WebViewmy wv, String did, int keyIdx, int keyz, int total) {
 		CMN.debug("updateInPageSch", "did = [" + did + "], keyIdx = [" + keyIdx + "], keyz = [" + keyz + "], total = [" + total + "]");
 		if(did==null) {
-			BookPresenter book = getWebContextNonNull().presenter;
+			BookPresenter book = (wv==null?getWebContextNonNull():wv).presenter;
 			did = book.isMergedBook()?"":book.idStr;
 		}
 		boolean b1 = !TextUtils.equals(schPageDid, did);
 		if (b1 ||  schPagePos!=keyIdx
 				|| schPageSz!=keyz
-				|| schPageSZ!=total
+				|| schPageTZ!=total
 		) {
 			if (b1) schPageDid = did;
 			else if(!PDICMainAppOptions.schPageEditShowCurrentPos()
-				&& schPageSZ==total) {
+				&& schPageTZ==total) {
 				return;
 			}
 			schPagePos=keyIdx;
 			schPageSz=keyz;
-			if(total!=-100) schPageSZ=total;
+			if(total!=-100 && isViewSingle()) schPageTZ=total;
 			if (pageSchIndicator.getTag() == null) {
 				pageSchIndicator.setTag((Runnable) () -> {
 					String text;
 					if(schPagePos>=0 && PDICMainAppOptions.schPageEditShowCurrentPos()) {
-						if(schPageSZ>schPageSz)
-							text = (schPagePos+1)+"/"+schPageSz+" ("+schPageSZ+")";
+						if(schPageTZ>schPageSz)
+							text = (schPagePos+1)+"/"+schPageSz+" ("+ schPageTZ +")";
 						else
 							text = (schPagePos+1)+"/"+schPageSz;
 					} else {
-						text = ""+schPageSZ;
+						text = ""+ schPageTZ;
 					}
 					pageSchIndicator.setText(text);
 					text = (PDICMainAppOptions.schPageEditShowDictName() ? schPageDid : null);
@@ -1407,6 +1413,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	void clearLights(ViewGroup webviewHolder){
+		schPageTZ = 0;
 		if(webviewHolder!=null){
 			int max=webviewHolder.getChildCount();
 			String exp="clearHighlights()";
@@ -1422,7 +1429,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	
 	public void onHighlightReady(int idx, int number) {
 		final HighlightVagranter hData = getHData();
 		ViewGroup webviewHolder = hData.webviewHolder;
@@ -1435,7 +1441,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		for (int i = 0; i < vg.getChildCount(); i++) {
 			all+=IU.parseInteger(vg.getChildAt(i).getTag(R.id.numberpicker),0);
 		}
+		schPageTZ = all;
 		String finalAll = all==0?"":""+all;
+		CMN.debug("schPageTZ::", schPageTZ);
 		pageSchIndicator.post(() -> pageSchIndicator.setText(finalAll));
 		if (v != null && HiFiJumpRequested && idx == 0) {
 			a.jumpNaughtyFirstHighlight(v.findViewById(R.id.webviewmy));
@@ -1549,21 +1557,21 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 								}
 								do_jumpHighlight(d, calcIndicator);
 							}
-							else if(calcIndicator && b1 && webviewHolder!=null) {
-								int all=0;
-								int preAll=IU.parsint(value.substring(1,value.length()-1),0);
-								if(preAll>=0) {
-									for (int i = 0; i < webviewHolder.getChildCount(); i++) {
-										View v = webviewHolder.getChildAt(i);
-										if (v != null) {
-											if (i == hData.HlightIdx)
-												preAll += all;
-											all += IU.parseInteger(v.getTag(R.id.numberpicker), 0);
-										}
-									}
-									//111 (PeruseSearchAttached()? peruseView.PerusePageSearchindicator:MainPageSearchindicator).setText((preAll+1)+"/"+all);
-								}
-							}
+//							else if(calcIndicator && b1 && webviewHolder!=null) {
+//								int all=0;
+//								int preAll=IU.parsint(value.substring(1,value.length()-1),0);
+//								if(preAll>=0) {
+//									for (int i = 0; i < webviewHolder.getChildCount(); i++) {
+//										View v = webviewHolder.getChildAt(i);
+//										if (v != null) {
+//											if (i == hData.HlightIdx)
+//												preAll += all;
+//											all += IU.parseInteger(v.getTag(R.id.numberpicker), 0);
+//										}
+//									}
+//									//111 (PeruseSearchAttached()? peruseView.PerusePageSearchindicator:MainPageSearchindicator).setText((preAll+1)+"/"+all);
+//								}
+//							}
 						}
 					}
 				});
@@ -1832,7 +1840,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					}
 					if (flagIdx == 8) {
 						if (flagPos == 42 || flagPos == 43) {
-							updateInPageSch(schPageDid, schPagePos, schPageSz, -100);
+							updateInPageSch(null, schPageDid, schPagePos, schPageSz, -100);
 						} else if (flagPos == 25) {
 							val = !PDICMainAppOptions.schpageAtBottom();
 							ViewGroup vg = (ViewGroup) v.getParent();

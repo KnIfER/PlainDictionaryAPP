@@ -30,6 +30,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.AbstractWindowedCursor;
@@ -41,6 +42,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Binder;
@@ -127,6 +129,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -2016,5 +2019,34 @@ public class ViewUtils extends VU {
 			ret.clear();
 		}
 		return ret;
+	}
+	
+	public static void setTitlebarForegroundColor(ViewGroup view, int color, PorterDuffColorFilter ForegroundFilter, ColorStateList colorList) {
+		CMN.debug("setTitlebarForegroundColor", "view = [" + view + "], color = [" + color + "], ForegroundFilter = [" + ForegroundFilter + "], colorList = [" + colorList + "]");
+		LinkedList<ViewGroup> linkedList = new LinkedList<>();
+		linkedList.add(view);
+		View cI;
+		while (!linkedList.isEmpty()) {
+			ViewGroup current = linkedList.removeFirst();
+			for (int i = 0; i < current.getChildCount(); i++) {
+				cI = current.getChildAt(i);
+				if (cI instanceof ViewGroup) {
+					linkedList.addLast((ViewGroup) current.getChildAt(i));
+				} else {
+					if(cI instanceof ImageView){
+						if(cI.getBackground() instanceof BitmapDrawable){
+							cI.getBackground().mutate().setColorFilter(ForegroundFilter);
+						} else {
+							((ImageView)cI).setColorFilter(ForegroundFilter);
+						}
+					} else if(cI instanceof TextView){
+						((TextView)cI).setTextColor(color);
+						((TextView) cI).setCompoundDrawableTintList(colorList);
+					} else if(cI instanceof FlowTextView){
+						((FlowTextView)cI).setTextColor(color);
+					}
+				}
+			}
+		}
 	}
 }

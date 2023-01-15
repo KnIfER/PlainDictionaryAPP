@@ -382,8 +382,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	protected void scanSettings(){
 		LastPlanName = "FltPlanName";
 		LastMdFn = "FltMdFn";
-		super.scanSettings();
 		MainBackground = MainAppBackground = opt.getFloatBackground();
+		super.scanSettings();
 		CMN.AppColorChangedFlag &= ~thisActMask;
 		isCombinedSearching = opt.isFloatCombinedSearching();
 	}

@@ -10,6 +10,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -80,10 +81,12 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 		root=win.getDecorView().findViewById(android.R.id.content);
 		checkMargin(this);
 		MainBackground = opt.getMainBackground();
+		MainLumen = GlobalOptions.isDark?0:ColorUtils.calculateLuminance(MainBackground);
 		if(Build.VERSION.SDK_INT>=21) {
 			win.setStatusBarColor(MainBackground);
 			win.setNavigationBarColor(MainBackground);
 		}
+		resetStatusForeground();
 
 		File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
 		File lock=new File(log.getParentFile(),"lock");
@@ -139,6 +142,9 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 //			break;
 			case NightMode.id:
 				fragment = new NightMode();
+			break;
+			case MoreColors.id:
+				fragment = new MoreColors();
 			break;
 		}
 		fragment.setArguments(args);

@@ -227,6 +227,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         ret.itemView.setOnClickListener(itemClicker);
         ret.textImageView.textPainter=textPainter;
         ret.textImageView.bNeedShadow=true;
+        ret.textImageView.tint=false;
 		if(viewType==1) {
 			ret.textImageView.setTag(ret.itemView.findViewById(R.id.tv));
 		}
