@@ -36,6 +36,7 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -263,6 +264,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if (mRecycler==null) {
 			etHistoryExpanded = PDICMainAppOptions.etHistoryExpanded();
 			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.etsch_recyclerview, a.root, false);
+			ViewUtils.setForegroundColor(lv, a.getForegroundColor(), VU.sForegroundFilter, VU.sForegroundTint);
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
 			expandBtn = lv.findViewById(R.id.more);
 			ViewUtils.setOnClickListenersOneDepth((ViewGroup) expandBtn.getParent(), this, 1, 0, null);
@@ -472,6 +474,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					tv.setPadding(padLeft, 0, pad/4, 0);
 					if(spanSz>3)
 						tv.post((Runnable) tv.getTag());
+					tv.setTextColor(a.MainLumen>0.65?Color.BLACK:Color.WHITE);
 				}
 				@Override
 				public int getItemCount() {
@@ -827,6 +830,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	int MainAppBackground;
+	int ForegroundColor;
 	
 	private void refreshColors() {
 		if(MainAppBackground!=a.MainAppBackground && settingsLayout!=null){
@@ -844,6 +848,12 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			if (mRecycler != null) {
 				mRecycler.setBackgroundColor(MainAppBackground);
 			}
+		}
+		int color = a.getForegroundColor();
+		if (ForegroundColor != color) {
+			ForegroundColor = color;
+			ViewUtils.setForegroundColor(settingsLayout, color, VU.sForegroundFilter, VU.sForegroundTint);
+			if(lv!=null) ViewUtils.setForegroundColor(lv, color, VU.sForegroundFilter, VU.sForegroundTint);
 		}
 	}
 	

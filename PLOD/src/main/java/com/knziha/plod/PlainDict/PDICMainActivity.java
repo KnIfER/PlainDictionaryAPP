@@ -25,14 +25,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
 import android.hardware.display.VirtualDisplay;
 import android.net.Uri;
 import android.os.Build;
@@ -114,7 +111,6 @@ import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
-import com.knziha.plod.ebook.Utils.CU;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.BuildIndexTask;
@@ -127,13 +123,11 @@ import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
-import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.KeyboardHeightPopupListener;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.PageSlide;
-import com.knziha.plod.widgets.SaturationView;
 import com.knziha.plod.widgets.ScreenListener;
 import com.knziha.plod.widgets.UpdateDebugger;
 import com.knziha.plod.widgets.ViewUtils;
@@ -165,7 +159,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -2516,19 +2509,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
 		CMN.debug("lumen::", MainLumen);
-		int color = opt.getInt("foreColor", 0xFFFFFFFF);
-		if (PDICMainAppOptions.autoForegroundColor()) {
-			CMN.debug("lumen::", MainLumen, VU.sRipple);
-			if (MainLumen > 0.65) {
-				CMN.debug("自动颜色::太亮啦");
-				color = opt.getInt("foreColor1", 0xff4F7FDF);
-			}
-		}
+		int color = getForegroundColor();
 		VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
 		VU.sForegroundTint = ColorStateList.valueOf(color);
 		VU.sForeground = color;
-		ViewUtils.setTitlebarForegroundColor(bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
-		ViewUtils.setTitlebarForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		ViewUtils.setForegroundColor(bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
 		if (VU.sRipple!=null) {
 			color = opt.getInt("rippleColor", 0x99888888);
 			if (PDICMainAppOptions.autoRippleColor()) {
@@ -2553,7 +2539,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		UIData.dictName.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
 		// UIData.dictNameFore.setTextColor(ColorUtils.blendARGB(MainAppBackground&0x88FFFFFF, 0x88FFFFFF, 0.8f));
 		resetWndColor();
-		resetStatusForeground();
+		resetStatusForeground(null);
 	}
 	
 	public void resetWndColor() {

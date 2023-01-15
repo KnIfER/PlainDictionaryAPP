@@ -42,6 +42,7 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.view.MenuCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -68,7 +69,6 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ViewUtils;
@@ -506,7 +506,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
         getWindowManager().getDefaultDisplay().getMetrics(opt.dm);
 
 		root = findViewById(R.id.drawer_layout);
-		root.setBackgroundColor(GlobalOptions.isDark?Color.BLACK:opt.getMainBackground());
+		MainAppBackground = GlobalOptions.isDark?Color.BLACK:opt.getMainBackground();
+		root.setBackgroundColor(MainAppBackground);
+		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
+		
 		searchbar = (Toolbar) VU.findViewById(root, R.id.searchbar);
 		int barSzBot = (int) mResource.getDimension(R.dimen.barSzBot);//opt.getBottombarSize();
 		searchbar.getChildAt(0).getLayoutParams().height = barSzBot;
@@ -790,19 +793,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			win.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 	        win.setStatusBarColor(Color.TRANSPARENT);
 	        win.setNavigationBarColor(Color.BLACK);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				View decorView = win.getDecorView();
-				int vis = decorView.getSystemUiVisibility();
-				if (false) {
-					vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-				} else {
-					vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-				}
-				decorView.setSystemUiVisibility(vis);
-			}
         }
 		setResult(RESULT_OK, intent);
         agent.clearTmp();
+		
+		int color = getForegroundColor();
+		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		ViewUtils.setForegroundColor(mTabLayout, color, VU.sForegroundFilter, VU.sForegroundTint);
+		ViewUtils.setForegroundColor(searchbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		
+		resetStatusForeground(null);
 	}
 	//onCreate结束
 	

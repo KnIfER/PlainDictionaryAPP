@@ -86,7 +86,7 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			win.setStatusBarColor(MainBackground);
 			win.setNavigationBarColor(MainBackground);
 		}
-		resetStatusForeground();
+		resetStatusForeground(null);
 
 		File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
 		File lock=new File(log.getParentFile(),"lock");

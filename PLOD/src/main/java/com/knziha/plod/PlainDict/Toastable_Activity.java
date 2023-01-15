@@ -51,7 +51,6 @@ import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.preference.SettingsPanel;
-import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -924,18 +923,33 @@ public class Toastable_Activity extends AppCompatActivity {
 //		}
 	}
 	
-	public void resetStatusForeground() {
-		View decorView = getWindow().getDecorView();
-		int uiOptions = decorView.getSystemUiVisibility();
-		if (MainLumen > 0.65 ^ (uiOptions&View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)!=0) {
-			// 设置状态栏图标和文字颜色为暗色
-			if (MainLumen > 0.65) {
-				uiOptions |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-			} else {
-				uiOptions &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+	public void resetStatusForeground(View decorView) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (decorView == null) {
+				decorView = getWindow().getDecorView();
 			}
-			decorView.setSystemUiVisibility(uiOptions);
+			int uiOptions = decorView.getSystemUiVisibility();
+			if (MainLumen > 0.65 ^ (uiOptions&View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)!=0) {
+				// 设置状态栏图标和文字颜色为暗色
+				if (MainLumen > 0.65) {
+					uiOptions |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+				} else {
+					uiOptions &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+				}
+				decorView.setSystemUiVisibility(uiOptions);
+			}
 		}
+	}
+	
+	public int getForegroundColor() {
+		if (PDICMainAppOptions.autoForegroundColor()) {
+			CMN.debug("lumen::", MainLumen);
+			if (MainLumen > 0.65) {
+				CMN.debug("自动颜色::太亮啦");
+				return opt.getInt("foreColor1", 0xff4F7FDF);
+			}
+		}
+		return opt.getInt("foreColor", 0xFFFFFFFF);
 	}
 }
 

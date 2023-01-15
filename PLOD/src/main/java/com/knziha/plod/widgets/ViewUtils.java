@@ -2021,8 +2021,8 @@ public class ViewUtils extends VU {
 		return ret;
 	}
 	
-	public static void setTitlebarForegroundColor(ViewGroup view, int color, PorterDuffColorFilter ForegroundFilter, ColorStateList colorList) {
-		CMN.debug("setTitlebarForegroundColor", "view = [" + view + "], color = [" + color + "], ForegroundFilter = [" + ForegroundFilter + "], colorList = [" + colorList + "]");
+	public static void setForegroundColor(ViewGroup view, int color, PorterDuffColorFilter ForegroundFilter, ColorStateList colorList) {
+		CMN.debug("setTitlebarForegroundColor", "color = [" + color + "], ForegroundFilter = [" + ForegroundFilter + "], colorList = [" + colorList + "]view = [" + view + "],");
 		LinkedList<ViewGroup> linkedList = new LinkedList<>();
 		linkedList.add(view);
 		View cI;
@@ -2031,7 +2031,9 @@ public class ViewUtils extends VU {
 			for (int i = 0; i < current.getChildCount(); i++) {
 				cI = current.getChildAt(i);
 				if (cI instanceof ViewGroup) {
-					linkedList.addLast((ViewGroup) current.getChildAt(i));
+					if (!(cI instanceof ListView) && !(cI instanceof RecyclerView)) {
+						linkedList.addLast((ViewGroup) current.getChildAt(i));
+					}
 				} else {
 					if(cI instanceof ImageView){
 						if(cI.getBackground() instanceof BitmapDrawable){

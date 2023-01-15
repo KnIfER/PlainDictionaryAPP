@@ -42,6 +42,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -139,6 +140,7 @@ public class DBroswer extends DialogFragment implements
 
 	InputMethodManager imm;
 	private int MainAppBackground;
+	private int ForegroundColor;
 	private int pressedRow;
 	private View pressedView;
 	private LocalDateTime today;
@@ -682,6 +684,15 @@ public class DBroswer extends DialogFragment implements
 			MainAppBackground =a.MainAppBackground;
 			UIData.toolbar.setBackgroundColor(MainAppBackground);
 			UIData.bottombar.setBackgroundColor(MainAppBackground);
+		}
+		int color = a.getForegroundColor();
+		if (ForegroundColor != color) {
+			color = ForegroundColor;
+			ViewUtils.setForegroundColor(UIData.toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(UIData.bottombar, color, VU.sForegroundFilter, VU.sForegroundTint);
+		}
+		if (mDialog!=null && mDialog.isShowing()) {
+			a.resetStatusForeground(mDialog.getWindow().getDecorView());
 		}
 	}
 	

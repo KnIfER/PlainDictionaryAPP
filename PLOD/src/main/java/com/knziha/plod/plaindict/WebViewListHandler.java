@@ -1033,7 +1033,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		if (ViewUtils.checkSetVersion(versions, 4, VU.sForeground))
 		{
-			ViewUtils.setTitlebarForegroundColor(contentUIData.bottombar2, VU.sForeground, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(contentUIData.bottombar2, VU.sForeground, VU.sForegroundFilter, VU.sForegroundTint);
 		}
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground) || b1) {
 			int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
