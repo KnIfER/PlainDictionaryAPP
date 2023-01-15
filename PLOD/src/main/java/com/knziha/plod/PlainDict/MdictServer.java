@@ -575,10 +575,12 @@ public abstract class MdictServer extends NanoHTTPD {
 	public String strOpt;
 	public String getSettings() {
 		String ret = strOpt;
+		//strOpt = null;
 		if (ret==null) {
 			JSONObject json = new JSONObject();
 			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
 			json.put("bgr", SU.toHexRGB(CMN.AppBackground));
+			json.put("dName", PDICMainAppOptions.showDictName());
 			ret = strOpt = json.toString();
 		}
 		return ret;

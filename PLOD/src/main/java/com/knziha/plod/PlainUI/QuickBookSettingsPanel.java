@@ -262,6 +262,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (settingsPanel==_btmBars) {
 			SearchUI.btmV++;
 			weblist.setViewMode();
+			if (storageInt==makeInt(5, 27, true)) {
+				a.getMdictServer().strOpt = null;
+				a.strOpt = null;
+			}
 			return true;
 		}
 		if (flagIdxSection!=0) {

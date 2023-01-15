@@ -3,9 +3,11 @@ package com.knziha.plod.plaindict;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
@@ -154,6 +157,18 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 		weblistHandler.setBackgroundColor(filteredColor);
 		webSingleholder.setBackgroundColor(filteredColor);
+		
+		int color = getForegroundColor();
+//		if (PDICMainAppOptions.useOldColorsMode()) {
+//			VU.sForegroundFilter = null;
+//			VU.sForegroundTint = null;
+//			VU.sForeground = color;
+//		} else {
+//			VU.sForegroundFilter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
+//			VU.sForegroundTint = ColorStateList.valueOf(color);
+//			VU.sForeground = color;
+//		}
+		ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
 	}
 	
 	@Override

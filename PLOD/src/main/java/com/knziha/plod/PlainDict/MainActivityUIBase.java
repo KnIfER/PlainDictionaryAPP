@@ -11205,6 +11205,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(opt.getString("opt", "{}"));
 			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
 			json.put("bgr", SU.toHexRGB(thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
+			json.put("dName", PDICMainAppOptions.showDictName());
+			json.put("fgr", SU.toHexRGB(getForegroundColor()));
 			return json.toString();
 		}
 		return ret;

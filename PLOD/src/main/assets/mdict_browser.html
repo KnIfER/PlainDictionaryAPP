@@ -2905,12 +2905,17 @@
 					if(str) str=JSON.parse(str);
 					if(str) Object.assign(opt, e=str);
 				}
+				debug('settings=', e);
 				Object.assign(opt, e);
 				opt.init();
 				if(e.bg) {
 					defP.style.background='#'+e.bg;
 				} else {
 					defP.style.background='unset';
+				}
+				if(!e.dName) {
+					var t=ge('dlab');
+					if(t)t.style.display=t.nextElementSibling.style.display='none';
 				}
 				if(merge && e.bgr) {
 					var sty=craft('style', 0, document.body);
@@ -2922,6 +2927,13 @@
 					//shsty.backgroundColor = whiterRgb(e.bgr,null,.8);
 					shsty.background = 'linear-gradient(to top, #'+e.bgr+' , '+whiterRgb(e.bgr)+')}'
 					shsty.opacity = 0.8;
+				}
+				if(merge && e.fgr) {
+					var sty = ge('setyle1')||craft('STYLE', 0, document.head);
+					sty.id='setyle1';
+					sty.type="text/css";
+					var s=`.dt{color:#${e.fgr}}`;
+					sty.appendChild(document.createTextNode(s));
 				}
 				ScanInDicts();
 				//showSettings();
