@@ -37,7 +37,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	public View bottombar;
 	protected int MainAppBackground;
 	protected boolean tweakDlgScreen = true;
-	int ForegroundColor = Color.WHITE;
+	public int ForegroundColor = Color.WHITE;
 	
 	public PlainAppPanel() {
 		super(null, null, null, null, null);

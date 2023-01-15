@@ -80,7 +80,7 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 				:0xFFf5f5f5);
 		root=win.getDecorView().findViewById(android.R.id.content);
 		checkMargin(this);
-		MainBackground = opt.getMainBackground();
+		MainBackground = GlobalOptions.isDark?Color.BLACK:opt.getMainBackground();
 		MainLumen = GlobalOptions.isDark?0:ColorUtils.calculateLuminance(MainBackground);
 		if(Build.VERSION.SDK_INT>=21) {
 			win.setStatusBarColor(MainBackground);

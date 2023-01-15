@@ -553,7 +553,7 @@ function debug(e){console.log(e)};
 	
 	private int bgColor;
     private int tbgColor;
-    private int tfgColor;
+	public int tfgColor;
 	
 	
 	public int getContentBackground() {

@@ -38,6 +38,7 @@ import java.util.ArrayList;
 //for menu list
 public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener
 {
+	private TwoWayGridView mainMenuLst;
 	public ViewGroup rootPanel;
 	public AlertDialog dialog;
 	MainActivityUIBase a;
@@ -107,6 +108,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				mainMenuLst.setHorizontalScrollbarThumbDrawable(new ColorDrawable(0x45555555));
 			}
+			this.mainMenuLst = mainMenuLst;
 		}
 		menu_grid_painter = DescriptiveImageView.createTextPainter(false);
 		
@@ -431,6 +433,9 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		if (luceneHelper != null) {
 			luceneHelper.indexBuilderDlg.clear();
 			luceneHelper.indexSchDlg.clear();
+		}
+		if (mainMenuLst != null) {
+			notifyDataSetChanged();
 		}
 	}
 }

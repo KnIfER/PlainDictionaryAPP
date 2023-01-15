@@ -46,6 +46,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.ActionMenuPresenter;
@@ -83,12 +84,14 @@ import com.knziha.plod.widgets.WebViewmy;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.view.View.FOCUSABLE_AUTO;
+import static android.view.View.GONE;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
@@ -103,6 +106,7 @@ import static com.knziha.plod.widgets.ViewUtils.getNthParentNullable;
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/>  代号：fye
  * This view makes it easier to read among or read against entries of various books. */
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
+	public boolean bNextNoHide;
 	int MainBackground;
 	public ArrayList<Long> bookIds = new ArrayList<>();
 	public ArrayList<Long> hidden = new ArrayList<>();
@@ -809,7 +813,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			initViews(a);
 		}
 		
-		refreshUIColors(a.MainBackground);
+		refreshUIColors(a.MainAppBackground);
 		
         if(ToL = opt.getPerUseToL())
 			intenToLeft.setBackgroundResource(R.drawable.toleft);
@@ -1102,6 +1106,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	public void refreshUIColors(int MainBackground) {
+		CMN.debug("peruseView::refreshUIColors::", MainBackground);
 		MainActivityUIBase a = getMainActivity();
 		boolean isDark = GlobalOptions.isDark;
 
@@ -1122,13 +1127,44 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		mWebView.evaluateJavascript(isDark? opt.DarkModeIncantation(a): MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		bottombar.setBackgroundColor(filteredColor);
-		weblistHandler.checkUI();
+		try {
+			weblistHandler.checkUI();
+			if (mWebView != null) {
+				/*opt.getTitlebarForegroundColor()*/
+				int myWebColor = isDark ? Color.WHITE : mWebView.presenter.getUseTitleForeground() ? mWebView.presenter.tfgColor : VU.sForeground;
+				mWebView.setTitlebarForegroundColor(myWebColor);
+			}
+			
+			int color = a.getForegroundColor();
+			if (dummyPanel.ForegroundColor != color) {
+				dummyPanel.ForegroundColor = color;
+				ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					handle2.setElevation(a.MainLumen>0.5?10*GlobalOptions.density:0);
+				}
+				setColorFilter(intenToLeft);
+				setColorFilter(intenToRight);
+				setColorFilter(intenToDown);
+				setColorFilter(lineWrap);
+			}
+			a.resetStatusForeground(mDialog.getWindow().getDecorView());
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 //		contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
 //		contentUIData.webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
 
 //		contentUIData.webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);
 	}
-
+	
+	private void setColorFilter(ImageView view) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			view.setBackgroundTintList(VU.sForegroundTint);
+		} else {
+			view.getBackground().setColorFilter(VU.sForegroundFilter);
+		}
+	}
+	
 	float spsubs;
 
 	int NumPreEmpter=0;
@@ -1198,7 +1234,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	/** Hide is not dismiss */
 	public void hide(MainActivityUIBase a) {
-		if (mDialog!=null) {
+		if (bNextNoHide) {
+			mDialog.dismiss();
+			bNextNoHide = false;
+		} else if (mDialog != null) {
 			mDialog.hide();
 		}
 		onViewDetached(a);
@@ -1461,6 +1500,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 					if(pathname==null) pathname = "空";
 					holder.tv.setText(pathname);
+					holder.tv.setTextColor(a.MainLumen>0.5&&holder.itemView!=selection?Color.BLACK:Color.WHITE);
 //					holder.tv.setContentDescription(pathname);
 					holder.cover.setImageDrawable(cover);
 					holder.word.setText(pathname.substring(0,1).toUpperCase());
@@ -1486,7 +1526,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			
 			if(selection!=null) {
 				((LayerDrawable) selection.getBackground()).getDrawable(0).setAlpha(0);
-		
+				DictTitleHolder holder = (DictTitleHolder) selection.getTag();
+				holder.tv.setTextColor(getMainActivity().MainLumen>0.5?Color.BLACK:Color.WHITE);
+				holder.tv.invalidate();
 				if(view!=null && lv1.getChildCount()>0 && System.currentTimeMillis()-lastswicthtime>200) {//record our position
 					voyager[SelectedV*VELESIZE] = lv1.getFirstVisiblePosition();
 					voyager[SelectedV*VELESIZE+1] = lv1.getChildAt(0).getTop();
@@ -1507,6 +1549,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			selection = view;
 			try {
 				((LayerDrawable) view.getBackground()).getDrawable(0).setAlpha(255);
+				DictTitleHolder holder = (DictTitleHolder) selection.getTag();
+				holder.tv.setTextColor(getMainActivity().MainLumen>0.5?Color.WHITE:Color.BLACK);
+				holder.tv.invalidate();
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
@@ -1710,7 +1755,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		vh.dv.setPadding(p, p, p, p);
         		vh.dv.setColorFilter(Color.RED);
 				convertView.setTag(vh);
-			}else {
+			} else {
 				vh = (viewholder) convertView.getTag();
 			}
     		vh.dv.setTag(position);
@@ -1730,8 +1775,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					vh.tv.setSingleLine();
 				}
 			}
+			boolean b1 = position==(ToD?lastClickedPos:lastClickedDictPos);
+			vh.tv.setTextColor(getMainActivity().MainLumen>0.5&&!b1?Color.BLACK:Color.WHITE);
 			
-			if(position==(ToD?lastClickedPos:lastClickedDictPos)) {//voyager[SelectedV*3+2]
+			if(b1) {//voyager[SelectedV*3+2]
         		//which color?
         		convertView.setBackgroundColor(0xff397CCD);//LB0xff397CCD  HB0xff2b4381
         	} else {
@@ -1912,6 +1959,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						implements OnClickListener{
 		//AbsListView.LayoutParams lp;
         int lastClickedPos;
+        int lastClickedView;
         //构造
         public LeftViewAdapter() 
         {  
@@ -2002,6 +2050,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		//vh.tv.setPadding((int)(15*density), (int)(5*density), 0, (int)(2*density));
         	}
 			vh.tv.getLayoutParams().width=-1;
+			vh.tv.setTextColor(getMainActivity().MainLumen>0.5&&position!=lastClickedPos?Color.BLACK:Color.WHITE);
 
 	        return convertView;
         }
@@ -2037,11 +2086,19 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			WebViewmy mWebView = PeruseView.this.mWebView;
 			int fvp = lv1.getFirstVisiblePosition();
 			View child = lv1.getChildAt(lastClickedPos-fvp);
-			if(child!=null) child.setBackgroundColor(Color.TRANSPARENT);
+			MainActivityUIBase a = getMainActivity();
+			if(child!=null) {
+				child.setBackgroundColor(Color.TRANSPARENT);
+				viewholder vh = (viewholder) child.getTag();
+				if(vh!=null) vh.tv.setTextColor(a.MainLumen>0.5?Color.BLACK:Color.WHITE);
+			}
 			//CMN.Log("lastClickedPos::", lastClickedPos, child);
 			child = lv1.getChildAt(pos-fvp);
-			if(child !=null) child.setBackgroundColor(0xff397CCD);
-			MainActivityUIBase a = getMainActivity();
+			if(child!=null) {
+				child.setBackgroundColor(0xff397CCD);
+				viewholder vh = (viewholder) child.getTag();
+				if(vh!=null) vh.tv.setTextColor(a.MainLumen>0.5?Color.WHITE:Color.BLACK);
+			}
 			if (mWebView.presenter!=currentDictionary || mWebView.currentPos!=pos)
 			{
 				ActivedAdapter=this;
@@ -2537,8 +2594,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		mWebView.toolbar_title.setText(mWebView.word + " - " + invoker.bookImpl.getDictionaryName());
 	}
 	
+	public WeakReference<MainActivityUIBase> ref = CMN.EmptyRef;
 	@NonNull MainActivityUIBase getMainActivity() {
-		return (MainActivityUIBase) getActivity();
+		MainActivityUIBase ret = (MainActivityUIBase) getActivity();
+		if (ret == null) {
+			ret = ref.get();
+		}
+		return ret;
 	}
 	
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str|  see {@link MainActivityUIBase#storeLv1}*/

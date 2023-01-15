@@ -5653,6 +5653,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(DBrowser!=null) {
 				DBrowser.checkColors();
 			}
+			if(peruseView !=null) {
+				//peruseView = null;
+				//CMN.debug("peruseView.isHidden()::", peruseView.isHidden());
+				if (!peruseView.isHidden()) {
+					peruseView.dismiss();
+				} else {
+					peruseView.bNextNoHide = true;
+				}
+				peruseView.refreshUIColors(MainAppBackground);
+			}
 			for(PlainAppPanel pane : settingsPanels) {
 				pane.refresh();
 			}
@@ -9612,6 +9622,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public PeruseView getPeruseView() {
 		if(peruseView ==null) {
 			peruseView = new PeruseView(MainBackground);
+			peruseView.ref = new WeakReference<>(this);
 			peruseView.spsubs = opt.getFloat("spsubs", 0.706f);
 			peruseView.dm = dm;
 			peruseView.opt = opt;

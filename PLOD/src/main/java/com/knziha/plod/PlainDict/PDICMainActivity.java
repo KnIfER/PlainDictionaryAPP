@@ -2253,8 +2253,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	private void decorateBottombarFFSearchIcons(int pos) {
-		if(BottombarBtns[2]!=null)BottombarBtns[2].setActivated(pos==0);
-		if(BottombarBtns[3]!=null)BottombarBtns[3].setActivated(pos==2);
+		boolean tb = MainLumen > 0.65;
+		if(BottombarBtns[2]!=null) {
+			BottombarBtns[2].setActivated(!tb && pos==0);
+			if (!tb && pos==0) {
+				BottombarBtns[2].setColorFilter(null);
+			} else {
+				BottombarBtns[2].setColorFilter(VU.sForegroundFilter);
+			}
+		}
+		if(BottombarBtns[3]!=null){
+			BottombarBtns[3].setActivated(!tb && pos==2);
+			if (!tb && pos==2) {
+				BottombarBtns[3].setColorFilter(null);
+			} else {
+				BottombarBtns[3].setColorFilter(VU.sForegroundFilter);
+			}
+		}
 	}
 	
 	@Override

@@ -265,6 +265,13 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			ForegroundColor = color;
 			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
 			ViewUtils.setForegroundColor(bottomShelf, color, VU.sForegroundFilter, VU.sForegroundTint);
+			int gray = 0x55888888;
+			//if(Math.abs(0x888888-(a.MainAppBackground&0xffffff)) < 0x100000)
+			if (a.MainLumen > 0.65) {
+				gray = 0x88555555;
+			}
+			gray = ColorUtils.blendARGB(a.MainAppBackground, a.MainLumen > 0.65?Color.BLACK:Color.WHITE, 0.1f);
+			bottomShelf.setSCC(bottomShelf.ShelfDefaultGray=gray);
 		}
 	}
 	
