@@ -7335,7 +7335,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			dlv.setChoiceMode(ListView.CHOICE_MODE_NONE);
 			
 			Window window = dTmp.getWindow();
-			window.setDimAmount(0);
+			//window.setDimAmount(0.1f);
 			dlv.setTag(scanInList);
 		}
 		else {
@@ -7410,6 +7410,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		dTmp.show();
+//		AlertDialog finalDTmp = dTmp;
+//		Runnable nautyRun = new Runnable() {
+//			@Override
+//			public void run() {
+//				CMN.debug("still not working!!!");
+//				resetStatusForeground(finalDTmp.getWindow().getDecorView());
+//
+//				finalDTmp.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);//  set status text dark
+//				finalDTmp.getWindow().setStatusBarColor(Color.WHITE);// set status background white
+//
+//				finalDTmp.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+//				finalDTmp.getWindow().setStatusBarColor(Color.RED);
+//
+//				hdl.postDelayed(this,200);
+//			}
+//		};
+//		nautyRun.run();
 	}
 
 	abstract public void invalidAllLists();

@@ -851,7 +851,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			dlv.setChoiceMode(ListView.CHOICE_MODE_NONE);
 			
 			Window window = dTmp.getWindow();
-			window.setDimAmount(0);
+			//window.setDimAmount(0);
 			
 			jumpListDlgRef = new WeakReference<>(jumpListDlg=dTmp);
 			if(GlobalOptions.isDark) {
@@ -909,6 +909,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			frameSelection = frameAt;
 			lv.setSelection(bag.val?frameAt/2:frameAt);
 		}
+		
+		//a.resetStatusForeground(dTmp.getWindow().getDecorView());
 	}
 	
 	public final static int WEB_LIST_MULTI=0;

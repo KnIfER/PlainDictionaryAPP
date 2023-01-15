@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -258,6 +259,12 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
 				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
 			ViewUtils.makeFullscreenWnd(dialog.getWindow());
+		}
+		int color = a.getForegroundColor();
+		if (ForegroundColor != color) {
+			ForegroundColor = color;
+			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
+			ViewUtils.setForegroundColor(bottomShelf, color, VU.sForegroundFilter, VU.sForegroundTint);
 		}
 	}
 	

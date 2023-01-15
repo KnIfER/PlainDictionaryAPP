@@ -140,7 +140,7 @@ public class DBroswer extends DialogFragment implements
 
 	InputMethodManager imm;
 	private int MainAppBackground;
-	private int ForegroundColor;
+	private int ForegroundColor = Color.WHITE;
 	private int pressedRow;
 	private View pressedView;
 	private LocalDateTime today;

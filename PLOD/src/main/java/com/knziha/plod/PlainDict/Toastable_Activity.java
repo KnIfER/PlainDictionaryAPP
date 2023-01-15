@@ -42,6 +42,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.PlainUI.FloatApp;
@@ -929,6 +930,7 @@ public class Toastable_Activity extends AppCompatActivity {
 				decorView = getWindow().getDecorView();
 			}
 			int uiOptions = decorView.getSystemUiVisibility();
+			
 			if (MainLumen > 0.65 ^ (uiOptions&View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)!=0) {
 				// 设置状态栏图标和文字颜色为暗色
 				if (MainLumen > 0.65) {
@@ -938,6 +940,15 @@ public class Toastable_Activity extends AppCompatActivity {
 				}
 				decorView.setSystemUiVisibility(uiOptions);
 			}
+		}
+	}
+	
+	public void resetStatusForegroundWnd(Window window) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			View decorView = window.getDecorView();
+			int uiOptions = decorView.getSystemUiVisibility();
+			WindowInsetsControllerCompat wic = new WindowInsetsControllerCompat(window, decorView);
+			wic.setAppearanceLightStatusBars(MainLumen > 0.65);
 		}
 	}
 	

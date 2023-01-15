@@ -830,7 +830,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	int MainAppBackground;
-	int ForegroundColor;
+	int ForegroundColor = Color.WHITE;
 	
 	private void refreshColors() {
 		if(MainAppBackground!=a.MainAppBackground && settingsLayout!=null){

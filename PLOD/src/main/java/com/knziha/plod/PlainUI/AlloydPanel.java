@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -92,6 +93,11 @@ public class AlloydPanel extends PlainAppPanel {
 			double lumen = ColorUtils.calculateLuminance(MainAppBackground);
 			int bc = lumen > 0.5 ? Color.BLACK : Color.WHITE;
 			AllMenus.checkActDrawable.setColorFilter(ColorUtils.blendARGB(MainAppBackground, bc, 0.5f)&0xB9FFFFFF, PorterDuff.Mode.SRC_IN);
+		}
+		int color = a.getForegroundColor();
+		if (ForegroundColor != color) {
+			ForegroundColor = color;
+			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
 		}
 	}
 	

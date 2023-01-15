@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.Toolbar;
 
@@ -328,6 +329,8 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 		}
 	}
 	
+	int ForegroundColor = Color.WHITE;
+	
 	public void refresh() {
 		int pad = (int) (2.8f * a.mResource.getDimension(R.dimen._50_) * (a.dm.widthPixels>GlobalOptions.realWidth?1:1.45f));
 		//CMN.debug("pad::", pad, root.getHeight());
@@ -336,6 +339,11 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 					- a.root.getPaddingTop() - pad * 2;
 		} else {
 			schLv.mMaxHeight = 0;
+		}
+		int color = a.getForegroundColor();
+		if (ForegroundColor != color) {
+			ForegroundColor = color;
+			ViewUtils.setForegroundColor(toolbar, color, VU.sForegroundFilter, VU.sForegroundTint);
 		}
 	}
 	

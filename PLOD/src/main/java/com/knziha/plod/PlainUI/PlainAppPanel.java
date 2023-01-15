@@ -3,6 +3,7 @@ package com.knziha.plod.PlainUI;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	public View bottombar;
 	protected int MainAppBackground;
 	protected boolean tweakDlgScreen = true;
+	int ForegroundColor = Color.WHITE;
 	
 	public PlainAppPanel() {
 		super(null, null, null, null, null);
@@ -123,33 +125,35 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 		
 		dialog.show();
 		
-		if (tweakDlgScreen && a != null) {
-			int padbot = bottomPadding;
-			if(padbot!=0) {
-				if(bottombar!=null) {
-					padbot = bottombar.getHeight();
-				} else {
-					padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
+		if (a != null) {
+			if (tweakDlgScreen) {
+				int padbot = bottomPadding;
+				if(padbot!=0) {
+					if(bottombar!=null) {
+						padbot = bottombar.getHeight();
+					} else {
+						padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
+					}
+					settingsLayoutHolder.setPadding(0,a.root.getPaddingTop(),0,padbot);
+					bottomPadding = padbot;
 				}
-				settingsLayoutHolder.setPadding(0,a.root.getPaddingTop(),0,padbot);
-				bottomPadding = padbot;
-			}
-			
-			Window window = dialog.getWindow();
-			ViewUtils.makeFullscreenWnd(window);
-			
-			Toastable_Activity.setStatusBarColor(window, a.MainAppBackground);
-			//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-			
-			View t = window.findViewById(android.R.id.title);
-			if(t!=null) t.setVisibility(View.GONE);
-			int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
-			if(id!=0){
-				t = window.findViewById(id);
+				
+				Window window = dialog.getWindow();
+				ViewUtils.makeFullscreenWnd(window);
+				
+				Toastable_Activity.setStatusBarColor(window, a.MainAppBackground);
+				//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+				
+				View t = window.findViewById(android.R.id.title);
 				if(t!=null) t.setVisibility(View.GONE);
+				int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
+				if(id!=0){
+					t = window.findViewById(id);
+					if(t!=null) t.setVisibility(View.GONE);
+				}
 			}
+			a.resetStatusForeground(dialog.getWindow().getDecorView());
 		}
-		
 	}
 	
 	@CallSuper
