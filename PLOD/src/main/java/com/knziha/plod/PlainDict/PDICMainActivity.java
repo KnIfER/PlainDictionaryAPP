@@ -1880,7 +1880,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				
 //				new WordCamera(this, etTools).show();
 
-//			if(CMN.testFLoatSearch)
+			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 				
 			}, 350);

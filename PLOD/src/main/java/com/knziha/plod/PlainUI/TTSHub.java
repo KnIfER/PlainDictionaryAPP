@@ -832,7 +832,6 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 	
 	@Override
 	protected void onShow() {
-		refresh();
 		if (ViewUtils.addViewToParent(toolbar, bar)) {
 			for (int i = 0; i < toolbar.getChildCount(); i++) {
 				View child = toolbar.getChildAt(i);
@@ -843,6 +842,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 				}
 			}
 		}
+		refresh();
 		if (ttsTweaker != null) {
 			ttsTweaker.refresh();
 			if (mTtsChoiceVer < ttsChoiceVer) {
@@ -893,6 +893,11 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 		if (ViewUtils.ensureTopmost(dialog, a, dialogDismissListener)
 				|| ViewUtils.ensureWindowType(dialog, a, dialogDismissListener)) {
 			ViewUtils.makeFullscreenWnd(dialog.getWindow());
+		}
+		if (ForegroundColor!=a.tintListFilter.sForeground) {
+			ForegroundColor=a.tintListFilter.sForeground;
+			ViewUtils.setForegroundColor(bottomShelf, a.tintListFilter);
+			ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
 		}
 	}
 	
