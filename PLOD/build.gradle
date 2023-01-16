@@ -158,6 +158,7 @@ configurations {
     all*.exclude group:'androidx.core', module: 'core'
     all*.exclude group:'androidx.viewpager', module: 'viewpager'
     all*.exclude group:'androidx.appcompat', module: 'appcompat'
+    all*.exclude group:'androidx.recyclerview', module: 'recyclerview' // todo  check
 }
 
 dependencies {
@@ -237,7 +238,7 @@ dependencies {
 //    api 'org.apache.lucene:lucene-core:8.0.0'
 
     //api 'org.apache.lucene:lucene-core:4.7.0'
-    api 'org.appxmod.lucene:Core:1.0.0'
+    api 'com.github.appxmod:Lucene:latest.release'
     api ('org.apache.lucene:lucene-queryparser:4.7.0'){
         exclude module:"lucene-core"
     }
