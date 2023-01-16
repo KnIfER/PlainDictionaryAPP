@@ -10,6 +10,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -68,6 +69,7 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		tintListFilter = VU.sTintListFilter;
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		Window win = getWindow();

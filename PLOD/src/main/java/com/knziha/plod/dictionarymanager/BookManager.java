@@ -481,6 +481,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(null);
+		tintListFilter = VU.sTintListFilter;
 		
 		AgentApplication agent = ((AgentApplication)getApplication());
 		app_mdict_cache=agent.mdict_cache;

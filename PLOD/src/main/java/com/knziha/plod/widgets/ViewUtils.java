@@ -2026,6 +2026,9 @@ public class ViewUtils extends VU {
 		LinkedList<ViewGroup> linkedList = new LinkedList<>();
 		linkedList.add(view);
 		View cI;
+		if (view instanceof Toolbar) {
+			((Toolbar)view).setTitleTextColor(tintListFilter.sForeground);
+		}
 		while (!linkedList.isEmpty()) {
 			ViewGroup current = linkedList.removeFirst();
 			for (int i = 0; i < current.getChildCount(); i++) {
@@ -2034,6 +2037,9 @@ public class ViewUtils extends VU {
 					if (!(cI instanceof ListView) && !(cI instanceof RecyclerView)) {
 						linkedList.addLast((ViewGroup) current.getChildAt(i));
 					}
+//					else if (cI instanceof Toolbar) {
+//						((Toolbar)cI).setTitleTextColor(tintListFilter.sForeground);
+//					}
 				} else {
 					if(cI instanceof ImageView){
 						if(cI.getBackground() instanceof BitmapDrawable){

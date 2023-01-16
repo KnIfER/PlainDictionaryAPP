@@ -596,7 +596,7 @@ public class Drawer extends Fragment implements
 					btn.setOnClickListener(v1 -> {
 						AlertDialog dd = (AlertDialog) ViewUtils.getWeakRefObj(aboutDlg);
 						dd.setCanceledOnTouchOutside(false);
-						dd.setCancelable(false);
+						//dd.setCancelable(false);
 						//a.wordPopup.startTask(TASK_UPD_SCH);
 						//btn.setText(btn.getText()+"……");
 						a.checkUpdate(new AtomicBoolean(true));

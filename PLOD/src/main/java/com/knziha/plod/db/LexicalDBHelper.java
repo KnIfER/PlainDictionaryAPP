@@ -899,7 +899,7 @@ if(!VersionUtils.AnnotOff)
 	}
 	
 	public boolean wipeData() {
-		return database.delete(TABLE_MARKS, null, null)>0;
+		return database.delete(TABLE_HISTORY_v2, null, null)>0; // TABLE_MARKS
 	}
 	
 	public long newFavFolder(String name) {

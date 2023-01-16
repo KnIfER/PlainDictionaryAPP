@@ -6374,7 +6374,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean deleteHistory() {
 		try {
 			return prepareHistoryCon().wipeData();
-		} catch (Exception ignored) { }
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 		return false;
 	}
 	

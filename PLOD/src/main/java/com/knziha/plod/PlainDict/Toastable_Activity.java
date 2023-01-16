@@ -107,7 +107,7 @@ public class Toastable_Activity extends AppCompatActivity {
     public float ColorMultiplier_Wiget=0.9f;
     public float ColorMultiplier_Web=1;
     public float ColorMultiplier_Web2=1;
-	public final VU.TintListFilter tintListFilter = new VU.TintListFilter();
+	public /*final*/ VU.TintListFilter tintListFilter = new VU.TintListFilter();
 
 	public ViewGroup contentview;
 	protected ViewGroup dialog_;
