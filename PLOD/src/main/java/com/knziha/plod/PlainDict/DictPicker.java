@@ -33,6 +33,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -214,6 +215,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 				bottomDlgLayout.setBackgroundColor(GlobalOptions.isDark?0xFF454545:a.AppWhite);
 			if (Searchbar != null) {
 				Searchbar.setBackgroundColor(a.MainAppBackground);
+				ViewUtils.setForegroundColor(Searchbar, a.tintListFilter);
 			}
 			MainColorStamp = a.MainAppBackground;
 			dataChanged();
@@ -628,6 +630,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					ViewUtils.ResizeNavigationIcon(searchbar);
 					//searchbar.setContentInsetsAbsolute(0, 0);
 					searchbar.setBackgroundColor(a.MainAppBackground);
+					ViewUtils.setForegroundColor(searchbar, a.tintListFilter);
 					ViewGroup VG = (ViewGroup) searchbar.getChildAt(0);
 					SetImageClickListener(VG, true);
 					etSearchDict = (EditText) VG.findViewById(R.id.etSearch);

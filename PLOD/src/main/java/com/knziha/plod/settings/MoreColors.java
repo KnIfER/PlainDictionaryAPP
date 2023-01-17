@@ -38,7 +38,8 @@ public class MoreColors extends PlainSettingsFragment implements Preference.OnPr
 						case "oldColor":
 							init_switch_preference(this, key, PDICMainAppOptions.useOldColorsMode(), null, null, p);
 							if (PDICMainAppOptions.useOldColorsMode()) {
-								findPreference("cat_fore").setEnabled(false);
+								findPreference("foreColor").setEnabled(false);
+								findPreference("foreColor1").setEnabled(false);
 							}
 						break;
 						case "ripple":
@@ -77,6 +78,8 @@ public class MoreColors extends PlainSettingsFragment implements Preference.OnPr
 			break;
 			case "oldColor":
 				PDICMainAppOptions.useOldColorsMode((Boolean) newValue);
+				findPreference("foreColor").setEnabled(!(Boolean) newValue);
+				findPreference("foreColor1").setEnabled(!(Boolean) newValue);
 				CMN.AppColorChangedFlag|=1<< MainActivityUIBase.ActType.PlainDict.ordinal();
 				CMN.AppColorChangedFlag|=1<<MainActivityUIBase.ActType.FloatSearch.ordinal();
 			break;
