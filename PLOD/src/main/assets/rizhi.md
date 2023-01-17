@@ -3,6 +3,9 @@
 - 开发者状态：失眠，头晕，脑wu
 - 本记录较为详细。其他可查阅[PDAWIKI论坛](https://www.pdawiki.com/forum/forum.php?mod=viewthread&tid=48462&page=1&extra=#pid2911837)、[freemdict论坛]()、群中的帖子、B站视频教程。
 
+# v7.7.2
+- 修复放大页面时页内搜索跳转位置不正确
+- 修复旧多页面模式下的注释笔记跳转
 
 # v7.7
 ## 主题更新

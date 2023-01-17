@@ -86,7 +86,9 @@ public class AlloydPanel extends PlainAppPanel {
 	
 	@Override
 	public void refresh() {
+		boolean check = false;
 		if (MainAppBackground != a.MainAppBackground) {
+			check = true;
 			MainAppBackground = a.MainAppBackground;
 			toolbar.setBackgroundColor(MainAppBackground);
 			toolbar.setTitleTextColor(Color.WHITE);
@@ -96,8 +98,12 @@ public class AlloydPanel extends PlainAppPanel {
 		}
 		int color = a.tintListFilter.sForeground;
 		if (ForegroundColor != color) {
+			check = true;
 			ForegroundColor = color;
 			ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
+		}
+		if (check) {
+			weblistHandler.checkUI();
 		}
 	}
 	

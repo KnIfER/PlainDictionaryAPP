@@ -195,7 +195,7 @@ function setAsStartLight(){
     currentIndex=0;
 }
 function addClass() {
-    debug('addClass', current);
+    //debug('addClass', current);
     current.classList.add(currentClass);
 }
 function removeClass() {

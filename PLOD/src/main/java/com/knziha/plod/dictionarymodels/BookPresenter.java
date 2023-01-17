@@ -36,6 +36,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -2274,6 +2275,7 @@ function debug(e){console.log(e)};
 		htmlBuilder.append("window.frameAt=").append(mWebView.frameAt).append(";");
 		htmlBuilder.append("window.entryKey='").append(mWebView.word).append("';");
 		htmlBuilder.append("window.currentPos=").append(mWebView.currentPos).append(";");
+		htmlBuilder.append("window._combo=").append(mWebView.fromCombined==1).append(";");
 		htmlBuilder.append("window._posid='"); IU.NumberToText_SIXTWO_LE(mWebView.currentPos, htmlBuilder);
 		htmlBuilder.append("';");
 		//htmlBuilder.append("hasFiles='").append(hasFilesTag()).append("';");
@@ -3183,6 +3185,22 @@ function debug(e){console.log(e)};
 				return (int) (wv.getScrollY() / def_zoom);
 			}
 			return 0;
+		}
+		
+		/** 页面滚动Y值 */
+		@JavascriptInterface
+		public void setScrollY(int sid, int offset) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				WebViewListHandler whl = wv.weblistHandler;
+				View frame = ViewUtils.getParentByClass(wv, LinearLayout.class);
+				//CMN.debug("frame::", frame);
+				if (!whl.isViewSingle() && frame!=null) {
+					whl.contentUIData.WHP.scrollTo(0, (int) (frame.getTop()
+						+ offset* GlobalOptions.density) //todo 校准调优
+					);
+				}
+			}
 		}
 		
 		/** 页面滚动X值 */

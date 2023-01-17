@@ -13,9 +13,12 @@ import android.view.animation.TranslateAnimation;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
+import androidx.appcompat.app.GlobalOptions;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.view.ViewCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.knziha.plod.ebook.Utils.CU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
@@ -167,6 +170,10 @@ public class DragScrollBar extends RelativeLayout{
 	public void setHandleColorFiler(int color) {
 		if(bgColor!=color) {
 			bgColor = color;
+			double lumen = ColorUtils.calculateLuminance(color);
+			if (lumen>0.65 /*&& !GlobalOptions.isDark*/) {
+				color = ColorUtils.blendARGB(color, Color.BLACK, (float) (lumen / 2));
+			}
 			handleThumb.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
 		}
 	}

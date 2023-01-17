@@ -3596,7 +3596,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//土司合着滑块动画有时太卡了
 		if(UIData.drawerLayout.isDrawerOpen(Gravity.LEFT)) {
 			showTopSnack((ViewGroup) drawerFragment.mDrawerListLayout, msg, 0.8f, -1, -1, 1|0x2);
-		} else {
+		} else if(!GlobalOptions.debug && (PDICMainAppOptions.debug() || PDICMainAppOptions.getEnableWebDebug())){
 			showT(msg);
 		}
 	}

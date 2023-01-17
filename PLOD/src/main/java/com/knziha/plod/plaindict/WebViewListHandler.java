@@ -1595,6 +1595,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			EditText etSearch = bar.findViewById(R.id.etSearch);
 			//etSearch.setBackgroundColor(Color.TRANSPARENT);
 			etSearch.setText(MainPageSearchetSearchStartWord);
+			//if(GlobalOptions.debug) etSearch.setText("观点");
 			etSearch.addTextChangedListener(pageSchWat = new TextWatcher() {
 				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 				@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
@@ -1945,9 +1946,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//CMN.Log("scrollHighlight",o,d,inlineJump);
 		if(webviewHolder!=null && webviewHolder.getChildAt(hData.HlightIdx) instanceof LinearLayout){
 			ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(hData.HlightIdx);
-			WebView wv = (WebView) ViewUtils.findViewById(webHolder, R.id.webviewmy);
+			WebViewmy wv = (WebViewmy) ViewUtils.findViewById(webHolder, R.id.webviewmy);
 			if(wv!=null){
-				int pad=(int) (25*a.dm.density);
+				int pad=(int) (25*GlobalOptions.density);
 				if(!isViewSingle()){
 					//CMN.Log("???");
 					WHP.performLongClick();
@@ -1976,7 +1977,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 							return;
 						}
 					}
-					o=(int)(o*a.dm.density);
+					o= (int) ((o*GlobalOptions.density)*(wv.webScale / GlobalOptions.density));
 					if(o<=wv.getScrollY() || o+pad>=wv.getScrollY()+wv.getHeight()){
 						int finalO=o-pad;
 						//CMN.debug("scrolling !!!", finalO, wv.getScrollY(), wv.getScrollY()+wv.getHeight());

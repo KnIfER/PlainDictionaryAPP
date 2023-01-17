@@ -286,17 +286,28 @@
                         var p=t;while((p=p.parentNode)) {if(p.classList.contains('RefListP')){onShowRefList(p, t);break}}
                     } else {
 						t.focus();
+						if(window._combo) {
+							app.setScrollY(sid.get(), t.getBoundingClientRect().top);
+						}
 					}
                     return true;
                 }, function(e) {
                     var t = e.target || e.srcElement; 
                     e.preventDefault(); e.stopPropagation();
-                    doc.getElementById('_pd_sup'+t.nid).focus();
+					t = doc.getElementById('_pd_sup'+t.nid);
+                    t.focus();
+					if(window._combo) {
+						app.setScrollY(sid.get(), t.getBoundingClientRect().top);
+					}
                     return true;
                 }, function(e) {
                     var t = e.target || e.srcElement; 
                     if(doc._pd_foc===t) {
-                        doc.getElementById('_pd_sup'+t.nid).focus();
+						var tmp = doc.getElementById('_pd_sup'+t.nid);
+                        tmp.focus();
+						if(window._combo) {
+							app.setScrollY(sid.get(), tmp.getBoundingClientRect().top);
+						}
                     }
                     doc._pd_foc = t;
                 }]
