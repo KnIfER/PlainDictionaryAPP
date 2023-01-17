@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 
+
 //android.applicationVariants.all { variant ->
 //    variant.mergeResources.doFirst {
 //        def isReleaseMode = false
@@ -27,11 +28,14 @@ def zhuanXiegang(){
 }
 
 // Load keystore
-def keystorePropertiesFile = rootProject.file("keystore.properties");
+def keystorePropertiesFile = rootProject.file("PLOD/keystore.properties");
 def keystoreDefined = keystorePropertiesFile.exists();
-def keystoreProperties = new Properties();
 if (keystoreDefined) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    def props = new Properties();
+    props.load(new FileInputStream(keystorePropertiesFile))
+    props.each { prop ->
+        project.ext.set(prop.key, prop.value)
+    }
 }
 
 android {
@@ -70,10 +74,10 @@ android {
 //        }
         debug {
             if (keystoreDefined) {
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keys_storeFile)
+                storePassword keys_storePassword
+                keyAlias keys_keyAlias
+                keyPassword keys_keyPassword
             }
         }
     }
@@ -187,12 +191,6 @@ dependencies {
 
     testImplementation 'org.jdom:jdom:2.0.2'
 
-
-//    compileOnly project(':Metaline:Metaline')
-//    annotationProcessor project(':Metaline:Metaline')
-//    testImplementation project(':Metaline:Metaline')
-//    testAnnotationProcessor project(':Metaline:Metaline')
-
     compileOnly libs_metaline
     annotationProcessor libs_metaline
     testImplementation libs_metaline
@@ -238,7 +236,7 @@ dependencies {
 //    api 'org.apache.lucene:lucene-core:8.0.0'
 
     //api 'org.apache.lucene:lucene-core:4.7.0'
-    api 'com.github.appxmod:Lucene:latest.release'
+    api libs_lucene
     api ('org.apache.lucene:lucene-queryparser:4.7.0'){
         exclude module:"lucene-core"
     }
@@ -271,3 +269,4 @@ afterEvaluate {
         }
     }
 }
+
