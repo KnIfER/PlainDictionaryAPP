@@ -1199,7 +1199,7 @@ public class ViewUtils extends VU {
 		}
 	}
 	
-	@StripMethods(stripMethod = !BuildConfig.isDebug)
+	@StripMethods(stripMethod=BuildConfig.stripMet)
 	public static void setWebDebug(Toastable_Activity a) {
 		WebView.setWebContentsDebuggingEnabled(true);
 		a.showT("调试网页！");

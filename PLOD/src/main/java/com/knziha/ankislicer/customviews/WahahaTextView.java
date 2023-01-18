@@ -1,3 +1,4 @@
+/** licence : GPL3 + 四绝协议 */
 package com.knziha.ankislicer.customviews;
 
 import android.content.Context;
@@ -120,7 +121,7 @@ public class WahahaTextView extends TextView  implements MenuItem.OnMenuItemClic
 			if(EditTextmy.hackTp==null){
 				EditTextmy.hackTp = new TextPaint();
 				EditTextmy.hackTp.setTextSize(1000);
-			};
+			}
 			return EditTextmy.hackTp;
 		}
 		return super.getPaint();

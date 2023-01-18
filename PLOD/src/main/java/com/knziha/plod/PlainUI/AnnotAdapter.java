@@ -5,6 +5,7 @@ import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.Annotation;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -38,9 +39,11 @@ import com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
+import com.knziha.plod.widgets.Javelin.DecorativeTextview;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.text.ColoredTextSpan;
+import com.knziha.text.ColoredTextSpan2;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -546,37 +549,38 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 		AnnotationReader reader = null;
 		try {
 			reader = dataAdapter.getReaderAt(position, true);
-			lex=reader.annotText;
-			entry=reader.entryName;
-			bookName=a.getBookInLstNameByIdNoCreation(reader.bid);
+			lex = reader.annotText;
+			entry = reader.entryName;
+			bookName = a.getBookInLstNameByIdNoCreation(reader.bid);
 		} catch (Exception e) {
-			lex="!!!Error: "+e.getLocalizedMessage();
-			entry="";
-			bookName="";
+			lex = "!!!Error: " + e.getLocalizedMessage();
+			entry = "";
+			bookName = "";
 		}
 		holder.tag = reader; //???
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 		ssb.append(" ");
-		ssb.append(lex==null?lex+"":lex);
+		ssb.append(lex == null ? lex + "" : lex);
 		ssb.append(" ");
 		
 		vh.title.setTextColor(a.AppBlack);
 		
 		ViewUtils.setVisible(vh.subtitle, true);
 		
-		int color=0xffffaaaa, type=0;
-		if(reader!=null) {
-			JSONObject annot = reader.getAnnot();
-			String note = reader.notes!=null?reader.notes:JsonNames.readString(annot, JsonNames.note);
+		int color = 0xffffaaaa, type = 0;
+		JSONObject annot;
+		if (reader != null) {
+			annot = reader.getAnnot();
+			String note = reader.notes != null ? reader.notes : JsonNames.readString(annot, JsonNames.note);
 			color = JsonNames.readInt(annot, JsonNames.clr, color);
 			type = JsonNames.readInt(annot, JsonNames.typ, type);
-			ViewUtils.setVisible(vh.preview, note!=null);
-			ViewUtils.setVisibility(holder.dotVue, note!=null);
+			ViewUtils.setVisible(vh.preview, note != null);
+			ViewUtils.setVisibility(holder.dotVue, note != null);
 			
 			int tmp = 2;
-			int c = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp==0?0.08f:tmp==1?0.5f:0.8f);
+			int c = ColorUtils.blendARGB(a.AppWhite, a.AppBlack, tmp == 0 ? 0.08f : tmp == 1 ? 0.5f : 0.8f);
 			tmp = PDICMainAppOptions.listPreviewFont();
-			int size = tmp==0?12:tmp==1?14:17;
+			int size = tmp == 0 ? 12 : tmp == 1 ? 14 : 17;
 			
 			vh.preview.setText(note);
 			vh.preview.setTextColor(c);
@@ -585,17 +589,43 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			ViewUtils.setVisible(vh.preview, false);
 			ViewUtils.setVisible(holder.dotVue, false);
 		}
-		ssb.setSpan(new ColoredTextSpan(color, 8.f, type==1?2:1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+		if (type == 1 && (color & 0xff000000) > 0xB0000000) {
+			color = 0xB0000000 | (color & 0xffffff);
+		}
+		//ssb.setSpan(new ColoredTextSpan2(color, 4.f, type==1?2:1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+		if (type == 1) {
+			try {
+				//ssb.setSpan(new ColoredTextSpanX(color, 8.f, type == 1 ? 2 : 1), 1, ssb.length() - 1, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+			} catch (Exception e) {
+				//ssb.setSpan(new ColoredTextSpan2(color, 4.f, type == 1 ? 2 : 1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+			}
+		} else {
+			//ssb.setSpan(new ColoredTextSpan2(color, 4.f, type == 1 ? 2 : 1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+		}
+		if (type == 0) {
+			ssb.setSpan(new ColoredTextSpan(color, 4.f, type == 1 ? 2 : 1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+		} else {
+			DecorativeTextview rtv = (DecorativeTextview) vh.title;
+			rtv.textDecorator.type = type == 1 ? 2 : 1;
+			rtv.textDecorator.thickness = 7.5f;
+			rtv.textDecorator.lineOffset = .35f;
+			rtv.textDecorator.lineOffset = 0f;
+			rtv.textDecorator.paintUnderline.setColor(color);
+			ssb.setSpan(rtv.textDecorator, 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+		}
+		
+		//ssb.setSpan(new BookNameSpan(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+		//ssb.setSpan(new UnderlineSpan(), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
 		vh.title.setText(ssb);
 		
 		ssb.clear();
 		ssb.clearSpans();
 		if (!TextUtils.isEmpty(entry)) {
 			ssb
-				//ssb.append(" — ").
-				.append(Character.toUpperCase(entry.charAt(0)))
-				.append(entry, 1, entry.length())
-				.append(" | ")
+					//ssb.append(" — ").
+					.append(Character.toUpperCase(entry.charAt(0)))
+					.append(entry, 1, entry.length())
+					.append(" | ")
 			;
 		}
 		ssb.append(bookName);

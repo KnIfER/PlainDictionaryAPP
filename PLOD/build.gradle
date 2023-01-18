@@ -21,7 +21,6 @@ apply plugin: 'com.android.application'
 
 //android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
 //android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
-android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
 
 def zhuanXiegang(){
     return rootProject.projectDir.getPath().replace('\\', '\\\\');
@@ -36,6 +35,11 @@ if (keystoreDefined) {
     props.each { prop ->
         project.ext.set(prop.key, prop.value)
     }
+}
+def isDevBuild = keystoreDefined || rootProject.file("PLOD/src/main/assets_release").exists();
+
+if(isDevBuild) {
+    android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
 }
 
 android {
@@ -86,8 +90,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 106
-        versionName "7.7.1"
+        versionCode 108
+        versionName "7.7.3"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
 
@@ -114,6 +118,9 @@ android {
 //            minifyEnabled true
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
             buildConfigField "boolean","isDebug","true"
+            buildConfigField "boolean","isDevBuild","${isDevBuild}"
+            buildConfigField "boolean","stripMet","!isDebug && ${isDevBuild}"
+            //buildConfigField "boolean","stripMet","true"
             buildConfigField "String","projectPath","\"${zhuanXiegang()}\""
             aaptOptions {
                 ignoreAssetsPattern '!Markjs:!pdfjs:!Search'
@@ -123,6 +130,8 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
             buildConfigField "boolean","isDebug","false"
+            buildConfigField "boolean","isDevBuild","${isDevBuild}"
+            buildConfigField "boolean","stripMet","!isDebug && ${isDevBuild}"
             buildConfigField "String","projectPath","\"${zhuanXiegang()}\""
         }
     }

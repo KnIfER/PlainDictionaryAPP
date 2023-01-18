@@ -100,7 +100,7 @@ import okhttp3.Response;
  date:2019.11.28
  author:KnIfER
 */
-@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes", "getSyntheticField"})
+@StripMethods(strip=BuildConfig.stripMet, keys={"getRemoteServerRes", "getSyntheticField"})
 public class PlainWeb extends DictionaryAdapter {
 	/** The main url */
 	String host;

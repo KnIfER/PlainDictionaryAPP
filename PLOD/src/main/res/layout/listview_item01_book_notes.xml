@@ -21,12 +21,55 @@
 			android:paddingRight="0dp"
 			/>
 	</FrameLayout>
-	<include
-		android:layout_width="0dp"
-		android:layout_weight="1"
+<!--	<include-->
+<!--		android:layout_width="0dp"-->
+<!--		android:layout_weight="1"-->
+<!--		android:layout_height="wrap_content"-->
+<!--		layout="@layout/listview_item01"-->
+<!--		/>-->
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		layout="@layout/listview_item01"
-		/>
+		xmlns:tools="http://schemas.android.com/tools"
+		android:orientation="vertical"
+		android:paddingBottom="7dp"
+		>
+		<com.knziha.plod.widgets.Javelin.DecorativeTextview
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			tools:text="搜索引擎"
+			android:id="@+id/text"
+			android:layout_marginLeft="10dp"
+			android:layout_marginTop="3.5dp"
+			android:textColor="#000"
+			android:textSize="@dimen/lvtextsize"
+			/>
+		<com.knziha.ankislicer.customviews.WahahaTextView
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:text=""
+			android:id="@+id/preview"
+			tools:text="exponential sim 指数和，三角和"
+			android:layout_marginLeft="10dp"
+			android:textSize="@dimen/lvsubtextsize"
+			android:textColor="#888"
+			android:paddingTop="2dp"
+			android:paddingBottom="2dp"
+			/>
+		<com.knziha.ankislicer.customviews.WahahaTextView
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:text=""
+			tools:text="牛津英语词典"
+			android:id="@+id/subtext"
+			android:layout_marginLeft="10dp"
+			android:textSize="@dimen/lvsubtextsize"
+			android:textColor="#888"
+			android:paddingTop="2dp"
+			android:paddingEnd="8dp"
+			android:textStyle="bold"
+			/>
+	</LinearLayout>
 	<TextView
 		android:layout_height="match_parent"
 		android:layout_width="40dp"
@@ -39,6 +82,6 @@
 		android:gravity="center"
 		tools:text="T"
 		tools:visibility="visible"
-		/>
+		tools:ignore="DuplicateIds" />
 </LinearLayout>
 

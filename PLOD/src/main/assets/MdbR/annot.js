@@ -1,4 +1,6 @@
-(function(){ // based on rangy.js
+/* License GPL3 + 四绝协议
+	based on rangy.js , optimized so that you can modify notes in db in random order. */ 
+(function(){
     var doc = document;
     var log = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c ANNOT ","color:#000;background:#ffaaaa;",t[0],t[1],t[2],t[3],t[4])}
 	function getNextNode(n, e) {

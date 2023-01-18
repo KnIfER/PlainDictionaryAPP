@@ -309,7 +309,7 @@ import io.noties.markwon.core.spans.LinkSpan;
  * Created by KnIfER on 2018
  */
 @SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
-@StripMethods(strip=!BuildConfig.isDebug, keys={"setMagicNumber", "setWebDebug", "getRemoteServerRes", "hasRemoteDebugServer"})
+@StripMethods(strip=BuildConfig.stripMet, keys={"setMagicNumber", "setWebDebug", "getRemoteServerRes", "hasRemoteDebugServer"})
 public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener,
 		OnLongClickListener,
 		OnClickListener,
@@ -1327,6 +1327,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					, "realSz="+GlobalOptions.realWidth+"x"+GlobalOptions.realHeight
 					, "isLarge="+GlobalOptions.isLarge
 					, "isSmall="+GlobalOptions.isSmall
+					, "isDevBuild="+BuildConfig.isDevBuild
 			);
 		}
 		bottomBarSz.sz = (int)mResource.getDimension(R.dimen.barSzBot);
