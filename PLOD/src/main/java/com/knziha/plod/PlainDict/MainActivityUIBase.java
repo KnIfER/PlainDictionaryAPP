@@ -9885,7 +9885,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (path.startsWith("/ASSET")) {
 			String errRinfo = null;
 			boolean b1 = path.startsWith("/", 6);
-			if (GlobalOptions.debug || b1)
+			if (GlobalOptions.debug || b1 || !BuildConfig.isDevBuild)
 				try {
 					InputStream fin = mResource.getAssets().open(path.substring(AssetTag.length() + (!b1 ? 1 : 0)));
 					ReusableByteOutputStream bout = new ReusableByteOutputStream(fin.available());
@@ -9928,7 +9928,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if (path.startsWith("/ASSET")) {
 			//String error;
-			if (GlobalOptions.debug || b1)
+			if (GlobalOptions.debug || b1 || !BuildConfig.isDevBuild)
 				try {
 					return mResource.getAssets().open(path.substring(AssetTag.length() + (!b1 ? 1 : 0)));
 				} catch (Exception e) {
@@ -9967,7 +9967,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CMN.debug("fail loadCommonAsset::"+key+"  "+e);
 			}
 		}
-		if (key.startsWith("MdbR/")) {
+		boolean b1 = key.startsWith("MdbR/");
+		if (b1) {
 			key = key.substring(5).replace("/", "\\");
 		}
 		byte[] data = CommonAssets.get(key);
@@ -9979,13 +9980,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				mdict asset = pkgMdbR;
 				int idx = asset.lookUp("\\MdbR\\" + key, true);
-				//CMN.Log("lookUp::", asset, key, idx);
+				//CMN.Log("loadCommonAsset::lookUp::", asset, key, idx);
 				if (idx >= 0) {
 					data = asset.getRecordData(idx);
 				}
 			} catch (Exception e) {
 				//CMN.Log(key, e);
 				//error = CMN.debug(e);
+			}
+			if (data==null) {
+				if (!BuildConfig.isDevBuild) {
+					String foskey = key.replace("\\", "/");
+					try {
+						data = fileToString("/ASSET/"+foskey).getBytes();
+					} catch (Exception e) {
+						data = fileToString("/ASSET/MdbR/"+foskey).getBytes();
+					}
+				}
 			}
 //			InputStream input = getResources().getAssets().open(key);
 //			data = new byte[input.available()];
@@ -10026,6 +10037,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						data = asset.getRecordData(idx);
 					}
 				} catch (Exception e) { CMN.debug(e); }
+			}
+			if (data==null) {
+				if (!BuildConfig.isDevBuild) {
+					String foskey = key.replace("\\", "/");
+					try {
+						data = fileToString("/ASSET/"+foskey).getBytes();
+					} catch (Exception e) {
+						data = fileToString("/ASSET/MdbR/"+foskey).getBytes();
+					}
+				}
 			}
 			if (data != null) {
 				CommonAssetsStr.put(key, ret = new String(data));

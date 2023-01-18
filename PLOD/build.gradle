@@ -145,7 +145,7 @@ android {
             }
         }
         main {
-            if(isReleaseMode) {
+            if(isReleaseMode && isDevBuild) {
                 assets.srcDirs = ['src/main/assets_release']
             }
         }
