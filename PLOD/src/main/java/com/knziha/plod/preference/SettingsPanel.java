@@ -64,7 +64,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean hasDelegatePicker;
 	public PopupWindow pop;
 	public Dialog dialog;
-	protected DialogInterface.OnDismissListener dialogDismissListener;
+	public DialogInterface.OnDismissListener dialogDismissListener;
 	protected int mPaddingLeft=10;
 	protected int mPaddingRight=10;
 	protected int mPaddingTop=0;

@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -457,6 +458,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			} break;
 			case R.id.popupText2:{
 				dictPicker.toggle();
+				if (dictPicker.dialog!=null && dictPicker.dialog.isShowing()) {
+					ViewUtils.ensureTopmost(dictPicker.dialog, a, dictPicker.dialogDismissListener);
+				}
 			} break;
 			case R.id.gTrans:{
 				a.onMenuItemClick(a.anyMenu(R.id.translate, weblistHandler));
@@ -737,6 +741,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, splitView, splitter, -1);
+			if (PDICMainAppOptions.wordPopupRemDifferenSet()) {
+				dictPicker.planSlot = "WordPlanName";
+			} else {
+				dictPicker.planSlot = null;
+			}
 			dictPicker.wordPopup = this;
 			dictPicker.loadManager = this.loadManager;
 			dictPicker.autoScroll = true;

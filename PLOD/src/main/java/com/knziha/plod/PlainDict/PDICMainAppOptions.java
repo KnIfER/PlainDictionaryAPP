@@ -239,8 +239,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=39, shift=1) public static boolean dictManager1MultiSelecting() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=39, shift=1) public static void dictManager1MultiSelecting(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=40, shift=1) public static boolean dictManagerClickPopup() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=40, shift=1) public static void dictManagerClickPopup(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	// xx
 	
 	@Metaline(flagPos=41, shift=1) public static boolean dictManagerClickPopup1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=41, shift=1) public static void dictManagerClickPopup1(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
@@ -3364,6 +3363,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=56) public static boolean exitDictPickerOnTop(){ EightFlag=EightFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=56) public static void exitDictPickerOnTop(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=57) public static boolean dictManagerClickPopup() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=57) public static void dictManagerClickPopup(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////

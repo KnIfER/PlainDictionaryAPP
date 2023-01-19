@@ -305,7 +305,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		super.onActivityCreated(savedInstanceState);
 		a=(BookManager) getActivity();
 		setListAdapter();
-		LastSelectedPlan = a.opt.getLastPlanName("LastPlanName");
+		LastSelectedPlan = a.loadMan.lazyMan.lastLoadedModule; // opt.getLastPlanName("LastPlanName")
 		listView.setOnItemClickListener((parent, v, position, id) -> {
 			if(position >= listView.getHeaderViewsCount()) {
 				pressedPos = position - listView.getHeaderViewsCount();
@@ -530,7 +530,12 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				f1.refreshSize();
 				f1.markDataDirty(false);
 				((BookManager)getActivity()).scrollTo(0);
-				a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
+				try {
+					String plan = a.loadMan.dictPicker.planSlot;
+					a.opt.putLastPlanName(plan, LastSelectedPlan = name);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 				dataSetChanged(false);
 				f1.dataSetChanged(true);
 				//a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());

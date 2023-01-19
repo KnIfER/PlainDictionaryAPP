@@ -98,6 +98,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	
 	public void refreshSize(){
 		a.mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,loadMan.lazyMan.chairCount));
+		ViewUtils.setForegroundColor(a.mTabLayout, a.tintListFilter); // todo avoid
 	}
 	
 	@Override

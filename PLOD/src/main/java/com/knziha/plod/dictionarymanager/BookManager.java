@@ -180,6 +180,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					d.show();
 				}
 			});
+			cross.setColorFilter(tintListFilter.sForegroundFilter);
 			ViewGroup.LayoutParams lp = navBtn.getLayoutParams();
 			cross.setLayoutParams(lp);
 			cross.setBackground(navBtn.getBackground().getConstantState().newDrawable());

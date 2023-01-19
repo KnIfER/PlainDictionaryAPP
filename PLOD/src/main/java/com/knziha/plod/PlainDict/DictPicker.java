@@ -109,6 +109,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	
 	public boolean autoScroll;
 	
+	/** where to store the book group name */
+	public String planSlot;
+	
 	public MainActivityUIBase.LoadManager loadManager;
 	private int pressedPos;
 	
@@ -133,6 +136,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	public void init(Context context, ViewGroup root)
 	{
 		if (settingsLayout==null && a!=null) {
+			planSlot = a.LastPlanName;
 			root = (ViewGroup) a.getLayoutInflater().inflate(R.layout.dict_picker, root, false);
 			//view.setMinimumWidth(getResources().getDisplayMetrics().widthPixels*2/3);
 			//view.setLayoutParams(new LayoutParams(-2,-1));
@@ -553,7 +557,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			} break;
 			case R.string.locate_dman:{
 				try {
-					a.locateDictInManager(loadManager, pressedPos, isLongClick);
+					a.locateDictInManager(loadManager, pressedPos, isLongClick, this);
 				} catch (Exception e) {
 					CMN.debug(e);
 				}

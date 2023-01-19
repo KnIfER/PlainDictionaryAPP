@@ -2670,8 +2670,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			this.EmptyBook = MainActivityUIBase.this.EmptyBook;
 		}
 		
-		private LoadManager(LoadManager other) {
-			this.dictPicker = other.dictPicker;
+		private LoadManager(LoadManager other, DictPicker dictPicker) {
+			this.dictPicker = dictPicker!=null?dictPicker:other.dictPicker;
 			this.LastMdFn = other.LastMdFn;
 			this.opt = other.opt;
 			this.lazyMan = other.lazyMan.clone();
@@ -2680,8 +2680,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			this.md.addAll(other.md);
 		}
 		
-		public LoadManager clone() {
-			return new LoadManager(this);
+		public LoadManager clone(DictPicker dictPicker) {
+			return new LoadManager(this, dictPicker);
 		}
 		
 		public PlaceHolder getPlaceHolderAt(int idx) {
@@ -5644,6 +5644,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	void changeToDarkMode() {
 		CMN.debug("changeToDarkMode");
+		strOpt = null;
 		try {
 			getReferenceObject(WeakReferenceHelper.quick_settings).clear();
 			boolean dark=GlobalOptions.isDark;
@@ -7219,9 +7220,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	/** 0=main  1=wordPopup */
 	public /*static*/ void showChooseSetDialog(WordPopup wordPopup) {//切换分组
-		loadingMan = this.loadManager;
 		if ((loadingWordPopup = wordPopup) != null) {
 			loadingMan = wordPopup.loadManager;
+		} else {
+			loadingMan = this.loadManager;
 		}
 		AlertDialog dTmp = setchooser.get();
 		Bag bag;
@@ -7256,7 +7258,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (PDICMainAppOptions.wordPopupRemDifferenSet()) {
 							plan = "WordPlanName";
 						}
-						opt.putLastPlanName(LastPlanName, setName);
 						dictPicker.dataChanged();
 						VU.suppressNxtDialogReorder = true;
 						loadingWordPopup.popupWord(null, loadingWordPopup.popupKey, null, 0);
@@ -10743,6 +10744,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		app.slots=CosyChair;
 		app.opt=opt;
 		if (loadManager==null) loadManager = this.loadManager;
+		loadingMan = loadManager;
 		app.loadManager=loadManager;
 		app.mdlibsCon=mdlibsCon;
 //		app.mdict_cache=mdict_cache;
@@ -11245,6 +11247,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			json.put("bgr", SU.toHexRGB(thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
 			json.put("dName", PDICMainAppOptions.showDictName());
 			json.put("fgr", SU.toHexRGB(calcForegroundColor()));
+			if(GlobalOptions.isDark)
+				json.put("dark", 1);
 			return json.toString();
 		}
 		return ret;
@@ -11538,11 +11542,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void locateDictInManager(LoadManager loadManager, int managePos, boolean managePressed) {
+	public void locateDictInManager(LoadManager loadMan, int managePos, boolean managePressed
+			, DictPicker dictPicker) {
 		if (this instanceof PDICMainActivity) {
-			showDictionaryManager(loadManager);
-			loadManager.managePos = managePos;
-			loadManager.managePressed = managePressed;
+			loadingWordPopup = dictPicker.wordPopup;
+			if (loadMan==this.loadManager
+				&& loadingWordPopup!=null
+					&& PDICMainAppOptions.wordPopupAllowDifferentSet()) {
+				loadMan = loadingWordPopup.loadManager
+					= dictPicker.loadManager = loadMan.clone(dictPicker);
+			}
+			showDictionaryManager(loadMan);
+			loadMan.managePos = managePos;
+			loadMan.managePressed = managePressed;
 		}
+	}
+	
+	public LoadManager findLoadManager(int id) {
+		if (CMN.id(loadingMan) == id) {
+			return loadingMan;
+		}
+		if (CMN.id(loadManager) == id) {
+			return loadManager;
+		}
+		return null;
 	}
 }

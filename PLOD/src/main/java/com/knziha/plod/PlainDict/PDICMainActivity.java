@@ -3365,16 +3365,24 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case BookManager.id:{
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if (changed){
-					if (duco.getBooleanExtra("identical", false)) {
-						dictPicker.adapter_idx = loadManager.refreshSlots(duco.getBooleanExtra("moduleChanged", false));
-					} else {
-						loadManager.buildUpDictionaryList(lazyLoadManager().lazyLoaded, mdict_cache);
+					int id = duco.getIntExtra("id", 0);
+					LoadManager loadMan = findLoadManager(id);
+					CMN.debug("loadMan::", loadMan);
+					if (loadMan!=null) {
+						if (duco.getBooleanExtra("identical", false)) {
+							loadMan.dictPicker.adapter_idx = loadMan.refreshSlots(duco.getBooleanExtra("moduleChanged", false));
+						} else {
+							loadMan.buildUpDictionaryList(loadMan.lazyMan.lazyLoaded, mdict_cache);
+						}
+						if (loadMan == this.loadManager) {
+							if (loadMan.dictPicker.adapter_idx < 0) {
+								switch_Dict(0, false, false, null);
+							}
+							invalidAllLists();
+						}
+						loadMan.dictPicker.dataChanged();
+						CMN.debug("变化了", loadMan.md.size(), loadMan.md_size);
 					}
-					if (dictPicker.adapter_idx<0) {
-						switch_Dict(0, false, false, null);
-					}
-					invalidAllLists();
-					CMN.debug("变化了", loadManager.md.size(), loadManager.md_size);
 				}
 				if(PDICMainAppOptions.ChangedMap !=null && PDICMainAppOptions.ChangedMap.size()>0){
 					for(String path: PDICMainAppOptions.ChangedMap) {
@@ -3453,7 +3461,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//TODO seal it
 		//CMN.a = null;
 	}
-
+	
 	private void RequestAppSettingsPermission() {
 		new AlertDialog.Builder(this)
 			.setTitle("仍无存储权限")
@@ -3516,11 +3524,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		adaptermy2.currentKeyText=null;
 		
-		/*if (dictPicker.autoSchPDict()) */{
-			CombinedSearchTask_lastKey=null;
+		//if (dictPicker.autoSchPDict())
+		//if (!isContentViewAttached())
+		CombinedSearchTask_lastKey=null;
+		if (settingsPanel==null)
+		{
 			adaptermy2.results.shutUp();
 			adaptermy2.notifyDataSetChanged();
 			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+		}
+		if (wordPopup.dictPicker!=null && wordPopup.loadManager==loadManager)
+		{
+			wordPopup.dictPicker.dataChanged();
 		}
 
 //		adaptermy3.shutUp();adaptermy3.notifyDataSetChanged();
