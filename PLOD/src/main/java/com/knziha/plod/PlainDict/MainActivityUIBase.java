@@ -644,7 +644,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	SplitView.PageSliderInf inf;
 	public int thisActMask;
 	public boolean awaiting;
-	Runnable postTask;
+	public Runnable postTask;
 	public static boolean debugging_webx = false;
 	public static boolean debugging_annot = true;
 	
@@ -2656,6 +2656,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		final String LastMdFn;// = "LastMdFn";
 		final PDICMainAppOptions opt;
 		public BookPresenter EmptyBook;
+		public int managePos = -1;
+		public boolean managePressed = false;
 		
 		LoadManager(DictPicker dictPicker) {
 			this.dictPicker = dictPicker;
@@ -4271,7 +4273,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						boolean isDirty;
 					});
-					asd.show(getSupportFragmentManager(),"color-picker-dialog");
+					try {
+						asd.show(getSupportFragmentManager(), "color-picker-dialog");
+					} catch (Exception e) {
+						CMN.debug(e);
+						if (isFloating()) {
+							showT("小窗模式暂不支持的操作");
+						}
+					}
 				} return;
 				case R.id.settings:{
 					BookPresenter.showDictTweaker(weblist.dictView, MainActivityUIBase.this, invoker);
@@ -5749,35 +5758,41 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		DBrowser.setType(this, type, false);
 		int showType = DBrowser.preShow(weblist);
 		if(showType==1) {
-			try {
-				DBrowser.show(getSupportFragmentManager(), "DBrowser");
-			} catch (Exception e) {
-				CMN.debug(e);
-				if (isFloating() && e instanceof IllegalStateException) {
-					if (!retry) {
-						// fix android Can not perform this action after onSaveInstanceState
-						int finalType = type;
-						postTask = new Runnable(){
-							@Override
-							public void run() {
-								AttachDBrowser(-finalType);
-								floatApp.expand(true);
-								postTask = null;
-							}
-						};
-						moveTaskToFront();
-					}
+			if (isFloating() /*&& e instanceof IllegalStateException*/
+				&& (foreground&thisActMask)==0) {
+				if (!retry) {
+					// fix android Can not perform this action after onSaveInstanceState
+					int finalType = type;
+					postTask = new Runnable() {
+						@Override
+						public void run() {
+							AttachDBrowser(-finalType);
+							floatApp.expand(true);
+							postTask = null;
+						}
+					};
+					moveTaskToFront();
+				}
+			} else {
+				try {
+					DBrowser.show(getSupportFragmentManager(), "DBrowser");
+				} catch (Exception e) {
+					CMN.debug(e);
 				}
 			}
 		}
 		else if(showType==2) {
 			ViewGroup target = mainF;
 			if(!DBrowser.isAdded()) {
-				FragmentManager fragmentManager = getSupportFragmentManager();
-				fragmentManager.beginTransaction()
-						.setCustomAnimations(R.anim.history_enter, R.anim.history_enter)
-						.add(R.id.mainF, DBrowser)
-						.commit();
+				try {
+					FragmentManager fragmentManager = getSupportFragmentManager();
+					fragmentManager.beginTransaction()
+							.setCustomAnimations(R.anim.history_enter, R.anim.history_enter)
+							.add(R.id.mainF, DBrowser)
+							.commit();
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			} else {
 				View view = DBrowser.getView();
 				if(ViewUtils.removeIfParentBeOrNotBe(view, target, false)) {
@@ -10709,7 +10724,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return server;
 	}
 	
-	public void showDictionaryManager() {
+	public void showDictionaryManager(LoadManager loadManager) {
 		ReadInMdlibs(null);
 		AgentApplication app = ((AgentApplication) getApplication());
 		app.mdict_cache = mdict_cache;
@@ -10727,6 +10742,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		}
 //		app.slots=CosyChair;
 		app.opt=opt;
+		if (loadManager==null) loadManager = this.loadManager;
 		app.loadManager=loadManager;
 		app.mdlibsCon=mdlibsCon;
 //		app.mdict_cache=mdict_cache;
@@ -11321,7 +11337,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			dialog = new AnnotationDialog(this);
 			annotDlgRef = new WeakReference<>(dialog);
 		}
-		dialog.show(wv, type, showAnteNotes);
+		dialog.show(wv, type, showAnteNotes, true);
 	}
 	
 	public Drawable getListChoiceBackground() {
@@ -11519,6 +11535,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				tintListFilter.sRipple.setColor(ColorStateList.valueOf(color));
 				if(tintListFilter.sRippleToolbar!=null) tintListFilter.sRippleToolbar.setColor(ColorStateList.valueOf(color));
 			}
+		}
+	}
+	
+	public void locateDictInManager(LoadManager loadManager, int managePos, boolean managePressed) {
+		if (this instanceof PDICMainActivity) {
+			showDictionaryManager(loadManager);
+			loadManager.managePos = managePos;
+			loadManager.managePressed = managePressed;
 		}
 	}
 }

@@ -64,6 +64,470 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public final HashMap<String, Object> mModified = new HashMap<>();
 	public boolean dirty;
 	
+	
+	///////
+	///////
+	public static void setTmpIsFlag(BookPresenter mdTmp, int val) {
+		mdTmp.tmpIsFlag=val;
+	}
+	public static void setTmpIsFlag(mngr_agent_manageable mmTmp, int val) {
+		mmTmp.setTmpIsFlag(val);
+	}
+	public static boolean getTmpIsFiler(int tmpIsFlag) {
+		return (tmpIsFlag&0x1)!=0;
+	}
+	public static boolean setTmpIsFiler(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
+		if(mdTmp!=null){
+			mdTmp.tmpIsFlag &= (~0x1);
+			if(val) mdTmp.tmpIsFlag |= 0x1;
+		} else if(placeHolder!=null){
+			placeHolder.tmpIsFlag &= (~0x1);
+			if(val) placeHolder.tmpIsFlag |= 0x1;
+		}
+		return val;
+	}
+	public static boolean setTmpIsFiler(mngr_agent_manageable mmTmp, boolean val) {
+		int tmpIsFlag = mmTmp.getTmpIsFlag();
+		tmpIsFlag &= (~0x1);
+		if(val) tmpIsFlag |= 0x1;
+		mmTmp.setTmpIsFlag(tmpIsFlag);
+		return val;
+	}
+	public static int setTmpIsFiler(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x1);
+		if(val) tmpIsFlag |= 0x1;
+		return tmpIsFlag;
+	}
+	public static boolean toggleTmpIsFiler(mngr_agent_manageable mdTmp) {
+		return setTmpIsFiler(mdTmp, !getTmpIsFiler(mdTmp.getTmpIsFlag()));
+	}
+	public static boolean getTmpIsClicker(int tmpIsFlag) {
+		return (tmpIsFlag&0x2)!=0;
+	}
+	public static boolean setTmpIsClicker(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
+		if(mdTmp!=null){
+			mdTmp.tmpIsFlag &= (~0x2);
+			if(val) mdTmp.tmpIsFlag |= 0x2;
+		} else if(placeHolder!=null){
+			placeHolder.tmpIsFlag &= (~0x2);
+			if(val) placeHolder.tmpIsFlag |= 0x2;
+		}
+		return val;
+	}
+	public static boolean setTmpIsClicker(mngr_agent_manageable mmTmp, boolean val) {
+		int tmpIsFlag = mmTmp.getTmpIsFlag();
+		tmpIsFlag &= (~0x2);
+		if(val) tmpIsFlag |= 0x2;
+		mmTmp.setTmpIsFlag(tmpIsFlag);
+		return val;
+	}
+	public static int setTmpIsClicker(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x2);
+		if(val) tmpIsFlag |= 0x2;
+		return tmpIsFlag;
+	}
+	public static boolean toggleTmpIsClicker(mngr_agent_manageable mdTmp) {
+		return setTmpIsClicker(mdTmp, !getTmpIsClicker(mdTmp.getTmpIsFlag()));
+	}
+	public static boolean getTmpIsAudior(int tmpIsFlag) {
+		return (tmpIsFlag&0x4)!=0;
+	}
+	public static boolean setTmpIsAudior(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
+		if(mdTmp!=null){
+			mdTmp.tmpIsFlag &= (~0x4);
+			if(val) mdTmp.tmpIsFlag |= 0x4;
+		} else if(placeHolder!=null){
+			placeHolder.tmpIsFlag &= (~0x4);
+			if(val) placeHolder.tmpIsFlag |= 0x4;
+		}
+		return val;
+	}
+	public static boolean setTmpIsAudior(mngr_agent_manageable mmTmp, boolean val) {
+		int tmpIsFlag = mmTmp.getTmpIsFlag();
+		tmpIsFlag &= (~0x4);
+		if(val) tmpIsFlag |= 0x4;
+		mmTmp.setTmpIsFlag(tmpIsFlag);
+		return val;
+	}
+	public static int setTmpIsAudior(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x4);
+		if(val) tmpIsFlag |= 0x4;
+		return tmpIsFlag;
+	}
+	public static boolean toggleTmpIsAudior(mngr_agent_manageable mdTmp) {
+		return setTmpIsAudior(mdTmp,  !getTmpIsAudior(mdTmp.getTmpIsFlag()));
+	}
+	public static boolean getTmpIsHidden(int tmpIsFlag) {
+		return (tmpIsFlag&0x8)!=0;
+	}
+	public static int setTmpIsHidden(int flag, boolean val) {
+		flag &= (~0x8);
+		if(val) flag |= 0x8;
+		return flag;
+	}
+	
+	public static boolean getTmpIsCollapsed(int tmpIsFlag) {
+		return (tmpIsFlag&0x10)!=0;
+	}
+	public static boolean setTmpIsCollapsed(mngr_agent_manageable mmTmp, boolean val) {
+		int tmpIsFlag = mmTmp.getTmpIsFlag();
+		tmpIsFlag &= (~0x10);
+		if(val) tmpIsFlag |= 0x10;
+		mmTmp.setTmpIsFlag(tmpIsFlag);
+		return val;
+	}
+	public static int setTmpIsCollapsed(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x10);
+		if(val) tmpIsFlag |= 0x10;
+		return tmpIsFlag;
+	}
+	public static boolean toggleTmpIsCollapsed(mngr_agent_manageable mdTmp) {
+		return setTmpIsCollapsed(mdTmp, !getTmpIsCollapsed(mdTmp.getTmpIsFlag()));
+	}
+	
+	public static int getDFFStarLevel(long tmpIsFlag) {
+		return (int) ((tmpIsFlag>>20)&7);
+	}
+	
+	public static long setDFFStarLevel(long flag, int val) {
+		long valex = (val&7)<<20;
+		long mask = ~(7<<20);
+		flag = flag&mask|valex;
+		return flag;
+	}
+	
+	@Metaline(flagPos=0) public boolean getIgnoreReloadWarning(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public boolean getReloadWebView(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, flagSize=8) public static int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, flagSize=6) public static int getPseudoInitCodeEu(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, flagSize=6) public static void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, flagSize=4, shift=7, max=8, log=1) public static int getTmpUserOrientation() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation1(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	/** 每次都重建界面与重载数据 */
+	@Metaline(flagPos=30, flagSize=2, debug=0) public int debuggingDBrowser() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+//	public static int debuggingDBrowser() { return 0; } //todo
+	
+	@Metaline(flagPos=32) public static boolean getDelRecApplyAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static void setDelRecApplyAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, debug=0) public static boolean getDebuggingRemoveRec() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=33, shift=1) public static boolean getWarnLoadModule() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static void setWarnLoadModule(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=34) public static boolean getRevertExitManager() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34) public static void setRevertExitManager(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=34, shift=1) public static boolean getWarnDisenaddAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34, shift=1) public static void setWarnDisenaddAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	// 废弃
+	@Metaline(flagPos=35) public static boolean translatePageTS() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=35) public static void translatePageTS(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=36) public static boolean systemDarked() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36) public static void systemDarked(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=37) public static boolean dynamicPadding() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=37) public static void dynamicPadding(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=38, shift=1) public static boolean schDictManager() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=38, shift=1) public static void schDictManager(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=39, shift=1) public static boolean dictManager1MultiSelecting() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=39, shift=1) public static void dictManager1MultiSelecting(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=40, shift=1) public static boolean dictManagerClickPopup() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40, shift=1) public static void dictManagerClickPopup(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=41, shift=1) public static boolean dictManagerClickPopup1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41, shift=1) public static void dictManagerClickPopup1(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	
+	@Metaline(flagPos=42, shift=1) public static boolean dictManagerFlipMenuCloumn() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=42, shift=1) public static void dictManagerFlipMenuCloumn(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	
+	public int getPseudoInitCode(int pseudoInit) {
+		return (getPseudoInitCode()&~3)|pseudoInit;
+	}
+	
+	//////
+	private final StringBuffer pathTo = new StringBuffer(255);
+	public File rootPath;
+	protected int pathToL = -1;
+	public DisplayMetrics dm;
+	public StringBuffer pathToDatabases() {
+		return pathToMainFolder().append("bmDBs/");
+	}
+	File FileDatabases;
+	public File fileToDatabases() {
+		if(FileDatabases==null){
+			FileDatabases = new File(pathToMainFolder().append("bmDBs").toString());
+		}
+		return FileDatabases;
+	}
+	
+	private String pathToFavoriteDatabases(String name, boolean testDBV2) {
+		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");
+		if (testDBV2) {
+			if(name!=null)
+			{
+				InternalPath.append("favorites/").append(name);
+			} else {
+				InternalPath.append("databaseV2.sql");
+			}
+		} else {
+			if(name!=null){
+				InternalPath.append("favorites/").append(name);
+			} else {
+				InternalPath.append("history.sql");
+			}
+		}
+		return InternalPath.toString();
+	}
+	public String pathToFavoriteDatabase(String name, boolean testDBV2) {
+		return pathToFavoriteDatabases(name, testDBV2);
+	}
+	public File fileToFavoriteDatabases(String name, boolean testDBV2) {
+		return new File(pathToFavoriteDatabases(name, testDBV2));
+	}
+	public File fileToDatabaseFavorites(boolean testDBV2) {
+		return new File(pathToFavoriteDatabases(StringUtils.EMPTY, testDBV2));
+	}
+	
+	public StringBuffer pathToMainFolder() {
+		if(rootPath!=null){
+			pathTo.setLength(0);
+			pathTo.append(rootPath).append("/").append(CMN.BrandName).append("/");
+			pathToL = pathTo.length();
+			rootPath=null;
+		} else if(pathToL==-1) {
+			rootPath=Environment.getExternalStorageDirectory();
+			return pathToMainFolder();
+		}
+		pathTo.setLength(pathToL);
+		//CMN.Log("pathToMainFolder :: ", pathTo);
+		return pathTo;
+	}
+	
+	
+	public File fileToConfig() {
+		return new File(pathToMainFolder().append("CONFIG").toString());
+	}
+	
+	public void CheckFileToDefaultMdlibs() {
+		String path = getString("lastMdlibPath",null);
+		if(path!=null) {
+			lastMdlibPath = new File(path);
+		}
+		if(lastMdlibPath==null || !lastMdlibPath.exists()) {
+			File 默认值 = new File(pathToMainFolder().append("mdicts").toString());
+			lastMdlibPath = 默认值;
+			lastMdlibPath.mkdirs();
+		}
+		path = getString("audioLib",null);
+		if (path != null) {
+			audioLib = new File(path);
+		}
+		if(audioLib==null || !audioLib.exists()) {
+			File 默认值 = new File(lastMdlibPath, "../AudioLib");
+			audioLib = 默认值;
+		}
+		if(!audioLib.exists()) {
+			audioLib = null;
+		}
+	}
+	
+	public File fileToSet(File ConfigFile, String name) {
+		return new File(ConfigFile==null?fileToConfig():ConfigFile, name);
+	}
+	
+	public File fileToDecords(File ConfigFile) {
+		if(ConfigFile==null){
+			ConfigFile = fileToConfig();
+		}
+		return new File(ConfigFile, "mdlibs.txt");
+	}
+	
+	public File fileToSecords(File ConfigFile) {
+		if(ConfigFile==null){
+			ConfigFile = fileToConfig();
+		}
+		return new File(ConfigFile, "AllModuleSets.txt");
+	}
+	
+	public String pathToGlide(@NonNull Context context) {
+		return getString("cache_p", GlideCacheModule.DEFAULT_GLIDE_PATH=context.getExternalCacheDir().getAbsolutePath()+"/thumnails/");
+	}
+	
+	public long Flag(int flagIndex) {
+		switch (flagIndex){
+			case -1:
+				return SessionFlag;
+			case 1:
+				return FirstFlag;
+			case 2:
+				return SecondFlag;
+			case 3:
+				return ThirdFlag;
+			case 4:
+				return FourthFlag;
+			case 5:
+				return FifthFlag;
+			case 6:
+				return SixthFlag();
+			case 7:
+				return SevenFlag();
+			case 8:
+				return EightFlag();
+		}
+		return tmpFlag;
+	}
+	
+	public final void fillFlags(long[] flags) {
+		flags[0] = getFirstFlag();
+		flags[1] = getSecondFlag();
+		flags[2] = getThirdFlag();
+		flags[3] = getFourthFlag();
+		flags[4] = getFifthFlag();
+		flags[5] = getSixthFlag();
+		flags[6] = getSevenFlag();
+		flags[7] = getEightFlag();
+	}
+	
+	public final boolean isFlagsChanged(long[] flags) {
+		return flags[0] != FirstFlag
+				|| flags[1] != SecondFlag
+				|| flags[2] != ThirdFlag
+				|| flags[3] != FourthFlag
+				|| flags[4] != FifthFlag
+				|| flags[5] != SixthFlag
+				|| flags[6] != SevenFlag
+				|| flags[7] != EightFlag
+				;
+	}
+	
+	private void putFlags() {
+		Editor edit = tmpEdit();
+		edit.putLong("MFF",FirstFlag)
+				.putLong("MSF",SecondFlag)
+				.putLong("MTF",ThirdFlag)
+				.putLong("MQF",FourthFlag)
+				.putLong("MVF",FifthFlag)
+				.putLong("MVIF",SixthFlag)
+				.putLong("M7F",SevenFlag)
+				.putLong("M8F",EightFlag);
+	}
+	
+	public void Flag(int flagIndex, long val) {
+		switch (flagIndex){
+			case -1:
+				SessionFlag=val;
+				break;
+			case 1:
+				FirstFlag=val;
+				break;
+			case 2:
+				SecondFlag=val;
+				break;
+			case 3:
+				ThirdFlag=val;
+				break;
+			case 4:
+				FourthFlag=val;
+				break;
+			case 5:
+				FifthFlag=val;
+				break;
+			case 6:
+				SixthFlag=val;
+				break;
+			case 7:
+				SevenFlag=val;
+				break;
+			case 8:
+				EightFlag=val;
+				break;
+			default:
+				tmpFlag=val;
+				break;
+		}
+	}
+	
+	public JSONObject getDimensionalSharePatternByIndex(String savid) {
+		String val = getString(savid, null);
+		JSONObject ret = null;
+		if(val!=null) {
+			try {
+				ret = new JSONObject(val);
+			} catch (JSONException e) {
+				CMN.debug(e);
+			}
+		}
+		return ret;
+	}
+	
+	public void putDimensionalSharePatternByIndex(String savid, JSONObject json) {
+		CMN.debug("保存", savid);
+		putString(savid, json==null||json.length()==0?null:json.toString());
+	}
+	
+	@SuppressLint("ClickableViewAccessibility")
+	public static XYTouchRecorder setAsLinkedTextView(TextView tv, boolean center, boolean setTextSz) {
+		XYTouchRecorder xyt = new XYTouchRecorder();
+		tv.setOnClickListener(xyt);
+		tv.setOnTouchListener(xyt);
+		//tv.setTextSize(GlobalOptions.isLarge?22f:17f);
+		if(setTextSz) tv.setTextSize(GlobalOptions.isLarge?20:19);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			tv.setTextIsSelectable(true);
+		}
+		if(center) {
+			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+		}
+		return xyt;
+	}
+	
+	public String tryGetDomesticFileName(String path) {
+		String parent = lastMdlibPath.getPath();
+		if(path.startsWith(parent)&&path.length()>parent.length()){
+			path = path.substring(parent.length()+1);
+		}
+		return path;
+	}
+	
+	public static void interceptPlainLink(Activity context, String url) {
+		DialogInterface.OnClickListener btns = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if (which==-1) {
+					Intent intent = new Intent(Intent.ACTION_VIEW)
+							.setData(Uri.parse(url));
+					context.startActivity(intent);
+				}
+				else if (which==-3) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+						ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+						if(cm!=null){
+							cm.setPrimaryClip(ClipData.newPlainText(null, url));
+							Toast.makeText(context, "已复制", 0).show();
+						}
+					}
+				}
+			}
+		};
+		AlertDialog d = new AlertDialog.Builder(context)
+				.setTitle("是否访问链接？")
+				.setMessage(url)
+				.setNeutralButton("复制", btns)
+				.setNegativeButton("取消", btns)
+				.setPositiveButton("访问", btns)
+				.show();
+	}
+	
 	public boolean checkModified(long[] flags, boolean commit) {
 		boolean fc = isFlagsChanged(flags);
 		if (fc || mModified.size() > 0) {
@@ -2898,6 +3362,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=55) public static boolean useOldColorsMode(){ EightFlag=EightFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=55) public static void useOldColorsMode(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=56) public static boolean exitDictPickerOnTop(){ EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56) public static void exitDictPickerOnTop(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
+	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////
 	/////////////////////Start NINTH Flag///////////////////////////////////
@@ -2914,466 +3381,4 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	
-	///////
-	///////
-	public static void setTmpIsFlag(BookPresenter mdTmp, int val) {
-		mdTmp.tmpIsFlag=val;
-	}
-	public static void setTmpIsFlag(mngr_agent_manageable mmTmp, int val) {
-		mmTmp.setTmpIsFlag(val);
-	}
-	public static boolean getTmpIsFiler(int tmpIsFlag) {
-		return (tmpIsFlag&0x1)!=0;
-	}
-	public static boolean setTmpIsFiler(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
-		if(mdTmp!=null){
-			mdTmp.tmpIsFlag &= (~0x1);
-			if(val) mdTmp.tmpIsFlag |= 0x1;
-		} else if(placeHolder!=null){
-			placeHolder.tmpIsFlag &= (~0x1);
-			if(val) placeHolder.tmpIsFlag |= 0x1;
-		}
-		return val;
-	}
-	public static boolean setTmpIsFiler(mngr_agent_manageable mmTmp, boolean val) {
-		int tmpIsFlag = mmTmp.getTmpIsFlag();
-		tmpIsFlag &= (~0x1);
-		if(val) tmpIsFlag |= 0x1;
-		mmTmp.setTmpIsFlag(tmpIsFlag);
-		return val;
-	}
-	public static int setTmpIsFiler(int tmpIsFlag, boolean val) {
-		tmpIsFlag &= (~0x1);
-		if(val) tmpIsFlag |= 0x1;
-		return tmpIsFlag;
-	}
-	public static boolean toggleTmpIsFiler(mngr_agent_manageable mdTmp) {
-		return setTmpIsFiler(mdTmp, !getTmpIsFiler(mdTmp.getTmpIsFlag()));
-	}
-	public static boolean getTmpIsClicker(int tmpIsFlag) {
-		return (tmpIsFlag&0x2)!=0;
-	}
-	public static boolean setTmpIsClicker(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
-		if(mdTmp!=null){
-			mdTmp.tmpIsFlag &= (~0x2);
-			if(val) mdTmp.tmpIsFlag |= 0x2;
-		} else if(placeHolder!=null){
-			placeHolder.tmpIsFlag &= (~0x2);
-			if(val) placeHolder.tmpIsFlag |= 0x2;
-		}
-		return val;
-	}
-	public static boolean setTmpIsClicker(mngr_agent_manageable mmTmp, boolean val) {
-		int tmpIsFlag = mmTmp.getTmpIsFlag();
-		tmpIsFlag &= (~0x2);
-		if(val) tmpIsFlag |= 0x2;
-		mmTmp.setTmpIsFlag(tmpIsFlag);
-		return val;
-	}
-	public static int setTmpIsClicker(int tmpIsFlag, boolean val) {
-		tmpIsFlag &= (~0x2);
-		if(val) tmpIsFlag |= 0x2;
-		return tmpIsFlag;
-	}
-	public static boolean toggleTmpIsClicker(mngr_agent_manageable mdTmp) {
-		return setTmpIsClicker(mdTmp, !getTmpIsClicker(mdTmp.getTmpIsFlag()));
-	}
-	public static boolean getTmpIsAudior(int tmpIsFlag) {
-		return (tmpIsFlag&0x4)!=0;
-	}
-	public static boolean setTmpIsAudior(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
-		if(mdTmp!=null){
-			mdTmp.tmpIsFlag &= (~0x4);
-			if(val) mdTmp.tmpIsFlag |= 0x4;
-		} else if(placeHolder!=null){
-			placeHolder.tmpIsFlag &= (~0x4);
-			if(val) placeHolder.tmpIsFlag |= 0x4;
-		}
-		return val;
-	}
-	public static boolean setTmpIsAudior(mngr_agent_manageable mmTmp, boolean val) {
-		int tmpIsFlag = mmTmp.getTmpIsFlag();
-		tmpIsFlag &= (~0x4);
-		if(val) tmpIsFlag |= 0x4;
-		mmTmp.setTmpIsFlag(tmpIsFlag);
-		return val;
-	}
-	public static int setTmpIsAudior(int tmpIsFlag, boolean val) {
-		tmpIsFlag &= (~0x4);
-		if(val) tmpIsFlag |= 0x4;
-		return tmpIsFlag;
-	}
-	public static boolean toggleTmpIsAudior(mngr_agent_manageable mdTmp) {
-		return setTmpIsAudior(mdTmp,  !getTmpIsAudior(mdTmp.getTmpIsFlag()));
-	}
-	public static boolean getTmpIsHidden(int tmpIsFlag) {
-		return (tmpIsFlag&0x8)!=0;
-	}
-	public static int setTmpIsHidden(int flag, boolean val) {
-		flag &= (~0x8);
-		if(val) flag |= 0x8;
-		return flag;
-	}
-
-	public static boolean getTmpIsCollapsed(int tmpIsFlag) {
-		return (tmpIsFlag&0x10)!=0;
-	}
-	public static boolean setTmpIsCollapsed(mngr_agent_manageable mmTmp, boolean val) {
-		int tmpIsFlag = mmTmp.getTmpIsFlag();
-		tmpIsFlag &= (~0x10);
-		if(val) tmpIsFlag |= 0x10;
-		mmTmp.setTmpIsFlag(tmpIsFlag);
-		return val;
-	}
-	public static int setTmpIsCollapsed(int tmpIsFlag, boolean val) {
-		tmpIsFlag &= (~0x10);
-		if(val) tmpIsFlag |= 0x10;
-		return tmpIsFlag;
-	}
-	public static boolean toggleTmpIsCollapsed(mngr_agent_manageable mdTmp) {
-		return setTmpIsCollapsed(mdTmp, !getTmpIsCollapsed(mdTmp.getTmpIsFlag()));
-	}
-	
-	public static int getDFFStarLevel(long tmpIsFlag) {
-		return (int) ((tmpIsFlag>>20)&7);
-	}
-	
-	public static long setDFFStarLevel(long flag, int val) {
-		long valex = (val&7)<<20;
-		long mask = ~(7<<20);
-		flag = flag&mask|valex;
-		return flag;
-	}
-	
-	@Metaline(flagPos=0) public boolean getIgnoreReloadWarning(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=1) public boolean getReloadWebView(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=0, flagSize=8) public static int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2, flagSize=6) public static int getPseudoInitCodeEu(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2, flagSize=6) public static void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=12, flagSize=4, shift=7, max=8, log=1) public static int getTmpUserOrientation() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation1(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	/** 每次都重建界面与重载数据 */
-	@Metaline(flagPos=30, flagSize=2, debug=0) public int debuggingDBrowser() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-//	public static int debuggingDBrowser() { return 0; } //todo
-	
-	@Metaline(flagPos=32) public static boolean getDelRecApplyAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=32) public static void setDelRecApplyAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33, debug=0) public static boolean getDebuggingRemoveRec() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=33, shift=1) public static boolean getWarnLoadModule() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33, shift=1) public static void setWarnLoadModule(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=34) public static boolean getRevertExitManager() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=34) public static void setRevertExitManager(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=34, shift=1) public static boolean getWarnDisenaddAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=34, shift=1) public static void setWarnDisenaddAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	// 废弃
-	@Metaline(flagPos=35) public static boolean translatePageTS() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=35) public static void translatePageTS(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=36) public static boolean systemDarked() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=36) public static void systemDarked(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=37) public static boolean dynamicPadding() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=37) public static void dynamicPadding(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=38, shift=1) public static boolean schDictManager() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=38, shift=1) public static void schDictManager(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=39, shift=1) public static boolean dictManager1MultiSelecting() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=39, shift=1) public static void dictManager1MultiSelecting(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=40, shift=1) public static boolean dictManagerClickPopup() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=40, shift=1) public static void dictManagerClickPopup(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=41, shift=1) public static boolean dictManagerClickPopup1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=41, shift=1) public static void dictManagerClickPopup1(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	
-	@Metaline(flagPos=42, shift=1) public static boolean dictManagerFlipMenuCloumn() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=42, shift=1) public static void dictManagerFlipMenuCloumn(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	
-	
-	public int getPseudoInitCode(int pseudoInit) {
-		return (getPseudoInitCode()&~3)|pseudoInit;
-	}
-	
-	//////
-	private final StringBuffer pathTo = new StringBuffer(255);
-	public File rootPath;
-	protected int pathToL = -1;
-	public DisplayMetrics dm;
-	public StringBuffer pathToDatabases() {
-		return pathToMainFolder().append("bmDBs/");
-	}
-	File FileDatabases;
-	public File fileToDatabases() {
-		if(FileDatabases==null){
-			FileDatabases = new File(pathToMainFolder().append("bmDBs").toString());
-		}
-		return FileDatabases;
-	}
-	
-	private String pathToFavoriteDatabases(String name, boolean testDBV2) {
-		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");
-		if (testDBV2) {
-			if(name!=null)
-			{
-				InternalPath.append("favorites/").append(name);
-			} else {
-				InternalPath.append("databaseV2.sql");
-			}
-		} else {
-			if(name!=null){
-				InternalPath.append("favorites/").append(name);
-			} else {
-				InternalPath.append("history.sql");
-			}
-		}
-		return InternalPath.toString();
-	}
-	public String pathToFavoriteDatabase(String name, boolean testDBV2) {
-		return pathToFavoriteDatabases(name, testDBV2);
-	}
-	public File fileToFavoriteDatabases(String name, boolean testDBV2) {
-		return new File(pathToFavoriteDatabases(name, testDBV2));
-	}
-	public File fileToDatabaseFavorites(boolean testDBV2) {
-		return new File(pathToFavoriteDatabases(StringUtils.EMPTY, testDBV2));
-	}
-	
-	public StringBuffer pathToMainFolder() {
-		if(rootPath!=null){
-			pathTo.setLength(0);
-			pathTo.append(rootPath).append("/").append(CMN.BrandName).append("/");
-			pathToL = pathTo.length();
-			rootPath=null;
-		} else if(pathToL==-1) {
-			rootPath=Environment.getExternalStorageDirectory();
-			return pathToMainFolder();
-		}
-		pathTo.setLength(pathToL);
-		//CMN.Log("pathToMainFolder :: ", pathTo);
-		return pathTo;
-	}
-	
-
-	public File fileToConfig() {
-		return new File(pathToMainFolder().append("CONFIG").toString());
-	}
-	
-	public void CheckFileToDefaultMdlibs() {
-		String path = getString("lastMdlibPath",null);
-		if(path!=null) {
-			lastMdlibPath = new File(path);
-		}
-		if(lastMdlibPath==null || !lastMdlibPath.exists()) {
-			File 默认值 = new File(pathToMainFolder().append("mdicts").toString());
-			lastMdlibPath = 默认值;
-			lastMdlibPath.mkdirs();
-		}
-		path = getString("audioLib",null);
-		if (path != null) {
-			audioLib = new File(path);
-		}
-		if(audioLib==null || !audioLib.exists()) {
-			File 默认值 = new File(lastMdlibPath, "../AudioLib");
-			audioLib = 默认值;
-		}
-		if(!audioLib.exists()) {
-			audioLib = null;
-		}
-	}
-	
-	public File fileToSet(File ConfigFile, String name) {
-		return new File(ConfigFile==null?fileToConfig():ConfigFile, name);
-	}
-	
-	public File fileToDecords(File ConfigFile) {
-		if(ConfigFile==null){
-			ConfigFile = fileToConfig();
-		}
-		return new File(ConfigFile, "mdlibs.txt");
-	}
-	
-	public File fileToSecords(File ConfigFile) {
-		if(ConfigFile==null){
-			ConfigFile = fileToConfig();
-		}
-		return new File(ConfigFile, "AllModuleSets.txt");
-	}
-	
-	public String pathToGlide(@NonNull Context context) {
-		return getString("cache_p", GlideCacheModule.DEFAULT_GLIDE_PATH=context.getExternalCacheDir().getAbsolutePath()+"/thumnails/");
-	}
-
-	public long Flag(int flagIndex) {
-		switch (flagIndex){
-			case -1:
-			return SessionFlag;
-			case 1:
-			return FirstFlag;
-			case 2:
-			return SecondFlag;
-			case 3:
-			return ThirdFlag;
-			case 4:
-			return FourthFlag;
-			case 5:
-			return FifthFlag;
-			case 6:
-			return SixthFlag();
-			case 7:
-			return SevenFlag();
-			case 8:
-			return EightFlag();
-		}
-		return tmpFlag;
-	}
-	
-	public final void fillFlags(long[] flags) {
-		flags[0] = getFirstFlag();
-		flags[1] = getSecondFlag();
-		flags[2] = getThirdFlag();
-		flags[3] = getFourthFlag();
-		flags[4] = getFifthFlag();
-		flags[5] = getSixthFlag();
-		flags[6] = getSevenFlag();
-		flags[7] = getEightFlag();
-	}
-	
-	public final boolean isFlagsChanged(long[] flags) {
-		return flags[0] != FirstFlag
-				|| flags[1] != SecondFlag
-				|| flags[2] != ThirdFlag
-				|| flags[3] != FourthFlag
-				|| flags[4] != FifthFlag
-				|| flags[5] != SixthFlag
-				|| flags[6] != SevenFlag
-				|| flags[7] != EightFlag
-			;
-	}
-	
-	private void putFlags() {
-		Editor edit = tmpEdit();
-		edit.putLong("MFF",FirstFlag)
-			.putLong("MSF",SecondFlag)
-			.putLong("MTF",ThirdFlag)
-			.putLong("MQF",FourthFlag)
-			.putLong("MVF",FifthFlag)
-			.putLong("MVIF",SixthFlag)
-			.putLong("M7F",SevenFlag)
-			.putLong("M8F",EightFlag);
-	}
-	
-	public void Flag(int flagIndex, long val) {
-		switch (flagIndex){
-			case -1:
-				SessionFlag=val;
-			break;
-			case 1:
-				FirstFlag=val;
-			break;
-			case 2:
-				SecondFlag=val;
-			break;
-			case 3:
-				ThirdFlag=val;
-			break;
-			case 4:
-				FourthFlag=val;
-			break;
-			case 5:
-				FifthFlag=val;
-			break;
-			case 6:
-				SixthFlag=val;
-			break;
-			case 7:
-				SevenFlag=val;
-			break;
-			case 8:
-				EightFlag=val;
-			break;
-			default:
-				tmpFlag=val;
-			break;
-		}
-	}
-
-	public JSONObject getDimensionalSharePatternByIndex(String savid) {
-		String val = getString(savid, null);
-		JSONObject ret = null;
-		if(val!=null) {
-			try {
-				ret = new JSONObject(val);
-			} catch (JSONException e) {
-				CMN.debug(e);
-			}
-		}
-		return ret;
-	}
-
-	public void putDimensionalSharePatternByIndex(String savid, JSONObject json) {
-		CMN.debug("保存", savid);
-		putString(savid, json==null||json.length()==0?null:json.toString());
-	}
-	
-	@SuppressLint("ClickableViewAccessibility")
-	public static XYTouchRecorder setAsLinkedTextView(TextView tv, boolean center, boolean setTextSz) {
-		XYTouchRecorder xyt = new XYTouchRecorder();
-		tv.setOnClickListener(xyt);
-		tv.setOnTouchListener(xyt);
-		//tv.setTextSize(GlobalOptions.isLarge?22f:17f);
-		if(setTextSz) tv.setTextSize(GlobalOptions.isLarge?20:19);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			tv.setTextIsSelectable(true);
-		}
-		if(center) {
-			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-		}
-		return xyt;
-	}
-	
-	public String tryGetDomesticFileName(String path) {
-		String parent = lastMdlibPath.getPath();
-		if(path.startsWith(parent)&&path.length()>parent.length()){
-			path = path.substring(parent.length()+1);
-		}
-		return path;
-	}
-	
-	public static void interceptPlainLink(Activity context, String url) {
-		DialogInterface.OnClickListener btns = new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				if (which==-1) {
-					Intent intent = new Intent(Intent.ACTION_VIEW)
-							.setData(Uri.parse(url));
-					context.startActivity(intent);
-				}
-				else if (which==-3) {
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-						ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-						if(cm!=null){
-							cm.setPrimaryClip(ClipData.newPlainText(null, url));
-							Toast.makeText(context, "已复制", 0).show();
-						}
-					}
-				}
-			}
-		};
-		AlertDialog d = new AlertDialog.Builder(context)
-				.setTitle("是否访问链接？")
-				.setMessage(url)
-				.setNeutralButton("复制", btns)
-				.setNegativeButton("取消", btns)
-				.setPositiveButton("访问", btns)
-				.show();
-	}
 }

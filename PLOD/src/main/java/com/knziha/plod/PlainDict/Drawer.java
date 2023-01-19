@@ -13,13 +13,8 @@ import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.provider.Settings;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +26,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebResourceResponse;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -48,16 +42,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.PlainUI.AnnotationDialog;
 import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
@@ -78,24 +69,16 @@ import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -109,11 +92,7 @@ import io.noties.markwon.Markwon;
 import io.noties.markwon.core.spans.LinkSpan;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
-import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
-import static com.knziha.plod.PlainUI.WordPopupTask.TASK_UPD_SCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
-
-import javax.net.ssl.HttpsURLConnection;
 
 
 /** @author KnIfER */
@@ -1151,7 +1130,7 @@ public class Drawer extends Fragment implements
 					});
 					dialog.show();
 					dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-					
+					ViewUtils.ensureTopAndTypedDlg(dialog, a);
 					a.d = dialog;
 				}
 				//.dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
@@ -1269,7 +1248,7 @@ public class Drawer extends Fragment implements
 			} break;
 			//词典管理中心
 			case R.string.manager:  {
-				a.showDictionaryManager();
+				a.showDictionaryManager(null);
 			} break;
 			//切换单词本
 			case R.string.switch_favor:  {

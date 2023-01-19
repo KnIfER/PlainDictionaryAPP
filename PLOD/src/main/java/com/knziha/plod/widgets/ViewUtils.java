@@ -1884,14 +1884,19 @@ public class ViewUtils extends VU {
 	}
 	
 	public static boolean canDrawOverlays(Context context) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			return Settings.canDrawOverlays(context);
-		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-			final int OP_SYSTEM_ALERT_WINDOW = 24;
-			return checkOp(context, OP_SYSTEM_ALERT_WINDOW);
-		} else {
-			return true;
+		try {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				return Settings.canDrawOverlays(context);
+			} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+				final int OP_SYSTEM_ALERT_WINDOW = 24;
+				return checkOp(context, OP_SYSTEM_ALERT_WINDOW);
+			} else {
+				return true;
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
+		return false;
 	}
 	
 	

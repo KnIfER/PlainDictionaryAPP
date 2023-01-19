@@ -26,7 +26,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.VirtualDisplay;
@@ -2699,7 +2698,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			} break;
 			case R.drawable.book_bundle2:{
-				showDictionaryManager();
+				showDictionaryManager(null);
 			} break;
 			//两大搜索
 			case R.drawable.fuzzy_search:{ // get3:
@@ -3036,7 +3035,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //				AttachPeruseView(false);
 //			} break;
 			case R.drawable.book_bundle:{ // get2:
-				showDictionaryManager();
+				showDictionaryManager(null);
 			} return true;
 			case R.drawable.favoriteg:{ // get5:
 				showChooseFavorDialog(0);

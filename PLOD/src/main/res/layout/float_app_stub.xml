@@ -22,7 +22,7 @@
 			/>
 	</androidx.appcompat.widget.Toolbar>
 
-	<RelativeLayout
+	<FrameLayout
 		android:id="@+id/bg"
 		android:layout_width="match_parent"
 		android:layout_height="0dp"
@@ -30,6 +30,26 @@
 		android:descendantFocusability="beforeDescendants"
 		android:background="@android:color/black"
 		>
-	</RelativeLayout>
+
+		<TextView
+			android:id="@+id/exit"
+			android:text="退出小窗模式"
+			android:textSize="35dp"
+			android:shadowColor="@color/colorPrimary"
+			android:shadowDx="0.2"
+			android:shadowDy="0.2"
+			android:shadowRadius="1.3"
+			android:layout_width="280dp"
+			android:layout_height="150dp"
+			android:layout_marginBottom="60dp"
+			android:textColor="#fff"
+			android:layout_gravity="center|bottom"
+			android:background="@drawable/frame_bg"
+			android:foreground="?attr/listChoiceBackgroundIndicator"
+			android:gravity="center"
+			android:elevation="100dp"
+			/>
+
+	</FrameLayout>
 
 </LinearLayout>

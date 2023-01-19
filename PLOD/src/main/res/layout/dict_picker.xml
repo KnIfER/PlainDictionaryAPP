@@ -83,6 +83,18 @@
 					android:layout_height="match_parent"
 					android:orientation="horizontal"
 					>
+					<ImageView
+						android:id="@+id/exit"
+						android:layout_width="@dimen/_35_"
+						android:layout_height="match_parent"
+						android:background="@drawable/listviewselector0"
+						android:src="@drawable/ic_back_material"
+						android:padding="0dp"
+						android:tint="@color/SelHeaderBlue"
+						android:foreground="@drawable/popup_background3__"
+						android:contentDescription="关闭词典列表"
+						android:layout_marginRight="5dp"
+						/>
 					<com.knziha.plod.widgets.CheckableImageView
 						android:id="@+id/pinBtn"
 						android:layout_width="@dimen/_35_"

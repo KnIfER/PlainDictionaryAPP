@@ -18,6 +18,7 @@ import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.ClickableSpan;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -49,6 +50,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.LinearSplitView;
+import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class DictPicker extends PlainAppPanel implements View.OnClickListener, PopupMenuHelper.PopupMenuListener {
+public class DictPicker extends PlainAppPanel implements View.OnClickListener, PopupMenuHelper.PopupMenuListener, View.OnLongClickListener {
 	public boolean PostEnabled=true;
 	public int bForcePin;
 	private AnimationSet animation;
@@ -96,6 +98,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	private IBinder wtSearch;
 	private ImageView tweakBtn;
 	private CheckableImageView pinBtn;
+	private View exitBtn;
 	private CheckableImageView autoBtn;
 	
 	public ArrayList<Long> filtered;
@@ -107,6 +110,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	public boolean autoScroll;
 	
 	public MainActivityUIBase.LoadManager loadManager;
+	private int pressedPos;
 	
 	public DictPicker(MainActivityUIBase a_, LinearSplitView splitView, ViewGroup splitter, int reason){
 		super(a_, false);
@@ -134,6 +138,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			//view.setLayoutParams(new LayoutParams(-2,-1));
 			//getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 			mRecyclerView = root.findViewById(R.id.choose_dict);
+			mRecyclerView.setNestedScrollingEnabled(PDICMainAppOptions.exitDictPickerOnTop());
 			lman = new LinearLayoutManager(a.getApplicationContext());
 			mRecyclerView.setLayoutManager(lman);
 			mRecyclerView.setAdapter(mAdapter = new HomeAdapter(a));
@@ -167,6 +172,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			//bgView = dialogLayout;
 			this.root = root;
 			pinBtn = bottombar.findViewById(R.id.pinBtn);
+			exitBtn = bottombar.findViewById(R.id.exit);
 			tweakBtn = bottombar.findViewById(R.id.tweakBtn);
 			pinBtn_setChecked(pin());
 			
@@ -244,7 +250,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 				else if(bForcePin==1) pin=true;
 				bForcePin = 0;
 			}
-			LinearLayout pane = this.dialogContent;
+			final LinearLayout pane = this.dialogContent;
 			LinearSplitView splitView = this.splitView;
 			if(pin ^ pane.getParent()==splitView) {
 				MainColorStamp = 0; //todo opt
@@ -299,6 +305,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 				refresh();
 				ViewUtils.setVisible(tweakBtn, !pin);
 			}
+			ViewUtils.setVisible(exitBtn, bottomDlg && !pin);
 			ViewUtils.setVisible(splitter, pin);
 			if(pin) {
 //				a.dialogHolder.setVisibility(View.GONE);
@@ -316,6 +323,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 				pdictBtmBG.setAlpha(bottomDlg?0:255);
 				if(bottomDlg) ViewUtils.addViewToParent(dialogContent, bottomDlgLayout);
 				else ViewUtils.addViewToParent(dialogContent, dialogLayout);
+				if (bottomDlg) {
+					pane.getLayoutParams().height = -1;
+				}
 			}
 		}
 		
@@ -528,14 +538,62 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	
 	@Override
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
-		if(wordPopup==null) PDICMainAppOptions.pickDictOnBottom(bottomDlg = !bottomDlg);
-		else PDICMainAppOptions.pickDictOnBottomTapSch(bottomDlg = !bottomDlg);
-		dismissImmediate();
-		reform(false, 0);
-		if(!isVisible())
-			toggle();
+		switch (v.getId()) {
+			case R.string.centre_dlg:{
+				if (wordPopup == null) PDICMainAppOptions.pickDictOnBottom(bottomDlg = !bottomDlg);
+				else PDICMainAppOptions.pickDictOnBottomTapSch(bottomDlg = !bottomDlg);
+				dismissImmediate();
+				reform(false, 0);
+				if (!isVisible())
+					toggle();
+			} break;
+			case R.string.exit_on_top:{
+				PDICMainAppOptions.exitDictPickerOnTop(!PDICMainAppOptions.exitDictPickerOnTop());
+				mRecyclerView.setNestedScrollingEnabled(PDICMainAppOptions.exitDictPickerOnTop() && !a.keyboardShown);
+			} break;
+			case R.string.locate_dman:{
+				try {
+					a.locateDictInManager(loadManager, pressedPos, isLongClick);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			} break;
+		}
 		popupMenuHelper.dismiss();
 		return false;
+	}
+	
+	// longclick
+	@Override
+	public boolean onLongClick(View v) {
+		Object tag = v.getTag();
+		if(tag instanceof MyViewHolder){
+			int position = ((MyViewHolder) tag).getLayoutPosition();
+			pressedPos = position;
+			if(!act()) return true;
+			if(type==-1){ //点译搜索
+				int tmpPos;
+				if (filtered==null) { //点译上游
+				
+				} else { //跳转多页面
+				
+				}
+			}
+			else {//当前词典
+			
+			}
+			PopupMenuHelper popupMenu = a.getPopupMenu();
+			int[] texts = new int[]{
+					R.string.locate_dman
+					//, R.string.disable
+			};
+			popupMenu.initLayout(texts, this);
+			int[] vLocationOnScreen = new int[2];
+			v.getLocationOnScreen(vLocationOnScreen);
+			int x=0, y=0;
+			popupMenu.showAt(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1], Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+		}
+		return true;
 	}
 	
 	// click
@@ -590,13 +648,20 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			case R.id.tweakBtn:
 				PopupMenuHelper popupMenu = a.getPopupMenu();
 				int[] texts = new int[]{
-					R.string.centre_dlg
+					R.string.exit_on_top
+					, R.string.centre_dlg
 				};
 				popupMenu.initLayout(texts, this);
+				((TextMenuView) popupMenu.lv.findViewById(R.string.exit_on_top)).setActivated(PDICMainAppOptions.exitDictPickerOnTop());
 				int[] vLocationOnScreen = new int[2];
 				v.getLocationOnScreen(vLocationOnScreen);
 				int x=0, y=0;
 				popupMenu.show(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+				break;
+			case R.id.exit:
+				dismissImmediate();
+				if(dialog!=null)
+					dialog.dismiss();
 				break;
 			case R.id.pinBtn:
 				CheckableImageView cb = (CheckableImageView) v;
@@ -941,13 +1006,14 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	{
 		FlowTextView tv;
 		ImageView cover;
-		public MyViewHolder(View view, View.OnClickListener onclick)
+		public MyViewHolder(View view, DictPicker onclick)
 		{
 			super(view);
 			tv = view.findViewById(R.id.id_num);
 			cover = view.findViewById(R.id.cover);
 			itemView.setTag(this);
 			itemView.setOnClickListener(onclick);
+			itemView.setOnLongClickListener(onclick);
 			View coveronclick = view.findViewById(R.id.coverp);
 			coveronclick.setTag(this);
 			coveronclick.setOnClickListener(onclick);
@@ -992,7 +1058,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 			v.getLayoutParams().height = h;
 			v.requestLayout();
 		}
-		mRecyclerView.setNestedScrollingEnabled(!a.keyboardShown);
+		mRecyclerView.setNestedScrollingEnabled(PDICMainAppOptions.exitDictPickerOnTop() && !a.keyboardShown);
 	}
 	
 	@Override

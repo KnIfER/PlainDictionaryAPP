@@ -14,7 +14,6 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.DescriptiveImageView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -133,7 +132,7 @@ public class MenuGrid extends PlainAppPanel {
 				if (btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) {
 				
 				} else {
-					a.showDictionaryManager();
+					a.showDictionaryManager(null);
 					a.mInterceptorListenerHandled = true;
 					break;
 				}

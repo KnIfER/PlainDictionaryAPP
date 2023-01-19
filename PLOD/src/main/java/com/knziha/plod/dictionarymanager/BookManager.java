@@ -493,6 +493,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		
 		if (opt == null) {
 			finish();
+			return;
 		}
 		
 		ConfigFile = opt.fileToConfig();
@@ -795,6 +796,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	        win.setStatusBarColor(Color.TRANSPARENT);
 	        win.setNavigationBarColor(Color.BLACK);
         }
+		intent.putExtra("id", CMN.id(loadMan));
 		setResult(RESULT_OK, intent);
         agent.clearTmp();
 		
@@ -906,7 +908,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					Fragment frame = getFragment();
 					if(frame instanceof BookManagerFragment) {
-						((BookManagerFragment) frame).selectPos(filtered.keyAt(position));
+						((BookManagerFragment) frame).selectPos(filtered.keyAt(position), false);
 					}
 					if(frame instanceof BookManagerFolderAbs) {
 						((BookManagerFolderAbs) frame).selectFilteredPos(filtered.keyAt(position));

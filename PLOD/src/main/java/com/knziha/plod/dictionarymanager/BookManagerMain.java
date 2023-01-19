@@ -1027,6 +1027,19 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			listView.setOnItemLongClickListener(this);
 			setListAdapter();
 			refreshSize();
+			
+			if (loadMan.managePos>=0 && loadMan.managePos<loadMan.lazyMan.chairCount) {
+				int manPos = loadMan.lazyMan.CosyChair[loadMan.managePos];
+				//CMN.debug("manPos::", manPos);
+				listView.post(new Runnable() {
+					@Override
+					public void run() {
+						selectPos(manPos, loadMan.managePressed);
+						loadMan.managePressed = false;
+					}
+				});
+				loadMan.managePos = -1;
+			}
 		}
 	}
 	

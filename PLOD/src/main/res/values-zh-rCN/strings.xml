@@ -254,5 +254,8 @@
 	<string name="decrease_fav">降低收藏星级</string>
 	<string name="open_accessibility">打开系统辅助功能</string>
 	<string name="quci">取词</string>
+	<string name="exit_on_top">滚动到顶部退出</string>
+	<string name="locate_dman">定位词典管理</string>
+	<string name="disable">禁用</string>
 	>
 </resources>

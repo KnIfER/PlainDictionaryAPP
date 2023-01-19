@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.ColorUtils;
 
@@ -280,6 +281,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			case R.id.btn1:
 				getFloatBtn().search(null, false);
 			break;
+			case R.id.exit:
+				toggle(true);
+			break;
 		}
 	}
 	
@@ -340,11 +344,13 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			toolbar.setNavigationOnClickListener(v -> a.moveTaskToBack(true));
 			appStubTb = toolbar;
 			appStubBg = appStub.findViewById(R.id.bg);
+			appStub.findViewById(R.id.exit).setOnClickListener(this);
 		}
 		if (appStubBgr!=a.MainAppBackground) {
 			appStubTb.setBackgroundColor(appStubBgr=a.MainAppBackground);
 			appStubBg.setBackgroundColor(GlobalOptions.isDark?0:ColorUtils.blendARGB(a.MainAppBackground, Color.BLACK, 0.45f));
 		}
+		ViewUtils.setForegroundColor((ViewGroup) appStubTb, a.tintListFilter);
 		return appStub;
 	}
 	

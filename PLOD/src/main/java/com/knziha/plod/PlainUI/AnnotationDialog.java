@@ -90,6 +90,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 	private boolean keyboardShown;
 	
 	public final PlainAppPanel dummyPanel = new PlainAppPanel();
+	private boolean requestedFromFloatApp;
 	
 	public static class UIStates {
 		public int toolIdx;
@@ -112,7 +113,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 		this.a = dummyPanel.a = a;
 	}
 	
-	public void show(WebViewmy wv, int type, boolean showAnteNotes) {
+	public void show(WebViewmy wv, int type, boolean showAnteNotes, boolean retry) {
 		shownVtk = a.ucc == null || a.ucc.detached() ? null : a.ucc.getDialog();
 		mWebView = wv;
 		if(shownVtk !=null) shownVtk.hide();
@@ -120,8 +121,9 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			uiStates = new UIStates();
 			readUIData();
 		}
-		final boolean b1 = type < -1;
-		if (b1) {
+		int finalType = type;
+		final boolean annotMarkUI = type < -1;
+		if (annotMarkUI) {
 			type = -2-type;
 			if (type>1) type=-1;
 		}
@@ -150,9 +152,26 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			btnTypes = new Button[]{btnPanel.findViewById(R.id.btnH), btnPanel.findViewById(R.id.btnU)};
 			ColorPickerDialog noteDlg = ColorPickerDialog.newInstance(a, uiStates.colors[uiStates.toolIdx]);
 			noteDlg.setContentView(cv, true);
+			noteDlg.a = a;
 			this.noteDlg = noteDlg;
 			//dummyPanel.settingsLayout = noteDlg.rootView;
-			noteDlg.mOnShowListener = (DialogInterface.OnShowListener) dlg -> dummyPanel.dialog = (Dialog) dlg;
+			noteDlg.mOnShowListener = dlg -> {
+				dummyPanel.dialog = (Dialog) dlg;
+				if (requestedFromFloatApp) {
+					requestedFromFloatApp = false;
+					try {
+						noteDlg.dismiss();
+					} catch (Exception e) {
+						try {
+							dlg.dismiss();
+						} catch (Exception ex) {
+							CMN.debug(ex); // 怕了你了
+						}
+					}
+					a.moveTaskToBack(false);
+					a.hdl.postDelayed(() -> show(wv, finalType, showAnteNotes, false), 500);
+				};
+			};
 			noteDlg.rootView.getRootView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -200,9 +219,31 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			noteTypes.setTag(null);
 		}
 		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLockVisible());
-		ViewUtils.setVisible(editPanel, !b1 && !showAnteNotes && (PDICMainAppOptions.editNote()||true));
-		if (!noteDlg.isAdded()) {
-			noteDlg.show(a.getSupportFragmentManager(), "note-dlg");
+		ViewUtils.setVisible(editPanel, !annotMarkUI && !showAnteNotes && (PDICMainAppOptions.editNote()||true));
+		if (a.isFloating() && noteDlg.mDialog != null) {
+			noteDlg.mDialog.show();
+			ViewUtils.ensureTopAndTypedDlg(noteDlg.mDialog, a);
+		}
+		else if (!noteDlg.isAdded()) {
+			try {
+				noteDlg.show(a.getSupportFragmentManager(), "note-dlg");
+			} catch (Exception e) {
+				CMN.debug(e);
+				if (a.isFloating() && e instanceof IllegalStateException) {
+					if (retry) {
+						// fix android Can not perform this action after onSaveInstanceState
+						a.postTask = new Runnable(){
+							@Override
+							public void run() {
+								requestedFromFloatApp = true;
+								show(wv, finalType, showAnteNotes, false);
+								a.postTask = null;
+							}
+						};
+						a.moveTaskToFront();
+					}
+				}
+			}
 		}
 		refresh();
 		if (false) { //swap
@@ -217,7 +258,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			mWebView.evaluateJavascript("NidsInRange(1)", value -> ViewUtils.setVisible(btnEditNotes, "1".equals(value)));
 		}
 		setEditingNote(-1);
-		if (b1) {
+		if (annotMarkUI) {
 			btnTypes[type<0? uiStates.toolIdx:type].performClick();
 		}
 		//ViewUtils.setVisible(btnEditNotes, true);
@@ -292,10 +333,14 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 				}
 				break;
 			case R.id.create_note:
+				CMN.debug("create_note::", ViewUtils.isVisible(editPanel));
 				if (ViewUtils.isVisible(editPanel)) { // 先把编辑器收起来
 					onClick(a.anyView(R.id.editShow));
 				} else {
-					noteDlg.dismiss();
+					noteDlg.dismiss(); // todo why
+					if (a.isFloating() && noteDlg.mDialog!=null) {
+						noteDlg.mDialog.dismiss();
+					}
 				}
 			break;
 			case R.id.editShow:

@@ -214,8 +214,10 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	}
 	
 	private ViewGroup getViewRoot() {
-		ViewParent vp = settingsLayout.getParent();
-		if(vp instanceof ViewGroup) return (ViewGroup) vp;
+		if (settingsLayout != null) {
+			ViewParent vp = settingsLayout.getParent();
+			if(vp instanceof ViewGroup) return (ViewGroup) vp;
+		}
 		return null;
 	}
 	

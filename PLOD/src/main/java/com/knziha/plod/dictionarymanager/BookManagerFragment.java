@@ -192,11 +192,29 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	String query;
 	SparseArray<String> filtered = new SparseArray<>();
 	
-	public void selectPos(int position) {
-		int h;
-		if(listView.getChildAt(0)!=null) h = listView.getChildAt(0).getHeight() / 4;
-		else h = 18;
-		listView.setSelectionFromTop(position, listView.getHeight()/2 - h);
+	public void selectPos(int position, boolean showMenu) {
+		int h = 0;
+		View child = listView.getChildAt(0);
+		if(child!=null)
+			h = listView.getChildAt(0).getHeight();
+		if(h==0)
+			h = 50;
+		listView.setSelectionFromTop(position+listView.getHeaderViewsCount(), listView.getHeight()/2 - h);
+		listView.postDelayed(() -> {
+			View child1 = listView.getChildAt(0);
+			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(child1, ViewHolder.class);
+			int fvp = (vh == null ? -1 : vh.position);
+			child1 = listView.getChildAt(position - fvp);
+			if (child1 != null) {
+				child1.setScaleX(1.5f);
+				child1.setScaleY(1.5f);
+				child1.animate().scaleX(1).scaleY(1).setDuration(400);
+				if (showMenu) {
+					pressedPos = position;
+					showPopup(child1, null);
+				}
+			}
+		}, 100);
 	}
 	
 	public abstract int schFilter(String query, boolean shouldInval);

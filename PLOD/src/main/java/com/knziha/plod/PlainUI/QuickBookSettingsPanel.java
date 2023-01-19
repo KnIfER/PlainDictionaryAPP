@@ -387,8 +387,17 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				} break;
 				case floatApp: {
 					if (a instanceof PDICMainActivity) {
-						((PDICMainActivity)a).toggleMultiwindow();
-						dismiss();
+						boolean check = v.getTag()==null;
+						if (check) v.setTag(v);
+						if (check && !ViewUtils.canDrawOverlays(a)) {
+							DrawOverlayCompat.manage(a);
+							UIData.floatSwitch.setChecked(false);
+							a.showT("需要权限“显示在其他应用上层”！");
+							v.setTag(v);
+						} else {
+							((PDICMainActivity)a).toggleMultiwindow();
+							dismiss();
+						}
 					}
 				} break;
 				case pFontClr1:
