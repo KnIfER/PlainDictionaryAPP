@@ -2917,7 +2917,7 @@
 					var t=ge('dlab');
 					if(t)t.style.display=t.nextElementSibling.style.display='none';
 				}
-				if(merge && e.bgr) {
+				if(merge && e.bgr && !e.dark) {
 					var sty=craft('style', 0, document.body);
 					sty.id='setyle';
 					sty = ge(sty.id)||sty;
