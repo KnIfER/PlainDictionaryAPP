@@ -186,6 +186,21 @@
 			</intent-filter>
 		</activity>
 
+		<activity
+			android:name="com.knziha.filepicker.slideshow.SlideShowActivity"
+			android:configChanges="orientation|keyboardHidden|screenSize"
+			android:label="@string/app_name"
+			android:theme="@style/FloatAppTheme"
+			android:hardwareAccelerated="true"
+			android:exported="false"
+			tools:ignore="AppLinkUrlError">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="video/*" />
+			</intent-filter>
+		</activity>
+
 		<service android:name=".ServiceEnhancer" />
 
 		<provider

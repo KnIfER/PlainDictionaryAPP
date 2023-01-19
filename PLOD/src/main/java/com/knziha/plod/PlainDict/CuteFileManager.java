@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.widgets.FIlePickerOptions;
 import com.knziha.plod.widgets.NoScrollViewPager;
 
 import android.app.AlertDialog;
@@ -132,6 +133,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		properties.opt_dir.mkdirs();
 		//properties.extensions = new String[] {"mdx"};
 		properties.title_id = 0;
+		properties.opt = new FIlePickerOptions();
 
 
 		viewList = new ArrayList<FilePickerDialog>();

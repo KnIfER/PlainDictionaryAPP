@@ -15,15 +15,14 @@ import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import com.knziha.filepicker.settings.FileChooser;
-import com.knziha.filepicker.settings.FilePickerOptions;
+import com.knziha.filepicker.settings.FileChooserSettings;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.APPSettingsActivity;
+import com.knziha.plod.widgets.FIlePickerOptions;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
@@ -52,9 +51,9 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 	}
 	
 	public void checkBack() {
-		if(realm_id==FileChooser.id){
-			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
-		}
+//		if(realm_id==FileChooserSettings.id){
+//			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
+//		}
 //		else if(realm_id== SchOpt.id){
 //			if(opt.CetUseRegex3(SFStamp)
 //					|opt.CetPageCaseSensitive(SFStamp)
@@ -100,8 +99,8 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			case 0:
 				fragment = new MainProgram();
 			break;
-			case FileChooser.id:
-				fragment = new FileChooser();
+			case FileChooserSettings.id:
+				fragment = new FileChooserSettings(new FIlePickerOptions());
 			break;
 			case DevOpt.id:
 				fragment = new DevOpt();

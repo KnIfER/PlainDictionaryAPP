@@ -50,6 +50,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.FIlePickerOptions;
 import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
@@ -662,6 +663,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							properties.extensions.add(".mdd");
 							properties.title_id = R.string.app_name;
 							properties.isDark = GlobalOptions.isDark;
+							properties.opt = new FIlePickerOptions();
 							FilePickerDialog fdialog = new FilePickerDialog(a, properties);
 							fdialog.show();
 						} break;

@@ -70,6 +70,7 @@ import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.settings.NightMode;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.widgets.CheckedTextViewmy;
+import com.knziha.plod.widgets.FIlePickerOptions;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
@@ -623,7 +624,7 @@ public class Drawer extends Fragment implements
 										BookPresenter socialbook = a.new_book(a.defDicts1[1], a);
 										weblist.getMergedFrame(socialbook);
 										socialbook.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, randomPage, 0);
-									} esle {
+									} else {
 										weblist.getMergedFrame().loadUrl("https://www.imdodo.com/channel/157568/889290");
 									}
 									weblist.setViewMode(null, 0, randomPage);
@@ -879,6 +880,7 @@ public class Drawer extends Fragment implements
 					properties.extensions.add(".dsl");
 					properties.extensions.add(".dz");
 					properties.extensions.add(".pdf");
+					properties.opt = new FIlePickerOptions();
 					if(toPDF) {
 						properties.extensions.add(".mdd");
 						properties.extensions.add(".txt");
@@ -1167,6 +1169,7 @@ public class Drawer extends Fragment implements
 				properties1.opt_dir.mkdirs();
 				properties1.title_id=R.string.pick_main;
 				properties1.isDark = a.AppWhite==Color.BLACK;
+				properties1.opt = new FIlePickerOptions();
 				//properties1.extensions = new String[] {"mdx"};
 				FilePickerDialog dialog1 = new FilePickerDialog(a, properties1);
 				dialog1.setDialogSelectionListener(new DialogSelectionListener() {
@@ -1229,6 +1232,7 @@ public class Drawer extends Fragment implements
 				properties1.opt_dir.mkdirs();
 				properties1.title_id=R.string.pick_audio_dir;
 				properties1.isDark = a.AppWhite==Color.BLACK;
+				properties1.opt = new FIlePickerOptions();
 				//properties1.extensions = new String[] {"mdx"};
 				FilePickerDialog dialog1 = new FilePickerDialog(a, properties1);
 				dialog1.setDialogSelectionListener(new DialogSelectionListener() {

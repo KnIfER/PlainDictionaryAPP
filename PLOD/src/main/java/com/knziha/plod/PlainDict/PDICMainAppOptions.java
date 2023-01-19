@@ -650,10 +650,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	//////////   ET   //////////
 	
 	//////////   First Boolean Flag   //////////
-	private static long FirstFlag=0;
+	public static long FirstFlag=0;
 	public long getFirstFlag() {
 		if(FirstFlag==0) {
-			return CMNF.FirstFlag=FirstFlag=getLong("MFF",0);
+			return FirstFlag=getLong("MFF",0);
 		}
 		return FirstFlag;
 	}
@@ -1053,7 +1053,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static long SecondFlag=0;
 	public long getSecondFlag() {
 		if(SecondFlag==0) {
-			return FilePickerOptions.SecondFlag=SecondFlag=getLong("MSF",0);
+			return SecondFlag=getLong("MSF",0);
 		}
 		return SecondFlag;
 	}
@@ -1109,11 +1109,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=7, shift=1) public static boolean slidePageMD() { SecondFlag=SecondFlag; throw new RuntimeException();}
 	@Metaline(flagPos=7, shift=1) public static void slidePageMD(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
-
-	public boolean getUseLruDiskCache() {
-		return (SecondFlag & 0x100) != 0x100;
-	}
-
+	
+	
 	/* forbid all history recording */
 	@Metaline(flagPos=9) public static boolean storeNothing(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=9) public static void storeNothing(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
@@ -1206,12 +1203,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateSFAt(0x100000l,!val);
 		return val;
 	}
-
-	/** ffmr */
-	public boolean getFFmpegThumbsGeneration(){
-		return (SecondFlag & 0x200000)!=0;
-	}
-
+	
+	// getFFmpegThumbsGeneration
+	
+	@Metaline(flagPos=8, shift=1) public static boolean getUseLruDiskCache() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=8, shift=1) public static void setUseLruDiskCache(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	
 	public boolean getLogToFile() {
 		return (SecondFlag & 0x400000l) != 0x400000l;
 	}

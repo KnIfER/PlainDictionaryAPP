@@ -223,6 +223,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.AppIconsAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.EditTextmy;
+import com.knziha.plod.widgets.FIlePickerOptions;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ListViewOverscroll;
@@ -7647,6 +7648,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			properties.extensions = null;
 			properties.title_id = R.string.addd;
 			properties.isDark = AppWhite==Color.BLACK;
+			properties.opt = new FIlePickerOptions();
 			FilePickerDialog dialog = new FilePickerDialog(MainActivityUIBase.this, properties);
 			dialog.setDialogSelectionListener(new DialogSelectionListener() {
 				@Override

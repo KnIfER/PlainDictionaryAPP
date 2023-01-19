@@ -172,6 +172,7 @@ configurations {
     all*.exclude group:'androidx.viewpager', module: 'viewpager'
     all*.exclude group:'androidx.appcompat', module: 'appcompat'
     all*.exclude group:'androidx.recyclerview', module: 'recyclerview' // todo  check
+    all*.exclude group:'com.github.wseemann', module: 'FFmpegMediaMetadataRetriever'
 }
 
 dependencies {
@@ -216,7 +217,7 @@ dependencies {
     api libs_pref
 
     api libs_color
-    api libs_file
+    api (libs_file)
 
     api libs_paging
 
