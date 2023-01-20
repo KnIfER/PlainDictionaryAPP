@@ -570,6 +570,7 @@ public class Drawer extends Fragment implements
 							.setMessage("关于")
 							.setTitle("应用信息")
 							.show();
+					ViewUtils.ensureTopAndTypedDlg(d, a);
 					d.isDark = GlobalOptions.isDark;
 					Button btn = d.findViewById(android.R.id.button2);
 					ViewUtils.setVisible(btn, a.trialCount==-1);

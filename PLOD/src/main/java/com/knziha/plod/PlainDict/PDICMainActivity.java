@@ -467,6 +467,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		dTmp.setCanceledOnTouchOutside(false);
 		dTmp.setOnDismissListener(dialog -> exitFFSearch());
 		dTmp.show();
+		ViewUtils.ensureTopAndTypedDlg(dTmp, PDICMainActivity.this);
 		Window win = dTmp.getWindow();
 		if (win != null) {
 			win.getAttributes().height = (int) (250*dm.density);
@@ -3944,6 +3945,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								.setMessage("关于")
 								.setTitle("发现新版本！")
 								.show();
+						ViewUtils.ensureTopAndTypedDlg(d, PDICMainActivity.this);
 						Button btn = dd.findViewById(android.R.id.button2);
 						VU.setVisible(dd.findViewById(android.R.id.button3), false);
 						VU.setVisible(btn, Build.VERSION.SDK_INT>=23);
@@ -4106,6 +4108,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								.setMessage("关于")
 								.setTitle("发现新版本！")
 								.show();
+						ViewUtils.ensureTopAndTypedDlg(dd, PDICMainActivity.this);
 						Button btn = dd.findViewById(android.R.id.button1);
 						VU.setVisible(dd.findViewById(android.R.id.button3), false);
 						VU.setVisible(btn, Build.VERSION.SDK_INT >= 23);

@@ -331,6 +331,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					pane.getLayoutParams().height = -1;
 				}
 			}
+			if(bottomDlgLayout!=null)
+				bottomDlgLayout.setBackgroundColor(GlobalOptions.isDark?0xFF454545:a.AppWhite);
 		}
 		
 		//mAdapter.notifyDataSetChanged();
