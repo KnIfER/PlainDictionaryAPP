@@ -3444,8 +3444,8 @@ function debug(e){console.log(e)};
 				MainActivityUIBase a = presenter.a;
 				WebViewmy wv = findWebview(sid);
 				//CMN.debug("popupWord::ivk::", presenter, wv, mergeView);
-				a.popupWord(key, null, frameAt, wv, true);
-				a.wordPopup.tapped = true;
+				a.popupWord(key, null, frameAt, wv, wv.weblistHandler.tapDef && wv.weblistHandler.tapSch);
+				a.wordPopup.tapped = true; // todo redu
 				if (false) {
 					if(frameAt>=0 && pH!=0){
 						if(pW==0) pW=pH;

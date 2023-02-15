@@ -131,6 +131,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public WebViewmy scrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
+	public boolean tapDef;
 	public int zhTrans;
 	public int tapSel;
 	public boolean showNavor;
@@ -245,6 +246,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//WHP.setBackground(null);
 		// CMN.debug("shzh::ini::rcsp::", tapSch, BookPresenter.MakePageFlag(this, opt));
 		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
+		if (src==SearchUI.FloatApp.MAIN || src==SearchUI.MainApp.MAIN ) {
+			tapDef = opt.tapViewDefMain();
+		}
 		tapSel = opt.getInt("tapSel", 0);
 		shezhi = BookPresenter.MakePageFlag(this, opt);
 		zhTrans = PDICMainAppOptions.webZhTranslate();

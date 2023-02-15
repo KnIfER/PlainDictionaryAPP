@@ -1046,7 +1046,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		if(opt.getRemPos())ViewUtils.findInMenu(SingleContentMenu, R.id.remPagePos).setChecked(true);
 		if(opt.getRemPos2())ViewUtils.findInMenu(Multi_ContentMenu, R.id.remPagePos2).setChecked(true);
-		if(opt.tapSch())ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapSch).setChecked(true);
+		if(opt.tapViewDefMain()) ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapSch1).setChecked(true);
+		else if(opt.tapSch()) ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapSch).setChecked(true);
 		if(TintWildResult.first = opt.getTintWildRes())ViewUtils.findInMenu(LEFTMenu, R.id.tintList).setChecked(true);
 		applyMainMenu();
 		schTools = new SearchToolsMenu(this, UIData.schtools);

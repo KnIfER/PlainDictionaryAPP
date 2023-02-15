@@ -6093,10 +6093,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 切换收藏 */
 			case R.drawable.star_ic:
 			case R.id.browser_widget8: {//favorite
-//				if (true) {
-//					weblist.getWebContext().loadUrl("http://mdbr.com/content/d6_Kg");
-//					break;
-//				}
+				if (true) {
+					//weblist.getWebContext().loadUrl("http://mdbr.com/content/d6_Kg");
+					weblist.getWebContext().loadUrl("http://mdbr.com/merge.jsp?q=them&exp=d6_aKO-dF_cYu3-d2GW_zAr1-dS5r3_F3a-dTLD_TfQG_UfQG_VfQG-dXNJBetaV2_eJU-dNJGJYHSJC_9p9-dLWJPB_wpr-dOED7EM_vk9-dCGJYCD_Kr2&popup=true&did=175160187 ");
+					break;
+				}
 				findWebList(v);
 				String key = weblist.displaying;
 				if(DBrowser!=null && weblist==DBrowser.weblistHandler){
@@ -6657,11 +6658,35 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 即点即译 */
 			case R.id.tapSch:{
 				if(isLongClicked){ // 打开
-					popupWord(null, null, -100, null, false);
+					WebViewmy wv = getFocusWebView();
+					if (mmi.isLongClicked==1 && wv != null && wv.bIsActionMenuShown) {
+						wv.evaluateJavascript("getSelection().toString()", value -> {
+							String newKey = "";
+							if (value.length() > 2) {
+								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+								if (value.length() > 0) {
+									newKey = value;
+								}
+							}
+							if (!TextUtils.isEmpty(newKey)) {
+								popupWord(newKey, null, 0, wv, false);
+							} else {
+								popupWord(null, null, -100, null, false);
+							}
+						});
+					} else {
+						popupWord(null, null, -100, null, false);
+					}
 					closeMenu=ret=true;
 				} else {
-					opt.tapSch(wlh.togTapSch());
+					if (wlh.tapDef) {
+						PDICMainAppOptions.tapViewDefMain(wlh.tapDef = false);
+						if(!wlh.tapSch) opt.tapSch(wlh.togTapSch());
+					} else {
+						opt.tapSch(wlh.togTapSch());
+					}
 					item.setChecked(wlh.tapSch);
+					VU.findInMenu(SingleContentMenu, R.id.tapSch1).setChecked(false);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
 					}
@@ -6674,7 +6699,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					wordPopup.onClick(wordPopup.popupContentView.findViewById(R.id.mode));
 					closeMenu=ret=true;
 				} else {
-				
+					if(!wlh.tapSch) wlh.tapDef=true;
+					else wlh.tapDef = !wlh.tapDef;
+					PDICMainAppOptions.tapViewDefMain(wlh.tapDef);
+					if (wlh.tapDef ^ wlh.tapSch) {
+						opt.tapSch(wlh.togTapSch());
+					}
+					item.setChecked(wlh.tapDef);
+					VU.findInMenu(SingleContentMenu, R.id.tapSch).setChecked(false);
+					if (accessMan.isEnabled()) {
+						root.announceForAccessibility(((wlh.tapSch && wlh.tapDef)?"已开启":"已关闭")+"点击查词");
+					}
 				}
 			} break;
 			case R.id.translate:{
@@ -7738,7 +7773,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ViewUtils.findInMenu(peruseView.PageMenus, R.id.tapSch).setChecked(wlh.tapSch);
 				} else {
 					opt.tapSch(wlh.togTapSch()); // todo dim tapSel
-					ViewUtils.findInMenu(SingleContentMenu, R.id.tapSch).setChecked(wlh.tapSch);
+					ViewUtils.findInMenu(SingleContentMenu, R.id.tapSch).setChecked(wlh.tapSch && !wlh.tapDef);
+					ViewUtils.findInMenu(SingleContentMenu, R.id.tapSch1).setChecked(wlh.tapSch && wlh.tapDef);
 				}
 				if(dialog!=null) dialog.dismiss();
 				return;
@@ -11583,6 +11619,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if (CMN.id(loadManager) == id) {
 			return loadManager;
+		}
+		return null;
+	}
+	
+	WebViewmy getFocusWebView() {
+		if (getCurrentFocus() instanceof WebViewmy)
+			return (WebViewmy) getCurrentFocus();
+		if (weblist!=null) {
+			return weblist.getWebContext();
 		}
 		return null;
 	}

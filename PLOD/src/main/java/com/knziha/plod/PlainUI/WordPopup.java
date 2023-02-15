@@ -752,6 +752,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			dictPicker.autoScroll = true;
 			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
 			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(1);
+			if (invoker==null) {
+				invoker = webview;
+			}
 			pageSlider.weblist = page.weblist = webview.weblistHandler = weblist;
 			weblist.scrollFocus = webview;
 			page.hdl = a.hdl;
@@ -1041,7 +1044,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							now = a.mActionModeHeight;
 							CMN.Log(now, targetRoot.getHeight() / 2);
 						}
-						else if(invoker.peruseView!=null){
+   						else if(invoker.peruseView!=null){
 							now = invoker.peruseView.getWebTouchY();
 						}
 						else if (invoker.weblistHandler.isViewSingle()) {
