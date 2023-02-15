@@ -515,7 +515,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						case R.id.jianxuan: {//间选
 							if(b1) return true;
 							MenuItemImpl menu = (MenuItemImpl) ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1);
-							menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn();
+							menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn()?-1:0;
 							a.onMenuItemClick(menu);
 						} break;
 						// 添加全部词典

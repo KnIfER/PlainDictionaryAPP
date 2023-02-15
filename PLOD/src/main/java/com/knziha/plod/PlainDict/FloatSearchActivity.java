@@ -834,7 +834,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:getDummyMenuImpl(item.getItemId());
-		boolean isLongClicked= mmi != null && mmi.isLongClicked;
+		boolean isLongClicked= mmi != null && mmi.isLongClicked!=0;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;

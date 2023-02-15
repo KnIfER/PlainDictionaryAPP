@@ -616,7 +616,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		AllMenus.checkActDrawable = mResource.getDrawable(R.drawable.frame_checked_whiter);
-		AllMenus.twoColumn = true;
+		AllMenus.multiColumn = 1;
 		AllMenus.twoColumnFlipped = true;
 		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 22, 24, 23, 0, 2, 1, 19, 18, 5, 20, 27, 3, 6, 21);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 0, 3, 15);
@@ -1230,7 +1230,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		MenuItemImpl mmi = (MenuItemImpl)item;
-		boolean isLongClicked=mmi.isLongClicked, longclickFx = PDICMainAppOptions.dictManagerFlipMenuCloumn()?!isLongClicked:isLongClicked;
+		boolean isLongClicked=mmi.isLongClicked!=0, longclickFx = PDICMainAppOptions.dictManagerFlipMenuCloumn()?!isLongClicked:isLongClicked;
 		boolean ret=isLongClicked;
 		boolean closeMenu=!isLongClicked;
 		AlertDialog d;

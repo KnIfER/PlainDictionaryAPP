@@ -57,7 +57,7 @@
 
 <!--24--><item android:title="分享单词…" android:id="@+id/shareText" android:icon="@drawable/ic_send_black_24dp" app:showAsAction="never"/>
 
-<!--25--><item android:title="点击翻译，但不弹出" android:id="@+id/tapSch1" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+<!--25--><item android:title="点击查词 | 设置" android:id="@+id/tapSch1" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
 
 </menu>

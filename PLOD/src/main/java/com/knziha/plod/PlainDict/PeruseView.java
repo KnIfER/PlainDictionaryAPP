@@ -2438,7 +2438,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public boolean onMenuItemClickmy(MenuItem m,boolean fromUser) {
 		MenuItemImpl trumen = (MenuItemImpl)m;
-		boolean isLongClicked=trumen.isLongClicked;
+		boolean isLongClicked=trumen.isLongClicked!=0;
 		//CMN.Log("onMenuItemClickmy::", m, isLongClicked);
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;

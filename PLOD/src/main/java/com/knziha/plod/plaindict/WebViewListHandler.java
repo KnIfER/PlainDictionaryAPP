@@ -2455,14 +2455,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 									value = value.replaceAll("\n(?!\n)", " ");
 								}
 								if (value.length() > 0) {
-									a.popupWord(value, book.getPath().equals("/ASSET2/译.web")?null:book, wv.frameAt, wv);
+									a.popupWord(value, book.getPath().equals("/ASSET2/译.web")?null:book, wv.frameAt, wv, false);
 								}
 							}
 						});
 					}
 				});
 				txtMenuGrid.setOnItemLongClickListener((parent, view, position, id) -> {
-					a.popupWord(null, null, 0, null);
+					a.popupWord(null, null, 0, null, false);
 					return true;
 				});
 			}

@@ -36,7 +36,6 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,7 +46,6 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.tesseraction.Tesseraction;
 import com.knziha.plod.widgets.ViewUtils;
@@ -408,7 +406,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 								changed = false;
 								break;
 							case R.id.page_lnk_tapSch:
-								a.popupWord(getHistoryAt(pos), null, 0, null);
+								a.popupWord(getHistoryAt(pos), null, 0, null, false);
 								changed = false;
 								break;
 							case R.id.page_lnk_share:

@@ -21,7 +21,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -31,8 +30,6 @@ import com.knziha.plod.plaindict.databinding.QuCiQiBinding;
 import com.knziha.plod.tesseraction.Manager;
 import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
-
-import org.apache.lucene.analysis.util.CharacterUtils;
 
 /** 相机取词 */
 public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
@@ -393,14 +390,14 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 						wordPopup.init();
 						wordPopup.forcePin(UIData.root);
 						wordPopup.refresh();
-						wordPopup.popupWord(null, finalWord, null, 0);
+						wordPopup.popupWord(null, finalWord, null, 0, false);
 					});
 				}
 				if (wordPopup.loadManager == null) {
 					wordPopup.loadManager = a.loadManager;
 				}
 			} else if (!wordPopup.isVisible() || !centerWord.equalsIgnoreCase(wordPopup.popupKey)) {
-				wordPopup.popupWord(null, centerWord, null, 0);
+				wordPopup.popupWord(null, centerWord, null, 0, false);
 			}
 		}
 	}

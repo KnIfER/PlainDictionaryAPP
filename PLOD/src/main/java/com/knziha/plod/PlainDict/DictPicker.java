@@ -34,7 +34,6 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -616,7 +615,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					a.wordPopup.CCD=loadManager.md_get(position);
 					a.wordPopup.CCD_ID=a.wordPopup.upstrIdx = position;
 					//a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null); todo
-					a.popupWord(a.wordPopup.popupKey, null, -1, null);
+					a.popupWord(a.wordPopup.popupKey, null, -1, null, false);
 				} else { //跳转多页面
 					tmpPos = a.wordPopup.weblistHandler.frameSelection;
 					position = ((MyViewHolder) tag).getLayoutPosition();

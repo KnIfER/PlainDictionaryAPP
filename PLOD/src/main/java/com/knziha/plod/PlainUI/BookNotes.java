@@ -661,7 +661,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 		int id = item.getItemId();
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:a.getDummyMenuImpl(id);
 		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
-		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
+		boolean isLongClicked= mmi!=null && mmi.isLongClicked!=0;
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
 		if (item.getItemId()==R.drawable.ic_sort_path_asc) {

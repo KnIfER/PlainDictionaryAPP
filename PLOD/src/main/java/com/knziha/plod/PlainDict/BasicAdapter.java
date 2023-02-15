@@ -146,7 +146,7 @@ public abstract class BasicAdapter extends BaseAdapter
 				break;
 				case R.string.tapSch:
 				case R.id.page_lnk_tapSch:
-					a.popupWord(getRowText(pressedRow), null, -1, null);
+					a.popupWord(getRowText(pressedRow), null, -1, null, false);
 				break;
 				case R.string.peruse_mode:
 				case R.id.page_lnk_fye:

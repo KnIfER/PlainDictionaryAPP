@@ -1435,8 +1435,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ChooseFavorDialog.clear();
 	}
 
-	public void popupWord(final String key, BookPresenter forceStartId, int frameAt, WebViewmy wv) {
-		wordPopup.popupWord(wv, key, forceStartId, frameAt);
+	public void popupWord(final String key, BookPresenter forceStartId, int frameAt, WebViewmy wv, boolean b) {
+		wordPopup.popupWord(wv, key, forceStartId, frameAt, b);
 	}
 	
 	public boolean DetachClickTranslator() {
@@ -4764,7 +4764,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0) {
-									popupWord(CurrentSelected, null, -1, mWebView);
+									popupWord(CurrentSelected, null, -1, mWebView, false);
 								}
 								bNeedClearTextSelection = true;
 							} else {
@@ -4772,7 +4772,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									mWebView.simulateScrollEffect();
 									bNeedStopScrollEffect = true;
 									if (word.length() > 2) {
-										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt, mWebView);
+										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt, mWebView, false);
 									}
 								});
 							}
@@ -6093,6 +6093,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 切换收藏 */
 			case R.drawable.star_ic:
 			case R.id.browser_widget8: {//favorite
+//				if (true) {
+//					weblist.getWebContext().loadUrl("http://mdbr.com/content/d6_Kg");
+//					break;
+//				}
 				findWebList(v);
 				String key = weblist.displaying;
 				if(DBrowser!=null && weblist==DBrowser.weblistHandler){
@@ -6572,7 +6576,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int id = item.getItemId();
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:getDummyMenuImpl(id);
 		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
-		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
+		boolean isLongClicked= mmi!=null && mmi.isLongClicked!=0;
 		WebViewListHandler wlh = (WebViewListHandler) menu.tag;
 		if (weblist!=wlh) weblist = wlh;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
@@ -6652,8 +6656,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}  break;
 			/* 即点即译 */
 			case R.id.tapSch:{
-				if(isLongClicked){
-					popupWord(null, null, 0, null);
+				if(isLongClicked){ // 打开
+					popupWord(null, null, -100, null, false);
 					closeMenu=ret=true;
 				} else {
 					opt.tapSch(wlh.togTapSch());
@@ -6661,6 +6665,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
 					}
+				}
+			} break;
+			/* 点击查词 */
+			case R.id.tapSch1:{
+				if(isLongClicked){ // 显示设置
+					wordPopup.init();
+					wordPopup.onClick(wordPopup.popupContentView.findViewById(R.id.mode));
+					closeMenu=ret=true;
+				} else {
+				
 				}
 			} break;
 			case R.id.translate:{
@@ -7260,7 +7274,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						dictPicker.dataChanged();
 						VU.suppressNxtDialogReorder = true;
-						loadingWordPopup.popupWord(null, loadingWordPopup.popupKey, null, 0);
+						loadingWordPopup.popupWord(null, loadingWordPopup.popupKey, null, 0, false);
 						VU.suppressNxtDialogReorder = false;
 					} else {
 						plan = LastPlanName;
@@ -7760,7 +7774,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			//CMN.debug("onPageStarted::"+mWebView.wvclient, url);
+			CMN.debug("onPageStarted::"+mWebView.wvclient, url);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
 				final BookPresenter invoker = mWebView.presenter;
@@ -8224,7 +8238,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
 						url = URLDecoder.decode(url, "UTF-8");
 						if(popup){
-							popupWord(url, mWebView.presenter, mWebView.frameAt, mWebView);
+							popupWord(url, mWebView.presenter, mWebView.frameAt, mWebView, false);
 							return true;
 						}
 						else {
@@ -10486,7 +10500,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return true;
 		}
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
+			WebViewmy view = weblist.getWebContext();
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
+			if (view!=null && view.canGoBack()) {
+				view.goBack();
+				return true;
+			}
 		}
 		if(wordPopup.popupContentView!=null) { //todo
 			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();

@@ -42,7 +42,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -1407,7 +1406,7 @@ public class DBroswer extends DialogFragment implements
 				}
 				break;
 				case R.string.tapSch:
-					a.popupWord(getRowText(), null, -1, null);
+					a.popupWord(getRowText(), null, -1, null, false);
 					break;
 				case R.string.page_ucc:
 					if (isLongClick) {
@@ -1590,7 +1589,7 @@ public class DBroswer extends DialogFragment implements
 		if (a == null) return;
 		if(force==-1) force=PDICMainAppOptions.dbFetchWord();
 		if (force==2) {
-			a.popupWord(currentDisplaying, null, -1, null);
+			a.popupWord(currentDisplaying, null, -1, null, false);
 		} else if (force==3) {
 			enterPeruseMode(a, reader);
 		} else {
@@ -2107,7 +2106,7 @@ public class DBroswer extends DialogFragment implements
 		if(a==null) return true;
 		int id = item.getItemId();
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:a.getDummyMenuImpl(id);
-		boolean isLongClicked = mmi.isLongClicked;
+		boolean isLongClicked = mmi.isLongClicked!=0;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
