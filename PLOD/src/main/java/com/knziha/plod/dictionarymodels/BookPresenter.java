@@ -2005,7 +2005,7 @@ function debug(e){console.log(e)};
 				|| mWebView.weblistHandler.bDataOnly
 				//|| mWebView.weblistHandler.getSrc()==SearchUI.TapSch.MAIN && true
 				;
-		//loadUrl = true;
+		loadUrl = true;
     	//CMN.debug("loadUrl::", loadUrl);
 		try {
 			if(bookImpl.hasVirtualIndex())
@@ -3444,7 +3444,7 @@ function debug(e){console.log(e)};
 				MainActivityUIBase a = presenter.a;
 				WebViewmy wv = findWebview(sid);
 				//CMN.debug("popupWord::ivk::", presenter, wv, mergeView);
-				a.popupWord(key, null, frameAt, wv);
+				a.popupWord(key, null, frameAt, wv, true);
 				a.wordPopup.tapped = true;
 				if (false) {
 					if(frameAt>=0 && pH!=0){
