@@ -16,16 +16,15 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -473,7 +472,34 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			case R.id.mode:{
 				showSchModeDialog(v, false);
 			} break;
+			case R.id.single_tapsch_opt_1:
+			{
+				PDICMainAppOptions.singleTapSchMode(0);
+				switchToSingleTapSch();
+				((AlertDialog)ViewUtils.getViewHolderInParents(v, AlertDialog.class)).dismiss();
+			} break;
+			case R.id.single_tapsch_opt_2:
+			{
+				PDICMainAppOptions.singleTapSchMode(1);
+				switchToSingleTapSch();
+				((AlertDialog)ViewUtils.getViewHolderInParents(v, AlertDialog.class)).dismiss();
+			} break;
+			case R.id.single_tapsch_opt_3:
+			{
+				PDICMainAppOptions.singleTapSchMode(2);
+				switchToSingleTapSch();
+				((AlertDialog)ViewUtils.getViewHolderInParents(v, AlertDialog.class)).dismiss();
+			} break;
 		}
+	}
+	
+	private void switchToSingleTapSch() {
+		if (schMode!=0) { // 设置单本搜索模式
+			opt.tapSchMode(schMode = 0);
+			modeBtn.setImageResource(R.drawable.ic_btn_siglemode);
+			if(isVisible())startTask(WordPopupTask.TASK_POP_SCH);
+		}
+		dictPicker.filterByRec(null, 0);
 	}
 	
 	@Override
@@ -492,20 +518,17 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (tkSingle) {
 			AlertDialog dlg = dd!=null?(AlertDialog)dd.tag:null;
 			if (dlg==null || dd.isDark!=GlobalOptions.isDark) {
+				AlertDialog finalDd = dd;
 				dlg = new AlertDialog.Builder(a)
 						.setTitle("单本词典查询模式 :")
 						.setWikiText("亦可长按打开此对话框", null)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
-						.setSingleChoiceItems(R.array.click_search_mode_info, PDICMainAppOptions.getClickSearchMode(), new DialogInterface.OnClickListener() {
+						.setSingleChoiceItems(R.array.click_search_mode_info, PDICMainAppOptions.singleTapSchMode(), new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								PDICMainAppOptions.setClickSearchMode(which);
-								if (schMode!=0) { // 设置单本搜索模式
-									opt.tapSchMode(schMode = 0);
-									modeBtn.setImageResource(R.drawable.ic_btn_siglemode);
-									startTask(WordPopupTask.TASK_POP_SCH);
-								}
-								dictPicker.filterByRec(null, 0);
+								PDICMainAppOptions.singleTapSchMode(which);
+								switchToSingleTapSch();
+								if(finalDd !=null) ((BaseAdapter) finalDd.getListView().getAdapter()).notifyDataSetChanged();
 								dialog.dismiss();
 							}
 						}).create();
@@ -539,7 +562,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						opt.tapSchMode(schMode = which%3);
 						if(schMode==0) dictPicker.filterByRec(null, 0);
 						modeBtn.setImageResource(schMode==0?R.drawable.ic_btn_siglemode:R.drawable.ic_btn_multimode);
-						startTask(WordPopupTask.TASK_POP_SCH);
+						if(isVisible()) startTask(WordPopupTask.TASK_POP_SCH);
 						dialog.dismiss();
 					}
 					if (which==-1) {
@@ -549,30 +572,63 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				dd = new AlertDialog.Builder(a)
 						.setSingleChoiceLayout(R.layout.singlechoice_my)
 						.setAdapter(new AlertController.CheckedItemAdapter(a, R.layout.singlechoice_my, android.R.id.text1, items, null){
+							@Override
+							public int getViewTypeCount() {
+								return 2;
+							}
+							@Override
+							public int getItemViewType(int position) {
+								if (position==0) {
+									return 1;
+								}
+								return super.getItemViewType(position);
+							}
 							@NonNull
 							@Override
 							public View getView(int position, @Nullable View view, @NonNull ViewGroup parent) {
-								view = super.getView(position, view, parent);
-								CharSequence ret = getItem(position);
-								if (ret!=null && TextUtils.regionMatches(ret, ret.length()-3, ">>", 0, 2)) {
-									TextView tv = view.findViewById(android.R.id.text1);
-									SpannableString span = new SpannableString(ret);
-									ClickableSpan clkSpan = new ClickableSpan() {
-										@Override
-										public void onClick(@NonNull View widget) {
-											//listener.onClick((AlertDialog)ViewUtils.getWeakRefObj(v.getTag()), -(position+1));
+								View ret;
+								TextView tv;
+								if (position == 0) {
+									if (view == null)
+										view = a.getLayoutInflater().inflate(R.layout.single_tapsch_opt, parent, false);
+									int tmp = a.tintListFilter.sForeground;
+									a.tintListFilter.sForeground = GlobalOptions.isDark ? Color.WHITE:0xFF202020;
+									ViewUtils.setForegroundColor((ViewGroup) view, a.tintListFilter);
+									a.tintListFilter.sForeground = tmp;
+									ViewUtils.setOnClickListenersOneDepth((ViewGroup) view, WordPopup.this, 9, null);
+									ret = view;
+									ViewGroup vg = (ViewGroup) view;
+									tv = (TextView) vg.getChildAt(0);
+									vg = (ViewGroup) vg.getChildAt(1);
+									if (vg.getTag()==null) vg.setTag(a.mResource.getDrawable(R.drawable.frame_blue_btn));
+									((Drawable) (vg.getTag())).setColorFilter(GlobalOptions.isDark ? GlobalOptions.NEGATIVE:null);
+									for (int i = 0; i < 3; i++) {
+										boolean bBtnSeled = PDICMainAppOptions.singleTapSchMode()==i;
+										View _number = vg.getChildAt(i);
+										if (_number.getTag()==null) _number.setTag(_number.getBackground());
+										if (bBtnSeled ^ (_number.getBackground()==vg.getTag())) {
+											_number.setBackground((Drawable) (bBtnSeled?vg.getTag():_number.getTag()));
 										}
-									};
-									span.setSpan(clkSpan, ret.length()-3, ret.length()-1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-									tv.setText(span, TextView.BufferType.SPANNABLE);
-//									tv.setOnTouchListener(opt.XYTouchRecorderInstance());
+										//_number.setBackground((Drawable) vg.getTag());
+									}
+								} else {
+									ret = super.getView(position, view, parent);
+									tv = (TextView) ret;
 								}
-								return view;
+								if (schMode==position ^ TextUtils.regionMatches(tv.getText(), 0, " >> ", 0, 4)) {
+									if (schMode == position) {
+										tv.setText(" >> " + tv.getText());
+									} else {
+										tv.setText(tv.getText().toString().substring(4));
+									}
+								}
+								return ret;
 							}
 						}, listener)
 						.setSingleChoiceItems(items, 0, listener)
-						.setTitle("切换搜索模式").create();
+						.setTitle("切换词典模式").create();
 				tkMultiV.setTag(new WeakReference<>(dd));
+				dd.getListView().setTag(dd);
 				dd.getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 					@Override
 					public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -904,7 +960,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (popupKey!=null && sch) {
 			//SearchOne(task, taskVer, taskVersion);
 			boolean singleThread = false;
-			if (schMode==0 && PDICMainAppOptions.getClickSearchMode()==2 || popupForceId!=null) {
+			if (schMode==0 && PDICMainAppOptions.singleTapSchMode()==2 || popupForceId!=null) {
 				singleThread = true;
 			}
 			if (singleThread) {
@@ -1099,7 +1155,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if(!TextUtils.isEmpty(key)) {
 			String keykey;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
-			int SearchMode = PDICMainAppOptions.getClickSearchMode();
+			int SearchMode = PDICMainAppOptions.singleTapSchMode();
 			boolean hasDedicatedSeachGroup = SearchMode==1&&a.bHasDedicatedSeachGroup;
 			boolean reject_morph = false;
 			//轮询开始
@@ -1175,8 +1231,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		_treeBuilder.clear();
 		int paragraphWords = 9;
 		String searchText = popupKey;
+		if(TextUtils.isEmpty(searchText)) return;
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
 		//CMN.debug("isParagraph::", isParagraph);
+		//tg
 		_treeBuilder.setKeyClashHandler(searchText);
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
@@ -1228,7 +1286,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			CMN.debug("轮询开始::", CCD, CCD_ID, loadMan.md_get(CCD_ID));
 			BookPresenter webx = null;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
-			final int SearchMode = PDICMainAppOptions.getClickSearchMode();
+			final int SearchMode = PDICMainAppOptions.singleTapSchMode();
 			if(use_morph ^ forms.contains(queryMorphs)) {
 				if(use_morph) forms.add(queryMorphs);
 				else forms.remove(queryMorphs);
