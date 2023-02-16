@@ -10,6 +10,7 @@ import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceScreen;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -43,7 +44,10 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 							init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null, null);
 							break;
 						case "back_web":
-							init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null, null).setVisible(false);
+							init_switch_preference(this, "back_web", PDICMainAppOptions.revisitOnBackPressed(), null, null, null);
+							break;
+						case "swipeIME":
+							init_switch_preference(this, "swipeIME", PDICMainAppOptions.swipeTopShowKeyboard(), null, null, null);
 							break;
 						case "conext":
 							init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null, null);
@@ -147,7 +151,11 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
 			case "back_web":
-				PDICMainAppOptions.setUseBackKeyGoWebViewBack((Boolean) newValue);
+				PDICMainAppOptions.revisitOnBackPressed((Boolean) newValue);
+				break;
+			case "swipeIME":
+				PDICMainAppOptions.swipeTopShowKeyboard((Boolean) newValue);
+				SearchUI.tapZoomV++;
 				break;
 			case "conext":
 				int val = IU.parsint(newValue);

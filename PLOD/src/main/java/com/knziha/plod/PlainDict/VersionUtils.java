@@ -15,11 +15,6 @@ import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.widgets.RomUtils;
 import com.knziha.plod.widgets.ViewUtils;
 
-import org.apache.commons.text.StringEscapeUtils;
-
-import java.io.File;
-import java.util.HashMap;
-
 public class VersionUtils {
 	public static final boolean AnnotOff = false;
 	public static boolean firstInstall = false;
@@ -27,10 +22,12 @@ public class VersionUtils {
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
 		if(PDICMainAppOptions.checkVersionBefore_7_6()) {
+			PDICMainAppOptions.checkVersionBefore_7_6(false);
 			PDICMainAppOptions.setRebuildToast(false);
 			PDICMainAppOptions.singleTapSchMode(0);
 			PDICMainAppOptions.bottomNavWeb1(false);
 			PDICMainAppOptions.checkVersionBefore_7_6(false);
+			PDICMainAppOptions.revisitOnBackPressed(true);
 		}
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
@@ -44,14 +41,14 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 22);
 			opt.setInPeruseMode(false);
 			opt.menuOverlapAnchor(GlobalOptions.isSmall);
-			PDICMainAppOptions.setUseBackKeyGoWebViewBack(false);
+			PDICMainAppOptions.revisitOnBackPressed(false);
 			opt.slidePage1D(true);
 			opt.slidePageMD(true);
 			opt.slidePageMd(true);
 			opt.setTurnPageEnabled(true);
 			opt.schPageNavAudioKey(false);
 
-			opt.setUseBackKeyGoWebViewBack(false);
+			opt.revisitOnBackPressed(false);
 			opt.setUseBackKeyGoWebViewBack1(false);
 			opt.tapSchPageAutoReadEntry(false);
 

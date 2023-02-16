@@ -22,7 +22,7 @@ class CheckableDialogClicker implements View.OnClickListener {
 					if(PeruseIncharge)
 						opt.setUseBackKeyGoWebViewBack1(val);
 					else
-						opt.setUseBackKeyGoWebViewBack(val);
+						opt.revisitOnBackPressed(val);
 				break;
 				case R.string.webscroll_apply_all:
 					opt.setScrollTypeApplyToAll(val);

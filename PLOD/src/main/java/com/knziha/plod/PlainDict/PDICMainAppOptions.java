@@ -2198,8 +2198,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=45) public static boolean tapSchAutoReadEntry() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=45) public static void tapSchAutoReadEntry(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=46, shift=1) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=46) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static boolean revisitOnBackPressed() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static void revisitOnBackPressed(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}

@@ -6504,7 +6504,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					//ViewGroup cb3_tweaker = (ViewGroup) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material_seek_tweaker,null);
 					cb0.setText(R.string.backkey_web_goback);
 					cb0.setId(R.string.backkey_web_goback);
-					cb0.setChecked(bPeruseIncharge ? opt.getUseBackKeyGoWebViewBack1() : opt.getUseBackKeyGoWebViewBack());
+					cb0.setChecked(bPeruseIncharge ? opt.getUseBackKeyGoWebViewBack1() : opt.revisitOnBackPressed());
 					if (bPeruseIncharge)
 						cb0.setTag(false);
 					CheckableDialogClicker mVoutClicker = new CheckableDialogClicker(opt);
@@ -10537,8 +10537,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			stopAutoReadProcess();
 			return true;
 		}
-		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
-			WebViewmy view = weblist.getWebContext();
+		if(opt.revisitOnBackPressed() && !bBackBtn) {
+			WebViewListHandler wlh = weblistHandler;
+			for (int i = settingsPanels.size()-1; i >= 0; i--) {
+				if (settingsPanels.get(i).weblistHandler!=null) {
+					wlh = settingsPanels.get(i).weblistHandler;
+					break;
+				}
+			}
+			WebViewmy view = wlh.getWebContext();
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			if (view!=null && view.canGoBack()) {
 				layoutScrollDisabled = false;

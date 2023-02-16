@@ -266,17 +266,27 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 				return true;
 			}
 		}
-		if (weblistHandler!=null && PDICMainAppOptions.getUseBackKeyClearWebViewFocus()) {
-			WebViewmy wv = weblistHandler.dictView;
-			//CMN.debug("onBackPressed::wv==", wv);
-			if (wv!=null && (wv.bIsActionMenuShown||ViewUtils.isVisibleV2(weblistHandler.toolsBtn))) {
-				wv.clearFocus();
-				if (wv.bIsActionMenuShown) {
-					wv.evaluateJavascript("getSelection().collapseToStart()", null);
-				} else {
-					wv.weblistHandler.initQuickTranslatorsBar(false, false);
+		if (weblistHandler!=null) {
+			if (PDICMainAppOptions.getUseBackKeyClearWebViewFocus()) {
+				WebViewmy wv = weblistHandler.dictView;
+				//CMN.debug("onBackPressed::wv==", wv);
+				if (wv!=null && (wv.bIsActionMenuShown||ViewUtils.isVisibleV2(weblistHandler.toolsBtn))) {
+					wv.clearFocus();
+					if (wv.bIsActionMenuShown) {
+						wv.evaluateJavascript("getSelection().collapseToStart()", null);
+					} else {
+						wv.weblistHandler.initQuickTranslatorsBar(false, false);
+					}
+					return true;
 				}
-				return true;
+			}
+			if(opt.revisitOnBackPressed()) {
+				WebViewmy wv = weblistHandler.getWebContext();
+				if (wv!=null && wv.canGoBack()) {
+					MainActivityUIBase.layoutScrollDisabled = false;
+					wv.goBack();
+					return true;
+				}
 			}
 		}
 		return false;
