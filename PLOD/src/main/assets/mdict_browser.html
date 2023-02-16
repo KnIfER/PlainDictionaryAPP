@@ -1892,11 +1892,15 @@
 		var dex, dec, des, expanding;	
 		var currentFocus, scrollFocus, scrollFocusFz;
 
-		var firstVisFrame, lastVisFrame, midFrame;
+		var firstVisFrame, lastVisFrame, midFrame, scrolled;
 		function onWebListScroll(e){//滚动
 			if(processing) return;
 			//if(expanding) return;
 			var currentHeight=Math.ceil(defP.scrollTop);
+			if(app && (scrolled ^ (defP.scrollTop!=0))) {
+				scrolled = defP.scrollTop!=0;
+				app.scrollLckVer(sid.get(), scrolled);
+			}
 			//debug('onWebListScroll st', firstVisFrame, lastVisFrame);
 			var reCalc;
 			if(!withinFrame(currentHeight, firstVisFrame) 
