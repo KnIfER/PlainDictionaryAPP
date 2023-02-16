@@ -41,7 +41,7 @@ public class Toastable_FragmentActivity extends FragmentActivity {
 	{
 		if(opt==null)
 			opt=new PDICMainAppOptions(this);
-		if(m_currentToast == null || PDICMainAppOptions.getRebuildToast()){
+		if(m_currentToast == null || ViewUtils.bRebuildToast){
 			if(m_currentToast!=null)
 				m_currentToast.cancel();
 			if(toastTv==null) {

@@ -182,6 +182,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			entrySeek = contentUIData.entrySeek;
 			entrySeek.setOnSeekBarChangeListener(entrySeekLis);
 			pageSlider = contentUIData.PageSlider;
+			if (src==SearchUI.MainApp.MAIN || src==SearchUI.FloatApp.MAIN) {
+				pageSlider.onSwipeTopListener = a;
+			}
 			DragScrollBar mBar = this.mBar = contentUIData.dragScrollBar;
 			toolsBtn = contentUIData.tools;
 			toolsBtn.setOnClickListener(this);

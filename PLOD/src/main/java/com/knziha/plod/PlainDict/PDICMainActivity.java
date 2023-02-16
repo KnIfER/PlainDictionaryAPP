@@ -1781,6 +1781,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		//tg
+		
 		//com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
 		//showDictionaryManager();
 //		try {
@@ -1884,6 +1885,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
+				
+				//showT(CMN.Log("getRemPos", opt.getRemPos(), "bottomNaVWeb", PDICMainAppOptions.bottomNavWeb1(), "cs", opt.singleTapSchMode()));
+				
 				
 			}, 350);
 			//showAppTweaker();
@@ -3243,7 +3247,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					showT("已重置页面位置");
 					ret = true;
 				} else {
-					item.setChecked(opt.setRemPos(!opt.getRemPos()));
+					opt.setRemPos(!opt.getRemPos());
+					item.setChecked(opt.getRemPos());
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility((opt.getRemPos()?"已开启":"已关闭")+"记忆内容页位置");
 					}

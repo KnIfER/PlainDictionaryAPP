@@ -5897,6 +5897,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//if(target.getChildCount()==0)
 				AttachDBrowser(DB_HISTORY);
 			} break;
+			case R.id.PageSlider:
 			case R.drawable.ic_keyboard_show_24: {
 				etSearch.setSelectAllOnFocus(true);
 				etSearch.requestFocus();
@@ -7986,7 +7987,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else if (mWebView.weblistHandler.isViewSingle() && !mWebView.weblistHandler.bDataOnly)
 					{
-						if (mWebView.expectedPos >= 0) {
+						if (mWebView.expectedPos >= 0) { // here
 							lastClickTime = System.currentTimeMillis();
 							//layoutScrollDisabled=true;
 							CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
@@ -10450,6 +10451,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ret = DelegateSaveAndRestorePagePos().SaveAndRestoreSinglePageForAdapter(wv, pos, Ada);
 		} else {
 			wv.expectedPos=0;
+			wv.expectedPos=-100; // here
 			wv.expectedPosX=0;
 			bRequestedCleanSearch=false;
 		}
@@ -10539,6 +10541,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewmy view = weblist.getWebContext();
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			if (view!=null && view.canGoBack()) {
+				layoutScrollDisabled = false;
 				view.goBack();
 				return true;
 			}

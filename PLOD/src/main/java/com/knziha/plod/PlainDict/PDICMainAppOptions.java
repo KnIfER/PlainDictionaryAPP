@@ -24,8 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.model.GlideCacheModule;
-import com.knziha.filepicker.settings.FilePickerOptions;
-import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -1388,13 +1386,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=33, shift=1) public boolean autoSchPDict() { FirstFlag=FirstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=33, shift=1) public void autoSchPDict(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
-	public boolean getRemPos() {
-		return (FirstFlag & 0x400000000l) != 0x400000000l;
-	}
-	public boolean setRemPos(boolean val) {
-		updateFFAt(0x400000000l,!val);
-		return val;
-	}
+	@Metaline(flagPos=34, shift=1) public static boolean getRemPos(){ FirstFlag=FirstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=34, shift=1) public static void setRemPos(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException(); }
+	
 	public boolean getRemPos2() {
 		return (FirstFlag & 0x800000000l) == 0x800000000l;
 	}
@@ -1403,7 +1397,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	
 	//0x3 模板
 	@Deprecated
 	public int getDictManagerTap() {
@@ -1862,8 +1855,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=52) public static boolean pageSchSplitKeys(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=52) public static void pageSchSplitKeys(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
-	@Metaline(flagPos=53) public static boolean getRebuildToast(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	// yyy
+//	@Metaline(flagPos=53) public static boolean getRebuildToast(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=53) public static void setRebuildToast(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=53, shift=1) public static boolean swipeTopShowKeyboard() { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=53, shift=1) public static void swipeTopShowKeyboard(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=54) public static boolean pageSchDiacritic(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=54) public static void pageSchDiacritic(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
@@ -2019,39 +2016,19 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	/** @return integer: 0=Search in current dictionary group <br/>
 	 * 1=Search in dedicated click-search dictionaries in current dictionary group <br/>
 	 * 2=Search in current selected dictionary.<br/>*/
-	public static int getClickSearchMode() {
-		return (int) ((ThirdFlag >> 15) & 3);
-	}
-	public static int setClickSearchMode(int val) {
-		ThirdFlag = (ThirdFlag & ~0x8000l & ~0x10000l) | (((long)(val & 3)) << 15);
-		return val;
-	}
+	@Metaline(flagPos=15, flagSize=2, max=2) public static int singleTapSchMode(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=15, flagSize=2, max=2) public static void singleTapSchMode(int val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
 	//xxx
 	/** persist 底栏前后切换按钮之功能为网页的前后导航。对主界面等有效。see {@link WebViewListHandler#bShowingInPopup} */
-	@Metaline(flagPos=16) public static boolean bottomNavWeb1(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=16) public static void bottomNavWeb1(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=17) public static boolean bottomNavWeb1(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=17) public static void bottomNavWeb1(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
+	@Metaline(flagPos=18) public static boolean getSwichClickSearchDictOnNav(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=18) public static void setSwichClickSearchDictOnNav(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
-//	public static boolean getSwichClickSearchDictOnBottom() {
-//		return (ThirdFlag & 0x20000l) != 0x20000l;
-//	}
-//	public static boolean setSwichClickSearchDictOnBottom(boolean val) {
-//		updateTFAt(0x20000l,!val);
-//		return val;
-//	}
-
-	public static boolean getSwichClickSearchDictOnNav() {
-		return (ThirdFlag & 0x40000l) == 0x40000l;
-	}
-	public static boolean setSwichClickSearchDictOnNav(boolean val) {
-		updateTFAt(0x40000l,val);
-		return val;
-	}
-	
 	@Metaline(flagPos=19, shift=1) public static boolean showPrvBtn() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=19, shift=1) public static void showPrvBtn(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-
 	
 	public static boolean getAdvSearchUseWildcard() {
 		return (ThirdFlag & 0x100000l) != 0x100000l;
@@ -2221,7 +2198,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=45) public static boolean tapSchAutoReadEntry() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=45) public static void tapSchAutoReadEntry(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=46) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=46) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
@@ -2669,10 +2646,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=51) public static boolean getServerStarted() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=51) public static void setServerStarted(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_2() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_5_2(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_2() { FourthFlag=FourthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_5_2(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=52) public static boolean pinPDicWrd() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52) public static void pinPDicWrd(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
@@ -2727,13 +2704,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=10, shift=1) public boolean togAdjScnShwn() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
 	
-	
-	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_5_3() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_5_3(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
-	
 	@Metaline(flagPos=11) public static boolean pinPDicFlt() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=11) public static void pinPDicFlt(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
@@ -2743,10 +2713,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=14, shift=0) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=14, shift=0) public static void setUseDatabaseV2(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
-	
-	
-	@Metaline(flagPos=15, shift=1) public static boolean checkVersionBefore_5_0() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=15, shift=1) public static void uncheckVersionBefore_5_0(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=15) public static boolean pinPDicWrdShow() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=15) public static void pinPDicWrdShow(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2760,9 +2726,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=18, debug=0) public boolean getAutoBuildIndex() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	public static boolean bCheckVersionBefore_5_4;
-	@Metaline(flagPos=19, shift=1) public static boolean checkVersionBefore_5_4() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=19, shift=1) public static void uncheckVersionBefore_5_4(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=19, shift=1) public static boolean checkVersionBefore_7_6() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=19, shift=1) public static void checkVersionBefore_7_6(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=20, shift=1/*, debug=0*/) public static boolean getPowerSavingPageSideView() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=20, shift=1) public static void setPowerSavingPageSideView(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -3366,6 +3331,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=57) public static boolean dictManagerClickPopup() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=57) public static void dictManagerClickPopup(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=58, shift=1) public static boolean tapViewDefMain() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=58, shift=1) public static void tapViewDefMain(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=59, shift=1) public static boolean swipeTopShowKeyboardStrict() { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59, shift=1) public static void swipeTopShowKeyboardStrict(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////

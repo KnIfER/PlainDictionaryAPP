@@ -26,30 +26,16 @@ public class VersionUtils {
 	public static final int UpgradeCode = 1024;
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
-		if(PDICMainAppOptions.checkVersionBefore_4_0()) {
-//			PDICMainAppOptions.setSimpleMode(false);
-//			PDICMainAppOptions.uncheckVersionBefore_4_0(false);
-//			PDICMainAppOptions.setLeaveContentBlank(Build.VERSION.SDK_INT>Build.VERSION_CODES.KITKAT);
-//			PDICMainAppOptions.setAnimateContents(Build.VERSION.SDK_INT>Build.VERSION_CODES.KITKAT);
-//			PDICMainAppOptions.setRebuildToast(Build.VERSION.SDK_INT>=Build.VERSION_CODES.P);
-		}
-		if(PDICMainAppOptions.checkVersionBefore_4_9()) {
-//			PDICMainAppOptions.uncheckVersionBefore_4_9(false);
-//			opt.setPinDialog_2(true);
-		}
-		if(PDICMainAppOptions.checkVersionBefore_5_0()) {
-		
+		if(PDICMainAppOptions.checkVersionBefore_7_6()) {
+			PDICMainAppOptions.setRebuildToast(false);
+			PDICMainAppOptions.singleTapSchMode(0);
+			PDICMainAppOptions.bottomNavWeb1(false);
+			PDICMainAppOptions.checkVersionBefore_7_6(false);
 		}
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
 			CMN.debug("初始化版本!!!");
 			firstInstall = true;
-			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
-			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
-			PDICMainAppOptions.uncheckVersionBefore_5_0(true);
-			PDICMainAppOptions.uncheckVersionBefore_5_2(true);
-			PDICMainAppOptions.uncheckVersionBefore_5_3(true);
-			PDICMainAppOptions.uncheckVersionBefore_5_4(true);
 			opt.setTypeFlag_11_AtQF(0, 0);
 			opt.setTypeFlag_11_AtQF(0, 2);
 			opt.setTypeFlag_11_AtQF(0, 4);

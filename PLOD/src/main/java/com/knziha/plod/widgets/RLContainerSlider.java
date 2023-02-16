@@ -8,6 +8,8 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import static android.view.MotionEvent.*;
+
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -62,6 +64,7 @@ public class RLContainerSlider extends FrameLayout {
 	ImageView swipeRefreshIcon;
 	float swipeRefreshDy;
 	int swipeRefreshTheta;
+	public View.OnClickListener onSwipeTopListener;
 	
 	public RLContainerSlider(Context context) {
 		this(context, null);
@@ -74,7 +77,7 @@ public class RLContainerSlider extends FrameLayout {
 		
 		swipeRefreshIcon = new ImageView(context);
 		int iconSz = (int) (50*GlobalOptions.density);
-		swipeRefreshTheta = (int) (100*GlobalOptions.density);
+		swipeRefreshTheta = (int) (99*GlobalOptions.density);
 		LayoutParams lp = new LayoutParams(iconSz, iconSz);
 		lp.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
 		swipeRefreshIcon.setLayoutParams(lp);
@@ -86,6 +89,7 @@ public class RLContainerSlider extends FrameLayout {
 	
 	private void resetSwipeIcon() {
 		swipeRefreshIcon.animate().translationY(0).alpha(0);
+		swipeRefreshed = false;
 	}
 	
 	int first_touch_id=-1;
@@ -100,8 +104,10 @@ public class RLContainerSlider extends FrameLayout {
 	public boolean slideTurn = false;
 	/** Tap twice and quick zoom enabled  */
 	public boolean tapZoom;
-	/** 上拉刷新  */
-	public boolean swipeRefresh = true;
+	/** 下拉刷新  */
+	public boolean swipeRefresh = false;
+	public boolean swipeRefreshAllow = false;
+	public boolean swipeRefreshed = false;
 
 	boolean flingDeteced;
 	/** Tap Twice Deteced */
@@ -308,17 +314,21 @@ public class RLContainerSlider extends FrameLayout {
 						if(swipeRefreshDy>swipeRefreshTheta) swipeRefreshDy = swipeRefreshTheta;
 						swipeRefreshIcon.setTranslationY(swipeRefreshDy);
 						swipeRefreshIcon.setAlpha(swipeRefreshDy/swipeRefreshTheta);
-						if(swipeRefreshDy<=0) {
+						if (swipeRefreshDy <= 0) {
 							aborted = 2;
 							dragged = 0;
 							first_touch_id = -1;
-							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
-							if(scrollView !=null
-									&& (WebContext==null || WebContext.AlwaysCheckRange!=0)) {
+							ViewUtils.preventDefaultTouchEvent(this, (int) lastX, (int) lastY);
+							if (scrollView != null
+									&& (WebContext == null || WebContext.AlwaysCheckRange != 0)) {
 								ev.setAction(ACTION_DOWN);
 								//((WebView)scrollView).getSettings().setSupportZoom(false);
 								scrollView.dispatchTouchEvent(ev);
 							}
+						} else if (swipeRefreshDy >= swipeRefreshTheta) {
+							swipeRefreshed = true;
+						} else if(swipeRefreshDy <= swipeRefreshTheta - 10){
+							swipeRefreshed = false;
 						}
 					}
 					else if(aborted!=0) {
@@ -445,7 +455,12 @@ public class RLContainerSlider extends FrameLayout {
 		first_touch_id=-1;
 		if(dragged!=0) {
 			//detector = new GestureDetector(getContext(), gl);
-			if(dragged==2) resetSwipeIcon();
+			if(dragged==2) {
+				if (swipeRefreshed && onSwipeTopListener!=null) {
+					onSwipeTopListener.onClick(this);
+				}
+				resetSwipeIcon();
+			}
 			dragged=0;
 			if(page.dragged) page.RePosition();
 		}
@@ -472,6 +487,13 @@ public class RLContainerSlider extends FrameLayout {
 			OrgX = ev.getX();
 			OrgY = ev.getY();
 			if(twiceDetected) twiceDetected = false;
+			if (swipeRefresh) {
+				if (!PDICMainAppOptions.swipeTopShowKeyboardStrict() || WebContext==null) {
+					swipeRefreshAllow = true;
+				} else {
+					swipeRefreshAllow = WebContext.getScrollY()==0;
+				}
+			}
 		}
 		if (masked==ACTION_UP) {
 			checkBar();
@@ -507,7 +529,7 @@ public class RLContainerSlider extends FrameLayout {
 			return true;
 		}
 		
-		if(!slideTurn && !swipeRefresh) return false;
+		if(!slideTurn && !swipeRefreshAllow) return false;
 
 		boolean ret = super.onInterceptTouchEvent(ev);
 
@@ -576,20 +598,29 @@ public class RLContainerSlider extends FrameLayout {
 							}
 							//CMN.debug("theta", theta, dx);
 							
-							if(swipeRefresh && dragged==0 && aborted!=1)
+							if(swipeRefreshAllow && dragged==0 && aborted!=1)
 							{
 								float dy = lastY - OrgY;
 								if(dy>0)
-								if (WebContext == null && scrollView!=null && scrollView.getScrollY()==0
-										|| (WebContext.scrollLck & 4) == 0 && WebContext.getScrollY()==0)
 								{
-									dragInitDy = dy;
-									if (dx == 0) dx = 0.000001f;
-									dx = dy / dx;
-									theta = (int) (GlobalOptions.density);
-									if (dx > theta || dx <= -theta) {//3.3
-										swipeRefreshDy = dy;
-										dragged = 2;
+									boolean drg = WebContext == null || (WebContext.scrollLck & 4) == 0 && WebContext.getScrollY()==0;
+									if (scrollView!=null) {
+										if (scrollView!=WebContext && scrollView instanceof WebViewListHandler) {
+											drg &= ((WebViewListHandler) scrollView).WHP.getScrollY() == 0;
+										} else {
+											drg &= scrollView.getScrollY()==0;
+										}
+									}
+									if (drg)
+									{
+										dragInitDy = dy;
+										if (dx == 0) dx = 0.000001f;
+										dx = dy / dx;
+										theta = (int) (GlobalOptions.density);
+										if (dx > theta || dx <= -theta) {//3.3
+											swipeRefreshDy = dy;
+											dragged = 2;
+										}
 									}
 								}
 							}
@@ -672,6 +703,7 @@ public class RLContainerSlider extends FrameLayout {
 		} else if(slideTurn) {
 			slideTurn = false;
 		}
+		swipeRefresh = onSwipeTopListener!=null && PDICMainAppOptions.swipeTopShowKeyboard();
 		nothing = !swipeRefresh && !slideTurn && !tapZoom;
 	}
 	

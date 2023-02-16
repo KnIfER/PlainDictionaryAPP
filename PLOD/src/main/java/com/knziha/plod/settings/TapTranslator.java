@@ -51,7 +51,7 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 							break;
 						case "mode_cs":
 							//init_switch_preference(this, "multi_cs", PDICMainAppOptions.getMultipleClickSearch(), null, p);
-							init_number_info_preference(this, "mode_cs", PDICMainAppOptions.getClickSearchMode(), R.array.click_search_mode_info, null, p);
+							init_number_info_preference(this, "mode_cs", PDICMainAppOptions.singleTapSchMode(), R.array.click_search_mode_info, null, p);
 							break;
 						case "pin_upstream":
 							//init_switch_preference(this, "skip_nom", PDICMainAppOptions.getSkipClickSearch(), null, p);
@@ -187,7 +187,7 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 			break;
 			case "mode_cs":
 				int val = IU.parsint(newValue, 0);
-				PDICMainAppOptions.setClickSearchMode(val);
+				PDICMainAppOptions.singleTapSchMode(val);
 				preference.setSummary(getResources().getStringArray(R.array.click_search_mode_info)[val]);
 			break;
 			case "pin_upstream":

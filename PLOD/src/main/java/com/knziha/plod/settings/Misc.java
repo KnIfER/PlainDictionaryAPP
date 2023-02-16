@@ -9,6 +9,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class Misc extends PlainSettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_misc;
@@ -37,7 +38,7 @@ public class Misc extends PlainSettingsFragment implements Preference.OnPreferen
 		init_switch_preference(this, "menuBelow", !PDICMainAppOptions.menuOverlapAnchor(), null, null, null);
 		
 		
-		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null, null);
+		init_switch_preference(this, "1toast", ViewUtils.bRebuildToast, null, null, null).setEnabled(false);
 		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null, null);
 
 	}
@@ -104,9 +105,9 @@ public class Misc extends PlainSettingsFragment implements Preference.OnPreferen
 			case "menuBelow":
 				PDICMainAppOptions.menuOverlapAnchor(!(Boolean) newValue);
 			break;
-			case "1toast":
-				PDICMainAppOptions.setRebuildToast((Boolean) newValue);
-			break;
+//			case "1toast":
+//				PDICMainAppOptions.setRebuildToast((Boolean) newValue);
+//			break;
 			case "rtoast":
 				PDICMainAppOptions.setToastRoundedCorner((Boolean) newValue);
 				((Toastable_Activity)getActivity()).showT("no where, now here");

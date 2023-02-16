@@ -177,6 +177,7 @@ public class ViewUtils extends VU {
 	public static final boolean hugeHimalaya = Build.VERSION.SDK_INT>=Build.VERSION_CODES.P;
 	
 	public static ColorDrawable GrayBG = new ColorDrawable(0xff8f8f8f);
+	public static boolean bRebuildToast = Build.VERSION.SDK_INT>=Build.VERSION_CODES.P;
 	
 	static int getDP(int dp, View v){
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, v.getResources().getDisplayMetrics());
