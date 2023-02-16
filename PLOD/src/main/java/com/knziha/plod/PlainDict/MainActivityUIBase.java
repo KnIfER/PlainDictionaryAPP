@@ -706,7 +706,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (wv.bIsActionMenuShown) {
 				wv.evaluateJavascript("getSelection().collapseToStart()", null);
 			} else {
-				wv.weblistHandler.initQuickTranslatorsBar(false, false);
+				//wv.weblistHandler.initQuickTranslatorsBar(false, false);
+				wv.weblistHandler.textMenu(null);
 			}
 			return true;
 		}

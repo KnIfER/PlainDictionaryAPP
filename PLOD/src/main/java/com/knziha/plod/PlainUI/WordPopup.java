@@ -1470,6 +1470,13 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				} else {
 					loadEntry(0, true);
 				}
+				if(bFromWebTap)
+					renderingWV.post(new Runnable() {
+						@Override
+						public void run() {
+							wlh.textMenu(null);
+						}
+					});
 			} else if(b1 && isMaximized()){
 				dismiss();
 			}
@@ -1511,7 +1518,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		final WebViewmy multiView = bFromWebTap?invoker:mWebView;
 		WebViewListHandler wlh = multiView.weblistHandler;
 		if(bFromWebTap) wlh.bDataOnly = true;
-		wlh.setViewMode(rec, isMergingFramesNum(), multiView);
+		wlh.setViewMode(rec, bFromWebTap?1:isMergingFramesNum(), multiView);
+		if(bFromWebTap) wlh.bDataOnly = false;
 		multiView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 		if (multiView.wvclient != a.myWebClient) {
 			multiView.setWebChromeClient(a.myWebCClient);
@@ -1525,7 +1533,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if(!bFromWebTap)
 			dictPicker.filterByRec(rec, pos);
 		setTranslator(rec, pos);
-		if(bFromWebTap) wlh.bDataOnly = false;
+		if(bFromWebTap) wlh.textMenu(null);
 	}
 	
 	private int isMergingFramesNum() {
