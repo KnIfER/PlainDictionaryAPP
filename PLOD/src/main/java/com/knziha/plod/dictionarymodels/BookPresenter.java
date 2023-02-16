@@ -2640,6 +2640,16 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		@JavascriptInterface
+		public void scrollLckVer(int sid, boolean scrollLck) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					wv.scrollLckVer = scrollLck;
+				}
+			}
+		}
+		
 		
 		@JavascriptInterface
 		public void randxLoaded(int sid) {

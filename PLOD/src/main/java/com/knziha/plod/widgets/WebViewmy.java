@@ -79,6 +79,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式。*/
 	public int fromCombined;
 	public int scrollLck;
+	public boolean scrollLckVer;
 	public boolean bMaybeHasSoundOnPage;
 	private String useragent;
 	
@@ -267,6 +268,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		drawRect=false;
 		isloading=true;
 		scrollLck=0;
+		scrollLckVer = false;
 		bMaybeHasSoundOnPage = false;
 		if (ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
 			weblistHandler.textMenu(null);
@@ -304,6 +306,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		isloading=true;
 		scrollLck=0;
 		recUrl(url);
+		scrollLckVer = false;
 		bMaybeHasSoundOnPage = false;
 		if (ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
 			weblistHandler.textMenu(null);

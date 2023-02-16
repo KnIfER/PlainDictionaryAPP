@@ -11,6 +11,7 @@ import static android.view.MotionEvent.*;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -242,9 +243,6 @@ public class RLContainerSlider extends FrameLayout {
 		if(fastTapZoom) {
 			handleFastZoom(ev);
 			return fastTapZoom;
-		}
-		if(swipeRefresh) {
-		
 		}
 		if(!slideTurn) return false;
 		if(dragged==0 && aborted==0) return true;
@@ -492,6 +490,13 @@ public class RLContainerSlider extends FrameLayout {
 					swipeRefreshAllow = true;
 				} else {
 					swipeRefreshAllow = WebContext.getScrollY()==0;
+					if (swipeRefreshAllow && WebContext.merge && PDICMainAppOptions.swipeTopShowKeyboardStrict()) {
+						WebContext.evaluateJavascript("defP.scrollTop==0", value -> {
+							if ("false".equals(value)) {
+								swipeRefreshAllow = false;
+							}
+						});
+					}
 				}
 			}
 		}
@@ -603,7 +608,7 @@ public class RLContainerSlider extends FrameLayout {
 								float dy = lastY - OrgY;
 								if(dy>0)
 								{
-									boolean drg = WebContext == null || (WebContext.scrollLck & 4) == 0 && WebContext.getScrollY()==0;
+									boolean drg = WebContext == null || !WebContext.scrollLckVer && WebContext.getScrollY()==0;
 									if (scrollView!=null) {
 										if (scrollView!=WebContext && scrollView instanceof WebViewListHandler) {
 											drg &= ((WebViewListHandler) scrollView).WHP.getScrollY() == 0;
