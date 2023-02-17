@@ -8428,7 +8428,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		String key=null;
 		int schemaIdx = url.indexOf(":");
-		WebResourceResponse fakedDomainResponse = null;
+		WebResourceResponse fakedDomainResponse = emptyResponse;
 		if(schemaIdx==-1){
 			if(url.startsWith("./"))
 				key=url.substring(1);
@@ -8924,7 +8924,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		catch (Exception e) {
 			CMN.debug(e);
 			//return super.shouldInterceptRequest(view, url);
-			return null;
+			return fakedDomainResponse;
 		}
 	}
 	
