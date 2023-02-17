@@ -8050,6 +8050,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				ViewUtils.toolsBoost(mWebView);
 			
 			if(mWebView.fromCombined==1 && awaiting) loadNext(mWebView);
+			if (mWebView.cleanPage) {
+				mWebView.clearHistory();
+				mWebView.cleanPage = false;
+			}
 		}
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {

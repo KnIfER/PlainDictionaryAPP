@@ -250,6 +250,7 @@ public class ListViewAdapter extends BasicAdapter {
 		} else {
 			mWebView = weblistHandler.getMergedFrame(presenter);
 		}
+		if(PDICMainAppOptions.revisitOnBackPressed()) mWebView.cleanPage = true;
 		this.mWebView = mWebView;
 		weblistHandler.setViewMode(null, 0, mWebView);
 		weblistHandler.initMergedFrame(0, false, bUseMergedUrl);

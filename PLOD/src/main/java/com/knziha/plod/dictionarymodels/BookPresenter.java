@@ -2005,8 +2005,8 @@ function debug(e){console.log(e)};
 				|| mWebView.weblistHandler.bDataOnly
 				//|| mWebView.weblistHandler.getSrc()==SearchUI.TapSch.MAIN && true
 				;
-		loadUrl = true;
-    	//CMN.debug("loadUrl::", loadUrl);
+//		loadUrl = true;
+//    	CMN.debug("loadUrl::", loadUrl);
 		try {
 			if(bookImpl.hasVirtualIndex())
 				try {

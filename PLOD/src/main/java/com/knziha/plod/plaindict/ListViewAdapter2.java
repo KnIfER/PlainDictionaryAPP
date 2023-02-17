@@ -326,6 +326,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		results.renderContentAt(lastClickedPos, a,this, weblistHandler);
 		
+		if(PDICMainAppOptions.revisitOnBackPressed()) weblistHandler.getWebContextNonNull().cleanPage = true;
+		
 		weblistHandler.setStar(lstKey);
 		
 		presenter = a.getBookById(results.bookId);
