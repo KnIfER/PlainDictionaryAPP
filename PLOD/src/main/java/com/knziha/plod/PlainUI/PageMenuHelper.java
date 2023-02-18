@@ -48,7 +48,7 @@ public class PageMenuHelper {
 						,R.string.bmAdd
 						,R.string.page_fuzhi
 						,R.string.page_dakai
-						,R.string.refresh
+						,R.layout.page_dopt_refresh
 						,R.string.page_ucc
 					};
 				break;

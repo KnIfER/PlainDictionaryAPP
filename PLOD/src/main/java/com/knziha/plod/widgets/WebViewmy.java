@@ -485,9 +485,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 						} else if(cI instanceof FlowTextView){
 							((FlowTextView)cI).setTextColor(foregroundColor);
 						}
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && cI.getId()==R.id.dopt) {
 							Drawable background = cI.getBackground();
 							if (GlobalOptions.sModRippleColor && background instanceof RippleDrawable) {
+								// todo 染色 listChoice
 								VU.sTintListFilter.ModRippleColor(background, VU.sTintListFilter.sRippleStateToolbar);
 							}
 						}

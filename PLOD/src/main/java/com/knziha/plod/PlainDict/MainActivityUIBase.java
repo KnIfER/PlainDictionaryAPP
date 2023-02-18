@@ -6882,6 +6882,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mWebView.reload();
 				}
 				break;
+			case R.string.dict_opt:
+				if (mWebView.toolbar_title != null) {
+					mWebView.toolbar_title.performClick();
+				}
+				break;
 			case R.string.page_source:
 				book.bViewSource=true;
 				book.renderContentAt(-1, book.RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
