@@ -98,6 +98,15 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 						case "neo1":
 							init_switch_preference(this, "neo1", PDICMainAppOptions.entryInNewWindowSingle(), null, null, p);
 							break;
+						case "newDef1":
+							init_switch_preference(this, "newDef1", PDICMainAppOptions.tapDefInNewWindow1(), null, null, p);
+							break;
+						case "newDef2":
+							init_switch_preference(this, "newDef2", PDICMainAppOptions.tapDefInNewWindow2(), null, null, p);
+							break;
+						case "newDefM":
+							init_switch_preference(this, "newDefM", PDICMainAppOptions.tapDefInNewWindowMerged(), null, null, p);
+							break;
 						case "tz":
 							init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomGlobal(), null, null, p);
 							break;
@@ -232,6 +241,15 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			case "neoS":
 				PDICMainAppOptions.entryInNewWindowMulti((Boolean) newValue);
 			break;
+			case "newDef1":
+				PDICMainAppOptions.tapDefInNewWindow1((Boolean) newValue);
+				break;
+			case "newDef2":
+				PDICMainAppOptions.tapDefInNewWindow2((Boolean) newValue);
+				break;
+			case "newDefM":
+				PDICMainAppOptions.tapDefInNewWindowMerged((Boolean) newValue);
+				break;
 			case "debug":
 				PDICMainAppOptions.debug((Boolean) newValue);
 				if (MdictServer.hasRemoteDebugServer = (Boolean) newValue) {

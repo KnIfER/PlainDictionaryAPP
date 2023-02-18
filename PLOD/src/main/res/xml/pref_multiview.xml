@@ -16,8 +16,61 @@
 		/>
 
 	<PreferenceCategory
+		android:key="cat-1"
+		android:title="单页面模式（同一词典）"
+		app:icon="@drawable/ic_view_comfy_1_black_24dp"
+		android:tint="@color/colorHeaderBlue"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="share"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用公共的视图显示"
+			android:summary="节省资源"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="exempt"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在线词典使用自己的视图"
+			android:summary="加载更快"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="neo1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在新窗口中打开词条跳转"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="newDef1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在新窗口中点击查词 ::"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turn1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许滑动翻页"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="url1"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="始终以url形式加载页面"
+			android:summary="可能影响加速度。若关闭，返回页面历史也许无法恢复位置。"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="cat0"
-		android:title="多页面设置（联合搜索）"
+		android:title="旧版多页面列表（联合搜索）"
 		app:icon="@drawable/ic_viewpager_carousel_vertical"
 		android:tint="@color/colorHeaderBlue"
 		android:clickable="true"
@@ -74,6 +127,13 @@
 			app:allowDividerBelow="true"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="newDef2"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="在新窗口中点击查词 ::"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="turn2"
 			android:persistent="false"
 			android:defaultValue="false"
@@ -83,7 +143,7 @@
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:key="cat1"
-		android:title="合并多页面"
+		android:title="新版合并多页面（联合搜索）"
 		app:icon="@drawable/ic_view_comfy_2_black_24dp"
 		android:tint="@color/colorHeaderBlue"
 		android:clickable="true"
@@ -105,6 +165,13 @@
 			app:allowDividerBelow="true"
 			app:hasCheck="true"
 			/>
+		<Preference
+			android:key=""
+			android:persistent="false"
+			android:title="注 : 合并多页面与局域网页版相同，可详细设置，定制内容展开模式"
+			android:summary="需前往内容页面，长按右下角的^v切换按钮打开详细设置，或用宫格菜单打开。"
+			app:allowDividerBelow="true"
+			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="tseyhu"
 			android:persistent="false"
@@ -117,6 +184,13 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="在新窗口中打开词条跳转"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="newDefM"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="在新窗口中点击查词 ::"
 			app:allowDividerBelow="true"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
@@ -136,7 +210,7 @@
 
 	<PreferenceCategory
 		android:key="cat2"
-		android:title="屏风模式"
+		android:title="屏风模式（联合搜索）"
 		app:icon="@drawable/ic_view_carousel_black_24dp"
 		android:tint="@color/colorHeaderBlue"
 		>
@@ -162,53 +236,6 @@
 			android:title="允许显示拖动条"
 			/>
 	</PreferenceCategory>
-
-	<PreferenceCategory
-		android:key="cat-1"
-		android:title="单页面模式（同一词典）"
-		app:icon="@drawable/ic_view_comfy_1_black_24dp"
-		android:tint="@color/colorHeaderBlue"
-		>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="share"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="使用公共的视图显示"
-			android:summary="节省资源"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="exempt"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="在线词典使用自己的视图"
-			android:summary="加载更快"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="neo1"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="在新窗口中打开词条跳转"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="turn1"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="允许滑动翻页"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="url1"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="始终以url形式加载页面"
-			android:summary="或可加快加速度。"
-			app:allowDividerBelow="true"
-			/>
-	</PreferenceCategory>
-
 
 	<PreferenceCategory
 		android:key="margin"

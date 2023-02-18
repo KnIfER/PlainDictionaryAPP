@@ -17,6 +17,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -62,16 +63,19 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
 			AllMenus.tag = weblistHandler;
+			AllMenus.multiColumn = 1|2;
 			AllMenus.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked);
 			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
 			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach
 			//AllMenus.getItems().set(4, a.getMenuSTd(R.id.translator));
 			if(weblistHandler.tapSch) {
-				ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
+				if(weblistHandler.tapDef) ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch1).setChecked(true);
+				else ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
 			}
-			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 8, 5);
-			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 8, 5);//new ArrayList<>(AllMenus.mItems);
+			
+			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 9, 8, 5);
+			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 9, 8, 5);//new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
 			
@@ -154,6 +158,9 @@ public class AlloydPanel extends PlainAppPanel {
 	 protected void onShow() {
 		 if (a.wordCamera!=null) {
 			 a.wordCamera.onPause();
+		 }
+		 if (PDICMainAppOptions.revisitOnBackPressed() && weblistHandler!=null/* && (pop==null || !pop.isShowing())*/) {
+			 weblistHandler.getMergedFrame().cleanPage = true;
 		 }
 	 }
  }

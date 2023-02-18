@@ -3465,20 +3465,6 @@ function debug(e){console.log(e)};
 				//CMN.debug("popupWord::ivk::", presenter, wv, mergeView);
 				a.popupWord(key, null, frameAt, wv, wv.weblistHandler.tapDef && wv.weblistHandler.tapSch);
 				a.wordPopup.tapped = true; // todo redu
-				if (false) {
-					if(frameAt>=0 && pH!=0){
-						if(pW==0) pW=pH;
-						if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
-							//Utils.setFloatTextBG(new Random().nextInt());
-							//CMN.Log("popupWord::", pX, pY, pW, pH);
-							//CMN.Log("只管去兮不管来", wv!=null);
-							if(wv!=null){
-								float density = dm.density;
-								wv.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
-							}
-						}
-					}
-				}
 			} catch (Exception e) {
 				CMN.Log(e);
 			}

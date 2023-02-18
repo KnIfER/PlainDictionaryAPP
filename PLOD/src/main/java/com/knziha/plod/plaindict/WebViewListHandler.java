@@ -98,6 +98,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final MainActivityUIBase a;
 	/** Search-On-Page Control Flag. 网页设置标志位 指示是否开启点击翻译、页内搜索设置 */
 	public int shezhi;
+	public boolean bIsPopup;
 	/** Flag Backup. 设置备份，同于比对变化。 */
 	int szStash;
 	/** see{@link com.knziha.plod.db.SearchUI }*/

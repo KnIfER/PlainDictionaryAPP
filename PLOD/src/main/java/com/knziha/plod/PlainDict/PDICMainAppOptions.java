@@ -380,6 +380,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 				return SevenFlag();
 			case 8:
 				return EightFlag();
+			case 9:
+				return NinthFlag();
 		}
 		return tmpFlag;
 	}
@@ -393,6 +395,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		flags[5] = getSixthFlag();
 		flags[6] = getSevenFlag();
 		flags[7] = getEightFlag();
+		flags[8] = getNinthtFlag();
 	}
 	
 	public final boolean isFlagsChanged(long[] flags) {
@@ -404,6 +407,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 				|| flags[5] != SixthFlag
 				|| flags[6] != SevenFlag
 				|| flags[7] != EightFlag
+				|| flags[8] != NinthFlag
 				;
 	}
 	
@@ -416,7 +420,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 				.putLong("MVF",FifthFlag)
 				.putLong("MVIF",SixthFlag)
 				.putLong("M7F",SevenFlag)
-				.putLong("M8F",EightFlag);
+				.putLong("M8F",EightFlag)
+				.putLong("M9F",NinthFlag)
+				;
 	}
 	
 	public void Flag(int flagIndex, long val) {
@@ -447,6 +453,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 				break;
 			case 8:
 				EightFlag=val;
+				break;
+			case 9:
+				NinthFlag=val;
 				break;
 			default:
 				tmpFlag=val;
@@ -2875,8 +2884,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=3, shift=1) public static void debug(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=4, shift=1) public static boolean popuploadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=5) public static boolean alwaysloadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=5) public static void alwaysloadUrl(boolean value) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5, shift=1) public static boolean alwaysloadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5, shift=1) public static void alwaysloadUrl(boolean value) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=4, shift=1) public static boolean loadUrlPopup() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=5) public static boolean loadUrlOne() { SixthFlag=SixthFlag; throw new RuntimeException();}
@@ -3336,8 +3345,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=58, shift=1) public static boolean tapViewDefMain() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=58, shift=1) public static void tapViewDefMain(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=59, shift=1) public static boolean swipeTopShowKeyboardStrict() { SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=59, shift=1) public static void swipeTopShowKeyboardStrict(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59, shift=1) public static boolean swipeTopShowKeyboardStrict() { EightFlag=EightFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59, shift=1) public static void swipeTopShowKeyboardStrict(boolean val) { EightFlag=EightFlag; throw new RuntimeException(); }
 	
 	
 	/////////////////////End Eighth Flag///////////////////////////////////
@@ -3353,6 +3362,24 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public final long NinthFlag() {
 		return NinthFlag;
 	}
+	
+	@Metaline(flagPos=0) public static boolean tapDefInNewWindow1() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=0) public static void tapDefInNewWindow1(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=1, shift=1) public static boolean tapDefInNewWindow2() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=1, shift=1) public static void tapDefInNewWindow2(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=2, shift=1) public static boolean tapDefInNewWindowMerged() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=2, shift=1) public static void tapDefInNewWindowMerged(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=3, shift=1) public static boolean tapDefInNewWindowTapSch() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=3, shift=1) public static void tapDefInNewWindowTapSch(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=4, shift=1) public static boolean tapDefPupup() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=4, shift=1) public static void tapDefPupup(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=5, shift=1) public static boolean tapSchPupup() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=5, shift=1) public static void tapSchPupup(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
 	
 }

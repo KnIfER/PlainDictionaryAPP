@@ -96,7 +96,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	public long lastClickTime=0;
 
-	public long[] flags = new long[8];
+	public long[] flags = new long[9];
 	protected long layoutFlagStamp;
 	public int MainAppBackground = 0xFF03A9F4;
 	public double MainLumen = 1;

@@ -28,6 +28,7 @@ public class VersionUtils {
 			PDICMainAppOptions.bottomNavWeb1(false);
 			PDICMainAppOptions.checkVersionBefore_7_6(false);
 			PDICMainAppOptions.revisitOnBackPressed(true);
+			PDICMainAppOptions.alwaysloadUrl(true);
 		}
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {

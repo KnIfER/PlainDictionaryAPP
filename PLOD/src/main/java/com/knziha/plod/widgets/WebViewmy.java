@@ -1639,4 +1639,28 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = (int) (2*GlobalOptions.density);
 		}
 	}
+	
+	@Override
+	public void goBack() {
+		try {
+			super.goBack();
+			if (weblistHandler!=null && ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
+				weblistHandler.textMenu(null);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
+	@Override
+	public void goForward() {
+		try {
+			super.goForward();
+			if (weblistHandler!=null && ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
+				weblistHandler.textMenu(null);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
 }

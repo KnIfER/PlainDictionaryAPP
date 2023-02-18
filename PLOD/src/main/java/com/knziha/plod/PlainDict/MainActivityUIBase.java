@@ -6602,6 +6602,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				launchSettings(0, 0);
 			} break;
 			case R.id.viewMode:{
+				if (isLongClicked) {
+					launchSettings(Multiview.id, Multiview.requestCode);
+				}
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
 				//CMN.debug("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
@@ -6646,6 +6649,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					tagHolder.tag = null;
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
+				if (isLongClicked) {
+					dd.dismiss();
+					ret = true;
+				}
 			}  break;
 			case R.id.setToSingleMode:{
 				if(isCombinedSearching) {
@@ -6659,8 +6666,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}  break;
 			/* 即点即译 */
 			case R.id.tapSch:{
-				if(isLongClicked){ // 打开
-					WebViewmy wv = getFocusWebView();
+				if(isLongClicked){ // 打开点击翻译
+					WebViewmy wv = getWebContext();
 					if (mmi.isLongClicked==1 && wv != null && wv.bIsActionMenuShown) {
 						wv.evaluateJavascript("getSelection().toString()", value -> {
 							String newKey = "";
@@ -6682,7 +6689,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					closeMenu=ret=true;
 				} else {
 					if (wlh.tapDef) {
-						PDICMainAppOptions.tapViewDefMain(wlh.tapDef = false);
+						wlh.tapDef = false;
+						if (wlh.bIsPopup) {
+							PDICMainAppOptions.tapDefPupup(false);
+						} else {
+							PDICMainAppOptions.tapViewDefMain(false);
+						}
 						if(!wlh.tapSch) opt.tapSch(wlh.togTapSch());
 					} else {
 						opt.tapSch(wlh.togTapSch());
@@ -6703,7 +6715,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					if(!wlh.tapSch) wlh.tapDef=true;
 					else wlh.tapDef = !wlh.tapDef;
-					PDICMainAppOptions.tapViewDefMain(wlh.tapDef);
+					if (wlh.bIsPopup) {
+						PDICMainAppOptions.tapDefPupup(wlh.tapDef);
+					} else {
+						PDICMainAppOptions.tapViewDefMain(wlh.tapDef);
+					}
 					if (wlh.tapDef ^ wlh.tapSch) {
 						opt.tapSch(wlh.togTapSch());
 					}
@@ -7136,6 +7152,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewListHandler weblistHandler = randomPageHandler;
 		if(weblistHandler==null)
 			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()), schuiMain);
+		if (!weblistHandler.bIsPopup) {
+			weblistHandler.bIsPopup = true;
+			weblistHandler.tapSch = PDICMainAppOptions.tapSchPupup();
+			weblistHandler.tapDef = PDICMainAppOptions.tapDefPupup();
+		}
 		if(initPopup) {
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			weblistHandler.setUpContentView(cbar_key);
@@ -7991,7 +8012,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else if (mWebView.weblistHandler.isViewSingle() && !mWebView.weblistHandler.bDataOnly)
 					{
-						if (mWebView.expectedPos >= 0) { // here
+						if (mWebView.expectedPos >= 0 && (mWebView.peruseView==null && PDICMainAppOptions.getRemPos()
+									|| mWebView.peruseView!=null && PDICMainAppOptions.fyeRemPos())) { // here
 							lastClickTime = System.currentTimeMillis();
 							//layoutScrollDisabled=true;
 							CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
@@ -11641,11 +11663,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 	
-	WebViewmy getFocusWebView() {
-		if (getCurrentFocus() instanceof WebViewmy)
-			return (WebViewmy) getCurrentFocus();
-		if (weblist!=null) {
-			return weblist.getWebContext();
+	public WebViewmy getWebContext()
+	{
+		WebViewListHandler wlh = weblistHandler;
+		for (int i = settingsPanels.size()-1; i >= 0; i--) {
+			if (settingsPanels.get(i).weblistHandler!=null) {
+				wlh = settingsPanels.get(i).weblistHandler;
+				break;
+			}
+		}
+		WebViewmy view = wlh.getWebContext();
+//		if (getCurrentFocus() instanceof WebViewmy)
+//			return (WebViewmy) getCurrentFocus();
+		if (view!=null) {
+			return view;
 		}
 		return null;
 	}
