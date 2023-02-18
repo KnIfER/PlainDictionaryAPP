@@ -1148,7 +1148,7 @@ function debug(e){console.log(e)};
 				showMoreToolsPopup(null, v);
 				break;
 			case R.id.toolbar_title:
-				CMN.debug("toolbar_title onClick");
+//				CMN.debug("toolbar_title onClick");
 				mWebView.weblistHandler.pageSlider.bSuppressNxtTapZoom = CMN.now();
 				if(mWebView.getVisibility()!=View.VISIBLE) {
 					mWebView.setAlpha(1);
@@ -1158,7 +1158,8 @@ function debug(e){console.log(e)};
 						renderContentAt(-1, RENDERFLAG_NEW, -1, null, mWebView.currentRendring);
 					}
 				}
-				else if(!mWebView.weblistHandler.isViewSingle()) {
+				//else if(!mWebView.weblistHandler.isViewSingle()) {
+				else if(ViewUtils.getNthParentNonNull(mWebView.rl, 1).getId()==R.id.webholder) {
 					mWebView.setVisibility(View.GONE);
 				}
 				else {
