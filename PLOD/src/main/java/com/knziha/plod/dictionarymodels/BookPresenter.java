@@ -1117,7 +1117,7 @@ function debug(e){console.log(e)};
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.cover:
-				CMN.debug("toolbar_cover onClick", isMergedBook());
+//				CMN.debug("toolbar_cover onClick", isMergedBook());
 				if(false) {
 					showDictTweaker(mWebView, a, this);
 					break;

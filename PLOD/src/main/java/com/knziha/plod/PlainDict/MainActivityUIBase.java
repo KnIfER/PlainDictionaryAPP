@@ -6883,9 +6883,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				break;
 			case R.string.dict_opt:
-				if (mWebView.toolbar_title != null) {
-					mWebView.toolbar_title.performClick();
-				}
+				mWebView.presenter.onClick(anyView(R.id.cover));
 				break;
 			case R.string.page_source:
 				book.bViewSource=true;

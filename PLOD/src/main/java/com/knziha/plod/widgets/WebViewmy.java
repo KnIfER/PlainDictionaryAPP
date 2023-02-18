@@ -1623,4 +1623,20 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//CMN.debug("onOverScrolled", "scrollX = [" + scrollX + "], scrollY = [" + scrollY + "], clampedX = [" + clampedX + "], clampedY = [" + clampedY + "]");
 		
 	}
+	
+	@Override
+	public void setVisibility(int visibility) {
+		super.setVisibility(visibility);
+		ImageView btnOpt = titleBar.findViewById(R.id.dopt);
+		if (visibility == GONE) {
+			if (btnOpt.getTag()==null) btnOpt.setTag(btnOpt.getDrawable());
+			btnOpt.setImageResource(R.drawable.chevron_right_big);
+			btnOpt.setClickable(false);
+			((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = 0;
+		} else {
+			btnOpt.setImageDrawable((Drawable) btnOpt.getTag());
+			btnOpt.setClickable(true);
+			((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = (int) (2*GlobalOptions.density);
+		}
+	}
 }
