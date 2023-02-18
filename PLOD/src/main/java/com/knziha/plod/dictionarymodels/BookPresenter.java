@@ -904,9 +904,8 @@ function debug(e){console.log(e)};
 			mWebView.pBc = IBC;
 			mWebView.titleBar = (AdvancedNestFrameView) toolbar;
 			mWebView.FindBGInTitle(a, toolbar);
-			mWebView.toolbarBG.setColors(mWebView.ColorShade);
+			//mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
-			//toolbarBG.setColors(ColorSolid);
 			mWebView.toolbar_title = toolbar_title = pageData.toolbarTitle;
 			toolbar_title.earHintAhead = "内容标题：";
 			toolbar_cover = pageData.cover;
@@ -1823,7 +1822,7 @@ function debug(e){console.log(e)};
 					:useInternal? tbgColor
 					:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground
 					:opt.getTitlebarBackgroundColor();
-			CMN.debug("使用内置标题栏颜色：", this, useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
+			CMN.debug("使用内置标题栏颜色："+useInternal, this, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
 			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop)
@@ -1831,6 +1830,7 @@ function debug(e){console.log(e)};
 				ColorShade[1] = myWebColor;
 				ColorShade[0] = colorTop;
 				toolbarBG.setColors(ColorShade);
+				//mWebView.toolbar_title.invalidate();
 			}
 			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor : a.tintListFilter.sForeground/*opt.getTitlebarForegroundColor()*/;
 			mWebView.setTitlebarForegroundColor(myWebColor);
