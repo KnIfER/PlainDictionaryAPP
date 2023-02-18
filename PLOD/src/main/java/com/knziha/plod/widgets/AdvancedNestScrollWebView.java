@@ -37,11 +37,13 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 	public final NestedScrollingChildHelper mChildHelper;
 
 	public AdvancedNestScrollWebView(Context context) {
-		this(context, null);
+		super(context);
+		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 	}
 
 	public AdvancedNestScrollWebView(Context context, AttributeSet attrs) {
-		this(context, attrs, 0);
+		super(context, attrs);
+		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 	}
 
 	public AdvancedNestScrollWebView(Context context, AttributeSet attrs, int defStyleAttr) {

@@ -3255,22 +3255,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					// 使沉浸式滚动更自然，但滚动短页面，会有闪、跳现象。
 					AdvancedNestScrollWebView wv = (AdvancedNestScrollWebView) webview;
 					if (wv.isNestedScrollingEnabled()) {
-						NestedScrollingChildHelper helper = wv.mChildHelper;
-						if (helper.mSyncedYOffset!=helper.mNestedYOffset)
-						{
-							int d = helper.mNestedYOffset-helper.mSyncedYOffset;
-							int sgn = (int)Math.signum(d);
-							if (helper.touchSlop != 0) {
-								d = d-sgn*helper.touchSlop;
-								helper.touchSlop = 0;
-							}
-							if(Math.abs(d) > Math.abs(y - oldy)) {
-								d = sgn*Math.abs(y - oldy);
-								//helper.mSyncedYOffset=helper.mNestedYOffset - d;
-							} //else
-								helper.mSyncedYOffset = helper.mNestedYOffset;
-							webview.SafeScrollTo(x, y+d);
-						}
+//						NestedScrollingChildHelper helper = wv.mChildHelper;
+//						if (helper.mSyncedYOffset!=helper.mNestedYOffset)
+//						{
+//							int d = helper.mNestedYOffset-helper.mSyncedYOffset;
+//							int sgn = (int)Math.signum(d);
+//							if (helper.touchSlop != 0) {
+//								d = d-sgn*helper.touchSlop;
+//								helper.touchSlop = 0;
+//							}
+//							if(Math.abs(d) > Math.abs(y - oldy)) {
+//								d = sgn*Math.abs(y - oldy);
+//								//helper.mSyncedYOffset=helper.mNestedYOffset - d;
+//							} //else
+//								helper.mSyncedYOffset = helper.mNestedYOffset;
+//							webview.SafeScrollTo(x, y+d);
+//						}
 					}
 				}
 				

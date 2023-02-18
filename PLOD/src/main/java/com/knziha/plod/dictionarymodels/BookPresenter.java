@@ -44,7 +44,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.core.graphics.ColorUtils;
 
 import com.alibaba.fastjson.JSONObject;
@@ -1032,12 +1031,12 @@ function debug(e){console.log(e)};
 		return false;
 	}
 	
-	public PopupMenuHelper showPopupMenu(PageMenuHelper.PageMenuType type, WebViewmy mWebView, View v) {
+	public PopupMenuHelper showPopupMenu(PageMenuHelper.PageMenuType type, WebViewmy mWebView, View v, int x, int y) {
 		if (mWebView == null) {
 			initViewsHolder(a);
 			mWebView = this.mWebView;
 		}
-		return a.pageMenuHelper.showPageMenu(type, mWebView, v);
+		return a.pageMenuHelper.showPageMenu(type, mWebView, v, x, y);
 	}
 	
 	public void showMoreToolsPopup(WebViewmy mWebView, View v) {
@@ -1045,7 +1044,13 @@ function debug(e){console.log(e)};
 		if (getIsWebx()) {
 			type = PageMenuHelper.PageMenuType.Nav_WEB;
 		}
-		PopupMenuHelper popupMenu = showPopupMenu(type, mWebView, v);
+		PopupMenuHelper popupMenu;
+		if (v.getId() == R.id.dopt) {
+			// ViewUtils.getNthParentNonNull(v, 1)
+			popupMenu = showPopupMenu(type, mWebView, v, -v.getWidth(), v.getHeight()/2);
+		} else {
+			popupMenu = showPopupMenu(type, mWebView, v, 0, 0);
+		}
 		
 		mWebView = (WebViewmy) popupMenu.tag1;
 		boolean b1=mWebView.canGoBack();
@@ -1138,6 +1143,9 @@ function debug(e){console.log(e)};
 				break;
 			case R.id.tools:
 				onLongClick(a.anyView(R.id.save));
+				break;
+			case R.id.dopt:
+				showMoreToolsPopup(null, v);
 				break;
 			case R.id.toolbar_title:
 				CMN.debug("toolbar_title onClick");
@@ -1390,7 +1398,7 @@ function debug(e){console.log(e)};
 				/* 长按下载图片 */
 				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
 				case WebViewmy.HitTestResult.IMAGE_TYPE:{
-					wv.presenter.showPopupMenu(PageMenuHelper.PageMenuType.LNK_IMG, wv, (View) wv.getParent());
+					wv.presenter.showPopupMenu(PageMenuHelper.PageMenuType.LNK_IMG, wv, (View) wv.getParent(), 0, 0);
 					if(true) return true;
 					String url = result.getExtra();
 					AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
@@ -1446,7 +1454,7 @@ function debug(e){console.log(e)};
 				/* 长按anchor */
 				case WebViewmy.HitTestResult.SRC_ANCHOR_TYPE:{
 					a.pageMenuHelper.lnk_href = result.getExtra();
-					wv.presenter.showPopupMenu(wv.presenter.getIsWebx()?PageMenuHelper.PageMenuType.LNK_WEB:PageMenuHelper.PageMenuType.LNK, wv, wv);
+					wv.presenter.showPopupMenu(wv.presenter.getIsWebx()?PageMenuHelper.PageMenuType.LNK_WEB:PageMenuHelper.PageMenuType.LNK, wv, wv, 0, 0);
 				}
 				return true;
 			}

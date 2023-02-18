@@ -2054,8 +2054,9 @@ public class ViewUtils extends VU {
 							((ImageView)cI).setColorFilter(tintListFilter.sForegroundFilter);
 						}
 					} else if(cI instanceof TextView){
-						((TextView)cI).setTextColor(tintListFilter.sForeground);
-						((TextView) cI).setCompoundDrawableTintList(tintListFilter.sForegroundTint);
+						TextView tv = ((TextView) cI);
+						tv.setTextColor(tintListFilter.sForeground);
+						tv.setCompoundDrawableTintList(tintListFilter.sForegroundTint);
 					} else if(cI instanceof FlowTextView){
 						((FlowTextView)cI).setTextColor(tintListFilter.sForeground);
 					}

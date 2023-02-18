@@ -1,9 +1,9 @@
-<layout>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+<LinearLayout
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="vertical"
 	android:clickable="true"
 	tools:context="com.knziha.plod.plaindict.MainActivityUIBase"
@@ -40,6 +40,19 @@
 			app:margin="17dp"
 			tools:text="词典标题"
 			android:background="?attr/listChoiceBackgroundIndicator"
+			/>
+		<ImageView
+			android:id="@+id/dopt"
+			android:layout_width="35dp"
+			android:layout_height="33dp"
+			android:gravity="center"
+			android:layout_gravity="center_vertical|right"
+			android:src="@drawable/ic_overflow_hor_small"
+			android:tint="@android:color/white"
+			android:paddingLeft= "8dp"
+			android:paddingRight="8dp"
+			android:layout_marginEnd="2dp"
+			android:background="?attr/actionBarItemBackground"
 			/>
 	</com.knziha.plod.widgets.AdvancedNestFrameView>
 

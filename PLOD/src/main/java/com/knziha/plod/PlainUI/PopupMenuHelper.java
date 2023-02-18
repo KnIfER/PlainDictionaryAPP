@@ -136,6 +136,11 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 		mPopupWindow.showAtLocation(anchorView, Gravity.TOP | Gravity.START, windowPos[0], windowPos[1]);
 	}
 	
+	public void show(View anchorView, int x, int y, int ox, int oy) {
+		int[] windowPos = calculatePopWindowPos(anchorView , popRoot, lv.getChildAt(0), x, y);
+		mPopupWindow.showAtLocation(anchorView, Gravity.TOP | Gravity.START, windowPos[0]+ox, windowPos[1]+oy);
+	}
+	
 	public void showAt(View anchorView, int x, int y, int grav) {
 		mPopupWindow.showAtLocation(anchorView, grav, x, y);
 	}

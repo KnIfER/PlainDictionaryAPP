@@ -2,6 +2,7 @@ package com.knziha.plod.widgets;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
@@ -170,6 +172,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
+		if(isInEditMode()) return;
 		//setBackgroundColor(Color.parseColor("#C7EDCC"));
 		//setBackgroundColor(0);
 		//setVerticalScrollBarEnabled(true);
@@ -472,8 +475,21 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 							}
 						} else if(cI instanceof TextView){
 							((TextView)cI).setTextColor(foregroundColor);
+							TextView tv = ((TextView) cI);
+							tv.setTextColor(foregroundColor);
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+								if (tv.getCompoundDrawableTintList()!=null) {
+									tv.setCompoundDrawableTintList(ColorStateList.valueOf(foregroundColor));
+								}
+							}
 						} else if(cI instanceof FlowTextView){
 							((FlowTextView)cI).setTextColor(foregroundColor);
+						}
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+							Drawable background = cI.getBackground();
+							if (GlobalOptions.sModRippleColor && background instanceof RippleDrawable) {
+								VU.sTintListFilter.ModRippleColor(background, VU.sTintListFilter.sRippleStateToolbar);
+							}
 						}
 					}
 				}

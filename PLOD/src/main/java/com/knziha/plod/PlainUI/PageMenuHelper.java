@@ -97,7 +97,7 @@ public class PageMenuHelper {
 		return ret;
 	}
 	
-	public PopupMenuHelper showPageMenu(PageMenuType type, WebViewmy mWebView, View v) {
+	public PopupMenuHelper showPageMenu(PageMenuType type, WebViewmy mWebView, View v, int ox, int oy) {
 		this.mType = type;
 		this.mWebView = mWebView;
 		PopupMenuHelper popupMenu = a.getPopupMenu();
@@ -113,7 +113,7 @@ public class PageMenuHelper {
 			y=(int)mWebView.weblistHandler.pageSlider.OrgY;
 			v = mWebView.weblistHandler.pageSlider;
 		}
-		popupMenu.show(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
+		popupMenu.show(v, x+vLocationOnScreen[0], y+vLocationOnScreen[1], ox, oy);
 		ViewUtils.preventDefaultTouchEvent(v, x, y);
 		popupMenu.tag1 = mWebView;
 		return popupMenu;
