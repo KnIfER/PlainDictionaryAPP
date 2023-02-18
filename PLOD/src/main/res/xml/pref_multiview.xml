@@ -199,6 +199,14 @@
 			android:title="允许滑动翻页"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="url1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="始终以url形式加载页面"
+			android:summary="或可加快加速度。"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 
 

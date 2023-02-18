@@ -131,6 +131,9 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 						case "fold":
 							init_switch_preference(this, "fold", multiMode==2, null, null, p);
 							break;
+						case "url1":
+							init_switch_preference(this, "url1", PDICMainAppOptions.alwaysloadUrl(), null, null, p);
+							break;
 					}
 					p.setOnPreferenceChangeListener(this);
 				}
@@ -260,6 +263,9 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			break;
 			case "turnF":
 				PDICMainAppOptions.slidePageFd((Boolean) newValue);
+			break;
+			case "url1":
+				PDICMainAppOptions.alwaysloadUrl((Boolean) newValue);
 			break;
 			case "seek":
 				PDICMainAppOptions.showEntrySeekbar((Boolean) newValue);
