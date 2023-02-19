@@ -6947,7 +6947,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.goForward();
 				break;
 			case R.id.nav_pin:
-				mWebView.weblistHandler.togNavor();
+				//mWebView.weblistHandler.togNavor();
+				weblist = mWebView.weblistHandler;
+				performReadEntry();
 				break;
 			/* 选择链接文本 */
 			case R.string.page_sel: {

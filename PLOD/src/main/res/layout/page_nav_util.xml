@@ -38,7 +38,7 @@
 	</LinearLayout>
 	<com.knziha.plod.widgets.TextMenuView
 		android:id="@+id/nav_pin"
-		android:text="导航栏"
+		android:text="发音"
 		android:layout_width="35dp"
 		android:layout_height="match_parent"
 		android:gravity="center"
