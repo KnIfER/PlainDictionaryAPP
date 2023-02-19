@@ -1050,7 +1050,6 @@ function debug(e){console.log(e)};
 		} else {
 			popupMenu = showPopupMenu(type, mWebView, v, 0, 0);
 		}
-		
 		mWebView = (WebViewmy) popupMenu.tag1;
 		boolean b1=mWebView.canGoBack();
 		v = popupMenu.popRoot.findViewById(R.id.nav_back);

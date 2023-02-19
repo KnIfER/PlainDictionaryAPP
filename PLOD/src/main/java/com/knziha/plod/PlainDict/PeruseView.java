@@ -1028,6 +1028,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			mWebView.setMinimumWidth((int) (100*GlobalOptions.density));
 			mWebView.weblistHandler = weblistHandler;
 			//mWebView.fromPeruseview = true;
+			mWebView.peruseView = this;
 	        mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	        mWebView.setPadding(0, 0, 18, 0);
 			contentUIData.dragScrollBar.setDelimiter("< >", mWebView);
@@ -2286,10 +2287,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			case R.id.fyeMenu:
 				showPeruseTweaker();
 			break;
+			case R.id.dopt:
+				currentDictionary.showMoreToolsPopup(mWebView, v);
+				break;
 			case R.id.toolbar_title:
 			case R.id.cover:
-				a.getVtk().setInvoker(currentDictionary, mWebView, null, null);
-//				a.getUcc().onClick(toolbar_cover); //111
+				a.showDictTweakerMain(currentDictionary, mWebView);
+//				a.getVtk().setInvoker(currentDictionary, mWebView, null, null);
+//				a.getVtk().onClick(toolbar_cover); //111
 			break;
 			case R.id.action0: // todo ????
 				contentview.setVisibility(View.VISIBLE);
