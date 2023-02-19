@@ -282,7 +282,8 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 			}
 			if(opt.revisitOnBackPressed()) {
 				WebViewmy wv = weblistHandler.getWebContext();
-				if (wv!=null && wv.canGoBack()) {
+				if (wv!=null && wv.canGoBack()
+					&& (wv.peruseView==null || weblistHandler.isPopupShowing())) {
 					MainActivityUIBase.layoutScrollDisabled = false;
 					wv.goBack();
 					return true;
