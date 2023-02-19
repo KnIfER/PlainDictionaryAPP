@@ -109,6 +109,9 @@
 					s.modify('extend', 'backward', 'character'); 
 					rg = s.getRangeAt(0);
 					rc = rg.getBoundingClientRect();
+					// suppressTextMenu
+					var tapSel = sz&6;
+					if(!tapSel) app.ntxt = e.timeStamp;
 					if(!(rc.left<=e.x && rc.right>=e.x)) {
 						s.empty(); s.addRange(range);
 						s.modify('extend', 'forward', 'character'); 
@@ -117,7 +120,6 @@
 					}
 					var ret = -1;
 					if(pointInRange(e, rc)) {
-						var tapSel = sz&6;
 						debug('fatal 单字='+rg, 'tapSel='+tapSel, 'granu='+granu);
 						if(tapSel) {
 							s.empty();s.addRange(rg);

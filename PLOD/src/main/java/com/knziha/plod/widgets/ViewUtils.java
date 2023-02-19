@@ -640,6 +640,10 @@ public class ViewUtils extends VU {
 	
 	/**var fn=function(e){
 	 	var w=this.defaultView,app=w.app; if(w.frameElement) app=parent.window.app;
+	 	if(app.ntxt) {
+	 		if(e.timeStamp-app.ntxt < 200) return;
+	 		app.ntxt = 0;
+	 	}
 	 	e=w.getSelection().isCollapsed;
 	 	if(w.shzh&0x1000 ^ !e) {
 	 		if(e) w.shzh&=~0x1000;
