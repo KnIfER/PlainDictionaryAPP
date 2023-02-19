@@ -606,7 +606,8 @@ public class RLContainerSlider extends FrameLayout {
 							if(swipeRefreshAllow && dragged==0 && aborted!=1)
 							{
 								float dy = lastY - OrgY;
-								if(dy>0)
+								dx = lastX - OrgX;
+								if(dy>GlobalOptions.density)
 								{
 									boolean drg = WebContext == null || !WebContext.scrollLckVer && WebContext.getScrollY()==0;
 									if (scrollView!=null) {
@@ -621,8 +622,9 @@ public class RLContainerSlider extends FrameLayout {
 										dragInitDy = dy;
 										if (dx == 0) dx = 0.000001f;
 										dx = dy / dx;
-										theta = (int) (GlobalOptions.density);
-										if (dx > theta || dx <= -theta) {//3.3
+										float theta1 = 2.5f;
+										//CMN.debug("dx::", dx);
+										if (dx > theta1 || dx <= -theta1) {//3.3
 											swipeRefreshDy = dy;
 											dragged = 2;
 										}
