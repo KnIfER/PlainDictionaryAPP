@@ -6712,7 +6712,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						opt.tapSch(wlh.togTapSch());
 					}
 					item.setChecked(wlh.tapSch);
-					VU.findInMenu(SingleContentMenu, R.id.tapSch1).setChecked(false);
+					MenuItem next = VU.findInMenu(mmi.mMenu.mItems, R.id.tapSch1);
+					next.setChecked(false);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
 					}
@@ -6736,7 +6737,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						opt.tapSch(wlh.togTapSch());
 					}
 					item.setChecked(wlh.tapDef);
-					VU.findInMenu(SingleContentMenu, R.id.tapSch).setChecked(false);
+					MenuItem next = VU.findInMenu(mmi.mMenu.mItems, R.id.tapSch);
+					next.setChecked(false);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility(((wlh.tapSch && wlh.tapDef)?"已开启":"已关闭")+"点击查词");
 					}
