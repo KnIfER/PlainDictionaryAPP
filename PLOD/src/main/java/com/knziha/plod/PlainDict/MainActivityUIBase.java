@@ -5710,6 +5710,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ucc;
 	}
 	
+	public void showDictTweakerMain(BookPresenter presenter, WebViewmy mWebView) {
+		if (presenter!=null && mWebView!=null) {
+			if (presenter.isMergedBook()) {
+				showDictTweaker(mWebView.weblistHandler);
+			} else {
+				getVtk().setInvoker(presenter, mWebView, null, null);
+				boolean title_bar_no_sel = true;
+				getVtk().onClick(title_bar_no_sel?anyView(0):null);
+			}
+		}
+	}
+	
 	/** 0=hide; 1=remove */
 	int contentviewDetachType = -1;
 	
@@ -6899,7 +6911,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				break;
 			case R.string.dict_opt:
-				mWebView.presenter.onClick(anyView(R.id.cover));
+				showDictTweakerMain(mWebView.presenter, mWebView);
 				break;
 			case R.string.page_source:
 				book.bViewSource=true;

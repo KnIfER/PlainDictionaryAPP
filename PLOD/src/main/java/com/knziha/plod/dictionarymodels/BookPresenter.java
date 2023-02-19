@@ -1122,14 +1122,7 @@ function debug(e){console.log(e)};
 					showDictTweaker(mWebView, a, this);
 					break;
 				}
-				BookPresenter presenter = mWebView.presenter;
-				if (presenter.isMergedBook()) {
-					a.showDictTweaker(mWebView.weblistHandler);
-					break;
-				}
-				a.getVtk().setInvoker(mWebView.presenter, mWebView, null, null);
-				boolean title_bar_no_sel = true;
-				a.getVtk().onClick(title_bar_no_sel?a.anyView(0):null);
+				a.showDictTweakerMain(this, mWebView);
 				break;
 			case R.id.undo:
 				if(v.getAlpha()==1)mWebView.evaluateJavascript("document.execCommand('Undo')", null);
