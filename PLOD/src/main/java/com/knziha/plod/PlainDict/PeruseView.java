@@ -679,6 +679,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 			}
 		}
+		
+		if (gridAdapter!=null && GlobalOptions.isDark) {
+			gridView.setAdapter(gridAdapter); // todo how ???
+		}
 	}
 	
 	public boolean isWindowDetached() {
@@ -2275,6 +2279,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				hide(getMainActivity());
 			break;
 			case R.id.dictlet:
+				CMN.debug("dictlet::");
 				DictTitleHolder holder = (DictTitleHolder) v.getTag();
 				gridAdapter.onItemClick(gridView,v,holder.pos,0);
 			break;
@@ -2480,6 +2485,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				break;
 				/* 定位列表位置 */
 				case R.id.locate:
+					if (true) { //tg
+					}
 					if(selection!=null) {
 						int gvPos=SelectedV;//((DictTitleHolder)selection.getTag()).pos;
 						if (bExpanded)
