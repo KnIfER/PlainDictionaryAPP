@@ -140,20 +140,26 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		if(hotDebugMessage!=null) info_builder.append("at : ").append(hotDebugMessage).append("\n");
 		;
 		info_builder.append(result);
-		if(bLogToFile){
+		String trace = null;
+		if(bLogToFile || GlobalOptions.debug){
 			try {
 				File log=new File(log_path);
 				File dir = log.getParentFile();
 				dir.mkdirs();
 				if(log.isDirectory()) log.delete();
 				FileOutputStream fos = new FileOutputStream(log_path);
-				fos.write(info_builder.toString().getBytes()); fos.close();
+				trace = info_builder.toString();
+				fos.write(trace.getBytes()); fos.close();
 				new File(dir, "lock").mkdirs();
+				if (GlobalOptions.debug) {
+					fos = new FileOutputStream(new File(new File(log_path).getParentFile(), "crash_"+CMN.now()+".log"));
+					fos.write(trace.getBytes()); fos.close();
+				}
 			} catch (Exception e) {
 				Log.e(TAG, "an error occured while writing file...", e);
 			}
 		}
-		CMN.Log("crash catched", GlobalOptions.debug?info_builder.toString():"_"+exception);
+		CMN.Log("crash catched", GlobalOptions.debug?trace:"_"+exception);
 		postUncaughtException(thread, exception);
 	}
 
