@@ -109,7 +109,7 @@
 	<string name="stg_grantnow">Grant now</string>
 	<string name="trialin">Trial…… #</string>
 	<string name="stgerr_fail">Sorry, but cannot use this app on you device.</string>
-	<string name="infoStr">无限词典（PlainDict，原名平典）可打开mdx、dsl、pdf格式的词典书籍文件，支持联合搜索与全文搜索，允许自定义在线词典。\n\n当前版本号：v%s \n\n[\[ 开源资料 \]](kaiyuan)\ \n\n[\[ 更新日志 \]](rizhi) \n\n[\[ 谈谈不足 \]](taolun)</string>
+	<string name="infoStr">无限词典（PlainDict，原名平典）可打开mdx、dsl、pdf格式的词典书籍文件，支持联合搜索与全文搜索，允许自定义在线词典。\n\n当前版本号：v%s \n\n[\[ 开源资料 \]](kaiyuan)\ \n\n[\[ 更新日志，公告 \]](rizhi) \n\n[\[ 谈谈不足 \]](taolun)</string>
 	<string name="licence">Open Source Licences</string>
 	<string name="bmAdd">Add Bookmark</string>
 	<string name="language">Language</string>
@@ -296,4 +296,5 @@
 	<string name="exit_on_top">滚动到顶部退出</string>
 	<string name="locate_dman">定位词典管理</string>
 	<string name="disable">禁用</string>
+	<string name="save_img">保存图片</string>
 </resources>
