@@ -3,6 +3,7 @@ package com.knziha.plod.plaindict;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -53,6 +54,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
 import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -111,6 +113,19 @@ public class DBroswer extends DialogFragment implements
 	ContentviewBinding contentUIData;
 	PeruseView peruseView;
 	TitleItemDecoration mDecorator;
+	public final PlainAppPanel dummyPanel = new PlainAppPanel()
+	{
+		@Override
+		public boolean onBackPressed() {
+			return try_goBack()!=0;
+		}
+		@Override
+		protected void onDismiss() {
+			if (weblist!=null) {
+				weblist.a.DetachDBrowser();
+			}
+		}
+	};
 	
 	/** type[act|ui|db], long[]{pos, view offset} */
 	public final static LongSparseArray<long[]> savedPositions = new LongSparseArray();
@@ -268,6 +283,7 @@ public class DBroswer extends DialogFragment implements
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		if(UIData==null) {
 			UIData = DbBrowserBinding.inflate(inflater, container, false);
+			//dummyPanel.settingsLayout = (ViewGroup) UIData.getRoot();
 			//CMN.Log("onCreateView!!!");
 			lv = UIData.mainList;
 			UIData.fastScroller.setRecyclerView(lv);
@@ -646,7 +662,7 @@ public class DBroswer extends DialogFragment implements
 	
 	public void checkColors() {
 		if(initialized && GlobalOptions.isDark!=isDarkStamp) {
-			CMN.Log("dbr_checkColor...");
+			CMN.debug("dbr_checkColor...");
 			ColorFilter cs_dbr_sidbr = null;
 			isDarkStamp = GlobalOptions.isDark;
 			int AppWhite = Color.WHITE;
@@ -679,19 +695,21 @@ public class DBroswer extends DialogFragment implements
 			}
 		}
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a!=null && a.MainAppBackground!= MainAppBackground) {
-			MainAppBackground =a.MainAppBackground;
-			UIData.toolbar.setBackgroundColor(MainAppBackground);
-			UIData.bottombar.setBackgroundColor(MainAppBackground);
-		}
-		int color = a.tintListFilter.sForeground;
-		if (ForegroundColor != color) {
-			color = ForegroundColor;
-			ViewUtils.setForegroundColor(UIData.toolbar, a.tintListFilter);
-			ViewUtils.setForegroundColor(UIData.bottombar, a.tintListFilter);
-		}
-		if (mDialog!=null && mDialog.isShowing()) {
-			a.resetStatusForeground(mDialog.getWindow().getDecorView());
+		if(a!=null) {
+			if (a.MainAppBackground!= MainAppBackground) {
+				MainAppBackground =a.MainAppBackground;
+				UIData.toolbar.setBackgroundColor(MainAppBackground);
+				UIData.bottombar.setBackgroundColor(MainAppBackground);
+			}
+			int color = a.tintListFilter.sForeground;
+			if (ForegroundColor != color) {
+				color = ForegroundColor;
+				ViewUtils.setForegroundColor(UIData.toolbar, a.tintListFilter);
+				ViewUtils.setForegroundColor(UIData.bottombar, a.tintListFilter);
+			}
+			if (mDialog!=null && mDialog.isShowing()) {
+				a.resetStatusForeground(mDialog.getWindow().getDecorView());
+			}
 		}
 	}
 	
@@ -2029,7 +2047,7 @@ public class DBroswer extends DialogFragment implements
 		CMN.Log("DBrowser----->onCreateDialog");
 		if(mDialog==null){
 			mDialog = new SimpleDialog(requireContext(), getTheme());
-			
+			dummyPanel.dialog = mDialog;
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
 				public void onBackPressed() {
@@ -2194,6 +2212,9 @@ public class DBroswer extends DialogFragment implements
 		if (weblist != wlh) {
 			weblist = wlh;
 		}
+		if (!dummyPanel.isVisible()) {
+			dummyPanel.toggleDummy(wlh.a);
+		}
 		boolean dialog = wlh.a.isFloating() || wlh.src==SearchUI.Fye.MAIN || wlh.bShowingInPopup;
 		//if (true) dialog = true;
 		final boolean visible = UIData != null && UIData.getRoot().getParent() == wlh.a.mainF
@@ -2229,6 +2250,9 @@ public class DBroswer extends DialogFragment implements
 			}
 		}
 		ViewUtils.removeView(getView());
+		if (dummyPanel.isVisible()) {
+			dummyPanel.toggleDummy(null);
+		}
 	}
 	
 	
@@ -2258,6 +2282,14 @@ public class DBroswer extends DialogFragment implements
 			}
 		} else if (mode==0 && SelectionMode!=0) {
 			UIData.sideBar.getChildAt(0).performClick();
+		}
+	}
+	
+	@Override
+	public void onDismiss(@NonNull DialogInterface dialog) {
+		super.onDismiss(dialog);
+		if (dummyPanel.isVisible()) {
+			dummyPanel.toggleDummy(null);
 		}
 	}
 }

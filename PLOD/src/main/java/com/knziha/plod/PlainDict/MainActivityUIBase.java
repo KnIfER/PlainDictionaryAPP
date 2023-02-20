@@ -121,7 +121,6 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.NestedScrollingChildHelper;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -5817,10 +5816,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void DetachDBrowser() {
-		if(DBrowser.try_goBack()!=0)
-			return;
-		//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
-		//xxx
+		if (DBrowser!=null) {
+			if(DBrowser.try_goBack()!=0)
+				return;
+			//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
+			//xxx
 //			if(!(DBrowser instanceof DHBroswer))
 //				if(!newFavor.equals(new File(favoriteCon.pathName))) {//或许需要重载收藏夹
 //					favoriteCon.close();
@@ -5830,9 +5830,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
 //					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
 //				}
-		//weblistHandler.removeAllViews();
-		DBrowser.detach();
-		DBrowser = null;
+			//weblistHandler.removeAllViews();
+			DBrowser.detach();
+			DBrowser = null;
+		}
 	}
 	
 	class AcrossBoundaryContext {
@@ -6107,11 +6108,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 切换收藏 */
 			case R.drawable.star_ic:
 			case R.id.browser_widget8: {//favorite
-				if (true) {
-					//weblist.getWebContext().loadUrl("http://mdbr.com/content/d6_Kg");
-					weblist.getWebContext().loadUrl("http://mdbr.com/merge.jsp?q=them&exp=d6_aKO-dF_cYu3-d2GW_zAr1-dS5r3_F3a-dTLD_TfQG_UfQG_VfQG-dXNJBetaV2_eJU-dNJGJYHSJC_9p9-dLWJPB_wpr-dOED7EM_vk9-dCGJYCD_Kr2&popup=true&did=175160187 ");
-					break;
-				}
+//				if (true) { //tg
+//					//weblist.getWebContext().loadUrl("http://mdbr.com/content/d6_Kg");
+//					weblist.getWebContext().loadUrl("http://mdbr.com/merge.jsp?q=them&exp=d6_aKO-dF_cYu3-d2GW_zAr1-dS5r3_F3a-dTLD_TfQG_UfQG_VfQG-dXNJBetaV2_eJU-dNJGJYHSJC_9p9-dLWJPB_wpr-dOED7EM_vk9-dCGJYCD_Kr2&popup=true&did=175160187 ");
+//					break;
+//				}
 				findWebList(v);
 				String key = weblist.displaying;
 				if(DBrowser!=null && weblist==DBrowser.weblistHandler){
@@ -6679,7 +6680,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 即点即译 */
 			case R.id.tapSch:{
 				if(isLongClicked){ // 打开点击翻译
-					WebViewmy wv = getWebContext();
+					WebViewmy wv = findWebContext();
 					if (mmi.isLongClicked==1 && wv != null && wv.bIsActionMenuShown) {
 						wv.evaluateJavascript("getSelection().toString()", value -> {
 							String newKey = "";
@@ -6713,7 +6714,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					item.setChecked(wlh.tapSch);
 					MenuItem next = VU.findInMenu(mmi.mMenu.mItems, R.id.tapSch1);
-					next.setChecked(false);
+					if(next!=null) next.setChecked(false);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
 					}
@@ -6738,7 +6739,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					item.setChecked(wlh.tapDef);
 					MenuItem next = VU.findInMenu(mmi.mMenu.mItems, R.id.tapSch);
-					next.setChecked(false);
+					if(next!=null) next.setChecked(false);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility(((wlh.tapSch && wlh.tapDef)?"已开启":"已关闭")+"点击查词");
 					}
@@ -10605,10 +10606,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return true;
 			}
 		}
-		if(DBrowser != null) {
-			DetachDBrowser();
-			return true;
-		}
 		return false;
 	}
 	
@@ -11505,6 +11502,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void showUpdateInfos(String oldVerName) {
+		if (UpdateHelper.func("update", this, oldVerName, null)!=null)
+			return;
 		String title="更新日志";
 		AlertDialog dd = new AlertDialog.Builder(this)
 				.setTitle(title)
@@ -11679,13 +11678,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 	
-	public WebViewmy getWebContext()
+	public WebViewmy findWebContext()
 	{
 		WebViewListHandler wlh = weblistHandler;
 		for (int i = settingsPanels.size()-1; i >= 0; i--) {
-			if (settingsPanels.get(i).weblistHandler!=null) {
-				wlh = settingsPanels.get(i).weblistHandler;
+			PlainAppPanel panel = settingsPanels.get(i);
+			if (panel.weblistHandler!=null) {
+				wlh = panel.weblistHandler;
 				break;
+			}
+			if (DBrowser!=null && DBrowser.dummyPanel==panel) {
+				return null;
 			}
 		}
 		WebViewmy view = wlh.getWebContext();

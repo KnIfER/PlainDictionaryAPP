@@ -385,7 +385,13 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				init(root.getContext(), root);
 			}
 			if(settingsLayout==null) {
-				return bIsShowing=!bIsShowing;
+				bIsShowing=!bIsShowing;
+				if (bIsShowing) {
+					onShow();
+				} else {
+					onDismiss();
+				}
+				return bIsShowing;
 			}
 		}
 		float targetAlpha = 1;
