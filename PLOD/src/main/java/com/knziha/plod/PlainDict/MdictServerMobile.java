@@ -64,7 +64,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 //@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 public class MdictServerMobile extends MdictServer {
-	private MainActivityUIBase a;
 	
 	private static HashMap<String, Object>  mTifConfig;
 	

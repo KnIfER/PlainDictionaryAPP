@@ -47,13 +47,11 @@ import org.nanohttpd.protocols.http.response.Status;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +71,7 @@ import java.util.regex.Pattern;
  */
 
 public abstract class MdictServer extends NanoHTTPD {
+	protected MainActivityUIBase a;
 	interface AppOptions {
 		boolean isCombinedSearching();
 		int getSendToShareTarget();
@@ -245,7 +244,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				SU.Log("jumping...", key);
 				int pos = presenter.bookImpl.lookUp(key);
 				String res = presenter.bookImpl.getRecordsAt(null, pos);
-				return newFixedLengthResponse(constructMdPage(presenter, res, b1, pos));
+				return newFixedLengthResponse(constructMdPage(presenter, res, b1, pos, session));
 			} catch (Exception e) {
 				SU.Log(e);
 			}
@@ -421,18 +420,18 @@ public abstract class MdictServer extends NanoHTTPD {
 					boolean encoded=dn.charAt(0)=='d';
 					presenter = md_getByURL(list[0]);
 					if(presenter.getIsWebx()) {
-						return newFixedLengthResponse(constructMdPage(presenter,presenter.getWebx().getSyntheticWebPage(), true, 0));
+						return newFixedLengthResponse(constructMdPage(presenter,presenter.getWebx().getSyntheticWebPage(), true, 0, session));
 					}
 					//SU.Log("content_received::presenter::", list[0], presenter, presenter.getId()); //  /content/d5_JPA
 					long[] list2 = new long[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=encoded?IU.TextToNumber_SIXTWO_LE(list[i+1]):IU.parsint(list[i+1]);
-					return newFixedLengthResponse(constructMdPage(presenter,lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2), true, (int)list2[0]));
+					return newFixedLengthResponse(constructMdPage(presenter,lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2), true, (int)list2[0], session));
 				} catch (Exception e) {
 					SU.Log(e);
 				}
 			}
-			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true, 0));
+			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true, 0, session));
 		}
 		
 		if(presenter==null)
@@ -798,9 +797,10 @@ public abstract class MdictServer extends NanoHTTPD {
 	int MdPageBaseLen=-1;
 	String MdPage_fragment1,MdPage_fragment2, MdPage_fragment3="</html>";
 	int MdPageLength=0;
-	private String constructMdPage(BookPresenter presenter, String record, boolean b1, int pos) {
+	private String constructMdPage(BookPresenter presenter, String record, boolean b1, int pos, HTTPSession session) {
 		if(b1 && mdict.fullpagePattern.matcher(record).find())
 			b1=false;
+		CMN.debug("constructMdPage", session.isProxy, b1);
 		b1=true;
 		if(b1) {
 			StringBuilder MdPageBuilder = new StringBuilder(MdPageLength + record.length() + 5);
@@ -830,8 +830,11 @@ public abstract class MdictServer extends NanoHTTPD {
 					.append(",").append(0)
 					.append(");")
 					//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
-					.append("window.pos=").append(pos).append(";")
-					.append("</script>");
+					.append("window.pos=").append(pos).append(";");
+			if (session.isProxy) {
+				MdPageBuilder.append(a.getCommonAsset("SUBPAGE.js"));  // todo check redu
+			}
+			MdPageBuilder.append("</script>");
 			if (presenter.padLeft() || presenter.padRight()) {
 				MdPageBuilder.append("<style>body{");
 				presenter.ApplyPadding(MdPageBuilder);
@@ -875,8 +878,11 @@ public abstract class MdictServer extends NanoHTTPD {
 							.append(",").append(0)
 							.append(");")
 							//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
-							.append("window.pos=").append(pos).append(";")
-							.append("</script>")
+							.append("window.pos=").append(pos).append(";");
+				if (session.isProxy) {
+					MdPageBuilder.append(a.getCommonAsset("SUBPAGE.js"));
+				}
+				MdPageBuilder.append("</script>")
 						.append(idx==-1?"</head>":"")
 						.append(end);
 				return MdPageBuilder.toString();
