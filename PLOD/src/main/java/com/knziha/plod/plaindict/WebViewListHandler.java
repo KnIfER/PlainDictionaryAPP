@@ -1812,18 +1812,24 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			szStash = shezhi;
 			final SettingsPanel settings = new SettingsPanel(a, opt
 					, new String[][]{
-						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "区分大小写", "以空格分割关键词", "通配符不匹配空格", "额外搜索变音字母"}
+						new String[]{"正则搜索", "使用正则表达式"}
+						, new String[]{"普通搜索", "使用通配符", "以空格分割关键词", "通配符不匹配空格", "额外搜索变音字母"}
+						, new String[]{"通用", "区分大小写"}
 						, new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "自动弹出键盘"}
 						, new String[]{"搜索框位置", "页面顶部", "页面底部"} // 显示位置
 						, new String[]{"搜索框旁数字标志", "显示当前高亮序号", "显示词典名称"} // 显示位置
 					}
 					, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */
 							, makeInt(101, 4, false) // pageSchUseRegex
+						}
+						, new int[]{Integer.MAX_VALUE
 							, makeInt(101, 8, false) // pageSchWild
-							, makeInt(101, 5, false) // pageSchCaseSensitive
 							, makeInt(101, 6, false) // pageSchSplitKeys
 							, makeInt(101, 7, false) // pageSchWildMatchNoSpace
 							, makeInt(101, 9, false) // pageSchDiacritic
+						}
+						, new int[]{Integer.MAX_VALUE
+							, makeInt(101, 5, false) // pageSchCaseSensitive
 						}
 						, new int[]{Integer.MAX_VALUE
 							, makeInt(6, 27, true) // schPageOnEdit
@@ -1847,7 +1853,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				public boolean onAction(View v, SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 					if (flagIdx == 101) {
 						if (flagPos == 4) {
-							for (int i = 6; i <= 8; i++)
+							for (int i = 6; i <= 9; i++)
 								settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(val ? 0.5f : 1);
 						}
 					}
@@ -1869,7 +1875,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				public void onPickingDelegate(SettingsPanel settingsPanel, int flagIdx, int flagPos, int lastX, int lastY) {
 				}
 			});
-			if ((shezhi & 0x4) != 0) {
+			if (PDICMainAppOptions.pageSchUseRegex()) {
 				settings.onAction(null, 101, 4, false, true, 0);
 			}
 			Framer f = new Framer(a);
