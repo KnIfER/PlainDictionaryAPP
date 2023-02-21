@@ -1246,10 +1246,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		_treeBuilder.clear();
 		int paragraphWords = 9;
 		String searchText = popupKey;
-		if(TextUtils.isEmpty(searchText)) return;
+		if(TextUtils.isEmpty(searchText))
+			return;
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
 		//CMN.debug("isParagraph::", isParagraph);
-		//tg
 		_treeBuilder.setKeyClashHandler(searchText);
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
@@ -1440,9 +1440,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			
 			resetPreviewMidPos();
 			
-			if (!PDICMainAppOptions.storeNothing()
-					&& PDICMainAppOptions.getHistoryStrategy7())
+			if (!PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeTapsch()) {
 				a.addHistory(popupKey, SearchUI.TapSch.MAIN, weblistHandler, null);
+			}
 		}
 	}
 	

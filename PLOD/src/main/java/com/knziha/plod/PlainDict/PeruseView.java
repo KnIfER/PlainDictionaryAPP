@@ -2490,8 +2490,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				break;
 				/* 定位列表位置 */
 				case R.id.locate:
-					if (true) { //tg
-					}
+//					if (true) { //tg
+//					}
 					if(selection!=null) {
 						int gvPos=SelectedV;//((DictTitleHolder)selection.getTag()).pos;
 						if (bExpanded)

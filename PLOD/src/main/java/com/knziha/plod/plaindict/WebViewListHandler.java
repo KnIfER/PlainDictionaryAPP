@@ -183,7 +183,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			entrySeek = contentUIData.entrySeek;
 			entrySeek.setOnSeekBarChangeListener(entrySeekLis);
 			pageSlider = contentUIData.PageSlider;
-			if (src==SearchUI.MainApp.MAIN || src==SearchUI.FloatApp.MAIN) {
+			if (src==SearchUI.MainApp.MAIN || src== SearchUI.FloatSch.MAIN) {
 				pageSlider.onSwipeTopListener = a;
 			}
 			DragScrollBar mBar = this.mBar = contentUIData.dragScrollBar;
@@ -250,7 +250,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//WHP.setBackground(null);
 		// CMN.debug("shzh::ini::rcsp::", tapSch, BookPresenter.MakePageFlag(this, opt));
 		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
-		if (src==SearchUI.FloatApp.MAIN || src==SearchUI.MainApp.MAIN ) {
+		if (src== SearchUI.FloatSch.MAIN || src==SearchUI.MainApp.MAIN ) {
 			tapDef = opt.tapViewDefMain();
 		}
 		tapSel = opt.getInt("tapSel", 0);
@@ -1700,7 +1700,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		
 		if (src==SearchUI.MainApp.MAIN) {
 			opt.schPage(b1);
-		} else if (src==SearchUI.FloatApp.MAIN) {
+		} else if (src== SearchUI.FloatSch.MAIN) {
 			//PDICMainAppOptions.schPageFlt(b1);
 		} else if (src==SearchUI.Fye.MAIN) {
 			opt.schPageFye(b1);

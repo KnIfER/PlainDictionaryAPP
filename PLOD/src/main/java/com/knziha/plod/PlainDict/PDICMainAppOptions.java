@@ -1634,15 +1634,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //	}
 
 	/** 记录各种弹出 */
-	public static boolean getHistoryStrategy7() {
-		return (SecondFlag & 0x10000) == 0x10000;
-	}
-
-	public static boolean setHistoryStrategy7(boolean val) {
-		updateSFAt(0x10000,val);
-		return val;
-	}
-
+	@Metaline(flagPos=16, shift=1) public static boolean storeTapsch(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=16, shift=1) public static void storeTapsch(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
+	
 	/** @return integer 0=always record; 1=don't record; 2=record on exit<br><br>default to 2*/
 	@Metaline(flagPos=17, flagSize=2, shift=2, max=2) public static int storePageTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=17, flagSize=2, shift=2, max=2) public static void storePageTurn(int val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
@@ -3380,6 +3375,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=5, shift=1) public static boolean tapSchPupup() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=5, shift=1) public static void tapSchPupup(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=6, shift=1) public static boolean ignoreSameUrlLoading() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=6, shift=1) public static void ignoreSameUrlLoading(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
 	
 }

@@ -670,7 +670,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		PlainDict
 		, FloatSearch
 		, MultiShare
-		, BookManager
+		, BookManage
 	}
 	protected boolean lv_matched;
 	private Animation CTANIMA;

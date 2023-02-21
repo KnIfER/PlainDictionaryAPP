@@ -16,7 +16,7 @@
 
 package com.knziha.plod.widgets;
 
-import static androidx.appcompat.widget.ViewUtils.isLayoutRtl;
+import static com.knziha.plod.widgets.ViewUtils.isLayoutRtl;
 
 import android.content.Context;
 import android.graphics.Rect;

@@ -1,6 +1,6 @@
 package com.knziha.plod.tesseraction;
 
-public final class Options {
+public final class ViewerOptions {
 	/** not in power saving mode */
 	boolean isPoweringMode = true;
 	boolean tourchLight = false;

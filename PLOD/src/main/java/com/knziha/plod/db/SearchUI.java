@@ -22,7 +22,7 @@ public class SearchUI{
 			public final static int 表=1<<5;
 			//public final static PhotoBrowsingContext pBc = new PhotoBrowsingContext();
 		}
-		public final static class FloatApp{
+		public final static class FloatSch {
 			public final static int MAIN=1<<20;
 			public final static int 表=1<<6;
 			public final static int 表1=1<<7;

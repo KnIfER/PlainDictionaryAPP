@@ -3,6 +3,7 @@ package com.knziha.plod.widgets;
 import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
+import android.text.style.CharacterStyle;
 import android.text.style.ClickableSpan;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,12 +18,12 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 	public float y;
 	public float scrollY;
 	public float scrollX;
-	public ClickableSpan span;
+	public CharacterStyle span;
 	public View.OnLongClickListener longClick;
 	public SpanInterceptor clickInterceptor;
 	
 	public interface SpanInterceptor{
-		boolean onClick(TextView view, ClickableSpan span);
+		boolean onClick(TextView view, CharacterStyle span);
 	}
 	
 	@Override
@@ -45,14 +46,14 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 	
 	@Override
 	public void onClick(View v) {
-		ClickableSpan touching = getTouchingSpan(v);
+		CharacterStyle touching = getTouchingSpan(v);
 		if (touching!=null) {
 			TextView widget = (TextView) v;
 			Spannable span = (Spannable) widget.getText();
 			if (clickInterceptor != null && clickInterceptor.onClick(widget, touching)) {
 				// intentionally blank
-			} else {
-				touching.onClick(v);
+			} else if (touching instanceof ClickableSpan) {
+				((ClickableSpan) touching).onClick(v);
 			}
 			Selection.setSelection(span,
 					span.getSpanStart(touching),
@@ -60,7 +61,7 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 		}
 	}
 	
-	public ClickableSpan getTouchingSpan(View v) {
+	public CharacterStyle getTouchingSpan(View v) {
 		if(distance()<35*v.getResources().getDisplayMetrics().density
 				&& scrollX == v.getScrollX() && scrollY == v.getScrollY()) {
 			TextView widget = (TextView) v;
@@ -81,7 +82,7 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 				if (layout != null) {
 					int line = layout.getLineForVertical(y);
 					int off = layout.getOffsetForHorizontal(line, x);
-					ClickableSpan[] link = span.getSpans(off, off, ClickableSpan.class);
+					CharacterStyle[] link = span.getSpans(off, off, CharacterStyle.class);
 					if (link.length > 0) {
 						return link[0];
 					}
@@ -93,7 +94,7 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 	
 	@Override
 	public boolean onLongClick(View v) {
-		ClickableSpan touching = getTouchingSpan(v);
+		CharacterStyle touching = getTouchingSpan(v);
 		Spannable span = (Spannable) ((TextView) v).getText();
 		if (touching!=null) {
 			Selection.setSelection(span,

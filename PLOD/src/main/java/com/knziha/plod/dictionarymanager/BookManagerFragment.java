@@ -164,8 +164,8 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 	abstract DragSortListView.DropListener getDropListener();
 	
 	public void dataSetChangedAt(int pos) {
-		ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
-		vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(pos-(vh==null?-listView.getHeaderViewsCount():vh.position)), ViewHolder.class);
+		BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), BookViewHolder.class);
+		vh = (BookViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(pos-(vh==null?-listView.getHeaderViewsCount():vh.position)), BookViewHolder.class);
 		if (vh!=null) {
 			adapter.getView(pos, vh.itemView, listView);
 		}
@@ -202,7 +202,7 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 		listView.setSelectionFromTop(position+listView.getHeaderViewsCount(), listView.getHeight()/2 - h);
 		listView.postDelayed(() -> {
 			View child1 = listView.getChildAt(0);
-			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(child1, ViewHolder.class);
+			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(child1, BookViewHolder.class);
 			int fvp = (vh == null ? -1 : vh.position);
 			child1 = listView.getChildAt(position - fvp);
 			if (child1 != null) {
@@ -227,7 +227,7 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 			}
 			if (filtered.size() > 0) {
 				View child = ViewUtils.findCenterYChild(listView);
-				ViewHolder  vh = (ViewHolder) ViewUtils.getViewHolderInParents(child, ViewHolder.class);
+				BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(child, BookViewHolder.class);
 				int fvp = (vh==null?0:vh.position), found = -1;
 				for (int i = 0; i < filtered.size(); i++) {
 					if (next) {

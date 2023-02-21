@@ -127,7 +127,6 @@ import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ScreenListener;
-import com.knziha.plod.widgets.UpdateDebugger;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -3842,7 +3841,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			};
 			if(!target.getParentFile().exists()) target.getParentFile().mkdirs();
 			String finalUrl = url;
-			finalUrl = UpdateDebugger.fakeDownloadUrl(url);
+			finalUrl = com.knziha.plod.widgets.UpdateDebugger.fakeDownloadUrl(url);
 			DownloadInfo info = new DownloadInfo(new URL(finalUrl));
 			Runnable notify = new Runnable() {
 				long prev;
@@ -3864,7 +3863,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							hdl.post(fileRn);
 							break;
 						case DOWNLOADING:
-							if(UpdateDebugger.logProgress) {
+							if(com.knziha.plod.widgets.UpdateDebugger.logProgress) {
 								CMN.debug("DOWNLOADING::", info.getCount());
 							}
 							long now = System.currentTimeMillis();
@@ -3882,7 +3881,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			};
 			File cahcedDowloadVersion = new File(getCacheDir(), "ver");
-			cahcedDowloadVersion = UpdateDebugger.fakeCachedVer(cahcedDowloadVersion);
+			cahcedDowloadVersion = com.knziha.plod.widgets.UpdateDebugger.fakeCachedVer(cahcedDowloadVersion);
 			if (cahcedDowloadVersion.exists()
 					&& BU.fileToString(cahcedDowloadVersion).equals(target.getName())
 					&& !lock.exists()
@@ -3927,7 +3926,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				AlertDialog d = drawerFragment.aboutDlg.get();
 				if (succ) {
 					boolean alreadyNewest = BuildConfig.VERSION_CODE >= buildNo;
-					alreadyNewest = UpdateDebugger.fakeUpdateVerdict(alreadyNewest);
+					alreadyNewest = com.knziha.plod.widgets.UpdateDebugger.fakeUpdateVerdict(alreadyNewest);
 					if (alreadyNewest && true) { /* true false */
 						showT("当前已经是最新版本！");
 						if (d != null) {
@@ -3962,7 +3961,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							dd.setCancelable(false);
 							btn.setText("请等待……");
 							btn.setEnabled(false);
-							HashMap<String, String> cachedUpdate = UpdateDebugger.fakeCachedDownloadStart();
+							HashMap<String, String> cachedUpdate = com.knziha.plod.widgets.UpdateDebugger.fakeCachedDownloadStart();
 							if (cachedUpdate != null) {
 								startUpdateDownload(name, cachedUpdate, dd, btn, dwnldAbort);
 							} else {
@@ -3972,7 +3971,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								//wlh.alloydPanel.dismissImmediate();
 								View vg = ViewUtils.getNthParentNonNull(wlh.alloydPanel.settingsLayout, 1);
 								boolean resolve=true;
-								resolve = UpdateDebugger.fakeShowWebview();
+								resolve = com.knziha.plod.widgets.UpdateDebugger.fakeShowWebview();
 								if(resolve) vg.setAlpha(0);
 								WebViewmy randomPage = wlh.getMergedFrame();
 								//randomPage.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
@@ -4154,7 +4153,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			BookPresenter book = MainActivityUIBase.new_book(defDicts1[1], this);
 			PlainWeb webx = book.getWebx();
 			String result = null;
-			result = UpdateDebugger.fakeUpdateDetect();
+			result = com.knziha.plod.widgets.UpdateDebugger.fakeUpdateDetect();
 			if(result==null) {
 				File cahcedUpdateDetect = new File(getCacheDir(), "up.json");
 				if (cahcedUpdateDetect.exists() && (CMN.now()-cahcedUpdateDetect.lastModified())<60*1000) {
@@ -4232,7 +4231,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		int finalBuild = buildNo;
 		if (name!=null && !name.startsWith("v")) name = "v"+name;
-		lnk = UpdateDebugger.fakeLanYunUrl(lnk);
+		lnk = com.knziha.plod.widgets.UpdateDebugger.fakeLanYunUrl(lnk);
 		resolveUpdate(task, succ, buildNo, name, desc, lnk);
 	}
 }

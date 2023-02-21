@@ -3,11 +3,9 @@ package com.knziha.plod.plaindict;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,7 +23,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
-import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
@@ -33,13 +30,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
-import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -693,9 +688,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
     }
 	
 	protected void findFurtherViews() {
-		schuiMain = SearchUI.FloatApp.MAIN;
+		schuiMain = SearchUI.FloatSch.MAIN;
 		schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
-		schuiList = SearchUI.FloatApp.表;
+		schuiList = SearchUI.FloatSch.表;
 		etSearch = findViewById(R.id.etSearch);
 		super.findFurtherViews();
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
@@ -725,7 +720,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 			}
 		}
-		if(keytmp!=null && !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.getHistoryStrategy7()){
+		if(keytmp!=null && !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeTapsch()){
 			prepareHistoryCon().insertUpdate(this, keytmp, null);
 		}
 

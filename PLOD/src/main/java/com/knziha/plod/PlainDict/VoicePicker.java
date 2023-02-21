@@ -40,6 +40,18 @@ import java.util.Set;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class VoicePicker extends DialogFragment
 {
+	@Deprecated
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	static class Voicemy extends Voice {
+		public int shrinked;
+		public Voicemy(String name, Locale locale, int quality, int latency, boolean requiresNetworkConnection, Set<String> features) {
+			super(name, locale, quality, latency, requiresNetworkConnection, features);
+		}
+		public static boolean isDirScionOf(Voice voice, Voicemy mdTmp) {
+			return voice.getLocale().getLanguage().equals(mdTmp.getLocale().getLanguage());
+		}
+	}
+	
 	private final Comparator<Voice> mComparator;
 	MainActivityUIBase a;
 	HashMap<String, Voicemy> Overflow = new HashMap<>();

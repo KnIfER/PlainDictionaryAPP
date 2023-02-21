@@ -19,7 +19,7 @@
 
 		    />
 		
-		<com.knziha.plod.widgets.TextViewmy
+		<com.knziha.plod.widgets.TextViewmy0
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			tools:text="absolve"

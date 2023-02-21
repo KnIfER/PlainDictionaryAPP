@@ -638,7 +638,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
 		
-		thisActType = MainActivityUIBase.ActType.BookManager;
+		thisActType = MainActivityUIBase.ActType.BookManage;
 		
 		fragments.addAll(Arrays.asList(f1 = new BookManagerMain(), f2 = new BookManagerModules(), f4 = new BookManagerWebsites(), f3 = new BookManagerFolderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;

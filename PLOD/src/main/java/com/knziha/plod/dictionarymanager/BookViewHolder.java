@@ -10,7 +10,7 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.FlowTextView;
 
-public class ViewHolder{
+public class BookViewHolder {
 		public int position;
 		public View itemView;
 		public ImageView handle;
@@ -18,7 +18,7 @@ public class ViewHolder{
 		public CheckBox ck;
 		boolean isDark;
 		
-		public ViewHolder(View v) {
+		public BookViewHolder(View v) {
 			itemView = v;
 			handle = v.findViewById(R.id.drag_handle);
 			title = v.findViewById(R.id.text);

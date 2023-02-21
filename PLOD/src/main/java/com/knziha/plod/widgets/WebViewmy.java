@@ -1,5 +1,6 @@
 package com.knziha.plod.widgets;
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -54,6 +55,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
@@ -305,6 +307,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	public void loadUrl(String url) {
 		CMN.debug("\n\nloadUrl::", url);
+		if (PDICMainAppOptions.ignoreSameUrlLoading() && url.equals(this.url)) {
+			postDelayed(this::clearFocus, 230);
+			return;
+		}
 		super.loadUrl(url);
 		drawRect=false;
 		isloading=true;
@@ -1627,16 +1633,20 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	public void setVisibility(int visibility) {
 		super.setVisibility(visibility);
-		ImageView btnOpt = titleBar.findViewById(R.id.dopt);
-		if (visibility == GONE) {
-			if (btnOpt.getTag()==null) btnOpt.setTag(btnOpt.getDrawable());
-			btnOpt.setImageResource(R.drawable.chevron_right_big);
-			btnOpt.setClickable(false);
-			((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = 0;
-		} else {
-			btnOpt.setImageDrawable((Drawable) btnOpt.getTag());
-			btnOpt.setClickable(true);
-			((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = (int) (2*GlobalOptions.density);
+		if (titleBar!=null) {
+			ImageView btnOpt = titleBar.findViewById(R.id.dopt);
+			if (btnOpt!=null) {
+				if (visibility == GONE) {
+					if (btnOpt.getTag()==null) btnOpt.setTag(btnOpt.getDrawable());
+					btnOpt.setImageResource(R.drawable.chevron_right_big);
+					btnOpt.setClickable(false);
+					((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = 0;
+				} else {
+					btnOpt.setImageDrawable((Drawable) btnOpt.getTag());
+					btnOpt.setClickable(true);
+					((MarginLayoutParams)btnOpt.getLayoutParams()).rightMargin = (int) (2*GlobalOptions.density);
+				}
+			}
 		}
 	}
 	

@@ -171,7 +171,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 //		CMN.debug("联合搜索 时间： " + (System.currentTimeMillis() - CMN.stst) + " ms " + rec.size());
 		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), CurrentSearchText);
 		rec.storeRealm = a.schuiMain;
-		rec.storeRealm1 = a.thisActType==MainActivityUIBase.ActType.PlainDict?SearchUI.MainApp.表1:SearchUI.FloatApp.表1;
+		rec.storeRealm1 = a.thisActType==MainActivityUIBase.ActType.PlainDict?SearchUI.MainApp.表1: SearchUI.FloatSch.表1;
 		if(a.lv2.getVisibility()!= View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);
 		a.adaptermy2.results = a.recCom = rec;

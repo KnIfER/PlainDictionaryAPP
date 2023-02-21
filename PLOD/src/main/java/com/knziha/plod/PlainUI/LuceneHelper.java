@@ -14,7 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymanager.ViewHolder;
+import com.knziha.plod.dictionarymanager.BookViewHolder;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -470,8 +470,8 @@ public class LuceneHelper {
 					if (v.getId() == android.R.id.button1) {
 						startBuildIndexes();
 					} else {
-						ViewHolder vh
-								= (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+						BookViewHolder vh
+								= (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
 						if (vh != null) {
 							PlaceHolder ph = a.loadManager.getPlaceHolderAt(vh.position);
 							if (ph != null) {
@@ -505,14 +505,14 @@ public class LuceneHelper {
 						}
 						@Override
 						public View getView(int position, View convertView, ViewGroup parent) {
-							ViewHolder vh;
+							BookViewHolder vh;
 							if (convertView == null) {
 								convertView = a.getLayoutInflater().inflate(R.layout.dict_manager_listrow, parent, false);
-								vh = new ViewHolder(convertView);
+								vh = new BookViewHolder(convertView);
 								vh.title.setOnClickListener(onClickListener);
 								vh.ck.setOnClickListener(onClickListener);
 							} else {
-								vh = (ViewHolder) convertView.getTag();
+								vh = (BookViewHolder) convertView.getTag();
 							}
 							vh.position = position;
 							PlaceHolder ph = a.loadManager.getPlaceHolderAt(position);

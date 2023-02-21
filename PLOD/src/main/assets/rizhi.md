@@ -1,7 +1,16 @@
 # 公告
-- [网页群](https://www.imdodo.com/channel/157568/889287) 
-- 开发者状态：失眠，头晕，脑wu
-- 本记录较为详细。其他可查阅[PDAWIKI论坛](https://www.pdawiki.com/forum/forum.php?mod=viewthread&tid=48462&page=1&extra=#pid2911837)、[freemdict论坛](https://forum.freemdict.com/t/topic/18443)、群中的帖子、B站视频教程。
+- [群地址](https://www.imdodo.com/channel/157568/889287) 
+- [PDAWIKI论坛](https://www.pdawiki.com/forum/forum.php?mod=viewthread&tid=48462&page=1&extra=#pid2911837)、[freemdict论坛](https://forum.freemdict.com/t/topic/18443)。
+- 独立开发者坚持不易，请帮助我创造更多：  
+![群地址](book://1.png)
+
+# v7.8
+- NEW -- 内容页下滑弹出键盘。
+- NEW -- 新增沉浸式**点击查词** 模式: 与**点击翻译**相同，但不弹出。   
+- FIX -- 改进**点击翻译**模式对话框。
+- FIX -- 改进**返回键**逻辑 ：优先访问历史。 
+- NEW -- 新增内容页标题栏按钮。
+- NEW -- 多列菜单。 
 
 # v7.7.4
 - 修复 词典文件选择器的排序方式，修复小窗模式下打开笔记编辑器，修复标题栏颜色

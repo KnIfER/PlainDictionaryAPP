@@ -12,17 +12,17 @@ import androidx.annotation.Nullable;
  * Created by KnIfER on 2017/11/4.
  */
 
-public class TextViewmy extends TextView {
+public class TextViewmy0 extends TextView {
 	public boolean doRescueAM;
-	public TextViewmy(Context context) {
+	public TextViewmy0(Context context) {
 		this(context, null);
 	}
 
-	public TextViewmy(Context context, @Nullable AttributeSet attrs) {
+	public TextViewmy0(Context context, @Nullable AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 
-	public TextViewmy(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+	public TextViewmy0(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
 

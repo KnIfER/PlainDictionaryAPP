@@ -22,7 +22,7 @@ public class History extends PlainSettingsFragment implements Preference.OnPrefe
 		init_switch_preference(this, "rc_click", PDICMainAppOptions.storeClick(), null, null, null);
 		//init_switch_preference(this, "rc_query", PDICMainAppOptions.getHistoryStrategy1(), null, null);
 		//init_switch_preference(this, "rc_net", PDICMainAppOptions.getHistoryStrategy2(), null, null);
-		//init_switch_preference(this, "rc_float_pop", PDICMainAppOptions.getHistoryStrategy7(), null, null);
+		//init_switch_preference(this, "rc_float_pop", PDICMainAppOptions.storeTapsch(), null, null);
 		init_number_info_preference(this, "rc_turn", PDICMainAppOptions.storePageTurn(), R.array.record_slide_info, null, null);
 		
 		init_switch_preference(this, "3rd", PDICMainAppOptions.storeAppId(), null, null, null);
@@ -65,7 +65,7 @@ public class History extends PlainSettingsFragment implements Preference.OnPrefe
 			break;
 			/* 记录各种弹出 */
 			case "rc_float_pop":
-				PDICMainAppOptions.setHistoryStrategy7((Boolean) newValue);
+				PDICMainAppOptions.storeTapsch((Boolean) newValue);
 			break;
 			case "rc_turn":
 				int val = IU.parsint(newValue);

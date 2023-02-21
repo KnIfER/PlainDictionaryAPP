@@ -84,7 +84,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public BookManagerMain(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
-			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(buttonView, ViewHolder.class);
+			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(buttonView, BookViewHolder.class);
 			int pos = vh.position;
 			if(lastClickedPos[lastClickedPosIndex%2]!=pos) {
 				lastClickedPos[(++lastClickedPosIndex) % 2] = pos;
@@ -165,7 +165,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			// CMN.debug("performLastItemLongClick::", idx, hc);
 			if(idx<hc||idx>=adapter.getCount()){
 				idx = hc;
-				ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
+				BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), BookViewHolder.class);
 				if (vh != null) {
 					idx = vh.position + hc;
 				}
@@ -186,7 +186,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		boolean b1 = to<0;
 		if(b1) to=-to;
 		int pos=-1, top=0;
-		ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), ViewHolder.class);
+		BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(listView.getChildAt(0), BookViewHolder.class);
 		if (vh != null) {
 			pos = vh.position;
 			top = ViewUtils.getNthParentNonNull(vh.itemView, 1).getTop();
@@ -236,7 +236,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				}
 				View child = ViewUtils.findChild(listView, fvp + listView.getHeaderViewsCount());
 				if (child != null) {
-					((ViewHolder) child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+					((BookViewHolder) child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
 				}
 				a.accessMan.interrupt();
 				a.root.postDelayed(() -> {
@@ -246,7 +246,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			} else {
 				View child = ViewUtils.findChild(listView, from+listView.getHeaderViewsCount());
 				if (child != null) {
-					((ViewHolder)child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+					((BookViewHolder)child.getTag()).handle.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
 				}
 			}
 		}
@@ -285,7 +285,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			super.onPopulateAccessibilityEvent(host, event);
 			try {
 				if (host.getId() == R.id.text) {
-					ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(host, ViewHolder.class);
+					BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(host, BookViewHolder.class);
 					if (vh != null) {
 						if (getPlaceSelected(vh.position)) {
 							event.getText().add("已选中");
@@ -309,7 +309,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	@Override
 	public boolean onLongClick(View v) {
 		if (v.getId()==R.id.text) {
-			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
 			if (vh != null) {
 				return listView.getOnItemLongClickListener().onItemLongClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
 			}
@@ -322,7 +322,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	@Override
 	public void onClick(View v) {
 		if (v.getId()==R.id.text) {
-			ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
+			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
 			if (vh != null) {
 				listView.getOnItemClickListener().onItemClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
 			}
@@ -336,9 +336,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 
 		@NonNull
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-			ViewHolder vh;
+			BookViewHolder vh;
 			if (parent != listView && convertView!=null) {
-				if (!(convertView.getTag() instanceof ViewHolder)) {
+				if (!(convertView.getTag() instanceof BookViewHolder)) {
 					CMN.debug("他乡异客");
 					convertView = null;
 				}
@@ -346,7 +346,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			boolean access = a.accessMan.isEnabled();
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
-				vh = new ViewHolder(convertView);
+				vh = new BookViewHolder(convertView);
 				if(parent != listView) {
 					ViewUtils.setVisible(vh.handle, false);
 					convertView.setBackground(null);
@@ -362,7 +362,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					ViewUtils.addViewToParent(vh.handle, (ViewGroup) vh.itemView, 1);
 				}
 			} else {
-				vh = (ViewHolder) convertView.getTag();
+				vh = (BookViewHolder) convertView.getTag();
 			}
 			vh.handle.setFocusable(access);
 			vh.title.setClickable(access);
@@ -1056,7 +1056,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		@Override
 		public View onCreateFloatView(int position) {
 			View v=adapter.getView(position, null, mDslv);
-			ViewHolder vh = ((ViewHolder)v.getTag());
+			BookViewHolder vh = ((BookViewHolder)v.getTag());
 			vh.ck.jumpDrawablesToCurrentState();
 			//v.getBackground().setLevel(500);
 			mDslv.setFloatAlpha(1.0f);

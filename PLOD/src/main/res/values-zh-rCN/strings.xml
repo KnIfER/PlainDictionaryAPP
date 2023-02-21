@@ -257,5 +257,6 @@
 	<string name="exit_on_top">滚动到顶部退出</string>
 	<string name="locate_dman">定位词典管理</string>
 	<string name="disable">禁用</string>
+	<string name="save_img">保存图片</string>
 	>
 </resources>
