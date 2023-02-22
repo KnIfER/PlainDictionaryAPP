@@ -177,6 +177,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.PageSlider.weblist = this;
 			contentUIData.cover.weblist = this;
 			contentUIData.cover.hdl = a.hdl;
+			contentUIData.navMore.setOnClickListener(this);
 			browserWidget8 = contentUIData.browserWidget8;
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
@@ -970,6 +971,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
 				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
 				showSeek = multiDicts && PDICMainAppOptions.showEntrySeek() && (bMerge == 2 ? PDICMainAppOptions.showEntrySeekbarFolding() : PDICMainAppOptions.showEntrySeekbar());
+				ViewUtils.setVisible((View) contentUIData.navMore.getParent(), multi && PDICMainAppOptions.showMoreMenuBtnForFrames());
 			} else {
 				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvNxtBtnSmallTapSch());
 				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showPrvNxtBtnSmallTapSch());
@@ -1001,22 +1003,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void changeViewMode(WebViewmy view, String url) {
-		//CMN.debug("changeViewMode::", isViewSingle());
+		CMN.debug("changeViewMode::", isViewSingle());
 		if (isViewSingle() && !isFoldingScreens()) {
 			boolean vis;
-			if (url.contains("merge")) {
-				ViewUtils.setVisible(entrySeek, url.indexOf("-d", 15)>0);
+			if (url.contains("merge")) { // todo correct
+				//ViewUtils.setVisible(entrySeek, url.indexOf("-d", 15)>0); todo show seekbar dynamically
 				vis = false;
-				if (view.titleBar!=null) {
-					ViewUtils.setVisible(view.titleBar, false);
-				}
+				view.showTitleBar(false);
 				bMergingFrames = 1;
 			} else {
 				ViewUtils.setVisible(entrySeek, false);
 				vis = PDICMainAppOptions.showDictName();
-				if (view.titleBar!=null) {
-					ViewUtils.setVisible(view.titleBar, true);
-				}
+				view.showTitleBar(true);
 				bMergingFrames = 0;
 			}
 			ViewUtils.setVisible(contentUIData.dictNameStroke, vis);
@@ -1740,6 +1738,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						a.imm.hideSoftInputFromWindow(pageSchEdit.getWindowToken(), 0);
 					}
 					jumpHighlight(nxt?1:-1, true);
+				}
+			} break;
+			case R.id.nav_more:{
+				WebViewmy wv = getWebContext();
+				if (wv!=null) {
+					wv.presenter.showMoreToolsPopup(wv, v);
 				}
 			} break;
 			case R.id.nav_back:

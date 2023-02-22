@@ -3379,5 +3379,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=6, shift=1) public static boolean ignoreSameUrlLoading() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=6, shift=1) public static void ignoreSameUrlLoading(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=7, shift=1) public static boolean showMoreMenuBtnForFrames() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=7, shift=1) public static void showMoreMenuBtnForFrames(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
 	
 }

@@ -1746,7 +1746,7 @@ function debug(e){console.log(e)};
 		if (mWebView.toolbar_title!=null) {
 			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
 			if(mWebView.titleBar!=null) {
-				mWebView.titleBar.setVisibility(View.VISIBLE);
+				mWebView.showTitleBar(true);
 				if(mWebView.weblistHandler == a.weblistHandler && a.newTitlebar.isActived) {
 					a.newTitlebar.setTitlebar(mWebView);
 				}

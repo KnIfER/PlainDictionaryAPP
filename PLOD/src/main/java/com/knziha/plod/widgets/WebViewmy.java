@@ -129,6 +129,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public WebViewListHandler weblistHandler;
 	public WebViewListHandler.HighlightVagranter hDataPage = new WebViewListHandler.HighlightVagranter();
 	public boolean hasFilesTag;
+	/** 1=book changed; 2=position changed */
 	public int changed;
 	public float expectedZoom;
 	private int mForegroundColor = 0xffffffff;
@@ -308,8 +309,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public void loadUrl(String url) {
 		CMN.debug("\n\nloadUrl::", url);
 		if (PDICMainAppOptions.ignoreSameUrlLoading() && url.equals(this.url)) {
-			postDelayed(this::clearFocus, 230);
-			return;
+//			postDelayed(this::clearFocus, 230);
+//			cleanPage = false; // todo check more to reset
+//			return;
 		}
 		super.loadUrl(url);
 		drawRect=false;
@@ -712,6 +714,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public void setAutoPlay(boolean allow) {
 		getSettings().setMediaPlaybackRequiresUserGesture(!allow);
+	}
+	
+	public void showTitleBar(boolean b) {
+		if (titleBar!=null) {
+			titleBar.setVisibility(b?View.VISIBLE:View.GONE);
+			if (b && fromCombined!=1) {
+				ViewUtils.setVisibility((View) weblistHandler.contentUIData.navMore.getParent(), false);
+			}
+		}
 	}
 
 //	/**  reset overshot */

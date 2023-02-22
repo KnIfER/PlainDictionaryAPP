@@ -245,6 +245,8 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
@@ -1421,7 +1423,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean nii=contentUIData.browserWidget12.getTag(R.id.image)==null;
 		ViewGroup[] holders = new ViewGroup[]{webSingleholder, weblistHandler.getViewGroup()};
 		String js = isDark ? opt.DarkModeIncantation(this) : DeDarkModeIncantation;
-		weblistHandler.evalJsAtAllFrames(js+";app.tintBackground(sid.get())");
+		js+=";app.tintBackground(sid.get())";
+		weblistHandler.evalJsAtAllFrames(js);
+		for (int i = settingsPanels.size()-1; i >= 0; i--) {
+			PlainAppPanel panel = settingsPanels.get(i);
+			if (panel.weblistHandler!=null) {
+				panel.weblistHandler.evalJsAtAllFrames(js);
+			}
+		}
 		popupMenuRef.clear();
 		if(peruseView!=null) {
 			peruseView.refreshUIColors(MainBackground);
@@ -6154,6 +6163,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			} break;
+			case 1001:{
+				JSONObject jsoObj;
+				String date = null;
+				boolean isclose = false;
+				try {
+					jsoObj = new JSONObject("");
+					date = jsoObj.getString("data");
+					isclose = jsoObj .getBoolean("close");
+				} catch (JSONException e) {
+					e. printStackTrace();
+				}
+				UpgradeHelper.upgrade(isclose?getApplicationContext():this,getClass().getName(),date);
+			} break;
 			/* 自动浏览 */
 			case R.drawable.ic_autoplay:{
 				if(bRequestingAutoReading || !AutoBrowsePaused){
@@ -7092,7 +7114,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					showT("已经是了");
 				} else {
 					weblist.setViewMode(weblist.multiRecord, which, weblist.dictView);
-				} 
+				}
 			}
 		}
 	}
@@ -7915,10 +7937,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						idx = url.indexOf("q=", schemaIdx+12+5+1)+2;
 						int ed = url.indexOf("&", idx); if(ed<0) ed=url.length();
 						wlh.setStar(/*mWebView.word = */URLDecoder.decode(url.substring(idx, ed)));
+						mWebView.word = wlh.displaying;
 						mWebView.currentPos = did;
-						//CMN.debug("view::merged::changed!!!", wlh.displaying);
+						CMN.debug("view::merged::changed!!! multiview ", wlh.displaying);
 						wlh.changeViewMode(mWebView, url);
+						wlh.resetScrollbar(mWebView, true, false);
 					}
+					if (!wlh.bDataOnly) {
+						ViewUtils.setVisible((View) wlh.contentUIData.navMore.getParent(), PDICMainAppOptions.showMoreMenuBtnForFrames());
+					}
+					//mWebView.changed = 0;
 				}
 				else if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
 					int idx=schemaIdx+12+7+1;
@@ -8056,13 +8084,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.evaluateJavascript(BookPresenter.jsFileTag, null);
 				mWebView.hasFilesTag = false;
 			}
-			
 			if (mWebView.changed!=0) {
 				BookPresenter finalInvoker = invoker;
 				if (mWebView.changed==1) {
 					finalInvoker.tintBackground(mWebView);
 				}
 				wlh.changeViewMode(mWebView, url);
+//				if(!mWebView.merge && ViewUtils.getNthChildNonNull(mWebView.rl, 1).getId()==R.id.webSingleholder)
+//				{
+//					wlh.resetScrollbar(mWebView, false, false);
+//				}
 				mWebView.evaluateJavascript(BookPresenter.jsViewChanged, new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String value) {

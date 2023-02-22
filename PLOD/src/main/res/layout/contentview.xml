@@ -80,6 +80,25 @@
 				/>
 
 			<LinearLayout
+				android:layout_width="wrap_content"
+				android:layout_height="29dp"
+				android:layout_gravity="top|end"
+				android:background="@drawable/frame_title_btn_2">
+				<ImageView
+					android:id="@+id/nav_more"
+					android:layout_width="34dp"
+					android:layout_height="match_parent"
+					android:layout_gravity="center_vertical"
+					android:background="?attr/actionBarItemBackground"
+					android:longClickable="true"
+					android:paddingTop=   "7dp"
+					android:paddingBottom="7dp"
+					android:src="@drawable/ic_overflow_hor_small"
+					android:alpha="0.75"
+					/>
+			</LinearLayout>
+
+			<LinearLayout
 				android:id="@+id/navBtns"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"

@@ -196,7 +196,7 @@ public class MdictServerMobile extends MdictServer {
 			} catch (Exception e) {
 				if (check) {
 					try {
-						return testDebugServer("192.168.0.105", key, check);
+						return testDebugServer("192.168.0.102", key, check);
 					} catch (IOException ex) {
 						CMN.debug("getRemoteServerRes failed::"+e);
 						hasRemoteDebugServer = false;
@@ -232,7 +232,7 @@ public class MdictServerMobile extends MdictServer {
 //				String val = BU.StreamToString(input);
 //				//input = new AutoCloseNetStream(input, urlConnection);
 //				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
-//				CMN.debug("请求的是本机调试资源…", key);
+		CMN.debug("请求的是本机调试资源…", key);
 		if(check)
 			remoteDebugServer=ipAddress;
 		return input;

@@ -45,6 +45,11 @@ w.addEventListener('load',wrappedOnLoadFunc,false);
 w.addEventListener('click',wrappedClickFunc);
 w.addEventListener('mousedown',wrappedDown);
 w.addEventListener('touchstart',wrappedDown);
+w.addEventListener('touchend',function(){
+	if(frameElement) {
+		pw.postOnClick(frameElement.inf);
+	}
+});
 //w.addEventListener('scroll',wrappedScroll,true);
 
 // function wrappedScroll(e){
@@ -372,6 +377,9 @@ function wrappedClickFunc(e){
 		stopLnk=nxtEntry=0;
 		e.stopPropagation();
 		e.preventDefault();
+	}
+	if(frameElement) {
+		pw.postOnClick(frameElement.dictInfo);
 	}
 	if(_app && stopLnk) {
 		if(typeof stopLnk==='string' && !pw._touchtarget_lck) {

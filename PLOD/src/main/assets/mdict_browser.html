@@ -742,7 +742,7 @@
 		var lv;
 		var defP, bPad;
 		var bkPs, navid, nav;
-		var sh, shs, shsty;
+		var sh, shs, shsty, shtm=34;
 		var dictsP;
 		var loadingEntries;
 		var capacity = 30;
@@ -758,6 +758,7 @@
 		var frames=[], contents, processing, wbframes=[];
 		var etSearch;
 		var wbf={};
+		var _t0 = 0;
 	 		
 		var menu, menuContext;//, trans;
 		var toastTimer=-1;
@@ -778,6 +779,8 @@
 		var merge=false;
 		var args={};
 		var mousewheel;
+		
+		var initStates=[];
 
 		var onmousewheelDown = function(e) {
 			//debug(["onmousewheelDown: ", e, e.wheelDelta]);
@@ -864,11 +867,11 @@
 			var page=0;
 			if(event.state!==null){
 				page=event.state;
-				console.log('page:'+page);
+				debug('page:'+page);
 			}
-			console.log(event);
-			console.log(''+event);
-			console.log('page:'+page);
+			debug(event);
+			debug(''+event);
+			debug('page:'+page);
 		});
 
 		/**/
@@ -1392,6 +1395,48 @@
 				history.pushState(null,null,read);
 			}
 		}
+		
+		function storeStates() {
+			if(true) {
+				var url = location.href;
+				var idx = url.indexOf("&foldStates=");
+				if(idx>=0) {
+					var end = url.indexOf("&", idx+5);
+					if(end>idx) url = url.substring(0, idx) + url.substring(end);
+					else url = url.substring(0, idx);
+				}
+				var tmp = "", cc=0;
+				for(var i=0,fx;fx=frames[i];i++) {
+					for(var j=cc;j<fx.part;j++) {
+						tmp += "0-";
+						cc++;
+					}
+					var spec = "0-";
+					if(fx.touched) {
+						if(fx.fold) {
+							spec = "1-";
+						}
+						else if(!fx.collapsed){
+							spec = "2-";
+						}
+						else {
+							spec = "3-";
+						}
+					} else {
+						spec = (initStates[i]||0)+"-"
+					}
+					tmp += spec;
+					cc++;
+				}
+				//tmp="";
+				url += "&foldStates="+tmp;
+				url += parseInt(defP.scrollTop);
+				if(location.href!=url) {
+					history.replaceState(null,null,url);
+					debug("replaceState!!!", url);
+				}
+			}
+		}
 
 		function craft(t, c, p) {
 			var e=document.createElement(t||'DIV');
@@ -1596,6 +1641,7 @@
 		 * 旧格式：Multi result format : entry1 \r 0@1@2 & 1@1@2 & 5@1024 \n entry2...
 			where 0@1@2 means contents at position entry#( 1 and 2 ) of dict#( 0 ) */
 		function processContents(e, _proc){
+			debug('processContents', new Error())
 			processing=true;
 			var newContents=false;
 			if(contents!==e) {
@@ -1663,6 +1709,7 @@
 					}
 					inf.src = e;
 					inf.frameAt = f++;
+					inf.part = i;
 					frames.push(inf);
 				}
 				if(webFirst>=0) {
@@ -1719,6 +1766,7 @@
 				//toast(manyfolds);
 				// [5th pass] Load frames to dom
 				var bStayExpandedFocus=true;
+				var delay = opt.delay && !_t0;
 				for (; i < len; i++) {
 					var inf=frames[i];
 					//e="\\content\\"+e;
@@ -1728,10 +1776,36 @@
 					inf.entry = 0; //todo
 					inf.initHeight = 100;
 					inf.collapsed = false;
-					inf.waiting = opt.delay && opt.lazy && i>opt.lazyLoadMin || inf.fold;//opt.focusMode==1 && currentFocus!=inf;
-					if(opt.focusMode) {
+					inf.waiting =  delay && opt.lazy && i>opt.lazyLoadMin || inf.fold;//opt.focusMode==1 && currentFocus!=inf;
+					var f0=opt.focusMode, f1=opt.fm1, f2=opt.fm2;
+					var ini = parseInt(initStates[inf.part]) || 0;
+					if(inf.waiting) debug('you wait!!!', inf.waiting, delay, _t0);
+					if(ini) {
+						if(ini==1) { // 记忆折叠
+							inf.collapsed = false;
+							inf.fold = true;
+							inf.waiting = true;
+						}
+						if(ini==2) { // 记忆展开
+							inf.collapsed = false;
+							inf.fold = false;
+							inf.waiting = false; // 这里简单处理了，恢复位置时不用懒加载 !!_t0
+							// if(f0 && f2) {
+							// 	inf.maxHeight = inf.maxHeightSet || opt.maxHeight2;
+							// 	inf.initHeight=opt.initHeight2;
+							// }
+						}
+						f0=f1=f2=0;
+						if(ini==3) { // 记忆半展开
+							inf.collapsed = true;
+							inf.fold = false;
+							inf.waiting = false;
+							f0 = f2 = 1;
+						}
+					}
+					if(f0) {
 						var nf=!bStayExpandedFocus || currentFocus!=inf;
-						if(opt.fm2) {
+						if(f2) {
 							inf.maxHeight = inf.maxHeightSet || opt.maxHeight2;
 							inf.collapsed = manyfolds && i>=preN && nf;
 							inf.initHeight=opt.initHeight2;
@@ -1751,11 +1825,11 @@
 					var fx = getFrame(inf, true);
 					//debug('processContents-waiting', inf.name, 'waiting='+inf.waiting, 'wait='+(fx==null));
 					if(fx) { //todo
-						if(inf.collapsed && opt.fm2) { // 
+						if(inf.collapsed && f2) { // 
 							inf.fbox.style.height=inf.initHeight+'px';
 						}
 						var h=inf.initHeight;
-						debug('h=', h, opt.fm2, fx.name, fx==currentFocus, 'collapsed='+fx.collapsed, 'fold='+fx.fold, 'maxHeight='+inf.maxHeight);
+						debug('h=', h, f2, fx.name, fx==currentFocus, 'collapsed='+fx.collapsed, 'fold='+fx.fold, 'maxHeight='+inf.maxHeight);
 						fx.height=h;
 						/* 不移不改，缺一不可 */
 						if(!inf.box.parentNode || !inf.title.parentNode){
@@ -1781,13 +1855,13 @@
 					}
 					inf.title.rendering=true;
 					fixBtnText(inf);
-					if(opt.delay && !des && inf.title.offsetTop>=defP.scrollTop) {
+					if(delay && !des && inf.title.offsetTop>=defP.scrollTop) {
 						des = i;
 					}
 				}
 				defP.style.overflowY = 'scroll';
 				defP.style.display = 'unset';
-				if(opt.delay) {
+				if(delay) {
 					dec=frames.length;
 					if(!opt.fm1 || preN<=0)
 						startLazyLoadFrames(des||0);
@@ -1938,12 +2012,12 @@
 			// if(app) {
 			// 	app.sc(sid.get(), defP.scrollHeight-defP.offsetHeight, defP.scrollTop);
 			// }
-			shsty.top = (defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-35))+'px';
+			shsty.top = (shtm + defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-shtm))+'px';
 			//requestAnimationFrame(scrollSH);
 		}
 
 		function scrollSH(){
-			shsty.top = (defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-35))+'px';
+			shsty.top = (shtm + defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-shtm))+'px';
 		}
 
 		function tpFrame(){
@@ -2106,7 +2180,7 @@
 				var inf=frames[dex];
 				//debug('lazyLoading...', dex, inf, inf&&inf.waiting);
 				if(inf) {
-					if(opt.lazy) {
+					if(opt.lazy && !_t0) {
 						if(opt.lazyLoadMax>0 && inf.title.offsetTop>=defP.scrollTop+opt.lazyLoadMax*defP.offsetHeight) {
 							expanding=false;
 							//debug('暂停加载...1')
@@ -2257,6 +2331,7 @@
 		function scrollToFrame(fx) {
 			var scrollingTo;
 			tFrame(fx);
+			fx.touched = true;
 			function doScroll(fx) {
 				fx = fx||scrollingTo;
 				//debug('scrollToFrame'+fx.name);
@@ -2577,7 +2652,8 @@
 				}
 			}
 			var fold=inf.fold || inf.waiting;
-			if(fold)inf.fold=false;
+			if(fold) inf.fold=false;
+			inf.touched=true;
 			checkFrame(inf, true);
 			var fx=inf.item,bx=inf.box;
 			if(newFoc) {
@@ -2595,13 +2671,18 @@
 				inf.title.classList.add('focus');
 				inf.collapsed = false;
 			} else if(!e._foc) {
-				if((inf.collapsed||opt.fm2))
-				if(inf.collapsed=!inf.collapsed) { //WHY???
-					hide=2;
-					opt.initHeight(inf);
+				if((inf.collapsed||opt.fm2)) {
+					if(inf.collapsed=!inf.collapsed) { //WHY???
+						hide=2;
+						opt.initHeight(inf);
+					}
 				}
 			}
 			if(fx) {
+				if(opt.fm2) {
+					inf.scrollable = opt.fm2 && !opt.noNestedScroll2;
+					fx.scrolling=inf.scrollable?'auto' : 'no';
+				}
 				// toggle fold / unfold
 				if(fold) {
 					bx.style.display='block';
@@ -2641,7 +2722,8 @@
 				e.preventDefault();
 			}
 			fixBtnText(inf);
-			checkFakeScroll(inf)
+			checkFakeScroll(inf);
+			postOnClick(inf);
 		}
 
 		function fixBtnText(e) {
@@ -2951,8 +3033,38 @@
 			}
 		}
 
+		function restoreStates() {
+			if(args.foldStates) {
+				var pos = parseInt(initStates[initStates.length-1])||0;
+				debug("scrollingTo wait!!!", pos);
+				var th = craft(0,0,document.body);
+				th.style="position:fixed;bottom:0;background:rgb(181 247 255);font-size:small;";
+				th.innerText="正在恢复页面位置……";
+				var tx = craft("A",0,th), cc=2;
+				if(opt.fm2) cc=4;
+				tx.innerText="[X]";
+				tx.style.color="#0015ff";
+				tx.onclick = function(){
+					clearInterval(_t0);
+					_t0 = 0;
+					th.remove();
+				}
+				_t0=setInterval(function() {
+					debug("scrollingTo", Math.ceil(defP.scrollHeight+defP.clientHeight), pos);
+					if(Math.ceil(defP.scrollHeight+defP.clientHeight)>=pos) {
+						defP.scrollTop = pos;
+						debug(defP.scrollTop);
+						if(Math.ceil(defP.scrollTop)>=pos && --cc<=0) {
+							tx.click()
+						}
+					}
+				}, 200);
+			}
+		}
+		
 		function ScanInDicts() {
 			args=parseArgs();
+			restoreStates();
 			/**/if(merge) {/**/
 				restorePages();
 				if(args.popup) ge('prev').style.display='none';
@@ -3039,7 +3151,16 @@
 			}
 			if(params.s)params.s=decodeURIComponent(params.s);
 			if(params.xp) decodeExp(params);
+			if(params.foldStates) {
+				initStates = params.foldStates.split("-");
+			}
 			return params;
+		}
+		
+		function postOnClick(fx) {
+			debug('postOnClick', fx);
+			// if(0)
+			if(!_t0) storeStates();
 		}
 
 		function decodeExp(p,v) {
@@ -3098,6 +3219,7 @@
 		function foldAll(){
 			for (var i=0,fx; fx=frames[i++];) {
 				foldFrame(fx);
+				fx.touched = true;
 			}
 		}
 
@@ -3106,6 +3228,7 @@
 			for (var i=0,fx; fx=frames[i++];) {
 				if(!fx.fold){
 					fold = true;
+					fx.touched = true;
 					foldFrame(fx);
 				}
 			}
@@ -3119,6 +3242,7 @@
 			for (var i=0,fx; fx=frames[i++];) {
 				unfoldFrame(fx);
 				checkFrame(fx);
+				fx.touched = true;
 			}
 		}
 
@@ -3530,6 +3654,11 @@
 		}
 
 		function showSettings() {
+			var tmp=ge('settings');
+			if(tmp && tmp.style.display!='none') {
+				tmp.style.display='none'
+				return;
+			}
 			if(window.SettingsBuildCard) {
 				doShowSettings();
 			} else {
@@ -3634,6 +3763,8 @@
 			}
 
 			SettingsShowDialog(dlg);
+			
+			if(app) setTimeout(function(){ge('settings').host.close.style.right='34px'}, 200);
 		}
 
 		function copyText(e){
@@ -3967,6 +4098,7 @@
 			sh = ge("sh");
 			sh.ontouchstart=sh.onmousedown=SH_D;
 			shsty = sh.style;
+			shsty.top = shtm+"px";
 			SH_S(app?app.cs():2);
 		}
 		function SH_S(t){
@@ -3990,7 +4122,7 @@
 			s.display=d;
 		}
 		function SH_D(e) {
-			shy=parseInt(shsty.top)||0;
+			shy=(parseInt(shsty.top)||shtm)-shtm;
 			shyst=e.clientY;
 			if(shyst==undefined)
 				shyst=e.changedTouches[0].clientY;

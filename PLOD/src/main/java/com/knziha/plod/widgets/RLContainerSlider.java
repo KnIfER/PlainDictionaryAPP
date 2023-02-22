@@ -2,6 +2,8 @@ package com.knziha.plod.widgets;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -486,16 +488,21 @@ public class RLContainerSlider extends FrameLayout {
 			OrgY = ev.getY();
 			if(twiceDetected) twiceDetected = false;
 			if (swipeRefresh) {
-				if (!PDICMainAppOptions.swipeTopShowKeyboardStrict() || WebContext==null) {
-					swipeRefreshAllow = true;
+				int pad = (int) (GlobalOptions.density*34);
+				if (OrgX<pad || OrgX>getWidth()-pad) {
+					swipeRefreshAllow = false;
 				} else {
-					swipeRefreshAllow = WebContext.getScrollY()==0;
-					if (swipeRefreshAllow && WebContext.merge && PDICMainAppOptions.swipeTopShowKeyboardStrict()) {
-						WebContext.evaluateJavascript("defP.scrollTop==0", value -> {
-							if ("false".equals(value)) {
-								swipeRefreshAllow = false;
-							}
-						});
+					if (!PDICMainAppOptions.swipeTopShowKeyboardStrict() || WebContext==null) {
+						swipeRefreshAllow = true;
+					} else {
+						swipeRefreshAllow = WebContext.getScrollY()==0;
+						if (swipeRefreshAllow && WebContext.merge && PDICMainAppOptions.swipeTopShowKeyboardStrict()) {
+							WebContext.evaluateJavascript("defP.scrollTop==0", value -> {
+								if ("false".equals(value)) {
+									swipeRefreshAllow = false;
+								}
+							});
+						}
 					}
 				}
 			}
@@ -627,6 +634,12 @@ public class RLContainerSlider extends FrameLayout {
 										if (dx > theta1 || dx <= -theta1) {//3.3
 											swipeRefreshDy = dy;
 											dragged = 2;
+											if (GlobalOptions.isDark) {
+												swipeRefreshIcon.setColorFilter(null);
+											} else {
+												swipeRefreshIcon.setColorFilter(0xff03a9f4, PorterDuff.Mode.SRC_IN);
+//												swipeRefreshIcon.setColorFilter(GlobalOptions.NEGATIVE_1);
+											}
 										}
 									}
 								}
