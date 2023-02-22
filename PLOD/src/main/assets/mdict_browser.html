@@ -1766,7 +1766,8 @@
 				//toast(manyfolds);
 				// [5th pass] Load frames to dom
 				var bStayExpandedFocus=true;
-				var delay = opt.delay && !_t0;
+				var delay = opt.delay;
+				if(_t0 && !opt.fm2) delay = false;
 				for (; i < len; i++) {
 					var inf=frames[i];
 					//e="\\content\\"+e;
@@ -3040,7 +3041,7 @@
 				var th = craft(0,0,document.body);
 				th.style="position:fixed;bottom:0;background:rgb(181 247 255);font-size:small;";
 				th.innerText="正在恢复页面位置……";
-				var tx = craft("A",0,th), cc=2;
+				var tx = craft("A",0,th), cc=4;
 				if(opt.fm2) cc=4;
 				tx.innerText="[X]";
 				tx.style.color="#0015ff";
