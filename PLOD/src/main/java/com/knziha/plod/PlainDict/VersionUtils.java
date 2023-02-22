@@ -30,6 +30,8 @@ public class VersionUtils {
 			PDICMainAppOptions.revisitOnBackPressed(true);
 			PDICMainAppOptions.alwaysloadUrl(true);
 		}
+		//if(PDICMainAppOptions.checkVersionBefore_7_9()) {
+//		PDICMainAppOptions.storeTapsch(true);
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
 			CMN.debug("初始化版本!!!");

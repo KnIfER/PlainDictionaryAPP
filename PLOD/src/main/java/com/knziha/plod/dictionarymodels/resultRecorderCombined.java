@@ -380,6 +380,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				mergedUrl.append("&popup=true");
 			}
 			mWebView.getSettings().setSupportZoom(true);
+			mWebView.word = jointResult.key;
 			mWebView.loadUrl(mergedUrl.append("&did=").append(did).toString());
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			mWebView.jointResult=jointResult;

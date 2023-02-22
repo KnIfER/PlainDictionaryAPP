@@ -205,6 +205,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 		}
 		refresh();
+		if (PDICMainAppOptions.revisitOnBackPressed() && weblistHandler!=null/* && (pop==null || !pop.isShowing())*/) {
+			weblistHandler.getMergedFrame().cleanPage = true;
+		}
 	}
 	
 	@SuppressLint("ResourceType")
@@ -1439,10 +1442,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			
 			resetPreviewMidPos();
-			
-			if (!PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeTapsch()) {
-				a.addHistory(popupKey, SearchUI.TapSch.MAIN, weblistHandler, null);
-			}
 		}
 	}
 	
@@ -1495,6 +1494,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			} else if(b1 && isMaximized()){
 				dismiss();
 			}
+		}
+		if (popupKey!=null && !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeTapsch()) {
+			a.addHistory(popupKey, SearchUI.TapSch.MAIN, weblistHandler, null);
 		}
 	}
 	

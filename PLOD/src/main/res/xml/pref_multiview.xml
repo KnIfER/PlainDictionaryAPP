@@ -323,6 +323,29 @@
 			/>
 	</PreferenceCategory>
 
+
+	<PreferenceCategory
+		android:key="cat"
+		android:title="通用"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ignoreSU"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="内容页URL地址相同时，不重新加载"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="moreTM"
+			android:persistent="false"
+			android:defaultValue="false"
+			app:summary="在顶部右上角固定显示"
+			android:title="多页面显示更多菜单按钮“…”"
+			/>
+	</PreferenceCategory>
+
+
 	<PreferenceCategory
 		android:key="cat"
 		android:title="快捷工具按钮"

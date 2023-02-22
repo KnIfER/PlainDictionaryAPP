@@ -51,6 +51,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
 
 import com.google.android.material.math.MathUtils;
+import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.CMN;
@@ -916,11 +917,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			//mode.setTag(110);
 			final Menu menu = mode.getMenu();
 			TweakWebviewContextMenu(menu);
-
+			
+			boolean dark = GlobalOptions.isDark;
+			F1ag cc = new F1ag();
 			//todo 添加长按事件
 			postDelayed(new Runnable() {
 				@Override
 				public void run() {
+					View bgView = null;
 					//logAllViews();
 					ViewGroup vg;
 					List<View> views = /*ViewUtils.*/getWindowManagerViews();
@@ -939,6 +943,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 									vI = vg.getChildAt(0);
 									if(vI instanceof RelativeLayout){
 										vg = (ViewGroup) vI;
+										View v0 = vI;
 										for (int i = 0; i < vg.getChildCount(); i++) {
 											vI = vg.getChildAt(i);
 											//CMN.Log(vI);
@@ -948,6 +953,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 												for (int j = 0; j < vg.getChildCount(); j++) {
 													vI = vg.getChildAt(j);
 													if(vI instanceof LinearLayout){
+														bgView = v0;
 														ViewGroup vgg = (ViewGroup) vI;
 														if(vgg.getChildAt(1) instanceof TextView){
 															TextView tv = (TextView) vgg.getChildAt(1);
@@ -1026,8 +1032,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 							}
 						}
 					}
+					if (dark) {
+						if (bgView != null) {
+							bgView.setBackgroundColor(0xffb0b0b0);
+						} else if(++cc.val<3){
+							postDelayed(this, 50);
+						}
+					}
 				}
-			}, 350);
+			}, dark?50:350);
 			return mode;
 		}
 		return super.startActionMode(callback, type);

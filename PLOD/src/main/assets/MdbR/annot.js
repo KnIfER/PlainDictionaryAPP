@@ -789,7 +789,9 @@
         } else {
             el.className = "PLOD_UL";
             //ann.style = "color:#ffaaaa;text-decoration: underline";
-            el.setAttribute("style", "border-bottom:4px solid "+toRgb(color));
+            el.setAttribute("style", "border-bottom:2.5px solid "+toRgb(color));
+			// el.style.borderBottomStyle='dashed';
+			// el.style.textDecoration = "underline 2.5px "+toRgb(color);
         }
         el.tcn = tcn;
         if(rootNode==-1) return el; // -1代表仅创建元素

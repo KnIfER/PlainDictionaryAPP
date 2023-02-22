@@ -143,6 +143,12 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 						case "url1":
 							init_switch_preference(this, "url1", PDICMainAppOptions.alwaysloadUrl(), null, null, p);
 							break;
+						case "ignoreSU":
+							init_switch_preference(this, "ignoreSU", PDICMainAppOptions.ignoreSameUrlLoading(), null, null, p);
+							break;
+						case "moreTM":
+							init_switch_preference(this, "moreTM", PDICMainAppOptions.showMoreMenuBtnForFrames(), null, null, p);
+							break;
 					}
 					p.setOnPreferenceChangeListener(this);
 				}
@@ -308,6 +314,13 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 				return (CMN.GlobalPagePaddingLeft = parseMarginNumber(newValue))!=null;
 			case "GPR":
 				return (CMN.GlobalPagePaddingRight = parseMarginNumber(newValue))!=null;
+			
+			case "ignoreSU":
+				PDICMainAppOptions.ignoreSameUrlLoading((Boolean) newValue);
+			break;
+			case "moreTM":
+				PDICMainAppOptions.showMoreMenuBtnForFrames((Boolean) newValue);
+			break;
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {
 			SearchUI.tapZoomV++;
