@@ -58,6 +58,14 @@ w.addEventListener('touchend',function(){
 // 	e.preventDefault();
 // 	e.stopPropagation();
 // }
+var de;
+function pageScroll(e){
+	var k=0,l=de.scrollLeft,wd=w.innerWidth;
+	if(l>0) k=1;
+	if(Math.ceil(l+0.2+wd)<de.scrollWidth) k|=2;
+	debug('onscroll', k, l+0.2+wd<de.scrollWidth);
+	if((pw.scrollLck||0)!=k) _app.scrollLck(sid.get(), pw.scrollLck=k);
+}
 function wrappedOnLoadFunc(){
 	debug('wrappedOnLoadFunc');
 	w.addEventListener('click',pw.tpshc); //wtf??
@@ -124,15 +132,8 @@ function wrappedOnLoadFunc(){
 	}
 	//todo 处理背景色？
 	if(_app) {
-		var scrollLck;
-		var de = document.documentElement;
-		document.body.onscroll = function(e){
-			var k=0,l=de.scrollLeft,wd=w.innerWidth;
-			if(l>0) k=1;
-			if(l+0.2+wd<de.scrollWidth) k|=2;
-			debug('onscroll', k, l+0.2+wd<de.scrollWidth);
-			if(scrollLck!=k) _app.scrollLck(sid.get(), k);
-		}
+		de = document.documentElement;
+		document.body.onscroll = pageScroll;
 	}
 }
 
@@ -308,6 +309,7 @@ function baseEntry() {
 function wrappedDown(e){
 	debug('wrappedDown', e);
 	var t;
+	if(pw.scrollLck) pageScroll();
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;

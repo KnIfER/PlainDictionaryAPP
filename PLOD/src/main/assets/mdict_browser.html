@@ -1397,7 +1397,7 @@
 		}
 		
 		function storeStates() {
-			if(true) {
+			if(!_t0) {
 				var url = location.href;
 				var idx = url.indexOf("&foldStates=");
 				if(idx>=0) {
@@ -1490,6 +1490,9 @@
 					inf.cover.src = "/MdbR/cover.png";
 					inf.dictTitle = craft('span', 'dt', t);
 					inf.dictTitle.onclick=onTitleClick;
+					if(app) inf.dictTitle.addEventListener('touchstart', function(){
+						if(window.scrollLck) app.scrollLck(sid.get(), scrollLck=0);
+					});
 					inf.cover.onclick=onCoverClick;
 					inf.viewDirty=1;
 				}
@@ -2020,12 +2023,16 @@
 		function scrollSH(){
 			shsty.top = (shtm + defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-shtm))+'px';
 		}
+		
+		var _tmPostStore;
 
 		function tpFrame(){
 			var e=scrollFocus.name;
 			e=e.slice(0, e.lastIndexOf('.'));
 			var t=ge('dlab');
 			t.innerText=t.nextElementSibling.innerText=e;
+			clearTimeout(_tmPostStore);
+			_tmPostStore = setTimeout(storeStates, 100);
 			//debug(scrollFocus.item.contentWindow.history);
 			//var h=scrollFocus.item.contentWindow.history.length>1;
 			//bkPs.display=h?'block':'none';
@@ -3161,7 +3168,7 @@
 		function postOnClick(fx) {
 			debug('postOnClick', fx);
 			// if(0)
-			if(!_t0) storeStates();
+			storeStates();
 		}
 
 		function decodeExp(p,v) {
