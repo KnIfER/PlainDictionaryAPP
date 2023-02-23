@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
+import android.animation.ObjectAnimator;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -84,14 +85,22 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	public BookManagerMain(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
-			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(buttonView, BookViewHolder.class);
-			int pos = vh.position;
-			if(lastClickedPos[lastClickedPosIndex%2]!=pos) {
-				lastClickedPos[(++lastClickedPosIndex) % 2] = pos;
-			}
-			setPlaceSelected(vh.position, !getPlaceSelected(vh.position));
-			if (ViewUtils.getParentOf(vh.itemView, ListView.class)!=listView) {
-				dataSetChangedAt(pos);
+			try {
+				BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(buttonView, BookViewHolder.class);
+				int pos = vh.position;
+				ListView lv = (ListView) ViewUtils.getParentByClass(vh.itemView, ListView.class);
+				if (lv != this.listView) {
+					pos = filtered.keyAt(pos);
+				}
+				if (lastClickedPos[lastClickedPosIndex % 2] != pos) {
+					lastClickedPos[(++lastClickedPosIndex) % 2] = pos;
+				}
+				setPlaceSelected(pos, !getPlaceSelected(pos));
+				if (ViewUtils.getParentOf(vh.itemView, ListView.class) != listView) {
+					dataSetChangedAt(pos);
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 		};
 	}
@@ -649,11 +658,10 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							getListView().setSelection(last);
 						} break;
 						case R.id.openFolder: {//在外部管理器打开路径
-							magent = getMagentAt(position);
 							StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
 							try {
 								startActivity(new Intent(Intent.ACTION_VIEW)
-										.setDataAndType(Uri.fromFile(magent.f().getParentFile()), "resource/folder")
+										.setDataAndType(Uri.fromFile(new File(getRecordedPathAt(position)).getParentFile()), "resource/folder")
 										.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 								);
 							} catch (Exception e) {
@@ -667,7 +675,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							properties.selection_type = DialogConfigs.FILE_SELECT;
 							properties.root = new File("/");
 							properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-							properties.offset = magent.f().getParentFile();
+							properties.offset = new File(getRecordedPathAt(position)).getParentFile(); // here
 							properties.opt_dir = new File(getOpt().pathToDatabases() + "favorite_dirs/");
 							properties.dedicatedTarget = magent.f().getName();
 							properties.opt_dir.mkdirs();
@@ -1053,6 +1061,33 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				});
 				loadMan.managePos = -1;
 			}
+			HashMap<String, Integer> map = new HashMap<>();
+			for (int i = 0; i < loadMan.lazyMan.placeHolders.size(); i++) {
+				PlaceHolder ph = loadMan.lazyMan.placeHolders.get(i);
+				String key = new File(ph.pathname).getName();
+				if (getPlaceSelected(i)) {
+					setPlaceSelected(i, true);
+				}
+				if (!map.containsKey(key)) {
+					map.put(key, i);
+				} else {
+					Integer pos = map.get(key);
+					if (pos!=null) {
+						map.put(key, null);
+						filtered.put(pos, loadMan.lazyMan.placeHolders.get(pos).pathname);
+					}
+					filtered.put(i, ph.pathname);
+				}
+			}
+			if (filtered.size() > 0) {
+				a.showT("发现当前分组存在"+filtered.size()+"条同名词典记录，请删除!");
+				ObjectAnimator td = ViewUtils.tada(getBookManager().searchbar, 2);
+				getBookManager().schIndicator_setText(filtered);
+				if (td != null) {
+					td.start();
+					td.setDuration(1233);
+				}
+			}
 		}
 	}
 	
@@ -1164,6 +1199,10 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		if (mdTmp!=null) {
 			return mdTmp.getPath();
 		}
+		return loadMan.lazyMan.placeHolders.get(position).getPath(getOpt()).toString();
+	}
+	
+	public String getRecordedPathAt(int position) {
 		return loadMan.lazyMan.placeHolders.get(position).getPath(getOpt()).toString();
 	}
 	

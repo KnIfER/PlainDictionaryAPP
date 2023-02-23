@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 	tools:ignore="AppCompatResource"
 	>
-<!--0--><item android:title="" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="always"/>
+<!--0--><item android:title="" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="always" android:contentDescription="切换多本联合搜索"/>
 
 <!--1--><item android:title="@string/fold_all" android:id="@+id/toolbar_action0" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 

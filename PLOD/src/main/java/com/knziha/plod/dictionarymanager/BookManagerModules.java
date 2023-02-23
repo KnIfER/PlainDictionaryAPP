@@ -55,15 +55,24 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 	public BookManagerModules(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
-			BookViewHolder vh = (BookViewHolder) ((View)buttonView.getParent()).getTag();
-			lastClickedPos[(++lastClickedPosIndex)%2]=vh.position;
-			String key = scanInList.get(vh.position);
-			if(isChecked)
-				selector.add(key);
-			else
-				selector.remove(key);
-			if (ViewUtils.getParentOf(vh.itemView, ListView.class)!=listView) {
-				dataSetChangedAt(vh.position);
+			try {
+				BookViewHolder vh = (BookViewHolder) ((View) buttonView.getParent()).getTag();
+				int pos = vh.position;
+				ListView lv = (ListView) ViewUtils.getParentByClass(vh.itemView, ListView.class);
+				if (lv != this.listView) {
+					pos = filtered.keyAt(pos);
+				}
+				lastClickedPos[(++lastClickedPosIndex) % 2] = pos;
+				String key = scanInList.get(pos);
+				if (isChecked)
+					selector.add(key);
+				else
+					selector.remove(key);
+				if (ViewUtils.getParentOf(vh.itemView, ListView.class) != listView) {
+					dataSetChangedAt(pos);
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
 		};
 	}

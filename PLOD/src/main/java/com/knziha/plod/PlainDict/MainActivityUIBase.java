@@ -7153,6 +7153,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		if(opt.auto_seach_on_switch)
 			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+		if (result) {
+			cancelToast();
+			hdl.postDelayed(() -> {
+				if (!ViewUtils.isVisibleV2(topsnack)) {
+					showT("多本联合搜索");
+				}
+			}, 350);
+		} else {
+			showT("单本搜索");
+		}
 	}
 	
 	@NonNull

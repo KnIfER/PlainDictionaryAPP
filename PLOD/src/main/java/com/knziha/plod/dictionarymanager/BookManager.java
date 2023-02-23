@@ -120,9 +120,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	private boolean initialModuleChanged;
 	public boolean initialModuleSwitched;
 	private String lastLoadedModule;
-	private Toolbar searchbar;
+	public Toolbar searchbar;
 	private TextView schIndicator;
+	public View schLstBtn;
 	private int lastAddToPos;
+	private boolean bReturning;
 	
 	public BookManager() { }
 	
@@ -223,9 +225,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			mPopup=null;
 			return;
 		}
-		
+		CMN.debug("bReturning::", bReturning);
 		ListFragment frame = getFragment();
-		if (frame != null) {
+		if (frame != null && !bReturning) {
 			if(((BookManagerFragment.SelectableFragment)frame).exitSelectionMode()){
 				showT("已清除选择");
 				return;
@@ -577,6 +579,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		PDICMainAppOptions.schDictManager(true);
 		VU.setVisible(searchbar, PDICMainAppOptions.schDictManager());
 		schIndicator = searchbar.findViewById(R.id.indicator);
+		schLstBtn = searchbar.findViewById(R.id.enter);
         
         viewPager = findViewById(R.id.viewpager);
         mTabLayout = findViewById(R.id.mTabLayout);
@@ -827,7 +830,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 					break;
 				}
+				bReturning = true;
 				onBackPressed();
+				bReturning = false;
 			break;
 			case R.id.enter: {
 				showFilteredEntries(v);
