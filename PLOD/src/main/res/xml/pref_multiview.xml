@@ -348,7 +348,7 @@
 
 	<PreferenceCategory
 		android:key="cat"
-		android:title="快捷工具按钮"
+		android:title="快捷翻译栏、工具按钮"
 		app:icon="@drawable/tools_toolbar"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -372,6 +372,7 @@
 			android:title="长按操作："
 			android:entries="@array/toolsBtnLong"
 			app:inlineSummary="true"
+			app:isPreferenceVisible="false"
 			/>
 	</PreferenceCategory>
 

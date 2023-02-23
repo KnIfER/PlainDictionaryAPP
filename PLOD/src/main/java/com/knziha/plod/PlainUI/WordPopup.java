@@ -1550,7 +1550,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if(!bFromWebTap)
 			dictPicker.filterByRec(rec, pos);
 		setTranslator(rec, pos);
-		if(bFromWebTap) wlh.textMenu(null);
+		if(bFromWebTap) {
+			wlh.textMenu(null);
+			multiView.currentPos = -1;
+		}
 	}
 	
 	private int isMergingFramesNum() {
@@ -1623,7 +1626,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt, boolean bFromWebTap) {
-		CMN.debug("popupWord::frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
+		CMN.debug("popupWord::frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator, forceStartId);
 		if(key==null || mdict.processText(key).length()>0)
 		{
 			if (invoker!=null) this.invoker = invoker;
@@ -1645,7 +1648,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	public void PerformSearch(int mType, AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
 		if(mType==TASK_POP_SCH){
-			if(schMode==0) SearchOne(task, taskVer, taskVersion);
+			if(schMode==0||popupForceId!=null) SearchOne(task, taskVer, taskVersion);
 			else SearchMultiple(task, taskVer, taskVersion);
 		}
 		else if(mType==TASK_POP_NAV)

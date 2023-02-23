@@ -3019,8 +3019,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		switch(v.getId()) {
 			case R.id.home:{
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
-				showBottombarsTweaker();
-			} break;
+				//showBottombarsTweaker();
+				if (isContentViewAttached()) {
+					WebViewmy wv = weblistHandler.getWebContextNonNull();
+					weblistHandler.contentUIData.PageSlider.OrgX = v.getWidth();
+					weblistHandler.contentUIData.PageSlider.OrgY = v.getHeight();
+					wv.presenter.showMoreToolsPopup(wv, v);
+				} else {
+					viewContent(weblistHandler);
+				}
+			} return true;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
 				if (isContentViewAttached()) DetachContentView(false);
