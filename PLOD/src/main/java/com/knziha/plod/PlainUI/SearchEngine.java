@@ -88,7 +88,7 @@ public class SearchEngine extends BaseAdapter implements View.OnClickListener, V
 	public String getPagePattern() {
 		String val = helper.CurrentSearchText;
 		if(val==null) val="";
-		String ret=val;
+		val = val.replaceAll("\"", "");
 		return val;
 	}
 	

@@ -70,6 +70,7 @@ import org.knziha.metaline.Metaline;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -95,6 +96,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public PeruseView peruseView;
 	
 	public String word;
+	private int mergeWordHash;
 	public long[] currentRendring;
 	public boolean awaiting;
 	public boolean bRequestedSoundPlayback;
@@ -1681,6 +1683,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			if (weblistHandler!=null && ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
 				weblistHandler.textMenu(null);
 			}
+			if (PDICMainAppOptions.getAutoReadEntry()) {
+				bRequestedSoundPlayback=true;
+			}
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
@@ -1693,8 +1698,29 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			if (weblistHandler!=null && ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
 				weblistHandler.textMenu(null);
 			}
+			if (PDICMainAppOptions.getAutoReadEntry()) {
+				bRequestedSoundPlayback=true;
+			}
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
+	}
+	
+	public final String word() {
+		if (merge) {
+			int hash = System.identityHashCode(url);
+			if (mergeWordHash!=hash) {
+				mergeWordHash = hash;
+				int schemaIdx = url.indexOf(":");
+				int idx = idx = url.indexOf("q=", schemaIdx+12+5+1)+2;
+				int ed = url.indexOf("&", idx); if(ed<0) ed=url.length();
+				this.word = URLDecoder.decode(url.substring(idx, ed));
+			}
+		}
+		return this.word;
+	}
+
+	public final void word(String val) {
+		this.word = val;
 	}
 }

@@ -5078,7 +5078,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			// 设置标题
 			if(!bFromTextView && invoker!=null) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
-				String text = mWebView==null?null:mWebView.word;
+				String text = mWebView==null?null:mWebView.word();
 				if(!TextUtils.isEmpty(text)) {
 					sb.append(" - ").append(text);
 				}
@@ -6895,7 +6895,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.presenter.toggleBookMark(mWebView, null, true);
 				break;
 			case R.string.page_fuzhi:
-				copyText(mWebView.word, true);
+				copyText(mWebView.word(), true);
 				break;
 			case R.string.page_rukou:
 				if(pageMenuHelper.lnk_href!=null) {
@@ -6949,7 +6949,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					public void onReceiveValue(String value) {
 						boolean hasSelectionNot = "true".equals(value);
 						if (hasSelectionNot) {
-							getVtk().setInvoker(null, null, null, mWebView.word);
+							getVtk().setInvoker(null, null, null, mWebView.word());
 							getVtk().onClick(null);
 						} else {
 							try {
@@ -7934,10 +7934,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					long did = IU.parseLong(url.substring(idx+5), -1);
 					if (did!=mWebView.currentPos || mWebView.presenter!=invoker) {
 						mWebView.presenter=invoker;
-						idx = url.indexOf("q=", schemaIdx+12+5+1)+2;
-						int ed = url.indexOf("&", idx); if(ed<0) ed=url.length();
-						wlh.setStar(/*mWebView.word = */URLDecoder.decode(url.substring(idx, ed)));
-						mWebView.word = wlh.displaying;
+						wlh.setStar(mWebView.word());
 						mWebView.currentPos = did;
 						CMN.debug("view::merged::changed!!! multiview ", wlh.displaying);
 						wlh.changeViewMode(mWebView, url);
@@ -8848,7 +8845,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						CMN.debug("返回音频");
 						return ret;
 					} else {
-						url = mWebView.word;
+						url = mWebView.word();
 						ReadEntryPlanB(mWebView, url);
 					}
 					//return emptyResponse;
@@ -9128,7 +9125,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private void ReadEntryPlanB(WebViewmy mWebView, String url) {
 		opt.supressAudioResourcePlaying=!AutoBrowsePaused;
-		CMN.debug("ReadEntryPlanB");
+		CMN.debug("ReadEntryPlanB!!!", url, mWebView.word(), mWebView.url);
+		if (TextUtils.isEmpty(url)) {
+			url = mWebView.word();
+		}
 		if(AutoBrowsePaused /*自动读时绕过*/ && PDICMainAppOptions.getUseSoundsPlaybackFirst() && hasMddForWeb(mWebView)){
 			// 好像会无限循环，赶紧关闭！
 			//root.post(() -> mWebView.evaluateJavascript(WebviewSoundJS, value -> {
@@ -10727,6 +10727,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if (!menuGrid.isVisible()) {
 			boolean hasContent = ViewUtils.ViewIsId(btm, R.id.bottombar2);
+			CMN.debug("hasContent::", hasContent, btm);
 			if (!hasContent) {
 				if (getCurrentFocus() instanceof TextView && ((TextView) getCurrentFocus()).hasSelection()) {
 					hasContent = true;

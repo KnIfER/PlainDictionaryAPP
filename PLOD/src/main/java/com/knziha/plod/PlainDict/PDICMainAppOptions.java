@@ -2141,14 +2141,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateTFAt(0x2000000000l,val);
 		return val;
 	}
-
-	public boolean getAutoReadEntry() {
-		return (ThirdFlag & 0x4000000000l) == 0x4000000000l;
-	}
-	public boolean setAutoReadEntry(boolean val) {
-		updateTFAt(0x4000000000l,val);
-		return val;
-	}
+	
+	@Metaline(flagPos=38) public static boolean getAutoReadEntry() { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=38) public static void setAutoReadEntry(boolean v) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
 	//todo 我好像弄乱了
 	public boolean getMakeWayForVolumeAjustmentsWhenAudioPlayed() {

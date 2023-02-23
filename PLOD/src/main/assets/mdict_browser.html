@@ -758,7 +758,8 @@
 		var frames=[], contents, processing, wbframes=[];
 		var etSearch;
 		var wbf={};
-		var _t0 = 0;
+		var _t0 = 0, _t // initPos
+			, _tc;
 	 		
 		var menu, menuContext;//, trans;
 		var toastTimer=-1;
@@ -1246,6 +1247,7 @@
 							}
 							//if(inf.lastHeight!=h) {
 							if(inf.box.offsetHeight!=h) {
+								var resume = _t && (bx||inf.box).offsetTop+inf.lastHeight<defP.scrollTop;
 								inf.lastHeight=h;
 								//h = tbh.clientHeight+65;
 								//h=fx.contentWindow.document.documentElement.scrollHeight;
@@ -1254,6 +1256,12 @@
 									bx.style.height=h+'px'; 
 								}
 								else fx.height=h;
+								if(resume)
+								{
+									defP.scrollTop = _t;
+									_tc+=2;
+									if(_tc<=0) _tc=3;
+								}
 							} else if(!inf.scrollable && tbh.scrollWidth>fx.offsetWidth) { 
 								inf.scrollable = true; // 简单处理（嵌套滚动）
 								fx.scrolling='auto';
@@ -2340,7 +2348,7 @@
 		function scrollToFrame(fx) {
 			var scrollingTo;
 			tFrame(fx);
-			fx.touched = true;
+			fx.touched = true; if(_t&&!_t0)_t=0;
 			function doScroll(fx) {
 				fx = fx||scrollingTo;
 				//debug('scrollToFrame'+fx.name);
@@ -2662,7 +2670,7 @@
 			}
 			var fold=inf.fold || inf.waiting;
 			if(fold) inf.fold=false;
-			inf.touched=true;
+			inf.touched = true; if(_t&&!_t0)_t=0;
 			checkFrame(inf, true);
 			var fx=inf.item,bx=inf.box;
 			if(newFoc) {
@@ -3045,11 +3053,13 @@
 		function restoreStates() {
 			if(args.foldStates) {
 				var pos = parseInt(initStates[initStates.length-1])||0;
+				_t = pos;
 				debug("scrollingTo wait!!!", pos);
 				var th = craft(0,0,document.body);
 				th.style="position:fixed;bottom:0;background:rgb(181 247 255);font-size:small;";
 				th.innerText="正在恢复页面位置……";
-				var tx = craft("A",0,th), cc=4;
+				var tx = craft("A",0,th);
+				_tc = 4;
 				if(opt.fm2) cc=4;
 				tx.innerText="[X]";
 				tx.style.color="#0015ff";
@@ -3061,13 +3071,13 @@
 					debug("wait!!! time=", new Date().getTime()-txst);
 				}
 				if(!opt.delay) 
-					cc+=3;
+					_tc+=3;
 				_t0=setInterval(function() {
 					debug("scrollingTo", Math.ceil(defP.scrollHeight+defP.clientHeight), pos);
 					if(!processing && Math.ceil(defP.scrollHeight+defP.clientHeight)>=pos) {
 						defP.scrollTop = pos;
 						debug(defP.scrollTop);
-						if(Math.ceil(defP.scrollTop)>=pos && --cc<=0) {
+						if(Math.ceil(defP.scrollTop)>=pos && --_tc<=0) {
 							tx.click()
 						}
 					}
@@ -3232,7 +3242,7 @@
 		function foldAll(){
 			for (var i=0,fx; fx=frames[i++];) {
 				foldFrame(fx);
-				fx.touched = true;
+				fx.touched = true; if(_t&&!_t0)_t=0;
 			}
 		}
 
@@ -3241,7 +3251,7 @@
 			for (var i=0,fx; fx=frames[i++];) {
 				if(!fx.fold){
 					fold = true;
-					fx.touched = true;
+					fx.touched = true; if(_t&&!_t0)_t=0;
 					foldFrame(fx);
 				}
 			}
@@ -3255,7 +3265,7 @@
 			for (var i=0,fx; fx=frames[i++];) {
 				unfoldFrame(fx);
 				checkFrame(fx);
-				fx.touched = true;
+				fx.touched = true; if(_t&&!_t0)_t=0;
 			}
 		}
 
@@ -4155,6 +4165,7 @@
 			else
 				e = e.clientY;
 			//shsty.top = shy + (e-shyst) + 'px';
+			if(_t&&!_t0)_t=0;
 			defP.scrollTop = (shy + e-shyst)/(defP.offsetHeight-35)*(defP.scrollHeight-defP.offsetHeight);
 		}
 

@@ -292,8 +292,8 @@ public class ListViewAdapter extends BasicAdapter {
 				IU.NumberToText_SIXTWO_LE(val, mergedUrl);
 			}
 			mWebView.loadUrl(mergedUrl.toString());
-			mWebView.word = presenter.currentDisplaying = StringUtils.trim(presenter.bookImpl.getEntryAt(mWebView.currentPos = POS[0]));
-			weblistHandler.setStar(mWebView.word);
+			mWebView.word(presenter.currentDisplaying = StringUtils.trim(presenter.bookImpl.getEntryAt(mWebView.currentPos = POS[0])));
+			weblistHandler.setStar(presenter.currentDisplaying);
 		} else {
 			/* 仿效 GoldenDict 返回尽可能多的结果 */
 			presenter.renderContentAt(desiredScale,BookPresenter.RENDERFLAG_NEW,0,mWebView, POS);
@@ -302,7 +302,7 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		contentUIData.PageSlider.setWebview(mWebView, null);
 		
-		String lstKey = this.currentKeyText = mWebView.word.trim();
+		String lstKey = this.currentKeyText = mWebView.word();
 		
 		boolean storeEt = userCLick && a.storeLv1(lstKey);
 		if(!PDICMainAppOptions.storeNothing()  && (storeEt || PDICMainAppOptions.storeClick() && presenter.store(pos))) {
@@ -335,6 +335,6 @@ public class ListViewAdapter extends BasicAdapter {
 	
 	@Override
 	public String currentKeyText() {
-		return mWebView.word;
+		return mWebView.word();
 	}
 }

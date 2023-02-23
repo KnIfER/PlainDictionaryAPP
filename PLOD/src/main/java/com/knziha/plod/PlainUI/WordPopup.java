@@ -205,8 +205,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 		}
 		refresh();
-		if (PDICMainAppOptions.revisitOnBackPressed() && weblistHandler!=null/* && (pop==null || !pop.isShowing())*/) {
-			weblistHandler.getMergedFrame().cleanPage = true;
+		if (PDICMainAppOptions.revisitOnBackPressed() && mWebView!=null && !bFromWebTap) {
+			mWebView.cleanPage = true;
 		}
 	}
 	
@@ -382,7 +382,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							if(dialog!=null)
 								dialog.dismiss();
 							if (position==0) { // 收藏词条
-								a.keepWordAsFavorite(dictView(false).word, weblistHandler);
+								a.keepWordAsFavorite(dictView(false).word(), weblistHandler);
 							}
 							else if (position==1) { // 切换分组
 								dictPicker.onClick(a.anyView(R.id.bundle));
@@ -1480,7 +1480,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					popuphandler.setBook(CCD);
 					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, renderingWV, currentPos);
 					wlh.pageSlider.setWebview(renderingWV, null);
-					setDisplaying(renderingWV.word);
+					setDisplaying(renderingWV.word());
 				} else {
 					loadEntry(0, true);
 				}
@@ -1613,7 +1613,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				flippingWV.loadUrl(mergedUrl.toString());
 			}
 			wlh.resetScrollbar(flippingWV, false, false);
-			setDisplaying(flippingWV.word=CCD.getBookEntryAt(pos));
+			String word = CCD.getBookEntryAt(pos);
+			flippingWV.word(word);
+			setDisplaying(word);
 		} else {
 			if (d!=0)  currentPos=Math.max(0, Math.min(currentPos+d, (int) rec.size()));
 			renderMultiRecordAt(currentPos);

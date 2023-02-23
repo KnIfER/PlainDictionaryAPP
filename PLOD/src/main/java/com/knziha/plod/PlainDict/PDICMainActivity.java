@@ -2056,7 +2056,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(val==null) val="";
 				if(mSearchEngineType != SEARCHENGINETYPE_PLAIN)
 				try {
-					
 					currentPattern = Pattern.compile(val, Pattern.CASE_INSENSITIVE);
 				} catch (PatternSyntaxException ignored) {  }
 				if(currentPattern==null)
@@ -2069,6 +2068,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		public String getPagePattern() {
 			if(currentPageText==null){
 				String val = currentSearchPhrase;
+				val = val.replaceAll("\"", "");
 				if(val==null) val="";
 				String ret=val;
 				/*0=wild card; 1=regex search; 2=plain search; */

@@ -1305,7 +1305,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 				 PDICMainAppOptions.storeClick() && !PDICMainAppOptions.storeNothing()
 				&& (PDICMainAppOptions.storePageTurn() == 2)) {
-			a.addHistory(mWebView.word, SearchUI.Fye.表, weblistHandler, null);
+			a.addHistory(mWebView.word(), SearchUI.Fye.表, weblistHandler, null);
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
@@ -1893,7 +1893,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					mWebView.bRequestedSoundPlayback=true;
 				}
 		
-				currentKeyText = mWebView.word;
+				currentKeyText = mWebView.word();
     			currentDictionary.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, actualPosition);//bookmarks.get(lastClickedPos)
 				
     			//voyager[SelectedV*3+2]=pos;
@@ -2161,7 +2161,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				
 				presenter.renderContentAt(desiredScale,RENDERFLAG_NEW,0, mWebView, pos);
-				String key = currentKeyText = mWebView.word;
+				String key = currentKeyText = mWebView.word();
 				
 				contentUIData.PageSlider.setWebview(mWebView, null);
 				//voyager[SelectedV*3+2]=pos;
@@ -2599,7 +2599,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 
 	public String currentDisplaying() {
-		return mWebView.word;
+		return mWebView.word();
 	}
 
 	boolean isJumping = false;
@@ -2608,8 +2608,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	void setCurrentDis(BookPresenter invoker, long idx) {
 		/*回溯 或 前瞻， 不改变历史*/
 		mWebView.currentPos = idx;
-		mWebView.word = StringUtils.trim(mWebView.currentPos<invoker.bookImpl.getNumberEntries()?invoker.bookImpl.getEntryAt(mWebView.currentPos):"Error!!!");
-		mWebView.toolbar_title.setText(mWebView.word + " - " + invoker.bookImpl.getDictionaryName());
+		String word = StringUtils.trim(mWebView.currentPos<invoker.bookImpl.getNumberEntries()?invoker.bookImpl.getEntryAt(mWebView.currentPos):"Error!!!");
+		mWebView.word(word);
+		mWebView.toolbar_title.setText(word + " - " + invoker.bookImpl.getDictionaryName());
 	}
 	
 	public WeakReference<MainActivityUIBase> ref = CMN.EmptyRef;

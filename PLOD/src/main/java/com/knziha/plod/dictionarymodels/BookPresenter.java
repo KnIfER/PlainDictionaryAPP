@@ -1753,7 +1753,7 @@ function debug(e){console.log(e)};
 				//mWebView.titleBar.setAccessibilityPaneTitle(mWebView.toolbar_title.getText());
 			}
 		}
-		mWebView.word = word;
+		mWebView.word(word);
 	}
 	
 	@SuppressLint("JavascriptInterface")
@@ -1771,7 +1771,7 @@ function debug(e){console.log(e)};
 		else if (mWebView.toolbar_title!=null) {
 			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
 		}
-		mWebView.word = word;
+		mWebView.word(word);
 	}
 	
 	public void checkTint() {
@@ -2801,7 +2801,7 @@ function debug(e){console.log(e)};
 								if(book==null) return -1;
 							}
 							if (entry == null) {
-								entry = mWebView.word;
+								entry = mWebView.word();
 							}
 							if (book.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
 								text = text.replaceAll("-\n", "");
@@ -3050,7 +3050,7 @@ function debug(e){console.log(e)};
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
 					//CMN.debug("view::changed!!!", entryKey);
-					wv.word = entryKey;
+					wv.word(entryKey);
 					wv.frameAt = frameAt;
 				}
 			}
