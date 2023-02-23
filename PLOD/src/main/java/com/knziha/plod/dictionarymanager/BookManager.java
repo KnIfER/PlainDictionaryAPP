@@ -898,10 +898,19 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 //					return vh.itemView;
 					int realPos = filtered.keyAt(position);
 					Fragment frame = getFragment();
+					View ret = null;
 					if (frame instanceof BookManagerFragment) {
-						return ((BookManagerFragment) frame).adapter.getView(realPos, convertView, lv);
+						ret = ((BookManagerFragment) frame).adapter.getView(realPos, convertView, lv);
+					} else {
+						ret = ((BookManagerFolderAbs) frame).adapter.getView(realPos, convertView, lv);
 					}
-					return ((BookManagerFolderAbs) frame).adapter.getView(realPos, convertView, lv);
+					if (ret.getTag() instanceof BookViewHolder) {
+						((BookViewHolder)ret.getTag()).position = position;
+					}
+					else if (ret.getTag() instanceof BookManagerFolderAbs.ViewHolder) {
+						((BookManagerFolderAbs.ViewHolder)ret.getTag()).position = position;
+					}
+					return ret;
 				}
 			});
 			lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -1397,7 +1406,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						
 						boolean ret = try_write_configureLet(to);
 						if(ret) {
-							if(append) f2.adapter.add(newItem);
+							if(append) f2.adapter.add(to.getName());
 							show(R.string.saveas_done);
 						}
 						return ret;

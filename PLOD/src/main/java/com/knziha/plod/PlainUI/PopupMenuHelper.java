@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.TextMenuView;
@@ -142,7 +143,11 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	}
 	
 	public void showAt(View anchorView, int x, int y, int grav) {
-		mPopupWindow.showAtLocation(anchorView, grav, x, y);
+		try {
+			mPopupWindow.showAtLocation(anchorView, grav, x, y);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
 	public static int[] calculatePopWindowPos(View anchorView

@@ -30,6 +30,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -66,7 +67,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	protected void showPopup(View v, View rootV) {
 		PopupMenuHelper popupMenu = getPopupMenu();
 		int[] vLocationOnScreen = new int[2];
-		if (v == null) v = listView;
+		ListView lv = ((ListView) ViewUtils.getParentByClass(v, ListView.class));
+		if (lv!=listView) {
+			v = listView;
+		}
 		v.getLocationOnScreen(vLocationOnScreen);
 		popupMenu.showAt(rootV!=null?rootV:v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
 	}
@@ -392,11 +396,11 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					vh.text.setBackgroundResource(GlobalOptions.isDark ? R.drawable.xuxian2_d : R.drawable.xuxian2);
 				else
 					vh.text.setBackground(null);
-				if(GlobalOptions.isDark) {
+				if (GlobalOptions.isDark) {
 					v.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 				}
-				if(mdTmp.isDirectory()) {//目录 todo opt
-					if (type==0) {
+				if (mdTmp.isDirectory()) {//目录 todo opt
+					if (type == 0) {
 						if (displayName != null) {
 							vh.text.setText(displayName);
 						} else
@@ -409,27 +413,29 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					vh.splitterIcon.setVisibility(View.GONE);
 					vh.text.setSingleLine(false);
 				} else {//路径
-					if(displayName!=null) {
+					if (displayName != null) {
 						vh.text.setText(displayName);
-					} else if(mFile.isScionOf(mdTmp,parentFile)) {
-						vh.text.setPadding((int) (9*GlobalOptions.density), 0, 0, 0);
-						vh.text.setText(a.isDebug?mdTmp.getPath(): BU.unwrapMdxName(mdTmp.getName()));//BU.unwrapMdxName(mdTmp.getName())
+					} else if (mFile.isScionOf(mdTmp, parentFile)) {
+						vh.text.setPadding((int) (9 * GlobalOptions.density), 0, 0, 0);
+						vh.text.setText(a.isDebug ? mdTmp.getPath() : BU.unwrapMdxName(mdTmp.getName()));//BU.unwrapMdxName(mdTmp.getName())
 					} else {
 						vh.text.setPadding(0, 0, 0, 0);
 						vh.text.setText(mdTmp.getAbsolutePath());
 					}
 					mFile p = data.get(mdTmp.getParentFile().init(a.opt)); //todo opt
-					if(p!=null) {//有父文件夹节点
+					if (p != null) {//有父文件夹节点
 						vh.text.setPadding(5, 0, 0, 0);
 						vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
 						vh.splitterIcon.setVisibility(View.VISIBLE);
 					} else {
 						//((TextView)v.findViewById(R.id.text)).setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
-						((View)v.findViewById(R.id.splitterIcon)).setVisibility(View.GONE);
+						((View) v.findViewById(R.id.splitterIcon)).setVisibility(View.GONE);
 					}
 					vh.drag_handle.setVisibility(View.VISIBLE);
 					vh.folderIcon.setVisibility(View.GONE);
 				}
+			} else {
+				vh.text.setText(mdTmp.getName());
 			}
 			
 			//((TextView)v.findViewById(R.id.text)).setTextColor(Color.parseColor("#000000"));

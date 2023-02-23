@@ -308,12 +308,17 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	
 	@Override
 	public boolean onLongClick(View v) {
-		if (v.getId()==R.id.text) {
-			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
-			if (vh != null) {
-				return listView.getOnItemLongClickListener().onItemLongClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
+		try {
+			if (v.getId() == R.id.text) {
+				BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
+				if (vh != null) {
+					ListView lv = ((ListView) ViewUtils.getParentByClass(vh.itemView, ListView.class));
+					return lv.getOnItemLongClickListener().onItemLongClick(listView, vh.itemView, vh.position + lv.getHeaderViewsCount(), 0);
+				}
+				return true;
 			}
-			return true;
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 		return false;
 	}
@@ -321,11 +326,16 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	// click
 	@Override
 	public void onClick(View v) {
-		if (v.getId()==R.id.text) {
-			BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
-			if (vh != null) {
-				listView.getOnItemClickListener().onItemClick(listView, vh.itemView, vh.position + listView.getHeaderViewsCount(), 0);
+		try {
+			if (v.getId() == R.id.text) {
+				BookViewHolder vh = (BookViewHolder) ViewUtils.getViewHolderInParents(v, BookViewHolder.class);
+				if (vh != null) {
+					ListView lv = ((ListView) ViewUtils.getParentByClass(vh.itemView, ListView.class));
+					lv.getOnItemClickListener().onItemClick(listView, vh.itemView, vh.position + lv.getHeaderViewsCount(), 0);
+				}
 			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -351,8 +361,10 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					ViewUtils.setVisible(vh.handle, false);
 					convertView.setBackground(null);
 				}
-				vh.title.setOnClickListener(BookManagerMain.this);
-				vh.title.setOnLongClickListener(BookManagerMain.this);
+//				if (parent==listView) {
+					vh.title.setOnClickListener(BookManagerMain.this);
+					vh.title.setOnLongClickListener(BookManagerMain.this);
+//				}
 				vh.title.setAccessibilityDelegate(acessAgent);
 				vh.title.setMaxLines(1);
 				vh.title.trimStart = false;

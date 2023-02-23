@@ -22,6 +22,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.PlainUI.PopupMenuHelper;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -43,6 +44,8 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BookManagerModules extends BookManagerFragment<String> implements BookManagerFragment.SelectableFragment
 		, View.OnClickListener, View.OnLongClickListener{
@@ -321,8 +324,9 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				pressedPos = position - listView.getHeaderViewsCount();
 				pressedV = v;
 				if (PDICMainAppOptions.dictManagerClickPopup() && true) {
-					boolean start = mController.startDrag(position,0, v.getHeight()/2);
-					return false;
+//					boolean start = mController.startDrag(position,0, v.getHeight()/2);
+//					return false;
+				
 				} else {
 					showPopup(v, null);
 				}
@@ -456,12 +460,23 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 						case R.string.duplicate: {
 							CMN.debug("duplicate");
 							try {
-								String newName = name.substring(0, name.length()-4);
 								File source = new File(a.ConfigFile, name);
+								String newName = name.substring(0, name.length()-4);
 								int try_idx = 0;
+								Pattern p = Pattern.compile("_[0-9]+$");
+								Matcher m = p.matcher(newName);
+								if (m.find()) {
+									try {
+										String numfix = m.group(0);
+										newName = newName.substring(0, newName.length() - numfix.length());
+										try_idx = IU.parseInt(numfix);
+									} catch (Exception e) {
+										CMN.debug(e);
+									}
+								}
 								File dest;
 								while (true) {
-									dest = new File(source.getParent(), newName + "." + try_idx + ".set");
+									dest = new File(source.getParent(), newName + "_" + try_idx + ".set");
 									if (!dest.exists() || dest.isDirectory())
 										break;
 									try_idx++;

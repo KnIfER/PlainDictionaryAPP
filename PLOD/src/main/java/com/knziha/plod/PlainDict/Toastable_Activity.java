@@ -246,7 +246,7 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	protected void checkLog(Bundle savedInstanceState){
 		Bag flag = new Bag(false);
-		// if (!BuildConfig.DEBUG) skipCheckLog = true;
+//		if (BuildConfig.DEBUG) skipCheckLog = true;
 		if(!skipCheckLog && opt.getLogToFile()){
 			try {
 				File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
