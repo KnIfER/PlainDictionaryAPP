@@ -312,9 +312,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public void loadUrl(String url) {
 		CMN.debug("\n\nloadUrl::", url);
 		if (PDICMainAppOptions.ignoreSameUrlLoading() && url.equals(this.url)) {
-//			postDelayed(this::clearFocus, 230);
-//			cleanPage = false; // todo check more to reset
-//			return;
+			postDelayed(this::clearFocus, 230);
+			cleanPage = false; // todo check more to reset
+			return;
 		}
 		super.loadUrl(url);
 		drawRect=false;

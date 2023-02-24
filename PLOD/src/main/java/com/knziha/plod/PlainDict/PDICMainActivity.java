@@ -3272,10 +3272,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					item.setChecked(opt.setRemPos2(!opt.getRemPos2()));
 				}
 			} break;
-			/* 页内查找 */
-			case R.id.toolbar_action13:{
-				wlh.togSchPage(0);
-			} break;
 			case R.id.toolbar_action7://切换词典
 				if(isLongClicked) break;
 				try {

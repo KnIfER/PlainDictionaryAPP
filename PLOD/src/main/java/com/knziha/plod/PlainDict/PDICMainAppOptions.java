@@ -3377,5 +3377,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=7, shift=1) public static boolean showMoreMenuBtnForFrames() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=7, shift=1) public static void showMoreMenuBtnForFrames(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=8, shift=1) public static boolean pageSchAutoJump() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=8, shift=1) public static void pageSchAutoJump(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=9, shift=1) public static boolean pageSchAutoJumpForLst() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=9, shift=1) public static void pageSchAutoJumpForLst(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
 	
 }

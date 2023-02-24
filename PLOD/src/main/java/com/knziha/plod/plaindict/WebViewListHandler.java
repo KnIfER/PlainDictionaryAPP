@@ -1830,9 +1830,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			final SettingsPanel settings = new SettingsPanel(a, opt
 					, new String[][]{
 						new String[]{"正则搜索", "使用正则表达式"}
-						, new String[]{"普通搜索", "使用通配符", "以空格分割关键词", "通配符不匹配空格", "额外搜索变音字母"}
-						, new String[]{"通用", "区分大小写"}
-						, new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "自动弹出键盘"}
+						, new String[]{"普通搜索", "使用通配符", "以空格划分关键词", "通配符不匹配空格", "通搜变音字母"}
+						, new String[]{"通用", "区分大小写", "始终自动跳转"/*, "从列表查看内容页面时，自动跳转"*/, "打字时自动搜索", "打字时自动跳转",}
+						, new String[]{"视图设置", /*"翻页时自动跳转"*/ "自动弹出键盘"}
 						, new String[]{"搜索框位置", "页面顶部", "页面底部"} // 显示位置
 						, new String[]{"搜索框旁数字标志", "显示当前高亮序号", "显示词典名称"} // 显示位置
 					}
@@ -1847,11 +1847,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						}
 						, new int[]{Integer.MAX_VALUE
 							, makeInt(101, 5, false) // pageSchCaseSensitive
+							, makeInt(9, 8, true) // pageSchAutoJump
+							, makeInt(6, 27, true) // schPageOnEdit
+							, makeInt(2, 56, false) // schPageAutoType
 						}
 						, new int[]{Integer.MAX_VALUE
-							, makeInt(6, 27, true) // schPageOnEdit
-							, makeInt(2, 55, false) // schPageAutoTurn
-							, makeInt(2, 56, false) // schPageAutoType
+//							, makeInt(2, 55, false) // schPageAutoTurn
 							//, makeInt(2, 58, false) // schPageNavAudioKey
 							, makeInt(8, 24, true) // schpageAutoKeyboard
 						}
@@ -1896,7 +1897,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				settings.onAction(null, 101, 4, false, true, 0);
 			}
 			Framer f = new Framer(a);
-			f.mMaxHeight = (int) (1.25f * 8 * ((RadioSwitchButton) settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight() + 15 * GlobalOptions.density);
+			f.mMaxHeight = (int) (15 * ((RadioSwitchButton) settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight() + 15 * GlobalOptions.density);
 			f.addView(settings.settingsLayout);
 			dlg = new AlertDialog.Builder(a, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
 					.setTitle("页内搜索设置")

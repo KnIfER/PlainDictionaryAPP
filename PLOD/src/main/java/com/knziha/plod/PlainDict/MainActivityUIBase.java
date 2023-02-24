@@ -6637,6 +6637,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.drawable.ic_settings_black_24dp:{
 				launchSettings(0, 0);
 			} break;
+			/* 页内查找 */
+			case R.id.toolbar_action13:{
+				if (isLongClicked) {
+					wlh.togSchPage(1);
+					wlh.showPageSchTweaker();
+					ret = closeMenu = true;
+				} else {
+					wlh.togSchPage(0);
+				}
+			} break;
 			case R.id.viewMode:{
 				if (isLongClicked) {
 					launchSettings(Multiview.id, Multiview.requestCode);
@@ -8059,7 +8069,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 					}
-					else if(PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView))
+					else if(/*PDICMainAppOptions.schPageAutoTurn() && */(PDICMainAppOptions.pageSchAutoJump()) && wlh.schPage(mWebView))
 					{ //toHighLight
 						jumpNaughtyFirstHighlight(mWebView);
 					}
@@ -10738,7 +10748,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if (!menuGrid.isVisible()) {
 			boolean hasContent = ViewUtils.ViewIsId(btm, R.id.bottombar2);
-			CMN.debug("hasContent::", hasContent, btm);
+			// here
 			if (!hasContent) {
 				if (getCurrentFocus() instanceof TextView && ((TextView) getCurrentFocus()).hasSelection()) {
 					hasContent = true;

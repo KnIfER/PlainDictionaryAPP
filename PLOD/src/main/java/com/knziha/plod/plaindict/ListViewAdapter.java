@@ -280,6 +280,10 @@ public class ListViewAdapter extends BasicAdapter {
 		if(bOnePageNav)
 			desiredScale=111;
 		
+//		if (!PDICMainAppOptions.pageSchAutoJump() && PDICMainAppOptions.pageSchAutoJumpForLst()) {
+//			weblistHandler. todo
+//		}
+		
 		long[] POS = a.getMergedClickPositions(pos);
 		if(bUseMergedUrl) {
 			// deprecate
