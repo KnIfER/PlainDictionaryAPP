@@ -2336,7 +2336,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	protected void onPause() {
-		// CMN.debug("onPause");
+		 CMN.debug("onPause");
 		try {
 			super.onPause();
 		} catch (Exception ignored) { }
@@ -2348,12 +2348,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//  nimp
 		//if(currentDictionary!=null && currentDictionary.file_cache_map!=null)
 		//CMN.Log("size", currentDictionary.file_cache_map.size());
-
 	}
 
 	@Override
 	protected void onResume() {
-		//CMN.debug("onResume");
+		CMN.debug("onResume");
 		super.onResume();
 		if (bNeedSaveViewStates && systemIntialized &&!PDICMainAppOptions.getSimpleMode()){
 			bNeedSaveViewStates = false;
@@ -2373,6 +2372,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	protected void onStop() {
+		CMN.debug("onResume");
 		try {
 			super.onStop();
 		} catch (Exception ignored) { }
@@ -3027,6 +3027,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					wv.presenter.showMoreToolsPopup(wv, v);
 				} else {
 					viewContent(weblistHandler);
+					if (ActivedAdapter != null && ActivedAdapter.contentMenus!=null) {
+						AllMenus.setItems(ActivedAdapter.contentMenus);
+					}
 				}
 			} return true;
 			case R.drawable.ic_prv_dict_chevron:
@@ -3989,10 +3992,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										//CMN.debug("shouldOverrideUrlLoading::", view, url);
 										return false;
 									}
-									@Override
-									public void onPageFinished(WebView view, String url) {
-										view.evaluateJavascript(autoUpdateScript, null);
-									}
 								});
 								Bag flag = new Bag(false);
 								Runnable finalRn = new Runnable() {
@@ -4100,7 +4099,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				@Override
 				public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
 					contentDisposition = URLDecoder.decode(contentDisposition);
-					if (contentDisposition.contains("无限词典")) {
+					if (contentDisposition.contains("无限词典") || contentDisposition.contains("平典搜索")) {
 						AtomicBoolean dwnldAbort = new AtomicBoolean();
 						randomPage.loadUrl("about:blank");
 						HashMap<String, String> resp = new HashMap();

@@ -1534,7 +1534,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		boolean bFromWebTap = pos==0&&this.bFromWebTap&&invoker!=null;
 		final WebViewmy multiView = bFromWebTap?invoker:mWebView;
 		WebViewListHandler wlh = multiView.weblistHandler;
-		if(bFromWebTap) wlh.bDataOnly = true;
+		if(bFromWebTap) {wlh.bDataOnly = true; wlh.bShowInPopup=wlh.bShowingInPopup;}
 		wlh.setViewMode(rec, bFromWebTap?1:isMergingFramesNum(), multiView);
 		if(bFromWebTap) wlh.bDataOnly = false;
 		multiView.presenter = a.weblistHandler.getMergedBook(); //todo opt

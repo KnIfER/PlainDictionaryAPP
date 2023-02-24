@@ -149,6 +149,12 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 						case "moreTM":
 							init_switch_preference(this, "moreTM", PDICMainAppOptions.showMoreMenuBtnForFrames(), null, null, p);
 							break;
+						case "turnG":
+							init_switch_preference(this, "turnG", !PDICMainAppOptions.getTurnPageEnabled(), null, null, p);
+							break;
+						case "key":
+							init_switch_preference(this, "key", PDICMainAppOptions.swipeTopShowKeyboard(), null, null, p);
+							break;
 					}
 					p.setOnPreferenceChangeListener(this);
 				}
@@ -320,6 +326,14 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			break;
 			case "moreTM":
 				PDICMainAppOptions.showMoreMenuBtnForFrames((Boolean) newValue);
+			break;
+			case "turnG":
+				PDICMainAppOptions.setTurnPageEnabled(!(Boolean) newValue);
+				SearchUI.tapZoomV++;
+			break;
+			case "key":
+				PDICMainAppOptions.swipeTopShowKeyboard((Boolean) newValue);
+				SearchUI.tapZoomV++;
 			break;
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {

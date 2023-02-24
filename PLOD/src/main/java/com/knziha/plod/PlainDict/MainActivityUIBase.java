@@ -4958,17 +4958,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return true;
 				});
 				
-				if(contentUIData!=null && contentUIData.PageSlider!=null) {
-					if(!opt.getTurnPageEnabled())
-						tools_lock.setImageResource(R.drawable.locked);
-				} else {
-					tools_lock.setVisibility(View.GONE);
-				}
 
 				dialogList.addFooterView(bottomView);
 
 				if(twoColumnAda!=null)  twoColumnAda.notifyDataSetChanged();
 			}
+			
+			if(contentUIData!=null && contentUIData.PageSlider!=null) {
+				tools_lock.setImageResource(opt.getTurnPageEnabled()?R.drawable.un_locked:R.drawable.locked);
+			} else {
+				tools_lock.setVisibility(View.GONE);
+			}
+			
 			ViewUtils.ensureWindowType(d, MainActivityUIBase.this, MainActivityUIBase.this);
 			ViewUtils.ensureTopmost(d, MainActivityUIBase.this, MainActivityUIBase.this);
 			
@@ -10611,7 +10612,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
 		if(settingsPanel!=null /*&& settingsPanel!=wordPopup*/) {
-			if (settingsPanel.onBackPressed()) {
+			if (!bBackBtn && settingsPanel.onBackPressed()) {
 				return true;
 			}
 			CMN.debug("PerFormBackPrevention", settingsPanel);

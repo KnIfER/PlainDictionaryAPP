@@ -343,6 +343,18 @@
 			app:summary="在顶部右上角固定显示"
 			android:title="多页面显示更多菜单按钮“…”"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turnG"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="全局禁用翻页"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="key"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="内容页下滑弹出键盘"
+			/>
 	</PreferenceCategory>
 
 

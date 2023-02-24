@@ -592,7 +592,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			mMergedFrame.presenter=mMergedBook;
 			//mMergedBook.toolbar.setVisibility(View.GONE);
 		}
-		if(!popup && bShowingInPopup) {
+		if(!popup && bShowingInPopup) { //reset popup
 			ViewUtils.removeView(alloydPanel.toolbar);
 			contentUIData.webcontentlister.setPadding(0,0,0,0);
 			bShowingInPopup = false;

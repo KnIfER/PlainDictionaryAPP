@@ -121,6 +121,7 @@ public class RLContainerSlider extends FrameLayout {
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
+			if(swipeRefreshIcon.getAlpha()!=0) return false;
 			if(tapZoom){
 				if (bSuppressNxtTapZoom!=0) {
 					if (CMN.now()-bSuppressNxtTapZoom<500) {
@@ -227,7 +228,7 @@ public class RLContainerSlider extends FrameLayout {
 					} else {
 						page.decided=1;
 					}
-					dragged=0;
+					dragged=0; //???
 					if(dragged==2) resetSwipeIcon();
 					page.RePosition();
 				}
@@ -246,7 +247,7 @@ public class RLContainerSlider extends FrameLayout {
 			handleFastZoom(ev);
 			return fastTapZoom;
 		}
-		if(!slideTurn) return false;
+		if(!slideTurn && !swipeRefreshAllow) return false;
 		if(dragged==0 && aborted==0) return true;
 		int actual_index = ev.getActionIndex();
 		int touch_id = ev.getPointerId(actual_index);
@@ -505,6 +506,7 @@ public class RLContainerSlider extends FrameLayout {
 						}
 					}
 				}
+				if(dragged!=0) dragged=aborted=0;
 			}
 		}
 		if (masked==ACTION_UP) {
@@ -723,7 +725,10 @@ public class RLContainerSlider extends FrameLayout {
 		} else if(slideTurn) {
 			slideTurn = false;
 		}
-		swipeRefresh = onSwipeTopListener!=null && PDICMainAppOptions.swipeTopShowKeyboard();
+		if (swipeRefresh != (onSwipeTopListener!=null && PDICMainAppOptions.swipeTopShowKeyboard())) {
+			swipeRefresh = !swipeRefresh;
+			swipeRefreshAllow = false;
+		}
 		nothing = !swipeRefresh && !slideTurn && !tapZoom;
 	}
 	
