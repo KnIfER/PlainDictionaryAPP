@@ -335,7 +335,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				if (PDICMainAppOptions.dictManagerClickPopup() && true) {
 //					boolean start = mController.startDrag(position,0, v.getHeight()/2);
 //					return false;
-				
+					showPopup(v, null);
 				} else {
 					showPopup(v, null);
 				}

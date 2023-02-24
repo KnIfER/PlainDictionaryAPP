@@ -258,5 +258,8 @@
 	<string name="locate_dman">定位词典管理</string>
 	<string name="disable">禁用</string>
 	<string name="save_img">保存图片</string>
+	<string name="content_settings">内容页设置</string>
+	<string name="schtools_show_icon">在搜索工具栏中显示图标</string>
+	<string name="schtools_auto_hide">弹出对话框时自动收起工具栏</string>
 	>
 </resources>

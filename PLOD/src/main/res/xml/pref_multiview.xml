@@ -4,7 +4,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	tools:context="com.knziha.plod.settings.Multiview"
 	android:key="views"
-	android:title="多页面设置"
+	android:title="内容页面设置"
 	>
 	<com.knziha.filepicker.settings.TwinkleSwitchPreference
 		android:key="debug"
@@ -65,6 +65,15 @@
 			android:title="始终以url形式加载页面"
 			android:summary="可能影响加速度。若关闭，返回页面历史也许无法恢复位置。"
 			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.IntPreference
+			android:key="ttH"
+			android:persistent="true"
+			android:defaultValue="45"
+			android:title="自定义标题栏高度 : "
+			app:inlineSummary="true"
+			app:allowDividerBelow="true"
+			app:hasCheck="true"
 			/>
 	</PreferenceCategory>
 
@@ -334,7 +343,7 @@
 			android:key="ignoreSU"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="内容页URL地址相同时，不重新加载"
+			android:title="URL地址相同时，不重新加载"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="moreTM"
@@ -353,7 +362,14 @@
 			android:key="key"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="内容页下滑弹出键盘"
+			android:title="下滑弹出键盘"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="switchBtn"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="交换设置按钮“点击/长按”功能"
+			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>
 

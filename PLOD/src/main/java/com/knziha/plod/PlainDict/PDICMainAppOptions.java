@@ -3383,5 +3383,19 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=9, shift=1) public static boolean pageSchAutoJumpForLst() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=9, shift=1) public static void pageSchAutoJumpForLst(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=10) public static boolean customTitlebarHeight() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=10) public static void customTitlebarHeight(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+//	@Metaline(flagPos=11) public static boolean singlelineTitlebarM() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+//	@Metaline(flagPos=11) public static void singlelineTitlebarM(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=12) public static boolean switchMultiViewBtnFn() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=12) public static void switchMultiViewBtnFn(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=13, shift=1) public static boolean schtoolsShowIcon() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=13, shift=1) public static void schtoolsShowIcon(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=14, shift=1) public static boolean schtoolsAutoHide() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=14, shift=1) public static void schtoolsAutoHide(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
 }

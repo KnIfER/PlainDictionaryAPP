@@ -865,43 +865,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				weblistHandler.togSchPage(0);
             break;
 			case R.id.schtools:{//切换搜索工具栏
-				if(isLongClicked){ break;}
-				int W=root.getMeasuredWidth(); if(W==0)W=dm.widthPixels;
-				if (schTools == null || W!= IU.parsint(schTools.rootPanel.getTag()))
-				{
+				//if(isLongClicked){ break;} todo
+				if(schTools==null)
 					schTools = new SearchToolsMenu(this, null);
-					LinearLayout all = new LinearLayout(this);
-					all.setOrientation(LinearLayout.VERTICAL);
-					LinearLayout row=null;
-					View itemView;
-					int cc=0; int width=0,itemWidth;
-					View.OnClickListener itemClick = v -> {
-						int pos = ((SearchToolsMenu.MenuItemViewHolder) v.getTag()).position;
-						schTools.onItemClick(null, v, pos, v.getId());
-						if(pos<2) schTools.dialog.dismiss();
-					};
-					while (cc<schTools.getCount()) {
-						itemView = schTools.getView(cc++, null, all);
-						itemWidth = itemView.getLayoutParams().width;
-						if(row==null || width+itemWidth > W) {
-							row = new LinearLayout(this);
-							all.addView(row);
-							width = 0;
-						}
-						width += itemWidth;
-						row.addView(itemView);
-						if (itemView.getId() != 0) {
-							itemView.setOnClickListener(itemClick);
-						}
-					}
-					ScrollView sv = new ScrollView(this);
-					sv.addView(all);
-					schTools.rootPanel = sv;
-					sv.setLayoutParams(new FrameLayout.LayoutParams(-1, (int) (10*GlobalOptions.density + Math.min(mResource.getDimension(R.dimen._65_)*all.getChildCount(), dm.heightPixels/2))));
-					sv.setTag(W);
-					schTools.dialog = new AlertDialog.Builder(this).setView(sv).create();
-				}
-				schTools.dialog.show();
+				schTools.showPopup(this);
 			} break;
 			default:
 				return super.onMenuItemClick(item);

@@ -6648,7 +6648,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			case R.id.viewMode:{
-				if (isLongClicked) {
+				boolean bSet = isLongClicked ^ PDICMainAppOptions.switchMultiViewBtnFn();
+				if (bSet) {
 					launchSettings(Multiview.id, Multiview.requestCode);
 				}
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
@@ -6686,7 +6687,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}, 0, listener)
 						.setTitleBtn(R.drawable.ic_settings, listener)
 						//.setWikiText(getString(R.string.wikiMultiViewMode), null)
-						.setTitle("多页面设置").show();
+						.setTitle("内容页面设置").show();
 					dd.mAlert.wikiBtn.getLayoutParams().width=GlobalOptions.btnMaxWidth;
 					dd.mAlert.wikiBtn.getLayoutParams().height=GlobalOptions.btnMaxWidth*2/3;
 					dd.mAlert.wikiBtn.setPadding(0,0,0,0);
@@ -6695,10 +6696,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					tagHolder.tag = null;
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
-				if (isLongClicked) {
+				if (bSet) {
 					dd.dismiss();
-					ret = true;
 				}
+				ret = true;
 			}  break;
 			case R.id.setToSingleMode:{
 				if(isCombinedSearching) {

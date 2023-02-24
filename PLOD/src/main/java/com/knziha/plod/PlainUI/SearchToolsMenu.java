@@ -4,15 +4,20 @@ import static com.knziha.plod.preference.SettingsPanel.BIT_STORE_VIEW;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.text.TextPaint;
 import android.util.SparseIntArray;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
@@ -27,17 +32,18 @@ import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DescriptiveImageView;
+import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 
 //for menu list
-public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener
-{
+public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.OnItemClickListener, PopupMenuHelper.PopupMenuListener {
 	private TwoWayGridView mainMenuLst;
 	public ViewGroup rootPanel;
 	public AlertDialog dialog;
@@ -45,6 +51,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	private TextPaint menu_grid_painter;
 	ArrayList<String> menuList = new ArrayList<>();
 	private int menu_width;
+	private int menu_height;
 	
 	public static class MenuItemViewHolder {
 		public int position;
@@ -75,7 +82,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		for (int i = 0, id; (id = menu_ids[i++]) != -1; ) {
 			menuList.add(id == 0 ? "" : a.mResource.getString(id));
 		}
-		menu_width =  (int) a.mResource.getDimension(R.dimen._65_);
+		menu_width =  menu_height = (int) a.mResource.getDimension(R.dimen._65_);
 //		menuList.add("繁简转换");
 //		menuList.add("繁简选字");
 //		menuList.add("繁简对照表");
@@ -156,12 +163,26 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		int id = menu_ids[position];
+		boolean showIcon = PDICMainAppOptions.schtoolsShowIcon();
+		boolean lst = parent==mainMenuLst;
+		if (lst && (menu_height==menu_width) ^ showIcon) {
+			menu_height = showIcon?menu_width: (int) (menu_width * (0.3));
+			rootPanel.getLayoutParams().height = menu_height;
+			a.hdl.post(new Runnable() {
+				@Override
+				public void run() {
+					rootPanel.requestLayout();
+				}
+			});
+		}
 		if (id == 0) {
-			if(convertView==null) {
+			if (convertView == null) {
 				convertView = new View(a);
-				TwoWayAbsListView.LayoutParams lp = new TwoWayAbsListView.LayoutParams((int) (1.5 * GlobalOptions.density), menu_width);
+				TwoWayAbsListView.LayoutParams lp = new TwoWayAbsListView.LayoutParams((int) (1.5 * GlobalOptions.density), lst?menu_height:menu_width);
 				convertView.setLayoutParams(lp);
-				convertView.setBackground(new TopThumb(0x9fffffff, (int) (8*GlobalOptions.density)));
+				convertView.setBackground(new TopThumb(0x9fffffff, (int) (8 * GlobalOptions.density)));
+			} else if(lst){
+				convertView.getLayoutParams().height = menu_height;
 			}
 		} else {
 			MenuItemViewHolder holder;
@@ -178,13 +199,21 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			int tid = menu_ids[position];
 			holder.tv.setText(menuList.get(position));
 			int did = R.drawable.ic_view_comfy_2_black_24dp;
-			if (tid==R.string.ts_convert) {
+			if (tid == R.string.ts_convert) {
 				did = R.drawable.ic_translate_ts;
-			}
-			else if (tid==R.string.book_notes) {
+			} else if (tid == R.string.book_notes) {
 				did = R.drawable.ic_edit_booknotes;
 			}
-			holder.tv.setImageResource(did);
+			if (lst) {
+				if (showIcon) {
+					holder.tv.setImageResource(did);
+				} else {
+					holder.tv.setImageDrawable(null);
+				}
+				convertView.getLayoutParams().height = menu_height;
+			} else {
+				holder.tv.setImageResource(did);
+			}
 		}
 		return convertView;
 	}
@@ -193,41 +222,12 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	@Override
 	public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
 		final int mid = menu_ids[position];
+		if (dialog!=null) {
+			dialog.dismiss();
+		}
 		switch (mid) {
 			case R.string.ts_convert:{
-				//CMN.Log("繁简转换!!!");
-				a.ensureTSHanziSheet(null);
-				SparseArrayMap map=null;
-				String text = a.getSearchTerm().trim();
-				for (int i = 0; i < text.length(); i++) {
-					char c=text.charAt(i);
-					if(a.fanJnMap.get(c)!=null) {
-						map = a.fanJnMap;
-						break;
-					}
-					if(a.jnFanMap.get(c)!=null) {
-						map = a.jnFanMap;
-						break;
-					}
-				}
-				String newText="";
-				if(map!=null) {
-					for (int i = 0; i < text.length(); i++) {
-						char c=text.charAt(i);
-						String cs=map.get(c);
-						if(cs!=null) {
-							for (int j = 0; j < cs.length(); j++) {
-								char c1 = cs.charAt(j);
-								if(c!=c1) {
-									c=c1;
-									break;
-								}
-							}
-						}
-						newText+=c;
-					}
-					a.setSearchTerm(newText);
-				}
+				etZhTrans();
 			} break;
 			case R.string.ts_pick:
 			{
@@ -421,6 +421,42 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		}
 	}
 	
+	public void etZhTrans() {
+		//CMN.Log("繁简转换!!!");
+		a.ensureTSHanziSheet(null);
+		SparseArrayMap map=null;
+		String text = a.getSearchTerm().trim();
+		for (int i = 0; i < text.length(); i++) {
+			char c=text.charAt(i);
+			if(a.fanJnMap.get(c)!=null) {
+				map = a.fanJnMap;
+				break;
+			}
+			if(a.jnFanMap.get(c)!=null) {
+				map = a.jnFanMap;
+				break;
+			}
+		}
+		String newText="";
+		if(map!=null) {
+			for (int i = 0; i < text.length(); i++) {
+				char c=text.charAt(i);
+				String cs=map.get(c);
+				if(cs!=null) {
+					for (int j = 0; j < cs.length(); j++) {
+						char c1 = cs.charAt(j);
+						if(c!=c1) {
+							c=c1;
+							break;
+						}
+					}
+				}
+				newText+=c;
+			}
+			a.setSearchTerm(newText);
+		}
+	}
+	
 	public LuceneHelper getLuceneHelper() {
 		if (luceneHelper==null) {
 			luceneHelper = new LuceneHelper((PDICMainActivity) a, this);
@@ -438,5 +474,101 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		if (mainMenuLst != null) {
 			notifyDataSetChanged();
 		}
+	}
+	
+	ViewGroup rootPanelPopup;
+	
+	public void showPopup(MainActivityUIBase a) {
+		View root = a.root;
+		int W=root.getMeasuredWidth(); if(W==0)W=a.dm.widthPixels;
+		//if (rootPanelPopup==null || W != IU.parsint(rootPanelPopup.getTag()))
+		{
+			LinearLayout all = new LinearLayout(a);
+			all.setOrientation(LinearLayout.VERTICAL);
+			LinearLayout row=null;
+			View itemView;
+			int cc=0; int width=0,itemWidth;
+			View.OnClickListener itemClick = v -> {
+				int pos = ((SearchToolsMenu.MenuItemViewHolder) v.getTag()).position;
+				onItemClick(null, v, pos, v.getId());
+				if(pos<2) dialog.dismiss();
+			};
+			while (cc<getCount()) {
+				itemView = getView(cc++, null, all);
+				itemWidth = itemView.getLayoutParams().width;
+				if(row==null || width+itemWidth > W) {
+					row = new LinearLayout(a);
+					all.addView(row);
+					width = 0;
+				}
+				width += itemWidth;
+				row.addView(itemView);
+				if (itemView.getId() != 0) {
+					itemView.setOnClickListener(itemClick);
+				}
+			}
+			ScrollView sv = new ScrollView(a);
+			sv.addView(all);
+			sv.setTag(W);
+			int pad = (int) (GlobalOptions.density*8);
+			ViewUtils.setPadding(all, -1, pad, -1, pad);
+			dialog = new AlertDialog.Builder(a)
+					.setTitle("搜索工具")
+					.setTitleBtn(R.drawable.ic_settings, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface d, int which) {
+							PopupMenuHelper popupMenu = a.getPopupMenu();
+							if(popupMenu.getListener()!=SearchToolsMenu.this) {
+								int[] texts = new int[]{
+									R.string.schtools_show_icon
+									, R.string.schtools_auto_hide
+								};
+								popupMenu.initLayout(texts, SearchToolsMenu.this);
+							}
+							View rv = dialog.getWindow().getDecorView();
+							View v = dialog.mAlert.wikiBtn;
+							View vp = (View) v.getParent();
+							popupMenu.showAt(rv, 0, vp.getHeight()-v.getTop()-v.getHeight(), Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+							ViewUtils.preventDefaultTouchEvent(v, 0, 0);
+							popupMenu.lv.findViewById(R.string.schtools_show_icon).setActivated(PDICMainAppOptions.schtoolsShowIcon());
+							popupMenu.lv.findViewById(R.string.schtools_auto_hide).setActivated(PDICMainAppOptions.schtoolsAutoHide());
+						}
+					})
+					.setView(sv)
+					.create();
+			if (a.thisActType==MainActivityUIBase.ActType.PlainDict) {
+				dialog.getWindow().setGravity(Gravity.TOP);
+				dialog.getWindow().getAttributes().verticalMargin = 0.15f;
+			}
+			dialog.show();
+			dialog.mAlert.wikiBtn.getLayoutParams().width=GlobalOptions.btnMaxWidth;
+			dialog.mAlert.wikiBtn.getLayoutParams().height=GlobalOptions.btnMaxWidth*2/3;
+			dialog.mAlert.wikiBtn.setPadding(0,0,0,0);
+			dialog.mAlert.wikiSep.getLayoutParams().width=GlobalOptions.btnMaxWidth/5;
+			((LinearLayout.LayoutParams)dialog.mAlert.wikiSep.getLayoutParams()).weight=0;
+			rootPanelPopup = sv;
+		}
+		dialog.show();
+	}
+	
+	
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		if (isLongClick) {
+			return false;
+		}
+		boolean val = !v.isActivated();
+		v.setActivated(val);
+		if (v.getId()==R.string.schtools_show_icon) {
+			PDICMainAppOptions.schtoolsShowIcon(val);
+			if (mainMenuLst!=null) {
+				notifyDataSetChanged();
+			}
+		}
+		if (v.getId()==R.string.schtools_auto_hide) {
+			PDICMainAppOptions.schtoolsAutoHide(val);
+		}
+		popupMenuHelper.dismiss();
+		return true;
 	}
 }

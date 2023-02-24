@@ -3,13 +3,16 @@ package com.knziha.plod.settings;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.webkit.WebView;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceScreen;
 
+import com.knziha.filepicker.settings.IntPreference;
 import com.knziha.filepicker.settings.TwinkleSwitchPreference;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -32,6 +35,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = id;
+		resId=R.string.content_settings;
 		super.onCreate(savedInstanceState);
 		
 		multiMode = PDICMainAppOptions.multiViewMode();
@@ -155,6 +159,13 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 						case "key":
 							init_switch_preference(this, "key", PDICMainAppOptions.swipeTopShowKeyboard(), null, null, p);
 							break;
+						case "switchBtn":
+							init_switch_preference(this, "switchBtn", PDICMainAppOptions.switchMultiViewBtnFn(), null, null, p);
+							switchMultiViewBtnFn(p);
+							break;
+						case "ttH":
+							((IntPreference)p).setText(""+PreferenceManager.getDefaultSharedPreferences(getContext()).getInt("ttH", (int)(getContext().getResources().getDimension(R.dimen.dictitle)/Math.max(2, GlobalOptions.density))));
+							break;
 					}
 					p.setOnPreferenceChangeListener(this);
 				}
@@ -164,7 +175,11 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 		
 		clrAccent = ColorUtils.blendARGB(0xff2b4381, Color.GRAY, 0.35f);
 	}
-
+	
+	private void switchMultiViewBtnFn(Preference p) {
+		p.setSummary(PDICMainAppOptions.switchMultiViewBtnFn() ? "点击--进入内容页面设置，长按--切换多页面模式" : "点击--切换多页面模式，长按--进入设置");
+	}
+	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		return false;
@@ -201,6 +216,10 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 					case "GPR":
 						if (b1) return PDICMainAppOptions.padRight();
 						PDICMainAppOptions.padRight(str.length() == 3);
+						return true;
+					case "ttH":
+						if (b1) return PDICMainAppOptions.customTitlebarHeight();
+						PDICMainAppOptions.customTitlebarHeight(str.length() == 3);
 						return true;
 				}
 			}
@@ -332,9 +351,13 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 				SearchUI.tapZoomV++;
 			break;
 			case "key":
-				PDICMainAppOptions.swipeTopShowKeyboard((Boolean) newValue);
+				PDICMainAppOptions.swipeTopShowKeyboard();
 				SearchUI.tapZoomV++;
 			break;
+			case "switchBtn":
+				PDICMainAppOptions.switchMultiViewBtnFn((Boolean) newValue);
+				switchMultiViewBtnFn(preference);
+				break;
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {
 			SearchUI.tapZoomV++;

@@ -1033,8 +1033,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	// 															23/*随机词条*/
 		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 25, 24, 12);
 		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14, 1, 2/*, 15*/, 21/*记忆位置*/, 9, 25, 10, 24, 12);
-		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 20/*搜索工具栏*//*, 17, 18*//*, 19*/);
-		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22/*, 19*/, 7, 20, 5, 6);
+		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 26, 20/*搜索工具栏*//*, 17, 18*//*, 19*/);
+		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22/*, 19*/, 7, 26, 20, 5, 6);
 		
 		
 		boolean showVal = PDICMainAppOptions.getShowSearchTools();
@@ -3334,11 +3334,26 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.setText(ToTag(perWSTag)+text);
 			} break;
 			case R.id.schtools:{//切换搜索工具栏
-				if(isLongClicked){ break;}
-				boolean newVal = !PDICMainAppOptions.getShowSearchTools();
-				PDICMainAppOptions.setShowSearchTools(newVal);
-				item.setChecked(newVal);
-				ViewUtils.setVisible(UIData.schtools, newVal);
+				if (isLongClicked) { //弹出
+					if (PDICMainAppOptions.schtoolsAutoHide()) {
+						ViewUtils.setVisible(UIData.schtools, false);
+						PDICMainAppOptions.setShowSearchTools(false);
+						mmi.setChecked(false);
+					}
+					schTools.showPopup(this);
+					ret = closeMenu = true;
+				}
+				else { //切换
+					boolean newVal = !PDICMainAppOptions.getShowSearchTools();
+					PDICMainAppOptions.setShowSearchTools(newVal);
+					item.setChecked(newVal);
+					ViewUtils.setVisible(UIData.schtools, newVal);
+				}
+			} break;
+			case R.id.zhTrans:{
+				if(schTools==null)
+					schTools = new SearchToolsMenu(this, UIData.schtools);
+				schTools.etZhTrans();
 			} break;
 		}
 		if(closeMenu)
