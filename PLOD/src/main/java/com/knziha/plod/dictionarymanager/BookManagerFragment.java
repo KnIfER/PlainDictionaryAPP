@@ -175,9 +175,14 @@ public abstract class BookManagerFragment<T> extends ListFragment {
 		if (structChanged) {
 			if (!TextUtils.isEmpty(query)) {
 				schFilter(query, false);
-				if (getBookManager().popup != null) {
-					getBookManager().popup.dismiss();
+			} else if (filtered.size()>0) {
+				filtered.clear();
+				if (getBookManager().getFragment()==this) {
+					getBookManager().schIndicator_setText(filtered);
 				}
+			}
+			if (getBookManager().popup != null) {
+				getBookManager().popup.dismiss();
 			}
 		}
 		if (adapter != null) {

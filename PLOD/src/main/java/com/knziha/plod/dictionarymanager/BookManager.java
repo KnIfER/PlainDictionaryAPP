@@ -125,6 +125,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public View schLstBtn;
 	private int lastAddToPos;
 	private boolean bReturning;
+	private int f1_dirty;
 	
 	public BookManager() { }
 	
@@ -225,7 +226,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			mPopup=null;
 			return;
 		}
-		CMN.debug("bReturning::", bReturning);
 		ListFragment frame = getFragment();
 		if (frame != null && !bReturning) {
 			if(((BookManagerFragment.SelectableFragment)frame).exitSelectionMode()){
@@ -694,6 +694,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						toolbar_setTitle(loadMan.lazyMan.lastLoadedModule);
 					}
 					filtered = f1.filtered;
+					if ((f1_dirty&0x1)!=0) { // 重新检查
+						f1_dirty&=~0x1;
+						f1.checkDuplication(false);
+					}
 	    		} else if(frame==f2) {
 					menu = Menu2;
 					filtered = f2.filtered;
@@ -703,6 +707,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				} else {
 					menu = f4.SelectionMode ? Menu3Sel : Menu3;
 					filtered = f4.filtered;
+				}
+				if (popup!=null) {
+					popup.dismiss();
 				}
 				AllMenus.setItems(menu);
 				super.onPageSelected(CurrentPage = page);
@@ -868,11 +875,18 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	SparseArray<String> filtered;
 	PopupMenuHelper popup;
+	BaseAdapter popupAdapter;
 	public long[] popupPos = new long[4];
 	public static long[] listPos = new long[4];
-	private void showFilteredEntries(View v) {
+	
+	private void showFilteredEntries(View v)
+	{
 		if (filtered.size() == 0) {
 			showTopSnack("当前页面无搜索结果");
+			if((f1_dirty&0x2)!=0 && getFragment()==f1) {
+				f1_dirty&=~0x2;
+				f1.checkDuplication(false);
+			}
 			return;
 		}
 		if(popup==null)
@@ -882,7 +896,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			ListView lv = new ListView(BookManager.this);
 			popup.lv.addView(lv);
 			popup.tag1 = lv;
-			lv.setAdapter(new BaseAdapter() {
+			lv.setAdapter(popupAdapter=new BaseAdapter() {
 				@Override public int getCount() { return filtered.size(); }
 				@Override public Object getItem(int position) { return null; }
 				@Override public long getItemId(int position) { return 0;	}
@@ -921,14 +935,18 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					Fragment frame = getFragment();
-					if(frame instanceof BookManagerFragment) {
-						((BookManagerFragment) frame).selectPos(filtered.keyAt(position), false);
+					try {
+						Fragment frame = getFragment();
+						if (frame instanceof BookManagerFragment) {
+							((BookManagerFragment) frame).selectPos(filtered.keyAt(position), false);
+						}
+						if (frame instanceof BookManagerFolderAbs) {
+							((BookManagerFolderAbs) frame).selectFilteredPos(filtered.keyAt(position));
+						}
+						popup.dismiss();
+					} catch (Exception e) {
+						CMN.debug(e);
 					}
-					if(frame instanceof BookManagerFolderAbs) {
-						((BookManagerFolderAbs) frame).selectFilteredPos(filtered.keyAt(position));
-					}
-					popup.dismiss();
 				}
 			});
 			lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -1374,9 +1392,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 禁用选中项 | 删除选中项, f1 */
 			case R.id.del_rec:{
 				if (longclickFx) {
-					f1.deleteSelOrOne(false);
+					f1.deleteSelOrOne(false, false);
 				} else {
-					f1.disEna(true, true, -1);
+					f1.disEna(true, true, -1, false);
 				}
 			} break;
 			/* 启用网络词典 | 禁用网络词典, f1 */
@@ -1425,7 +1443,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 启用选中项 */
             case R.id.toolbar_action5:{
 				//disenSel(false, szf1, sf1);
-				f1.disEna(true, false, -1);
+				f1.disEna(true, false, -1, false);
 			} break;
 			/* 启用全部 | 禁用全部 */
             case R.id.disenAll:
@@ -1874,6 +1892,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if(insert) {
 					boolean rejected;
 					f1.markDirty(-1);
+					f1_dirty = 0x3;
 					for (int i = f1.manager_group().size()-1; i >= 0; i--) {
 						mFile fn = map.get(f1.getPathAt(i));
 						if (fn != null) {
@@ -1985,6 +2004,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				else {
 					f1.markDirty(-1);
+					f1_dirty = 0x3;
 					//loadMan.lazyMan.newChair();
 					BookPresenter mdTmp = mdict_cache.get(key);
 					PlaceHolder placeHolder;

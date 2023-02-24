@@ -26,6 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -261,11 +262,24 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		}
 	}
 	
-	public void deleteSelOrOne(boolean one) {
+	public void deleteSelOrOne(boolean one, boolean useFilter) {
 		int szf1 = manager_group().size();
+		int selSz = 1;
+		if (!one) {
+			if (!useFilter) {
+				selSz = Selection.size();
+			} else {
+				selSz = 0;
+				for (int i = szf1 - 1; i >= 0; i--) {
+					if (getPlaceSelected(i) && filtered.get(i)!=null) {
+						selSz++;
+					}
+				}
+			}
+		}
 		new AlertDialog.Builder(getBookManager())
 				.setWikiText("可长按弹出菜单中的“禁用”达到同样效果", null)
-				.setTitle(getBookManager().mResource.getString(R.string.surerrecords, one?1:Selection.size()).replace("彻底", ""))
+				.setTitle(getBookManager().mResource.getString(R.string.surerrecords, selSz).replace("彻底", ""))
 				.setMessage("从当前分组中删除记录，注意不可撤销。")
 				.setPositiveButton(R.string.confirm, (dialog, which) -> {
 					int cc=0;
@@ -274,7 +288,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						cc=1;
 					} else {
 						for (int i = szf1 - 1; i >= 0; i--) {
-							if (getPlaceSelected(i)) {
+							if (getPlaceSelected(i) && (!useFilter || filtered.get(i)!=null)) {
 								remove(i);
 								cc++;
 							}
@@ -486,7 +500,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 					BookPresenter magent;
 					if (isLongClick) { // 长按
 						if (view.getId() == R.id.disable) {
-							deleteSelOrOne(!isOnSelected);
+							deleteSelOrOne(!getPlaceSelected(position), b1);
 							popupMenuHelper.dismiss();
 						}
 						if (view.getId() == R.id.move_sel && !b1) {
@@ -506,12 +520,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						/* 启用 禁用 */
 						case R.id.enable:
 						case R.id.disable:  {
-							disEna(isOnSelected, view.getId()==R.id.disable, position);
+							disEna(getPlaceSelected(position), view.getId()==R.id.disable, position, b1);
 						} break;
 						case R.string.rename: {
 							//renameFile();
 						} break;
 						case R.id.move_sel: {
+							if(b1) return true;
 							int from = -1;
 							if (PDICMainAppOptions.dictManager1MultiSelecting()) {
 								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
@@ -534,10 +549,21 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							d.dismiss();
 						} break;
 						case R.id.jianxuan: {//间选
-							if(b1) return true;
-							MenuItemImpl menu = (MenuItemImpl) ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1);
-							menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn()?-1:0;
-							a.onMenuItemClick(menu);
+							if (b1) {
+								for (int i = 0, sz = manager_group().size(); i < sz; i++) {
+									if (filtered.get(i)!=null) {
+										setPlaceSelected(i, true);
+									}
+								}
+								dataSetChanged(false);
+								if (getBookManager().popupAdapter!=null) {
+									getBookManager().popupAdapter.notifyDataSetChanged();
+								}
+							} else {
+								MenuItemImpl menu = (MenuItemImpl) ViewUtils.findInMenu(a.Menu1, R.id.toolbar_action1);
+								menu.isLongClicked = PDICMainAppOptions.dictManagerFlipMenuCloumn()?-1:0;
+								a.onMenuItemClick(menu);
+							}
 						} break;
 						// 添加全部词典
 						case R.string.addAllHere: {
@@ -814,6 +840,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				}
 			});
 		}
+		TextView tv = mPopup.lv.findViewById(R.id.jianxuan);
+		View lv = ViewUtils.getParentByClass(pressedV, ListView.class);
+		tv.setText(lv == listView ? "间选" : "全选");
 		return mPopup;
 	}
 	
@@ -861,11 +890,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		getBookManager().addElementsToF1(null, list.toArray(new mFile[0]), false, true, pressedPos+1, rejected);
 	}
 	
-	public void disEna(boolean useSelection, boolean off, int position) {
+	public void disEna(boolean useSelection, boolean off, int position, boolean useFilter) {
 		int cc=0;
 		if (useSelection) {
 			for (int i = 0, sz = manager_group().size(); i < sz; i++) {
-				if (getPlaceSelected(i)) {
+				if (getPlaceSelected(i) && (!useFilter || filtered.get(i)!=null)) {
 					markDirty(i);
 					setPlaceRejected(i, off);
 					cc++;
@@ -1061,32 +1090,45 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				});
 				loadMan.managePos = -1;
 			}
-			HashMap<String, Integer> map = new HashMap<>();
-			for (int i = 0; i < loadMan.lazyMan.placeHolders.size(); i++) {
-				PlaceHolder ph = loadMan.lazyMan.placeHolders.get(i);
-				String key = new File(ph.pathname).getName();
-				if (getPlaceSelected(i)) {
-					setPlaceSelected(i, true);
-				}
-				if (!map.containsKey(key)) {
-					map.put(key, i);
-				} else {
-					Integer pos = map.get(key);
-					if (pos!=null) {
-						map.put(key, null);
-						filtered.put(pos, loadMan.lazyMan.placeHolders.get(pos).pathname);
-					}
-					filtered.put(i, ph.pathname);
-				}
+			checkDuplication(true);
+		}
+	}
+	
+	public void checkDuplication(boolean init) {
+		HashMap<String, Integer> map = new HashMap<>();
+		boolean cleared = false;
+		for (int i = 0; i < loadMan.lazyMan.placeHolders.size(); i++)
+		{
+			PlaceHolder ph = loadMan.lazyMan.placeHolders.get(i);
+			String key = new File(ph.pathname).getName();
+			if (init && getPlaceSelected(i)) {
+				setPlaceSelected(i, true);
 			}
-			if (filtered.size() > 0) {
-				a.showT("发现当前分组存在"+filtered.size()+"条同名词典记录，请删除!");
-				ObjectAnimator td = ViewUtils.tada(getBookManager().searchbar, 2);
-				getBookManager().schIndicator_setText(filtered);
-				if (td != null) {
-					td.start();
-					td.setDuration(1233);
+			if (!map.containsKey(key)) {
+				map.put(key, i);
+			} else {
+				if(!cleared) {
+					filtered.clear();
+					cleared = true;
 				}
+				Integer pos = map.get(key);
+				if (pos!=null) {
+					map.put(key, null);
+					filtered.put(pos, loadMan.lazyMan.placeHolders.get(pos).pathname);
+				}
+				filtered.put(i, ph.pathname);
+			}
+		}
+		if (cleared) {
+			//getBookManager().showT("发现当前分组存在"+filtered.size()+"条同名词典记录，请删除!");
+			getBookManager().showTopSnack("发现当前分组存在"+filtered.size()+"条同名词典记录，请删除!");
+			ObjectAnimator td = ViewUtils.tada(getBookManager().searchbar, 2);
+			getBookManager().schIndicator_setText(filtered);
+			this.query = null;
+			//getBookManager().etSearch.setText(null);
+			if (td != null) {
+				td.start();
+				td.setDuration(1233);
 			}
 		}
 	}
@@ -1184,6 +1226,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			PlaceHolder ph = loadMan.lazyMan.placeHolders.remove(from);
 			loadMan.lazyMan.chairCount--;
 			Selection.remove(ph);
+			if (filtered.size()>0 && this==getBookManager().getFragment() && filtered.get(from)!=null) {
+				filtered.remove(from);
+				if (getBookManager().popupAdapter!=null) {
+					getBookManager().popupAdapter.notifyDataSetChanged();
+				}
+			}
 		} else {
 			loadMan.md.add(to, loadMan.md.remove(from));
 			loadMan.lazyMan.placeHolders.add(to, loadMan.lazyMan.placeHolders.remove(from));
