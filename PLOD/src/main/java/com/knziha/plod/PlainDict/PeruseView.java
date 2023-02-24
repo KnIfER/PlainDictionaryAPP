@@ -344,6 +344,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		toolbar.mNavButtonView.setContentDescription("退出翻阅模式");
 		ViewUtils.ResizeNavigationIcon(toolbar);
         toolbar.setNavigationOnClickListener(this);
+		toolbar.getNavigationBtn().setOnLongClickListener(this);
 		toolbar.addNavigationOnClickListener((v,e) -> {
 			if(etTools.isVisible()) {
 				etTools.dismiss();
@@ -2393,6 +2394,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public boolean onLongClick(View v) {
 		if(v.getId()==R.id.action_menu_presenter){
 			showPeruseTweaker();
+			return true;
+		}
+		if(v.getId()==R.id.home){
+			weblistHandler.showMoreToolsPopup(v);
 			return true;
 		}
 		return getMainActivity().onLongClick(v);

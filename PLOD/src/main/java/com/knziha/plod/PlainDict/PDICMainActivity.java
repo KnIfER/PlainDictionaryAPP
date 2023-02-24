@@ -3021,10 +3021,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
 				//showBottombarsTweaker();
 				if (isContentViewAttached()) {
-					WebViewmy wv = weblistHandler.getWebContextNonNull();
-					weblistHandler.contentUIData.PageSlider.OrgX = v.getWidth();
-					weblistHandler.contentUIData.PageSlider.OrgY = v.getHeight();
-					wv.presenter.showMoreToolsPopup(wv, v);
+					weblistHandler.showMoreToolsPopup(v);
 				} else {
 					viewContent(weblistHandler);
 					if (ActivedAdapter != null && ActivedAdapter.contentMenus!=null) {

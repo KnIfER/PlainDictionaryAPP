@@ -1031,11 +1031,16 @@ function debug(e){console.log(e)};
 	}
 	
 	public PopupMenuHelper showPopupMenu(PageMenuHelper.PageMenuType type, WebViewmy mWebView, View v, int x, int y) {
-		if (mWebView == null) {
-			initViewsHolder(a);
-			mWebView = this.mWebView;
+		try {
+			if (mWebView == null) {
+				initViewsHolder(a);
+				mWebView = this.mWebView;
+			}
+			return a.pageMenuHelper.showPageMenu(type, mWebView, v, x, y);
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
-		return a.pageMenuHelper.showPageMenu(type, mWebView, v, x, y);
+		return null;
 	}
 	
 	public void showMoreToolsPopup(WebViewmy mWebView, View v) {
@@ -1050,15 +1055,17 @@ function debug(e){console.log(e)};
 		} else {
 			popupMenu = showPopupMenu(type, mWebView, v, 0, 0);
 		}
-		mWebView = (WebViewmy) popupMenu.tag1;
-		boolean b1=mWebView.canGoBack();
-		v = popupMenu.popRoot.findViewById(R.id.nav_back);
-		v.setEnabled(b1);
-		v.setAlpha(b1?1:0.35f);
-		b1=mWebView.canGoForward();
-		v = popupMenu.popRoot.findViewById(R.id.nav_forward);
-		v.setEnabled(b1);
-		v.setAlpha(b1?1:0.35f);
+		if (popupMenu!=null) {
+			mWebView = (WebViewmy) popupMenu.tag1;
+			boolean b1=mWebView.canGoBack();
+			v = popupMenu.popRoot.findViewById(R.id.nav_back);
+			v.setEnabled(b1);
+			v.setAlpha(b1?1:0.35f);
+			b1=mWebView.canGoForward();
+			v = popupMenu.popRoot.findViewById(R.id.nav_forward);
+			v.setEnabled(b1);
+			v.setAlpha(b1?1:0.35f);
+		}
 	}
 	
 	

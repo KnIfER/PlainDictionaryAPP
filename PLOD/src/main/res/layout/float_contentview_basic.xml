@@ -28,6 +28,7 @@
 			android:src="@drawable/abc_ic_ab_back_material_simple_compat"
 			android:background="@drawable/abc_action_bar_item_background_material"
 			android:contentDescription="退出点击翻译"
+			android:longClickable="true"
 			/>
 		<androidx.appcompat.widget.AppCompatTextView
 			android:id="@+id/popupText1"

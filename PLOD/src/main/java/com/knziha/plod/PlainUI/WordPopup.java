@@ -507,6 +507,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	@Override
 	public boolean onLongClick(View v) {
+		if(v.getId()==R.id.popIvBack){
+			weblistHandler.showMoreToolsPopup(v);
+			return true;
+		}
 		if (!moveView.moveTriggered) {
 			int id = v.getId();
 			if (id==R.id.mode) {

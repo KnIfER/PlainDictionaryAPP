@@ -1396,6 +1396,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
+	public void showMoreToolsPopup(View v) {
+		try {
+			WebViewmy wv = getWebContextNonNull();
+			if (pageSlider != null) {
+				pageSlider.OrgX = v.getWidth();
+				pageSlider.OrgY = v.getHeight();
+			}
+			wv.presenter.showMoreToolsPopup(wv, v);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
 	public static class HighlightVagranter {
 		ViewGroup webviewHolder;
 		int HlightIdx;

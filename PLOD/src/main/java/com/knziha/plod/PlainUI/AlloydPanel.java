@@ -78,6 +78,10 @@ public class AlloydPanel extends PlainAppPanel {
 			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 9, 8, 5);//new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
+			toolbar.getNavigationBtn().setOnLongClickListener(v -> {
+				weblistHandler.showMoreToolsPopup(v);
+				return true;
+			});
 			
 			fetchWordMenu = (MenuItemImpl) ViewUtils.findInMenu(RandomMenu, R.id.fetchWord);
 			settingsLayout = linearView;
