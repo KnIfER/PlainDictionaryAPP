@@ -6648,7 +6648,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			case R.id.viewMode:{
-				boolean bSet = isLongClicked ^ PDICMainAppOptions.switchMultiViewBtnFn();
+				boolean bSet = isLongClicked ^ PDICMainAppOptions.swapeMultiViewBtnFn();
 				if (bSet) {
 					launchSettings(Multiview.id, Multiview.requestCode);
 				}
@@ -10645,7 +10645,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					break;
 				}
 			}
-			WebViewmy view = wlh.getWebContext();
+			WebViewmy view;
+			if (wlh==weblistHandler && !isContentViewAttached() && !wlh.isPopupShowing()) {
+				view = null;
+			} else {
+				view = wlh.getWebContext();
+			}
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			if (view!=null && view.canGoBack()) {
 				layoutScrollDisabled = false;
@@ -11745,6 +11750,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return null;
 			}
 		}
+		if (wlh==weblistHandler && !isContentViewAttached() && !wlh.isPopupShowing()) {
+			return null;
+		}
 		WebViewmy view = wlh.getWebContext();
 //		if (getCurrentFocus() instanceof WebViewmy)
 //			return (WebViewmy) getCurrentFocus();
@@ -11753,4 +11761,5 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return null;
 	}
+	
 }

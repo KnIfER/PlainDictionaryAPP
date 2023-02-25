@@ -160,7 +160,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 							init_switch_preference(this, "key", PDICMainAppOptions.swipeTopShowKeyboard(), null, null, p);
 							break;
 						case "switchBtn":
-							init_switch_preference(this, "switchBtn", PDICMainAppOptions.switchMultiViewBtnFn(), null, null, p);
+							init_switch_preference(this, "switchBtn", PDICMainAppOptions.swapeMultiViewBtnFn(), null, null, p);
 							switchMultiViewBtnFn(p);
 							break;
 						case "ttH":
@@ -177,7 +177,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 	}
 	
 	private void switchMultiViewBtnFn(Preference p) {
-		p.setSummary(PDICMainAppOptions.switchMultiViewBtnFn() ? "点击--进入内容页面设置，长按--切换多页面模式" : "点击--切换多页面模式，长按--进入设置");
+		p.setSummary(PDICMainAppOptions.swapeMultiViewBtnFn() ? "点击--进入内容页面设置，长按--切换多页面模式" : "点击--切换多页面模式，长按--进入设置");
 	}
 	
 	@Override
@@ -355,7 +355,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 				SearchUI.tapZoomV++;
 			break;
 			case "switchBtn":
-				PDICMainAppOptions.switchMultiViewBtnFn((Boolean) newValue);
+				PDICMainAppOptions.swapeMultiViewBtnFn((Boolean) newValue);
 				switchMultiViewBtnFn(preference);
 				break;
 		}

@@ -996,6 +996,19 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																	}
 																});
 															}
+															else if(PDICMainAppOptions.swapeSchAndWordMap() && tv.getText().length()==4 && tv.getText().toString().equals("网页搜索")) {
+																CMN.Log("yes!!! 工具");
+																tv.setText("单词导图");
+																vgg.setOnClickListener(new OnClickListener() {
+																	@Override
+																	public void onClick(View v) {
+																	
+																	}
+																});
+																tv.setPadding(0,0,0,0);
+																vgg.setPadding(0,0,0,0);
+																//tv.setId(R.id.wordMap);
+															}
 															else if(tv.getText().length()==2 && tv.getText().toString().equals("工具")){
 																CMN.Log("yes!!! 工具");
 																vgg.setOnLongClickListener(new OnLongClickListener() {
@@ -1116,6 +1129,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
+		menu.add(0,R.id.toolbar_action4,++ToolsOrder,PDICMainAppOptions.swapeSchAndWordMap()?"搜索":"词链");
 		
 //		if (fanYi != null) {  // 只因翻译应用跳转慢、或无联网，故置末尾。
 //			MenuItem m = menu.add(0, fanYi.getItemId(), menu.size() - 1, "翻译");

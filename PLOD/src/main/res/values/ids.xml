@@ -43,4 +43,6 @@
 	<item name="quit" type="id" />
 	<item name="action0" type="id" />
 
+	<item name="wordMap" type="id" />
+
 </resources>
