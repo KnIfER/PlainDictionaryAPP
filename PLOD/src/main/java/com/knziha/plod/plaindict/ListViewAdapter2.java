@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -23,6 +24,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 import org.jsoup.Jsoup;
 
@@ -213,7 +215,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		if(checkAllWebs(results, view, pos)) return;
 		contentUIData.mainProgressBar.setVisibility(View.GONE);
 		userCLick=true;
-		lastClickedPosBefore=-1;
+		lastClickedPosBefore=parent==null?-1:-2;
 //		a.bNeedReAddCon=false;
 		super.onItemClick(parent, view, pos, id);
 	}
@@ -263,6 +265,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		weblistHandler.WHP.touchFlag.first=true;
 		
 		if(a.DBrowser!=null) return;
+		boolean lstClick = lastClickedPosBefore==-2;
 		lastClickedPosBefore = lastClickedPos;
 		if(pos<0 || pos>=getCount()) {
 			a.showTopSnack(R.string.endendr);
@@ -326,7 +329,25 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		results.renderContentAt(lastClickedPos, a,this, weblistHandler);
 		
-		if(PDICMainAppOptions.revisitOnBackPressed()) weblistHandler.getWebContextNonNull().cleanPage = true;
+		if (PDICMainAppOptions.revisitOnBackPressed())
+		if (/*userCLick && */lstClick || a.click_handled_not && PDICMainAppOptions.clearHistoryOnTurnPage()) {
+			if (weblistHandler.isMergingFramesNum() <= 0) {
+				ViewGroup vg = weblistHandler.getViewGroup();
+				for (int index = 0; index < vg.getChildCount(); index++) {
+					if(vg.getChildAt(index) instanceof LinearLayout){
+						ViewGroup webHolder = (ViewGroup) vg.getChildAt(index);
+						View child = webHolder.getChildAt(1);
+						if(child instanceof WebViewmy){
+							WebViewmy wv = ((WebViewmy) child);
+							wv.clearHistory();
+							if (wv.isloading) wv.cleanPage = true;
+						}
+					}
+				}
+			} else {
+				weblistHandler.getWebContextNonNull().cleanPage = true;
+			}
+		}
 		
 		weblistHandler.setStar(lstKey);
 		

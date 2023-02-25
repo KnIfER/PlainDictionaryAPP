@@ -187,16 +187,11 @@ public class ListViewAdapter extends BasicAdapter {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
 		userCLick=true;
-		lastClickedPosBefore=-1;
+		lastClickedPosBefore=parent==null?-1:-2;
 //		a.bNeedReAddCon=false;
 		lastClickedPos = -1;
 		a.mergedKeyHeaders.clear();
 		super.onItemClick(parent, view, pos, id);
-		if (PDICMainAppOptions.revisitOnBackPressed()
-			&& userCLick && parent!=null
-		) {
-			mWebView.cleanPage = true;
-		}
 		if (parent!=null) {
 			weblistHandler.checkTitlebarHeight();
 		}
@@ -242,6 +237,7 @@ public class ListViewAdapter extends BasicAdapter {
 		}
 		a.shuntAAdjustment();
 		if(a.DBrowser!=null && !a.isFloatingApp()) return;
+		boolean lstClick = lastClickedPosBefore==-2;
 		lastClickedPosBefore = lastClickedPos;
 		super.onItemClick(pos);
 		a.ActivedAdapter=this;
@@ -290,6 +286,11 @@ public class ListViewAdapter extends BasicAdapter {
 //		if (!PDICMainAppOptions.pageSchAutoJump() && PDICMainAppOptions.pageSchAutoJumpForLst()) {
 //			weblistHandler. todo
 //		}
+		
+		if(PDICMainAppOptions.revisitOnBackPressed())
+		if (/*userCLick && */lstClick || a.click_handled_not && PDICMainAppOptions.clearHistoryOnTurnPage()) {
+			mWebView.cleanPage = true;
+		}
 		
 		long[] POS = a.getMergedClickPositions(pos);
 		if(bUseMergedUrl) {

@@ -314,7 +314,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		CMN.debug("\n\nloadUrl::", url);
 		if (PDICMainAppOptions.ignoreSameUrlLoading() && url.equals(this.url)) {
 			postDelayed(this::clearFocus, 230);
-			cleanPage = false; // todo check more to reset
+			isloading = cleanPage = false; // todo check reset more
 			return;
 		}
 		super.loadUrl(url);
