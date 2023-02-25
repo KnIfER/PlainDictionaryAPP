@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -176,6 +177,15 @@ public class AppUIProject {
 		for (int j = 0; j < bars.size(); j++)
 		{
 			ViewGroup bottombar = bars.get(j);
+			if (bottombar == null) {
+				if(BuildConfig.DEBUG)
+				try {
+					throw new RuntimeException("watch stacktrace!");
+				} catch (RuntimeException e) {
+					CMN.debug(e);
+				}
+				continue;
+			}
 			int idStart=0;
 			bottombar.removeAllViews();
 			if(bottombar.getId()== R.id.bottombar2)

@@ -1129,7 +1129,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				project = a.contentbar_project;
 			}
 			if(project==null) {
-				project = new AppUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
+				a.contentbar_project = project = new AppUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
 				project.type = cbar_key;
 			}
 			project.addBar(contentUIData.bottombar2, ContentbarBtns);
