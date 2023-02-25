@@ -277,7 +277,7 @@ function getId(){
 }
 function entryPop(t){
 	debug("entryPop on node::", t, t.href);
-	if(_app && _app.entryPopup(sid.get(), getId()) && frameElement) {
+	if(_app && _app.entryPopup(sid.get(), getId())/*  && frameElement */) {
 		if(t.onclick!==popupEntry) {
 			t.rawClick=t.onclick;
 			t.onclick=popupEntry; // 选择在新窗口打开！

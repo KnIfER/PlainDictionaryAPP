@@ -315,6 +315,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if (PDICMainAppOptions.ignoreSameUrlLoading() && url.equals(this.url)) {
 			postDelayed(this::clearFocus, 230);
 			isloading = cleanPage = false; // todo check reset more
+			if (weblistHandler.isPopupShowing()) {
+				weblistHandler.alloydPanel.toolbar.setTitle(weblistHandler.displaying);
+			}
 			return;
 		}
 		super.loadUrl(url);
