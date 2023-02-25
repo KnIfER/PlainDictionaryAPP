@@ -1814,6 +1814,14 @@ function debug(e){console.log(e)};
 				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.wordPopup.indicator ?a.getRatingDrawable():null);
 			}
 		}
+//		int defTH = 0;
+//		if (mWebView.fromCombined!=1 && PDICMainAppOptions.customTitlebarHeight()) {
+//			defTH = (int) (opt.getInt("ttH", 0)  * GlobalOptions.density);
+//		}
+//		mWebView.titleBarHeight(defTH);
+		if (mWebView.fromCombined==1) {
+			mWebView.titleBarHeight(0);
+		}
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
 		if(toolbarBG!=null) {
 			useInternal = getUseTitleBackground();

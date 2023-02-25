@@ -2601,4 +2601,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		return a.getSearchTerm();
 	}
+	
+	public void checkTitlebarHeight() {
+		if (isViewSingle() && !isMultiRecord()) {
+			WebViewmy wv = getWebContext();
+			if (wv!=null) {
+				int defTH = 0;
+				if (wv.fromCombined!=1 && PDICMainAppOptions.customTitlebarHeight()) {
+					defTH = (int) (opt.getInt("ttH", 0)  * GlobalOptions.density);
+				}
+				wv.titleBarHeight(defTH);
+			}
+		}
+	}
 }

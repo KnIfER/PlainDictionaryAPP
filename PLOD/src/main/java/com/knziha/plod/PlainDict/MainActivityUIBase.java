@@ -9470,6 +9470,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case Multiview.requestCode:{
 				resetMerge(-1, false);
+				if (true) {
+					weblistHandler.checkTitlebarHeight();
+				}
 			} break;
 			case NightMode.requestCode:{
 				boolean dark = GlobalOptions.isDark;

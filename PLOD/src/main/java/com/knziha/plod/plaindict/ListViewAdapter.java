@@ -197,6 +197,9 @@ public class ListViewAdapter extends BasicAdapter {
 		) {
 			mWebView.cleanPage = true;
 		}
+		if (parent!=null) {
+			weblistHandler.checkTitlebarHeight();
+		}
 	}
 	
 	public String getRowText(int pos) {

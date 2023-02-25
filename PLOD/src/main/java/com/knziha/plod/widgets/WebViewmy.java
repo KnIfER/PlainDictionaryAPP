@@ -89,6 +89,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean scrollLckVer;
 	public boolean bMaybeHasSoundOnPage;
 	private String useragent;
+	private int titleBarH;
 	
 	//public boolean fromPeruseview;
 	public final boolean fromNet(){ return presenter.isWebx; };
@@ -724,6 +725,19 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			titleBar.setVisibility(b?View.VISIBLE:View.GONE);
 			if (b && fromCombined!=1) {
 				ViewUtils.setVisibility((View) weblistHandler.contentUIData.navMore.getParent(), false);
+			}
+		}
+	}
+	
+	public void titleBarHeight(int titleBarH) {
+		if (titleBar!=null && this.titleBarH!=titleBarH) {
+			this.titleBarH = titleBarH;
+			if (titleBarH==0) {
+				titleBarH = (int) getContext().getResources().getDimension(R.dimen.dictitle);
+			}
+			if (titleBar.getLayoutParams().height!=titleBarH) {
+				titleBar.getLayoutParams().height = titleBarH;
+				titleBar.requestLayout();
 			}
 		}
 	}

@@ -172,11 +172,15 @@ public class AlloydPanel extends PlainAppPanel {
 	
 	 @Override
 	 protected void onShow() {
+		CMN.debug("onShow");
 		 if (a.wordCamera!=null) {
 			 a.wordCamera.onPause();
 		 }
-		 if (PDICMainAppOptions.revisitOnBackPressed() && weblistHandler!=null/* && (pop==null || !pop.isShowing())*/) {
-			 weblistHandler.getMergedFrame().cleanPage = true;
+		 if (weblistHandler!=null) {
+			 if (PDICMainAppOptions.revisitOnBackPressed()/* && (pop==null || !pop.isShowing())*/) {
+				 weblistHandler.getMergedFrame().cleanPage = true;
+			 }
+			 weblistHandler.checkTitlebarHeight();
 		 }
 	 }
  }
