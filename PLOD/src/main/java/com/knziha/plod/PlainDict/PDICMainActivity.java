@@ -3028,9 +3028,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					weblistHandler.showMoreToolsPopup(v);
 				} else {
 					viewContent(weblistHandler);
-					if (ActivedAdapter != null && ActivedAdapter.contentMenus!=null) {
-						AllMenus.setItems(ActivedAdapter.contentMenus);
-					}
+					AllMenus.setItems(weblistHandler.isMultiRecord()?Multi_ContentMenu:SingleContentMenu);
 				}
 			} return true;
 			case R.drawable.ic_prv_dict_chevron:
