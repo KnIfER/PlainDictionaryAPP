@@ -192,6 +192,11 @@ public class ListViewAdapter extends BasicAdapter {
 		lastClickedPos = -1;
 		a.mergedKeyHeaders.clear();
 		super.onItemClick(parent, view, pos, id);
+		if (PDICMainAppOptions.revisitOnBackPressed()
+			&& userCLick && parent!=null
+		) {
+			mWebView.cleanPage = true;
+		}
 	}
 	
 	public String getRowText(int pos) {
@@ -250,7 +255,6 @@ public class ListViewAdapter extends BasicAdapter {
 		} else {
 			mWebView = weblistHandler.getMergedFrame(presenter);
 		}
-		if(PDICMainAppOptions.revisitOnBackPressed()) mWebView.cleanPage = true;
 		this.mWebView = mWebView;
 		weblistHandler.setViewMode(null, 0, mWebView);
 		weblistHandler.initMergedFrame(0, false, bUseMergedUrl);
