@@ -525,9 +525,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			mBar.setHandleColorFiler(a.MainAppBackground);
 			if(mWebView!=null) {
-				mBar.setDelimiter("", mWebView);
+				mBar.setDelimiter(GlobalOptions.isDark?"<>":"", mWebView);
 			} else {
-				mBar.setDelimiter(isViewSingle()?null:"|||", isViewSingle()?mMergedFrame:contentUIData.WHP);
+				mBar.setDelimiter(isViewSingle()?
+						GlobalOptions.isDark?"<>":null
+						:"|||", isViewSingle()?mMergedFrame:contentUIData.WHP);
 			}
 		}
 		(mWebView==null?contentUIData.WHP:mWebView).setVerticalScrollBarEnabled(vsi);
