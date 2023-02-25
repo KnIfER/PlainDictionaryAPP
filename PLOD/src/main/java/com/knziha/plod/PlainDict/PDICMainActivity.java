@@ -1043,6 +1043,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			ViewUtils.findInMenu(MainMenu, R.id.schtools).setChecked(showVal);
 			ViewUtils.setVisible(UIData.schtools, showVal);
 		}
+		if(PDICMainAppOptions.pinZhTransMenu()) {
+			ViewUtils.findInMenu(MainMenu, R.id.zhTrans).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+		}
 		
 		if(opt.getRemPos())ViewUtils.findInMenu(SingleContentMenu, R.id.remPagePos).setChecked(true);
 		if(opt.getRemPos2())ViewUtils.findInMenu(Multi_ContentMenu, R.id.remPagePos2).setChecked(true);
@@ -3335,13 +3338,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.setText(ToTag(perWSTag)+text);
 			} break;
 			case R.id.schtools:{//切换搜索工具栏
-				if (isLongClicked) { //弹出
+				if (mmi.isLongClicked==1) { //弹出
 					if (PDICMainAppOptions.schtoolsAutoHide()) {
 						ViewUtils.setVisible(UIData.schtools, false);
 						PDICMainAppOptions.setShowSearchTools(false);
 						mmi.setChecked(false);
 					}
 					schTools.showPopup(this);
+					ret = closeMenu = true;
+				}
+				else if (mmi.isLongClicked==-1) { //弹出
+					//schTools.showPopup(this);
+					//schTools.tweakUI(schTools.dialog.getWindow().getDecorView(), schTools.dialog.mAlert.wikiBtn);
+					schTools.tweakUI(root, root);
 					ret = closeMenu = true;
 				}
 				else { //切换
@@ -3354,7 +3363,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.id.zhTrans:{
 				if(schTools==null)
 					schTools = new SearchToolsMenu(this, UIData.schtools);
-				schTools.etZhTrans();
+				if (isLongClicked) {
+					boolean pin = !mmi.isActionButton();
+					if (pin) {
+						item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+					} else {
+						item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+					}
+					PDICMainAppOptions.pinZhTransMenu(pin);
+					ret = closeMenu = true;
+					mmi.mMenu.close();
+				} else {
+					schTools.etZhTrans();
+				}
 			} break;
 		}
 		if(closeMenu)

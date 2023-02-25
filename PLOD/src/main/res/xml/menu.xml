@@ -59,7 +59,7 @@
 
 <!--25--><item android:title="点击查词 | 设置" android:id="@+id/tapSch1" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--26--><item android:title="繁简转换" android:id="@+id/zhTrans"  android:checkable="true" android:icon="@drawable/tools_toolbar" app:showAsAction="never"/>
+<!--26--><item android:title="繁简转换 | 固定" android:id="@+id/zhTrans"  android:checkable="true" android:icon="@drawable/ic_translate_ts_action" app:showAsAction="never"/>
 
 
 </menu>

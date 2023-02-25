@@ -5,7 +5,6 @@ import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.text.TextPaint;
@@ -14,15 +13,12 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
-import androidx.core.view.ViewCompat;
 
 import com.jess.ui.TwoWayAbsListView;
 import com.jess.ui.TwoWayAdapterView;
@@ -37,7 +33,6 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DescriptiveImageView;
-import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
@@ -52,6 +47,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	ArrayList<String> menuList = new ArrayList<>();
 	private int menu_width;
 	private int menu_height;
+	public int scrollPads;
 	
 	public static class MenuItemViewHolder {
 		public int position;
@@ -119,6 +115,11 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		}
 		menu_grid_painter = DescriptiveImageView.createTextPainter(false);
 		
+		scrollPads = 0;
+		if (PDICMainAppOptions.schtoolsScrollPad()) {
+			//scrollPads = (int) Math.floor(a.dm.widthPixels/2/menu_width);
+			scrollPads = 1;
+		}
 	}
 	
 	static class TopThumb extends ColorDrawable {
@@ -141,13 +142,17 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	
 	@Override
 	public int getItemViewType(int position) {
+		position-=scrollPads;
+		if (position<0 || position>=menu_ids.length) {
+			return 0;
+		}
 		final int id = menu_ids[position];
 		return id==0?1:0;
 	}
 	
 	@Override
 	public int getCount() {
-		return menuList.size();
+		return menuList.size() + scrollPads*2;
 	}
 	
 	@Override
@@ -162,11 +167,17 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		int id = menu_ids[position];
+		int id;
+		position-=scrollPads;
+		if (position < 0 || position >= menu_ids.length) {
+			id = -1;
+		} else {
+			id = menu_ids[position];
+		}
 		boolean showIcon = PDICMainAppOptions.schtoolsShowIcon();
 		boolean lst = parent==mainMenuLst;
 		if (lst && (menu_height==menu_width) ^ showIcon) {
-			menu_height = showIcon?menu_width: (int) (menu_width * (0.3));
+			menu_height = showIcon?menu_width: (int) (menu_width * (0.38));
 			rootPanel.getLayoutParams().height = menu_height;
 			a.hdl.post(new Runnable() {
 				@Override
@@ -195,24 +206,29 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			} else {
 				holder = (MenuItemViewHolder) convertView.getTag();
 			}
-			holder.position = position;
-			int tid = menu_ids[position];
-			holder.tv.setText(menuList.get(position));
-			int did = R.drawable.ic_view_comfy_2_black_24dp;
-			if (tid == R.string.ts_convert) {
-				did = R.drawable.ic_translate_ts;
-			} else if (tid == R.string.book_notes) {
-				did = R.drawable.ic_edit_booknotes;
-			}
-			if (lst) {
-				if (showIcon) {
-					holder.tv.setImageResource(did);
-				} else {
-					holder.tv.setImageDrawable(null);
-				}
-				convertView.getLayoutParams().height = menu_height;
+			if (id == -1) {
+				convertView.setVisibility(View.INVISIBLE);
 			} else {
-				holder.tv.setImageResource(did);
+				convertView.setVisibility(View.VISIBLE);
+				holder.position = position;
+				int tid = menu_ids[position];
+				holder.tv.setText(menuList.get(position));
+				int did = R.drawable.ic_view_comfy_2_black_24dp;
+				if (tid == R.string.ts_convert) {
+					did = R.drawable.ic_translate_ts;
+				} else if (tid == R.string.book_notes) {
+					did = R.drawable.ic_edit_booknotes;
+				}
+				if (lst) {
+					if (showIcon) {
+						holder.tv.setImageResource(did);
+					} else {
+						holder.tv.setImageDrawable(null);
+					}
+					convertView.getLayoutParams().height = menu_height;
+				} else {
+					holder.tv.setImageResource(did);
+				}
 			}
 		}
 		return convertView;
@@ -221,6 +237,10 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 	@SuppressLint("NonConstantResourceId")
 	@Override
 	public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
+		position -= scrollPads;
+		if (position<0 || position>=menu_ids.length) {
+			return;
+		}
 		final int mid = menu_ids[position];
 		if (dialog!=null) {
 			dialog.dismiss();
@@ -490,11 +510,11 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 			int cc=0; int width=0,itemWidth;
 			View.OnClickListener itemClick = v -> {
 				int pos = ((SearchToolsMenu.MenuItemViewHolder) v.getTag()).position;
-				onItemClick(null, v, pos, v.getId());
+				onItemClick(null, v, pos+scrollPads, v.getId());
 				if(pos<2) dialog.dismiss();
 			};
-			while (cc<getCount()) {
-				itemView = getView(cc++, null, all);
+			while (cc<menuList.size()) {
+				itemView = getView(cc+++scrollPads, null, all);
 				itemWidth = itemView.getLayoutParams().width;
 				if(row==null || width+itemWidth > W) {
 					row = new LinearLayout(a);
@@ -517,21 +537,7 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 					.setTitleBtn(R.drawable.ic_settings, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface d, int which) {
-							PopupMenuHelper popupMenu = a.getPopupMenu();
-							if(popupMenu.getListener()!=SearchToolsMenu.this) {
-								int[] texts = new int[]{
-									R.string.schtools_show_icon
-									, R.string.schtools_auto_hide
-								};
-								popupMenu.initLayout(texts, SearchToolsMenu.this);
-							}
-							View rv = dialog.getWindow().getDecorView();
-							View v = dialog.mAlert.wikiBtn;
-							View vp = (View) v.getParent();
-							popupMenu.showAt(rv, 0, vp.getHeight()-v.getTop()-v.getHeight(), Gravity.TOP|Gravity.CENTER_HORIZONTAL);
-							ViewUtils.preventDefaultTouchEvent(v, 0, 0);
-							popupMenu.lv.findViewById(R.string.schtools_show_icon).setActivated(PDICMainAppOptions.schtoolsShowIcon());
-							popupMenu.lv.findViewById(R.string.schtools_auto_hide).setActivated(PDICMainAppOptions.schtoolsAutoHide());
+							tweakUI(dialog.getWindow().getDecorView(), dialog.mAlert.wikiBtn);
 						}
 					})
 					.setView(sv)
@@ -551,6 +557,28 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		dialog.show();
 	}
 	
+	public void tweakUI(View rv, View v) {
+		PopupMenuHelper popupMenu = a.getPopupMenu();
+		if(popupMenu.getListener()!=SearchToolsMenu.this) {
+			int[] texts = new int[]{
+					R.string.schtools_show_icon
+					, R.string.schtools_auto_hide
+					, R.string.schtools_scroll_pad
+			};
+			popupMenu.initLayout(texts, SearchToolsMenu.this);
+		}
+		if (rv != v) {
+			View vp = (View) v.getParent();
+			popupMenu.showAt(rv, 0, vp.getHeight() - v.getTop() - v.getHeight(), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+		} else {
+			popupMenu.showAt(rv, (int) (35*GlobalOptions.density), (int) (3*35*GlobalOptions.density), Gravity.TOP | Gravity.RIGHT);
+		}
+		ViewUtils.preventDefaultTouchEvent(v, 0, 0);
+		popupMenu.lv.findViewById(R.string.schtools_show_icon).setActivated(PDICMainAppOptions.schtoolsShowIcon());
+		popupMenu.lv.findViewById(R.string.schtools_auto_hide).setActivated(PDICMainAppOptions.schtoolsAutoHide());
+		popupMenu.lv.findViewById(R.string.schtools_scroll_pad).setActivated(PDICMainAppOptions.schtoolsScrollPad());
+	}
+	
 	
 	@Override
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
@@ -568,7 +596,23 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 		if (v.getId()==R.string.schtools_auto_hide) {
 			PDICMainAppOptions.schtoolsAutoHide(val);
 		}
+		if (v.getId()==R.string.schtools_scroll_pad) {
+			PDICMainAppOptions.schtoolsScrollPad(val);
+			if (mainMenuLst!=null) {
+				notifyDataSetChanged();
+			}
+		}
 		popupMenuHelper.dismiss();
 		return true;
+	}
+	
+	@Override
+	public void notifyDataSetChanged() {
+		scrollPads = 0;
+		if (PDICMainAppOptions.schtoolsScrollPad()) {
+			//scrollPads = (int) Math.floor(a.dm.widthPixels/2/menu_width);
+			scrollPads = 1;
+		}
+		super.notifyDataSetChanged();
 	}
 }

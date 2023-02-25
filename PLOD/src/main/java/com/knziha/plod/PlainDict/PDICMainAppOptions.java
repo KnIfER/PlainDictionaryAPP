@@ -3355,34 +3355,24 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=0) public static boolean tapDefInNewWindow1() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=0) public static void tapDefInNewWindow1(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=1, shift=1) public static boolean tapDefInNewWindow2() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=1, shift=1) public static void tapDefInNewWindow2(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=2, shift=1) public static boolean tapDefInNewWindowMerged() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=2, shift=1) public static void tapDefInNewWindowMerged(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=3, shift=1) public static boolean tapDefInNewWindowTapSch() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=3, shift=1) public static void tapDefInNewWindowTapSch(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=4, shift=1) public static boolean tapDefPupup() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=4, shift=1) public static void tapDefPupup(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=5, shift=1) public static boolean tapSchPupup() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=5, shift=1) public static void tapSchPupup(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=6, shift=1) public static boolean ignoreSameUrlLoading() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=6, shift=1) public static void ignoreSameUrlLoading(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=7, shift=1) public static boolean showMoreMenuBtnForFrames() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=7, shift=1) public static void showMoreMenuBtnForFrames(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=8, shift=1) public static boolean pageSchAutoJump() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=8, shift=1) public static void pageSchAutoJump(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=9, shift=1) public static boolean pageSchAutoJumpForLst() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=9, shift=1) public static void pageSchAutoJumpForLst(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=10) public static boolean customTitlebarHeight() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=10) public static void customTitlebarHeight(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
@@ -3391,14 +3381,19 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=12) public static boolean swapeMultiViewBtnFn() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=12) public static void swapeMultiViewBtnFn(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=13, shift=1) public static boolean schtoolsShowIcon() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=13, shift=1) public static void schtoolsShowIcon(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
-	@Metaline(flagPos=14, shift=1) public static boolean schtoolsAutoHide() { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=14, shift=1) public static void schtoolsAutoHide(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	
+	@Metaline(flagPos=14) public static boolean schtoolsAutoHide() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=14) public static void schtoolsAutoHide(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=15, shift=1) public static boolean swapeSchAndWordMap() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=15, shift=1) public static void swapeSchAndWordMap(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=16) public static boolean schtoolsScrollPad() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=16) public static void schtoolsScrollPad(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=17) public static boolean pinZhTransMenu() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=17) public static void pinZhTransMenu(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=19, shift=1) public static boolean clearHistoryOnTurnPage() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=19, shift=1) public static void clearHistoryOnTurnPage(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=20, shift=1) public static boolean clearHistoryOnSch() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=20, shift=1) public static void clearHistoryOnSch(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
 }
