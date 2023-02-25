@@ -387,6 +387,7 @@
 		<item>进入设置</item>
 		<item>打开键盘</item>
 		<item>笔记列表</item>
+		<item>单词导图</item>
 	</string-array>
 
 	<string-array name="customize_ctn">
@@ -413,6 +414,7 @@
 		<item>定制底栏</item>
 		<item>打开键盘</item>
 		<item>笔记列表</item>
+		<item>单词导图</item>
 	</string-array>
 
 </resources>

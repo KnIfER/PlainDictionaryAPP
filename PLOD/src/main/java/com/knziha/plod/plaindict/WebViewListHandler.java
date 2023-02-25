@@ -1028,8 +1028,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	int[] versions=new int[8];
 	public void checkUI() {
-		if(a.contentbar_project!=null && ViewUtils.checkSetVersion(versions, 0, a.contentbar_project.version)) {
-			a.contentbar_project.bottombar = contentUIData.bottombar2;
+		if(contentbarProject!=null && ViewUtils.checkSetVersion(versions, 0, contentbarProject.version)) {
+			contentbarProject.addBar(contentUIData.bottombar2, ContentbarBtns);
 			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
 		}
 		boolean b1 = ViewUtils.checkSetVersion(versions, 3, GlobalOptions.isDark?1:0);
@@ -1057,7 +1057,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void popupContentView(ViewGroup root, String key) {
 		CMN.debug("popupContentView::", key);
 		if(alloydPanel==null) {
-			alloydPanel = new AlloydPanel(a, this);
+			alloydPanel = new AlloydPanel(a, this, true);
 		}
 		if (!alloydPanel.isVisible()) {
 			alloydPanel.toggle(root, null, -1);
@@ -1068,10 +1068,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				CMN.debug("reshow!!!");
 			}
 		}
-		alloydPanel.AllMenus.tag = this;
+		if (!alloydPanel.isWordMap) {
+			alloydPanel.AllMenus.tag = this;
+			alloydPanel.toolbar.setTitle(key);
+			alloydPanel.AllMenus.setItems("随机页面".equals(key) ? alloydPanel.RandomMenu : alloydPanel.PopupMenu);
+		}
 		alloydPanel.refresh();
-		alloydPanel.toolbar.setTitle(key);
-		alloydPanel.AllMenus.setItems("随机页面".equals(key) ? alloydPanel.RandomMenu : alloydPanel.PopupMenu);
 		//contentUIData.webcontentlister.setPadding(0,0,0,0);
 		ViewUtils.addViewToParent(alloydPanel.toolbar, contentUIData.webcontentlister, 0);
 		//a.setContentBow(false);
@@ -1089,7 +1091,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return alloydPanel!=null && alloydPanel.isVisible();
 	}
 	
-	public void setUpContentView(int cbar_key) {
+	public AppUIProject contentbarProject;
+	
+	public AppUIProject setUpContentView(int cbar_key, AppUIProject project) {
 		if(!contentViewSetup) {
 			contentViewSetup = true;
 			MainActivityUIBase a = this.a;
@@ -1121,14 +1125,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			String contentkey = "ctnp#"+ cbar_key;
 			String appproject = opt.getAppContentBarProject(contentkey);
 			if(appproject==null) appproject="0|1|2|3|4|5|6";
-			if(a.contentbar_project==null) {
-				a.contentbar_project = new AppUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
-				a.contentbar_project.type = cbar_key;
+			if (project==null) {
+				project = a.contentbar_project;
 			}
-			a.contentbar_project.bottombar = contentUIData.bottombar2;
-			a.contentbar_project.btns = ContentbarBtns;
-			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
+			if(project==null) {
+				project = new AppUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
+				project.type = cbar_key;
+			}
+			project.addBar(contentUIData.bottombar2, ContentbarBtns);
+			RebuildBottombarIcons(a, project, a.mConfiguration);
+			return contentbarProject = project;
 		}
+		return contentbarProject;
 	}
 	
 	public boolean isWeviewInUse(ViewGroup someView) {

@@ -1,19 +1,10 @@
 package com.knziha.plod.PlainUI;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
-import android.os.Build;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -22,7 +13,6 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.ActivatableImageView;
-import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +39,7 @@ public class AppUIProject {
 	/**  定制底栏一：<br/>
 	 * 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12 <br/>
 	 * 退离程序13 打开侧栏14 随机词条15 上一词典16 下一词典17  自动浏览18 全文朗读19 进入收藏20 进入历史21 调整亮度22 夜间模式23 切换横屏24 定制颜色25 定制底栏26 切换沉浸 切换全屏 多维分享 空格键 方向键⬅ 方向键➡ 方向键⬆ 方向键⬇ W键 A键 S键 D键 C键 Z键 CTRL键 SHIFT键 鼠标左击 鼠标右击 <br/>*/
-	public final static int[] ContentbarBtnIcons = new int[]{  // todo use drawable id as view id
+	public final static int[] ContentbarBtnIcons = new int[]{
 			R.drawable.back_ic,
 			R.drawable.star_ic,
 			R.drawable.list_ic,
@@ -73,27 +63,39 @@ public class AppUIProject {
 			R.drawable.customize_bars,//26
 			R.drawable.ic_keyboard_show_24,
 			R.drawable.ic_edit_booknotes_btn,
+			R.drawable.ic_baseline_mindmap,
 	};
 	
 	public int type=-1;
 	public final String key;
 	public boolean bNeedCheckOrientation;
 	public String currentValue;
-	public ViewGroup bottombar;
-	public ImageView[] btns;
+	final ArrayList<ViewGroup> barStack = new ArrayList<>();
+	final ArrayList<ImageView[]> btnsStack = new ArrayList<>();
 	public int version;
 	final int[] icons;
 	final String[] titles;
 
 	ArrayList<AppIconData> iconData;
 
-	public AppUIProject(Context context, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup _bottombar, ImageView[] _btns) {
+	public AppUIProject(Context context, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup bar, ImageView[] _btns) {
 		key = _key;
 		icons = _icons;
 		currentValue = customize_str;
-		bottombar = _bottombar;
-		btns = _btns;
+		if (bar!=null) {
+			addBar(bar, _btns);
+		}
 		titles = context.getResources().getStringArray(titlesRes);
+	}
+	
+	public void addBar(ViewGroup bar, ImageView[] btns) {
+		int idx = barStack.indexOf(bar);
+		if (idx != -1) {
+			barStack.remove(idx);
+			btnsStack.remove(idx);
+		}
+		barStack.add(bar);
+		btnsStack.add(btns);
 	}
 	
 	public AppUIProject(Context context, int idx, PDICMainAppOptions opt, int[] _icons, int titlesRes, ViewGroup _bottombar, ImageView[] _btns) {
@@ -102,8 +104,7 @@ public class AppUIProject {
 		icons = _icons;
 		currentValue = opt.getAppContentBarProject(key);
 		//CMN.Log("重新读取", key);
-		bottombar = _bottombar;
-		btns = _btns;
+		addBar(_bottombar, _btns);
 		titles = context.getResources().getStringArray(titlesRes);
 	}
 	
@@ -162,8 +163,8 @@ public class AppUIProject {
 	 */
 	public static void RebuildBottombarIcons(MainActivityUIBase a, AppUIProject bottombar_project, Configuration config) {
 		MainActivityUIBase this_ = a;
-		ViewGroup bottombar;
-		if(bottombar_project==null || (bottombar = bottombar_project.bottombar)==null) {
+		ArrayList<ViewGroup> bars;
+		if(bottombar_project==null || (bars = bottombar_project.barStack).size()==0) {
 			return;
 		}
 		String appproject = bottombar_project.currentValue;
@@ -172,80 +173,82 @@ public class AppUIProject {
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
 		//appproject="9|10|11|13|14|15";
-		int idStart=0;
-		bottombar.removeAllViews();
-		if(bottombar.getId()== R.id.bottombar2)
-			idStart=107;
-		boolean isHorizontal = config.orientation==Configuration.ORIENTATION_LANDSCAPE;
-		String[] arr = appproject.split("\\|");
-		ImageView[] BottombarBtns = bottombar_project.btns;
-		int[] btnIcons = bottombar_project.icons;
-		CMN.rt();
-//		((RippleDrawable)a.getDrawable(rippleBG)).setColor(ColorStateList.valueOf(Color.WHITE));
-		
-		
-		int rippleBG = R.drawable.abc_action_bar_item_background_material;
-		boolean modRipple = PDICMainAppOptions.modRipple();
-		for (int i = 0; i < arr.length; i++) {
-			String val = arr[i];
-			int start = 0;
-			int end = val.length();
-			if(end>0) {
-				while (start<end && val.charAt(start)=='\\') {
-					++start;
-				}
-				if(start>0){
-					val = val.substring(start, end);
-					if(start==2) bottombar_project.bNeedCheckOrientation=true;
-				}
-				if(start==0||start==2&&isHorizontal){
-					int id = IU.parsint(val, -1);
-					if (id >= 0 && id < BottombarBtns.length) {
-						ImageView iv = BottombarBtns[id];
-						if (iv == null) {
-							int bid = btnIcons[id];
-							if (bid==R.drawable.fuzzy_search || bid==R.drawable.full_search) {
-								ActivatableImageView avt = new ActivatableImageView(this_);
-								avt.setImageResource(bid);
-								if (bid==R.drawable.fuzzy_search) {
-									avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.fuzzy_search_pressed), false);
+		for (int j = 0; j < bars.size(); j++)
+		{
+			ViewGroup bottombar = bars.get(j);
+			int idStart=0;
+			bottombar.removeAllViews();
+			if(bottombar.getId()== R.id.bottombar2)
+				idStart=107;
+			boolean isHorizontal = config.orientation==Configuration.ORIENTATION_LANDSCAPE;
+			String[] arr = appproject.split("\\|");
+			ImageView[] presetBtns = bottombar_project.btnsStack.get(j);
+			int[] btnIcons = bottombar_project.icons;
+			CMN.rt();
+	//		((RippleDrawable)a.getDrawable(rippleBG)).setColor(ColorStateList.valueOf(Color.WHITE));
+			int rippleBG = R.drawable.abc_action_bar_item_background_material;
+			boolean modRipple = PDICMainAppOptions.modRipple();
+			for (int i = 0; i < arr.length; i++) {
+				String val = arr[i];
+				int start = 0;
+				int end = val.length();
+				if(end>0) {
+					while (start<end && val.charAt(start)=='\\') {
+						++start;
+					}
+					if(start>0){
+						val = val.substring(start, end);
+						if(start==2) bottombar_project.bNeedCheckOrientation=true;
+					}
+					if(start==0||start==2&&isHorizontal){
+						int id = IU.parsint(val, -1);
+						if (id >= 0 && id < presetBtns.length) {
+							ImageView iv = presetBtns[id];
+							if (iv == null) {
+								int bid = btnIcons[id];
+								if (bid==R.drawable.fuzzy_search || bid==R.drawable.full_search) {
+									ActivatableImageView avt = new ActivatableImageView(this_);
+									avt.setImageResource(bid);
+									if (bid==R.drawable.fuzzy_search) {
+										avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.fuzzy_search_pressed), false);
+									}
+									else
+									{
+										avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.full_search_pressed), false);
+									}
+									iv = avt;
+								} else {
+									iv = new ImageView(this_);
+									iv.setImageResource(bid);
 								}
-								else
-								{
-									avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.full_search_pressed), false);
+								iv.setContentDescription(bottombar_project.titles[i]);
+								//iv.setBackgroundResource(R.drawable.surrtrip1);
+								iv.setBackgroundResource(rippleBG);
+								iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
+								iv.setId(btnIcons[id]);
+								iv.setOnClickListener(this_);
+								if(tint) iv.setColorFilter(a.tintListFilter.sForegroundFilter);
+								if (LongclickableMap.contains(btnIcons[id])){
+									iv.setOnLongClickListener(this_);
+								} else {
+									iv.setLongClickable(false);
 								}
-								iv = avt;
-							} else {
-								iv = new ImageView(this_);
-								iv.setImageResource(bid);
+								presetBtns[id] = iv;
+								if (modRipple) {
+									a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
+								}
 							}
-							iv.setContentDescription(bottombar_project.titles[i]);
-							//iv.setBackgroundResource(R.drawable.surrtrip1);
-							iv.setBackgroundResource(rippleBG);
-							iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
-							iv.setId(btnIcons[id]);
-							iv.setOnClickListener(this_);
-							if(tint) iv.setColorFilter(a.tintListFilter.sForegroundFilter);
-							if (LongclickableMap.contains(btnIcons[id])){
-								iv.setOnLongClickListener(this_);
-							} else {
-								iv.setLongClickable(false);
+							else {
+								ViewGroup svp = (ViewGroup) iv.getParent();
+								iv.setBackgroundResource(rippleBG);
+								if (svp != null) svp.removeView(iv);
+								iv.setContentDescription(bottombar_project.titles[i]);
+								if (modRipple) {
+									a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
+								}
 							}
-							BottombarBtns[id] = iv;
-							if (modRipple) {
-								a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
-							}
+							bottombar.addView(iv);
 						}
-						else {
-							ViewGroup svp = (ViewGroup) iv.getParent();
-							iv.setBackgroundResource(rippleBG);
-							if (svp != null) svp.removeView(iv);
-							iv.setContentDescription(bottombar_project.titles[i]);
-							if (modRipple) {
-								a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
-							}
-						}
-						bottombar.addView(iv);
 					}
 				}
 			}
@@ -257,7 +260,7 @@ public class AppUIProject {
 	public String toString() {
 		return "AppUIProject{" +
 				"key='" + key + '\'' +
-				", bottombar=" + bottombar +
+				", bottombar=" + barStack +
 				'}';
 	}
 }

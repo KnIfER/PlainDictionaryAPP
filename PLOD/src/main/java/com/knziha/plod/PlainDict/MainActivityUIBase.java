@@ -178,6 +178,7 @@ import com.knziha.plod.PlainUI.ShareHelper;
 import com.knziha.plod.PlainUI.TTSHub;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordCamera;
+import com.knziha.plod.PlainUI.WordMap;
 import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.PlainUI.JsonNames;
 import com.knziha.plod.db.LexicalDBHelper;
@@ -1438,6 +1439,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public WordPopup wordPopup = new WordPopup(this);
+	public WordMap wordMap = new WordMap(this);
 	public TTSHub ttsHub = new TTSHub(this);
 	
 	public void fix_pw_color() {
@@ -2452,7 +2454,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		menuSearchMode = AllMenus.findItem(R.id.toolbar_action1);
 		
-		weblistHandler.setUpContentView(cbar_key);
+//		opt.putString("ctnp#999", null);
+		weblistHandler.setUpContentView(cbar_key, null);
 		
 		setContentDetachType(1);
 		
@@ -5932,6 +5935,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.drawable.ic_edit_booknotes_btn: {
 				showBookNotes(1);
 			} break;
+			case R.drawable.ic_baseline_mindmap: {
+				wordMap.show();
+			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
 				if(ViewUtils.isVisible(lv2)) {
@@ -7220,7 +7226,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(initPopup) {
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
-			weblistHandler.setUpContentView(cbar_key);
+			weblistHandler.setUpContentView(cbar_key, null);
 			if (random) weblistHandler.checkUI();
 			weblistHandler.popupContentView(null, random?"随机页面":null);
 			if (presenter == null) {

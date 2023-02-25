@@ -22,7 +22,6 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -349,7 +348,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			contentUIData = ContentviewBinding.inflate(a.getLayoutInflater());
 			weblistHandler = new WebViewListHandler(a, contentUIData, a.schuiMain);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
-			weblistHandler.setUpContentView(a.cbar_key);
+			weblistHandler.setUpContentView(a.cbar_key, null);
 			weblistHandler.setFetchWord(PDICMainAppOptions.dbCntFetcingWord()?2:0);
 			weblistHandler.bShowInPopup=true;
 		}

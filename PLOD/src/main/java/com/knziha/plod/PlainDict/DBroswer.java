@@ -406,7 +406,7 @@ public class DBroswer extends DialogFragment implements
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 			weblistHandler = new WebViewListHandler(a, contentUIData, a.schuiMain);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
-			weblistHandler.setUpContentView(a.cbar_key);
+			weblistHandler.setUpContentView(a.cbar_key, null);
 			weblistHandler.setFetchWord(PDICMainAppOptions.dbCntFetcingWord()?2:0);
 		}
 		weblistHandler.checkUI();

@@ -244,13 +244,11 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						if(bottombar_from==1){
 							/* fyms */
 							a.peruseview_project = projectContext;
-							if(a.peruseView != null && projectContext.btns==null){
-								projectContext.bottombar = a.peruseView.contentUIData.bottombar2;
-								projectContext.btns = a.peruseView.weblistHandler.ContentbarBtns;
+							if(a.peruseView != null/* && projectContext.btns==null*/){
+								projectContext.addBar(a.peruseView.contentUIData.bottombar2, a.peruseView.weblistHandler.ContentbarBtns);
 							}
 						} else if(isProjHost){
-							projectContext.bottombar = a.contentUIData.bottombar2;
-							projectContext.btns = a.weblistHandler.ContentbarBtns;
+							projectContext.addBar(a.contentUIData.bottombar2, a.weblistHandler.ContentbarBtns);
 							a.contentbar_project = projectContext;
 						}
 					}
@@ -385,11 +383,9 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 			if(newVal==null) newVal = MakeProject();
 			boolean bNeedSave = !newVal.equals(projectContext.currentValue);
 			if(bNeedSave){
-				//CMN.Log("保存配置……", projectContext.key);
+				CMN.debug("保存配置……", projectContext.key);
 				projectContext.currentValue=newVal;
-				if(projectContext.bottombar!=null){
-					RebuildBottombarIcons(a, projectContext, a.mConfiguration);
-				}
+				RebuildBottombarIcons(a, projectContext, a.mConfiguration);
 				opt.putAppProject(projectContext);
 				if(projectContext.type>=0){
 					checkReferncedChange(a.contentbar_project, newVal);
@@ -402,7 +398,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	
 	private void checkReferncedChange(AppUIProject checkNow, String newVal) {
 		if(checkNow!=null && checkNow!=projectContext && opt.isAppContentBarProjectReferTo(checkNow.key, projectContext.type)){
-			CMN.Log(checkNow.key,  "refer to >> ", projectContext.key);
+			CMN.debug(checkNow.key,  "refer to >> ", projectContext.key);
 			checkNow.currentValue=newVal;
 			checkNow.clear(null);
 			RebuildBottombarIcons(a, checkNow, a.mConfiguration);

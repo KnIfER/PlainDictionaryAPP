@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -46,7 +45,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.ActionMenuPresenter;
@@ -91,17 +89,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.view.View.FOCUSABLE_AUTO;
-import static android.view.View.GONE;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.def_zoom;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.plaindict.Toastable_Activity.LONG_DURATION_MS;
-import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
-import static com.knziha.plod.widgets.ViewUtils.getNthParentNullable;
 
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/>  代号：fye
  * This view makes it easier to read among or read against entries of various books. */
@@ -984,7 +979,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		AllMenus.tag = weblistHandler;
 		contentview = contentUIData.webcontentlister;
-		weblistHandler.setUpContentView(1);
+		weblistHandler.setUpContentView(1, null);
 		
 		boolean mergeBtm = PDICMainAppOptions.getMergePeruseBottombars();
 		if(mergeBtm) {

@@ -35,14 +35,18 @@ public class AlloydPanel extends PlainAppPanel {
 	public List<MenuItemImpl> RandomMenu;
 	public List<MenuItemImpl> PopupMenu;
 	public MenuItemImpl fetchWordMenu;
+	public boolean isWordMap;
 	
-	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler weblistHandler) {
-		super(a, true);
+	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler weblistHandler, boolean init) {
+		super(a, init);
 		this.weblistHandler = weblistHandler;
 		this.bottomPadding = 0;
 		this.bPopIsFocusable = true;
 		this.bFadeout = -2;
 		setShowInDialog();
+		if (!init) {
+			this.a = a;
+		}
 	}
 	
 	@SuppressLint("ResourceType")
@@ -54,19 +58,7 @@ public class AlloydPanel extends PlainAppPanel {
 			setShowInDialog();
 		}
 		if (settingsLayout==null && weblistHandler !=null) {
-			SplitView linearView = weblistHandler.contentUIData.webcontentlister;
-			Toolbar toolbar = this.toolbar = new Toolbar(context);
-			linearView.addView(toolbar, 0);
-			toolbar.getLayoutParams().height = (int) (GlobalOptions.density * 45);
-			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
-			toolbar.inflateMenu(R.xml.menu_popup_content);
-			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
-			AllMenus = (MenuBuilder) toolbar.getMenu();
-			AllMenus.tag = weblistHandler;
-			AllMenus.multiColumn = 1|2;
-			AllMenus.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked);
-			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
-			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
+			addToolbar();
 			// tabTranslateEach
 			//AllMenus.getItems().set(4, a.getMenuSTd(R.id.translator));
 			if(weblistHandler.tapSch) {
@@ -84,7 +76,6 @@ public class AlloydPanel extends PlainAppPanel {
 			});
 			
 			fetchWordMenu = (MenuItemImpl) ViewUtils.findInMenu(RandomMenu, R.id.fetchWord);
-			settingsLayout = linearView;
 			//refresh();
 			if (weblistHandler.fetchWord>0) {
 				fetchWordMenu.setChecked(true);
@@ -92,7 +83,27 @@ public class AlloydPanel extends PlainAppPanel {
 		}
 	}
 	
-	@Override
+	 @SuppressLint("ResourceType")
+	 protected void addToolbar() {
+		 if (settingsLayout==null) {
+			 SplitView linearView = weblistHandler.contentUIData.webcontentlister;
+			 Toolbar toolbar = this.toolbar = new Toolbar(linearView.getContext());
+			 linearView.addView(toolbar, 0);
+			 toolbar.getLayoutParams().height = (int) (GlobalOptions.density * 45);
+			 toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
+			 toolbar.inflateMenu(R.xml.menu_popup_content);
+			 toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
+			 AllMenus = (MenuBuilder) toolbar.getMenu();
+			 AllMenus.tag = weblistHandler;
+			 AllMenus.multiColumn = 1|2;
+			 AllMenus.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked);
+			 AllMenus.checkDrawable = a.AllMenus.checkDrawable;
+			 AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
+			 settingsLayout = linearView;
+		 }
+	 }
+	
+	 @Override
 	public void refresh() {
 		boolean check = false;
 		if (MainAppBackground != a.MainAppBackground) {
@@ -110,7 +121,7 @@ public class AlloydPanel extends PlainAppPanel {
 			ForegroundColor = color;
 			ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
 		}
-		if (check) {
+		if (check && weblistHandler!=null) {
 			weblistHandler.checkUI();
 		}
 	}
@@ -140,6 +151,7 @@ public class AlloydPanel extends PlainAppPanel {
 //		}
 //		mScrollY = settingsLayout.getScrollY();
 		//if (opt.getRemPos())
+		if(weblistHandler!=null)
 		{
 			WebViewmy mWebView = weblistHandler.dictView;
 			if (mWebView!=null && mWebView.isViewSingle()/* && mWebView.currentRendring.length==1*/) {
