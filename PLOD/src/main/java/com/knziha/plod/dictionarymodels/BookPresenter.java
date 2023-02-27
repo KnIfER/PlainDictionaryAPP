@@ -2281,7 +2281,6 @@ function debug(e){console.log(e)};
 		if(styleOpened) {
 			htmlBuilder.append("</style>");
 		}
-
 		htmlBuilder.append("<script class=\"_PDict\">");
 //		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
 //		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
@@ -2304,6 +2303,17 @@ function debug(e){console.log(e)};
 				.append(",").append(hasFilesTag())
 				.append(");");
 		
+		// save the old code
+		if (mWebView.currentRendring.length>1) {
+			htmlBuilder.append("window._mdbrUrl=\"http://mdbr.com/content/d");
+			// save the old code.
+			IU.NumberToText_SIXTWO_LE(getId(), htmlBuilder);
+			for (int i = 0; i < mWebView.currentRendring.length; i++) {
+				htmlBuilder.append("_");
+				IU.NumberToText_SIXTWO_LE(mWebView.currentRendring[i], htmlBuilder);
+			}
+			htmlBuilder.append("\";");
+		}
 		
 		if (GlobalOptions.isDark) {
 			//htmlBuilder.append(MainActivityUIBase.DarkModeIncantation_l);
@@ -2921,7 +2931,7 @@ function debug(e){console.log(e)};
 		}
 		
         @JavascriptInterface
-        public String remarkByUrl(int sid, String url) {
+        public String remarkByUrl(int sid, String url) { // 网页版会调用
 			CMN.debug("annot:::remarkByUrl::", url);
 			StringBuilder sb = null;
 			if (presenter!=null) {
@@ -2945,9 +2955,9 @@ function debug(e){console.log(e)};
 									int len = sb == null ? 0 : sb.length();
 									sb = getMarksByPos(mWebView, sb, bid, position);
 									if (sb != null && sb.length() > len) {
-										sb.append("\t");
+										sb.append("\t\n\0"); // \t 作为分隔符，简单
 										sb.append(position);
-										sb.append("\t");
+										sb.append("\t\n\0"); // \t 作为分隔符，简单
 									}
 								}
 								idx = nxt + 1;
@@ -3459,7 +3469,9 @@ function debug(e){console.log(e)};
 			if (wv!=null){
 				wv.scrollLocked = lock;
 				wv.weblistHandler.pageSlider.scrollLocked = lock;
-				wv.weblistHandler.pageSlider.setWebview(wv, wv.weblistHandler.pageSlider.scrollView);
+				if (wv.weblistHandler.pageSlider.getWebContext()!=wv) {
+					wv.weblistHandler.pageSlider.setWebview(wv, null);
+				}
 			}
         }
         

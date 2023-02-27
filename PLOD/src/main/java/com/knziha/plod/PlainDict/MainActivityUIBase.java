@@ -517,14 +517,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 (function(){
 		var t='';
 		function cb(){
-			if(window.remarkPage) remarkPage(remark);
+			if(window.remarkPage) remarkPage(t, remark);
 			else remark(currentPos);
 		}
 		function remark(position, rootNode, doc){
 			RestoreMarks(t, rootNode, doc);
 		}
 		if(!window.marked||1) {
-			t = app.remark(sid.get(), currentPos);
+			t = window._mdbrUrl?app.remarkByUrl(sid.get(), _mdbrUrl):app.remark(sid.get(), currentPos);
+	 		if(window._mdbrUrl)debug(t);
 			if(t) try{loadJs('//mdbr/annot.js', cb)}catch(e){window.loadJsCb=cb;app.loadJs(sid.get(),'annot.js')}
 			window.marked = 1;
 		}
@@ -1975,7 +1976,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	public void closeIfNoActionView(MenuItemImpl mi) {
+	public static void closeIfNoActionView(MenuItemImpl mi) {
 		if(mi!=null && !mi.isActionButton()) {
 			mi.mMenu.close();
 		}

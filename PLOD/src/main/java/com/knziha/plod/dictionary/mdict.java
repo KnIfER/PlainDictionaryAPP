@@ -635,11 +635,18 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	
-	/**debug('fatal debug annot::restoring::multiple!!!');
-	 window.remarkPage = function(fun) {
-	 	var frames = document.getElementsByClassName('_PDict_body');
-	 	for(var i=0,f;f=frames[i++];) {
-	 		fun(parseInt(f.getAttribute('pd_pos')), f)
+	/**debug('fatal debug annot::restoring::multiple!!! 多视图列表');
+	 window.remarkPage = function(t, fun) {
+		var frames = document.getElementsByClassName('_PDict_body'), map=[];
+		for(var i=0,f;f=frames[i++];) {
+			map[f.getAttribute('pd_pos')] = f;
+		}
+		t = t.split('\t\n\0'); // \n\n\n
+	 	for(var i=0,f,n;n=t[i];i+=2) {
+			f = map[t[i+1]];
+			if(f) {
+	 			RestoreMarks(n, f, document)
+			}
 		}
 	 }
 	 window.markPage = function(tcn) {
@@ -653,7 +660,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	 }
 	 */
 	@Metaline(trim = false)
-	public final static String RESTORE_MARKS = "";
+	public final static String RESTORE_MARKS = ""; // 仅为旧版多页面，不以url形式加载的
 
 	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, long... positions) throws IOException {
 		if(isResourceFile)
