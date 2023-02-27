@@ -36,6 +36,7 @@ public class AlloydPanel extends PlainAppPanel {
 	public List<MenuItemImpl> PopupMenu;
 	public MenuItemImpl fetchWordMenu;
 	public boolean isWordMap;
+	protected int menuResId = R.xml.menu_popup_content;
 	
 	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler weblistHandler, boolean init) {
 		super(a, init);
@@ -91,7 +92,7 @@ public class AlloydPanel extends PlainAppPanel {
 			 linearView.addView(toolbar, 0);
 			 toolbar.getLayoutParams().height = (int) (GlobalOptions.density * 45);
 			 toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
-			 toolbar.inflateMenu(R.xml.menu_popup_content);
+			 toolbar.inflateMenu(menuResId);
 			 toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			 AllMenus = (MenuBuilder) toolbar.getMenu();
 			 AllMenus.tag = weblistHandler;

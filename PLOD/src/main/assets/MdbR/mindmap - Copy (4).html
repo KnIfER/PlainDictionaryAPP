@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <meta name="description" content="WordMap">
+    <meta name="description" content="MDict JS">
     <meta name="robots" content="noindex">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes, maximum-scale=10">
@@ -11,7 +11,6 @@
         .mindmap-svg {
             height: 100%;
             width: 100%;
-			overflow:hidden;
         }
         
         .mindmap-svg:focus {
@@ -32,6 +31,10 @@
             text-decoration: none;
             transition: background-color .2s, color .2s ease-out;
         }
+		
+		wordnode {
+			position:absolute;
+		}
         
         .mindmap-node>a[href]:hover {
             background-color: #f57c00;
@@ -82,19 +85,13 @@
 		html,body{
 			padding:0;
 			margin:0;
-            height: 100%;
-            width: 100%;
 		}
 		body{
 		    overflow: scroll;
 		}
+		foreignObject { overflow: visible; }
 		
-		wordnode {
-			position:absolute;
-			left:0;
-		}
 		
-    <style>
 		.items-container{
 			font-size: 12px;
 			color: rgb(255, 255, 255);
@@ -134,53 +131,71 @@
 			padding-top:10px;
 			padding-bottom:10px;
 		}
+
+
     </style>
 
 	<!--script src='https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js'> </script-->
 </head>
 
 <body style='background:#fff'>
-    <div id="map" class="mindmap-svg" style="transform:scale(0.3);width:1500px;height:2500px;transform-origin:left top;">
-		
-		<wordnode>
-			<a id="node-undefined">python<img class="mindmap-emoji" title="wiki" ></a>
-			<title></title>
-		</wordnode>
+    <svg id="map" class="mindmap-svg" viewBox="0 0 1500 2500">
+		<g transform="translate(0,0) scale(1)">
+			<!--path class="mindmap-connection" d="M 487 -259 Q 443 241 , 402 540">
+			</path>
+			<path class="mindmap-connection" d="M 402 540 Q 298 590 , 154 639">
+			</path>
+			<path class="mindmap-connection" d="M 154 639 Q 135 696 , 183 753">
+			</path>
+			<path class="mindmap-connection" d="M 955 417 Q 717 362 , 746 138">
+			</path-->
 			
-		
-		<wordnode>
-			<div style="whitespace:nowrap;">basics<br>
-			asdsa asd<br>
-			asdsaddddd<br>
-			asdsadads<br>
-			</div>
-			<video preload="none" src='https://www.runoob.com/try/demo_source/movie.mp4' controls> </video>
-		</wordnode>
-		
-		<path id="location" transform="translate(0,0) scale(1)" d="M0,-7c-3.87,0 -7,3.13 -7,7s3.13,7 7,7 7,-3.13 7,-7 -3.13,-7 -7,-7zM15.65,-1.75c-0.81,-7.3 -6.6,-13.09 -13.9,-13.9L1.75,-19.25h-3.5v3.61C-9.05,-14.84 -14.84,-9.05 -15.65,-1.75L-19.25,-1.75v3.5h3.61c0.81,7.3 6.6,13.09 13.9,13.9L-1.75,19.25h3.5v-3.61c7.3,-0.81 13.09,-6.6 13.9,-13.9L19.25,1.75v-3.5h-3.61zM0,12.25c-6.77,0 -12.25,-5.48 -12.25,-12.25s5.48,-12.25 12.25,-12.25 12.25,5.48 12.25,12.25 -5.48,12.25 -12.25,12.25z">
-		</path>
-		
-		<wordnode id="editbar" style="transform:scale(1.5);padding-top:0;padding-bottom:0;">
-			<div class="items-container" style="width:auto;">
-				<div class="statusbar-item" id="move">
-					<a tabindex="-1" role="button"  style="cursor:all-scroll">
-						<span class="codicon codicon-bookmark">✥ 移动</span>
-					</a>
-				</div>
-				<div class="statusbar-item" >
-					<a tabindex="-1" role="button"  style="">
-						<span class="codicon codicon-bookmark" id="edit">🖊 编辑</span>
-					</a>
-				</div>
-				<div class="statusbar-item" >
-					<a tabindex="-1" role="button"  style="">
-						<span class="codicon codicon-bookmark">🗑️ 删除</span>
-					</a>
-				</div>
-			</div>
-		</wordnode>
+			<foreignObject class="mindmap-node mindmap-node--editable" width="100%" height="100%" x="0" y="0">
+				
+				<wordnode>
+					<div style="whitespace:nowrap;">basics
+					asdsa asd
+					asdsaddddd
+					asdsadads
+					</div>
+					<video preload="none" src='https://www.runoob.com/try/demo_source/movie.mp4' controls>
+				</wordnode>
+				
+				<wordnode>
+					<a id="node-undefined">python<img class="mindmap-emoji" title="wiki" ></a>
+					<title></title>
+				</wordnode>
+				
+				
+				<wordnode id="editbar" style="transform:scale(1.5);padding-top:0;padding-bottom:0;">
+					<div class="items-container" style="width:auto;">
+						<div class="statusbar-item" id="move">
+							<a tabindex="-1" role="button"  style="cursor:all-scroll">
+								<span class="codicon codicon-bookmark">✥ 移动</span>
+							</a>
+						</div>
+						<div class="statusbar-item" >
+							<a tabindex="-1" role="button"  style="">
+								<span class="codicon codicon-bookmark" id="edit">🖊 编辑</span>
+							</a>
+						</div>
+						<div class="statusbar-item" >
+							<a tabindex="-1" role="button"  style="">
+								<span class="codicon codicon-bookmark">🗑️ 删除</span>
+							</a>
+						</div>
+					</div>
+				</wordnode>
+				
+			</foreignObject>
 			
-	</div>
+			
+			<path id="location" transform="translate(0,0) scale(1)" d="M0,-7c-3.87,0 -7,3.13 -7,7s3.13,7 7,7 7,-3.13 7,-7 -3.13,-7 -7,-7zM15.65,-1.75c-0.81,-7.3 -6.6,-13.09 -13.9,-13.9L1.75,-19.25h-3.5v3.61C-9.05,-14.84 -14.84,-9.05 -15.65,-1.75L-19.25,-1.75v3.5h3.61c0.81,7.3 6.6,13.09 13.9,13.9L-1.75,19.25h3.5v-3.61c7.3,-0.81 13.09,-6.6 13.9,-13.9L19.25,1.75v-3.5h-3.61zM0,12.25c-6.77,0 -12.25,-5.48 -12.25,-12.25s5.48,-12.25 12.25,-12.25 12.25,5.48 12.25,12.25 -5.48,12.25 -12.25,12.25z">
+			</path>
+			
+			
+		</g>
+	</svg>
 	
 	<script>
 		function ge(e,p){return (p||document).getElementById(e)};
@@ -199,20 +214,18 @@
 		
 		var mapX = 1500, mapY = 2500;
 		
-		var ff = mapX / document.documentElement.clientWidth;
-		
-		map.style.transform = "scale("+(document.documentElement.clientWidth/mapX)+")";
-		
 		map.style.background="#0000ff22"
 		loca.style.display='none';
 		editbar.style.display='none';
+		
+		var ff = mapX / document.documentElement.clientWidth;
 
 		function placeEditbar(node) {
 			var obj = node;
-			var x = parseInt(obj.style.left)||0;
+			var x = parseInt(obj.style.left);
 			//x+=node.offsetWidth/3;
 			x+=55;
-			var y = parseInt(obj.style.top)||0;
+			var y = parseInt(obj.style.top);
 			y+=node.offsetHeight;
 			y+=19;
 			editbar.style.left = x+"px";
@@ -229,6 +242,10 @@
 					node = t;
 					break;
 				}
+				//if(t.tagName==='FOREIGNOBJECT' && t.childNodes[0].tagName==='WORDNODE') {
+				//	node = t.childNodes[0];
+				//	break;
+				//}
 			}
 			if(node) {
 				loca.style.display='none';
@@ -261,35 +278,34 @@
 			return e;
 		};
 		
-		
 		var moving = 0, orgX, orgY, nodeX, nodeY, stopScroll;
 		function dragMove(e){
-		}
-		
-		function fakeScroll(x, y){
-			debug('fakeScroll', x, y);
+			var x = xy(e).clientX, y=e.clientY;
+			//debug('touchmove', x, y);
 			if(moving) {
-				moving.style.left = parseInt(nodeX+x*ff*1)+"px";
-				moving.style.top = parseInt(nodeY+y*ff*1)+"px";
-				placeEditbar(focaNode);
+				moving.style.left = parseInt(nodeX+(x-orgX)*ff)+"px";
+				moving.style.top = parseInt(nodeY+(y-orgY)*ff)+"px";
+				debug('touchmove', moving, moving.style.left);
+				debug('touchmove', nodeX, orgX, ff, parseInt(nodeX+(x-orgX)*ff));
+				placeEditbar(moving);
 			}
 			if(mobile && !stopScroll) {
+				//document.documentElement.style.overflow='hidden';
 				stopScroll=1;
 				if(app) app.lockScroll(sid.get(), true);
 			}
 		}
-		
 		function dragAbort(e){
 			var x = xy(e).clientX, y=e.clientY;
 			//debug('touchend', x, y);
-			//moving = 0;
-			//document.removeEventListener(mobile?'touchmove':'mousemove', dragMove, true);
+			moving = 0;
+			document.removeEventListener(mobile?'touchmove':'mousemove', dragMove, true);
 			document.removeEventListener(mobile?'touchend':'mouseup', dragAbort, true);
 			if(mobile)
 			{
 				//document.documentElement.style.overflow='scroll';
-				//stopScroll=0;
-				//if(app) app.lockScroll(sid.get(), false);
+				stopScroll=0;
+				if(app) app.lockScroll(sid.get(), false);
 			}
 		}
 		move.addEventListener(mobile?'touchstart':'mousedown', function(e){
@@ -298,15 +314,10 @@
 			orgY = y;
 			moving = focaNode?focaNode:0;
 			document.addEventListener(mobile?'touchend':'mouseup', dragAbort, true);
-			//document.addEventListener(mobile?'touchmove':'mousemove', dragMove, true);
+			document.addEventListener(mobile?'touchmove':'mousemove', dragMove, true);
 			if(moving) {
 				nodeX = parseInt(moving.style.left)||0;
 				nodeY = parseInt(moving.style.top)||0;
-			}
-			
-			if(mobile) {
-				stopScroll=1;
-				if(app) app.lockScroll(sid.get(), true);
 			}
 			//debug('touchstart', x, y, nodeX, nodeY);
 		});

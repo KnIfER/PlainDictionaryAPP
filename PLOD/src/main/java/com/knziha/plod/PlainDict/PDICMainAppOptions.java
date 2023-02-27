@@ -3385,8 +3385,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=13, shift=1) public static void schtoolsShowIcon(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=14) public static boolean schtoolsAutoHide() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=14) public static void schtoolsAutoHide(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=15, shift=1) public static boolean swapeSchAndWordMap() { NinthFlag=NinthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=15, shift=1) public static void swapeSchAndWordMap(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=15) public static boolean swapeSchAndWordMap() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=15) public static void swapeSchAndWordMap(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=16) public static boolean schtoolsScrollPad() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=16) public static void schtoolsScrollPad(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=17) public static boolean pinZhTransMenu() { NinthFlag=NinthFlag; throw new RuntimeException(); }

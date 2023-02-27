@@ -63,6 +63,7 @@ public class RLContainerSlider extends FrameLayout {
 	private float quickScaleThreshold;
 	public int tapZoomV;
 	private boolean nothing = true;
+	public boolean scrollLocked;
 	
 	ImageView swipeRefreshIcon;
 	float swipeRefreshDy;
@@ -246,6 +247,16 @@ public class RLContainerSlider extends FrameLayout {
 		if(fastTapZoom) {
 			handleFastZoom(ev);
 			return fastTapZoom;
+		}
+		if (scrollLocked) {
+			int actual_index = ev.getActionIndex();
+			//if(!enabled1)ViewUtils.preventDefaultTouchEvent(weblist.getWebContextNonNull(), 0, 0);
+			float x = (ev.getX(actual_index)-OrgX)/WebContext.webScale;
+			float y = (ev.getY(actual_index)-OrgY)/WebContext.webScale;
+			x = ((int)(x*100))/100;
+			y = ((int)(y*100))/100;
+			WebContext.evaluateJavascript("fakeScroll("+(float)x+", "+(float)y+")", null);
+			return true;
 		}
 		if(!slideTurn && !swipeRefreshAllow) return false;
 		if(dragged==0 && aborted==0) return true;
@@ -508,9 +519,14 @@ public class RLContainerSlider extends FrameLayout {
 				}
 				if(dragged!=0) dragged=aborted=0;
 			}
+			if(scrollLocked)
+				scrollLocked = WebContext.scrollLocked = false;
 		}
-		if (masked==ACTION_UP) {
+		if (masked==ACTION_UP/*||masked==ACTION_CANCEL*/) {
 			checkBar();
+		}
+		if (scrollLocked) {
+			return true;
 		}
 		
 		if(nothing) {

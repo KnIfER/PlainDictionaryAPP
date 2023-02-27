@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -20,6 +22,7 @@ import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** 词链 mindmap */
@@ -63,16 +66,19 @@ public class WordMap extends AlloydPanel {
 	@Override
 	public void init(Context context, ViewGroup root) {
 		if (settingsLayout==null && a!=null) {
+			opt = a.opt;
+			menuResId = R.xml.menu_word_map;
 			addToolbar();
 			// tabTranslateEach
 			//AllMenus.getItems().set(4, a.getMenuSTd(R.id.translator));
 			if(weblistHandler.tapSch) {
-				if(weblistHandler.tapDef) ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch1).setChecked(true);
-				else ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
+//				if(weblistHandler.tapDef) ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch1).setChecked(true);
+//				else ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
 			}
-			
-			RandomMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 3, 4, 9, 8, 5);
-			PopupMenu = ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 9, 8, 5);//new ArrayList<>(AllMenus.mItems);
+			weblistHandler.tapSch = false;
+			//weblistHandler.tapDef = false;
+			// ViewUtils.MapNumberToMenu(AllMenus, 6, 1, 7, 2, 3, 4, 9, 8, 5);//
+			RandomMenu = PopupMenu = new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
 			toolbar.getNavigationBtn().setOnLongClickListener(v -> {
@@ -108,9 +114,21 @@ public class WordMap extends AlloydPanel {
 	}
 	
 	public void show() {
+		a.showT("功能测试中");
 		getPageHandler(true);
 		weblistHandler.viewContent();
+//		weblistHandler.getMergedFrame().getSettings().setLoadWithOverviewMode(false);
+//		weblistHandler.getMergedFrame().getSettings().setUseWideViewPort(true);
+//		weblistHandler.getMergedFrame().setInitialScale((int) (100 * (1000 / BookPresenter.def_zoom) * opt.dm.density));
 		weblistHandler.getMergedFrame().loadUrl("https://jv7pl7wn15.csb.app/");
 		weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/3/MdbR/mindmap.html");
+		
+//		VU.setVisible(weblistHandler.contentUIData.bottombar2, false);
+		
+		weblistHandler.getMergedFrame().setHorizontalScrollBarEnabled(true);
+//		weblistHandler.getMergedFrame().setVerticalScrollBarEnabled(false);
+//		weblistHandler.getMergedFrame().getSettings().setLoadWithOverviewMode(false);
+//		weblistHandler.getMergedFrame().getSettings().setUseWideViewPort(true);
+//		WebView.enableSlowWholeDocumentDraw();
 	}
 }

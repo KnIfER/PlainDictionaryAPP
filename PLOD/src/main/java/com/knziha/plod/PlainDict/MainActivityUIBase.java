@@ -3248,7 +3248,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(onWebScrollChanged==null) {
 			onWebScrollChanged = (v, x, y, oldx, oldy) -> {
 				WebViewmy webview = (WebViewmy) v;
-				if(CustomViewHideTime>0 && System.currentTimeMillis()-CustomViewHideTime<350){
+				if(/*webview.scrollLocked || */CustomViewHideTime>0 && System.currentTimeMillis()-CustomViewHideTime<350){
 					webview.SafeScrollTo(oldx, oldy);
 					return;
 				}

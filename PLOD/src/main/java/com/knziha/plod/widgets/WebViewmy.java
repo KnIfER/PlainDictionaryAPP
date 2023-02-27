@@ -90,6 +90,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean bMaybeHasSoundOnPage;
 	private String useragent;
 	private int titleBarH;
+	public boolean scrollLocked;
 	
 	//public boolean fromPeruseview;
 	public final boolean fromNet(){ return presenter.isWebx; };
@@ -1754,4 +1755,17 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public final void word(String val) {
 		this.word = val;
 	}
+	
+//	@Override
+//	protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
+//		if(scrollLocked) return false;
+//		return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+//	}
+	
+//	@Override
+//	public void scrollTo(int x, int y) {
+//		if(scrollLocked) return ;
+//		// Do nothing
+//	}
+	
 }

@@ -3453,6 +3453,17 @@ function debug(e){console.log(e)};
         }
 
         @JavascriptInterface
+        public void lockScroll(int sid, boolean lock) {
+			if(presenter==null) return;
+			WebViewmy wv = findWebview(sid);
+			if (wv!=null){
+				wv.scrollLocked = lock;
+				wv.weblistHandler.pageSlider.scrollLocked = lock;
+				wv.weblistHandler.pageSlider.setWebview(wv, wv.weblistHandler.pageSlider.scrollView);
+			}
+        }
+        
+        @JavascriptInterface
         public void onHighlightReady(int sid, int idx, int number) {
 			if(presenter==null) return;
 			WebViewmy wv = findWebview(sid);

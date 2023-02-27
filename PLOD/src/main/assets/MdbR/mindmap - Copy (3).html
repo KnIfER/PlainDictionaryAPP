@@ -2,23 +2,22 @@
 <html>
 
 <head>
-    <meta name="description" content="WordMap">
+    <meta name="description" content="MDict JS">
     <meta name="robots" content="noindex">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes, maximum-scale=10">
 
     <style>
         .mindmap-svg {
-            height: 100%;
-            width: 100%;
-			overflow:hidden;
+            height: 2500px;
+            width: 1500px;
         }
         
         .mindmap-svg:focus {
             outline: none;
         }
         
-        .mindmap-node>a, wordnode {
+        .mindmap-node>a, .mindmap-node>wordnode {
             background: #f5f5f5;
             border-radius: 10px;
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
@@ -82,19 +81,15 @@
 		html,body{
 			padding:0;
 			margin:0;
-            height: 100%;
-            width: 100%;
+            height: 2500px;
+            width: 1500px;
 		}
 		body{
 		    overflow: scroll;
 		}
+		foreignObject { overflow: visible; }
 		
-		wordnode {
-			position:absolute;
-			left:0;
-		}
 		
-    <style>
 		.items-container{
 			font-size: 12px;
 			color: rgb(255, 255, 255);
@@ -134,52 +129,84 @@
 			padding-top:10px;
 			padding-bottom:10px;
 		}
+
+
     </style>
 
 	<!--script src='https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js'> </script-->
 </head>
 
 <body style='background:#fff'>
-    <div id="map" class="mindmap-svg" style="transform:scale(0.3);width:1500px;height:2500px;transform-origin:left top;">
-		
-		<wordnode>
-			<a id="node-undefined">python<img class="mindmap-emoji" title="wiki" ></a>
-			<title></title>
-		</wordnode>
+    <div id="map" class="mindmap-svg" >
+		<div style="transform:scale(0.2)">
+			<!--path class="mindmap-connection" d="M 487 -259 Q 443 241 , 402 540">
+			</path>
+			<path class="mindmap-connection" d="M 402 540 Q 298 590 , 154 639">
+			</path>
+			<path class="mindmap-connection" d="M 154 639 Q 135 696 , 183 753">
+			</path>
+			<path class="mindmap-connection" d="M 955 417 Q 717 362 , 746 138">
+			</path-->
 			
-		
-		<wordnode>
-			<div style="whitespace:nowrap;">basics<br>
-			asdsa asd<br>
-			asdsaddddd<br>
-			asdsadads<br>
+			<div class="mindmap-node mindmap-node--editable">
+				<wordnode>
+					<a id="node-undefined">python<img class="mindmap-emoji" title="wiki" ></a>
+					<title></title>
+				</wordnode>
 			</div>
-			<video preload="none" src='https://www.runoob.com/try/demo_source/movie.mp4' controls> </video>
-		</wordnode>
-		
-		<path id="location" transform="translate(0,0) scale(1)" d="M0,-7c-3.87,0 -7,3.13 -7,7s3.13,7 7,7 7,-3.13 7,-7 -3.13,-7 -7,-7zM15.65,-1.75c-0.81,-7.3 -6.6,-13.09 -13.9,-13.9L1.75,-19.25h-3.5v3.61C-9.05,-14.84 -14.84,-9.05 -15.65,-1.75L-19.25,-1.75v3.5h3.61c0.81,7.3 6.6,13.09 13.9,13.9L-1.75,19.25h3.5v-3.61c7.3,-0.81 13.09,-6.6 13.9,-13.9L19.25,1.75v-3.5h-3.61zM0,12.25c-6.77,0 -12.25,-5.48 -12.25,-12.25s5.48,-12.25 12.25,-12.25 12.25,5.48 12.25,12.25 -5.48,12.25 -12.25,12.25z">
-		</path>
-		
-		<wordnode id="editbar" style="transform:scale(1.5);padding-top:0;padding-bottom:0;">
-			<div class="items-container" style="width:auto;">
-				<div class="statusbar-item" id="move">
-					<a tabindex="-1" role="button"  style="cursor:all-scroll">
-						<span class="codicon codicon-bookmark">✥ 移动</span>
-					</a>
-				</div>
-				<div class="statusbar-item" >
-					<a tabindex="-1" role="button"  style="">
-						<span class="codicon codicon-bookmark" id="edit">🖊 编辑</span>
-					</a>
-				</div>
-				<div class="statusbar-item" >
-					<a tabindex="-1" role="button"  style="">
-						<span class="codicon codicon-bookmark">🗑️ 删除</span>
-					</a>
-				</div>
-			</div>
-		</wordnode>
 			
+			<div class="mindmap-node mindmap-node--editable" >
+				<wordnode>
+					<div style="whitespace:nowrap;">basics
+					asdsa asd
+					asdsaddddd
+					asdsadads
+					</div>
+					<video preload="none" src='https://www.runoob.com/try/demo_source/movie.mp4' controls>
+				</wordnode>
+			</div>
+			
+			<!--foreignObject class="mindmap-subnodes" width="113" height="176" x="546" y="3">
+				<div class="mindmap-subnode-group" style="border-left-color: rgba(255, 189, 10, 1.0)">
+					<a><img class="mindmap-emoji reddit-emoji" title="reddit"></a>
+					<div></div>
+				</div>
+				<div class="mindmap-subnode-group" style="border-left-color: rgba(255, 189, 10, 1.0)">
+					<a>source <img class="mindmap-emoji" title="github"></a>
+					<div></div>
+				</div>
+				<div class="mindmap-subnode-group" style="border-left-color: rgba(255, 189, 10, 1.0)">
+					<a>source <img class="mindmap-emoji" title="github"></a>
+					<div></div>
+				</div>
+			</foreignObject-->
+			
+			<path id="location" transform="translate(0,0) scale(1)" d="M0,-7c-3.87,0 -7,3.13 -7,7s3.13,7 7,7 7,-3.13 7,-7 -3.13,-7 -7,-7zM15.65,-1.75c-0.81,-7.3 -6.6,-13.09 -13.9,-13.9L1.75,-19.25h-3.5v3.61C-9.05,-14.84 -14.84,-9.05 -15.65,-1.75L-19.25,-1.75v3.5h3.61c0.81,7.3 6.6,13.09 13.9,13.9L-1.75,19.25h3.5v-3.61c7.3,-0.81 13.09,-6.6 13.9,-13.9L19.25,1.75v-3.5h-3.61zM0,12.25c-6.77,0 -12.25,-5.48 -12.25,-12.25s5.48,-12.25 12.25,-12.25 12.25,5.48 12.25,12.25 -5.48,12.25 -12.25,12.25z">
+			</path>
+			
+			<div id="editbar" class="mindmap-node mindmap-node--editable" >
+				<wordnode style="transform:scale(1.5);padding-top:0;padding-bottom:0;">
+					<div class="items-container" style="width:auto;">
+						<div class="statusbar-item" id="move">
+							<a tabindex="-1" role="button"  style="cursor:all-scroll">
+								<span class="codicon codicon-bookmark">✥ 移动</span>
+							</a>
+						</div>
+						<div class="statusbar-item" >
+							<a tabindex="-1" role="button"  style="">
+								<span class="codicon codicon-bookmark" id="edit">🖊 编辑</span>
+							</a>
+						</div>
+						<div class="statusbar-item" >
+							<a tabindex="-1" role="button"  style="">
+								<span class="codicon codicon-bookmark">🗑️ 删除</span>
+							</a>
+						</div>
+					</div>
+				</wordnode>
+			</div>
+			
+		</div>
 	</div>
 	
 	<script>
@@ -199,24 +226,22 @@
 		
 		var mapX = 1500, mapY = 2500;
 		
-		var ff = mapX / document.documentElement.clientWidth;
-		
-		map.style.transform = "scale("+(document.documentElement.clientWidth/mapX)+")";
-		
 		map.style.background="#0000ff22"
 		loca.style.display='none';
 		editbar.style.display='none';
+		
+		var ff = mapX / document.documentElement.clientWidth;
 
 		function placeEditbar(node) {
-			var obj = node;
-			var x = parseInt(obj.style.left)||0;
+			var obj = node.parentNode;
+			var x = parseInt(obj.getAttribute("x"));
 			//x+=node.offsetWidth/3;
 			x+=55;
-			var y = parseInt(obj.style.top)||0;
+			var y = parseInt(obj.getAttribute("y"));
 			y+=node.offsetHeight;
 			y+=19;
-			editbar.style.left = x+"px";
-			editbar.style.top = y+"px";
+			editbar.setAttribute("x", x);
+			editbar.setAttribute("y", y);
 		}
 		
 		map.addEventListener('click', function(e){
@@ -229,10 +254,14 @@
 					node = t;
 					break;
 				}
+				if(t.tagName==='FOREIGNOBJECT' && t.childNodes[0].tagName==='WORDNODE') {
+					node = t.childNodes[0];
+					break;
+				}
 			}
 			if(node) {
 				loca.style.display='none';
-				if(node==editbar) return;
+				if(node.parentNode==editbar) return;
 				focaNode = node;
 				debug(node);
 				placeEditbar(node);
@@ -261,52 +290,44 @@
 			return e;
 		};
 		
-		
 		var moving = 0, orgX, orgY, nodeX, nodeY, stopScroll;
 		function dragMove(e){
-		}
-		
-		function fakeScroll(x, y){
-			debug('fakeScroll', x, y);
+			var x = xy(e).clientX, y=e.clientY;
+			//debug('touchmove', x, y);
 			if(moving) {
-				moving.style.left = parseInt(nodeX+x*ff*1)+"px";
-				moving.style.top = parseInt(nodeY+y*ff*1)+"px";
+				moving.setAttribute("x", nodeX+(x-orgX)*ff);
+				moving.setAttribute("y", nodeY+(y-orgY)*ff);
 				placeEditbar(focaNode);
 			}
 			if(mobile && !stopScroll) {
+				document.documentElement.style.overflow='hidden';
 				stopScroll=1;
 				if(app) app.lockScroll(sid.get(), true);
 			}
 		}
-		
 		function dragAbort(e){
 			var x = xy(e).clientX, y=e.clientY;
 			//debug('touchend', x, y);
-			//moving = 0;
-			//document.removeEventListener(mobile?'touchmove':'mousemove', dragMove, true);
+			moving = 0;
+			document.removeEventListener(mobile?'touchmove':'mousemove', dragMove, true);
 			document.removeEventListener(mobile?'touchend':'mouseup', dragAbort, true);
 			if(mobile)
 			{
-				//document.documentElement.style.overflow='scroll';
-				//stopScroll=0;
-				//if(app) app.lockScroll(sid.get(), false);
+				document.documentElement.style.overflow='scroll';
+				stopScroll=0;
+				if(app) app.lockScroll(sid.get(), false);
 			}
 		}
 		move.addEventListener(mobile?'touchstart':'mousedown', function(e){
 			var x = xy(e).clientX, y=e.clientY;
 			orgX = x;
 			orgY = y;
-			moving = focaNode?focaNode:0;
+			moving = focaNode?focaNode.parentNode:0;
 			document.addEventListener(mobile?'touchend':'mouseup', dragAbort, true);
-			//document.addEventListener(mobile?'touchmove':'mousemove', dragMove, true);
+			document.addEventListener(mobile?'touchmove':'mousemove', dragMove, true);
 			if(moving) {
-				nodeX = parseInt(moving.style.left)||0;
-				nodeY = parseInt(moving.style.top)||0;
-			}
-			
-			if(mobile) {
-				stopScroll=1;
-				if(app) app.lockScroll(sid.get(), true);
+				nodeX = parseInt(moving.getAttribute("x"));
+				nodeY = parseInt(moving.getAttribute("y"));
 			}
 			//debug('touchstart', x, y, nodeX, nodeY);
 		});

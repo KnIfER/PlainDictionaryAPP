@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <meta name="description" content="WordMap">
+    <meta name="description" content="MDict JS">
     <meta name="robots" content="noindex">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes, maximum-scale=10">
@@ -11,7 +11,6 @@
         .mindmap-svg {
             height: 100%;
             width: 100%;
-			overflow:hidden;
         }
         
         .mindmap-svg:focus {
@@ -82,8 +81,6 @@
 		html,body{
 			padding:0;
 			margin:0;
-            height: 100%;
-            width: 100%;
 		}
 		body{
 		    overflow: scroll;
@@ -140,7 +137,7 @@
 </head>
 
 <body style='background:#fff'>
-    <div id="map" class="mindmap-svg" style="transform:scale(0.3);width:1500px;height:2500px;transform-origin:left top;">
+    <div id="map" class="mindmap-svg" style="transform:scale(0.3);width:1500px;height:2500px;transform-origin: left top;">
 		
 		<wordnode>
 			<a id="node-undefined">python<img class="mindmap-emoji" title="wiki" ></a>
@@ -149,10 +146,10 @@
 			
 		
 		<wordnode>
-			<div style="whitespace:nowrap;">basics<br>
-			asdsa asd<br>
-			asdsaddddd<br>
-			asdsadads<br>
+			<div style="whitespace:nowrap;">basics
+			asdsa asd
+			asdsaddddd
+			asdsadads
 			</div>
 			<video preload="none" src='https://www.runoob.com/try/demo_source/movie.mp4' controls> </video>
 		</wordnode>
@@ -209,10 +206,10 @@
 
 		function placeEditbar(node) {
 			var obj = node;
-			var x = parseInt(obj.style.left)||0;
+			var x = parseInt(obj.style.left);
 			//x+=node.offsetWidth/3;
 			x+=55;
-			var y = parseInt(obj.style.top)||0;
+			var y = parseInt(obj.style.top);
 			y+=node.offsetHeight;
 			y+=19;
 			editbar.style.left = x+"px";
@@ -264,16 +261,24 @@
 		
 		var moving = 0, orgX, orgY, nodeX, nodeY, stopScroll;
 		function dragMove(e){
+			var x = xy(e).clientX, y=e.clientY;
+			//debug('touchmove', x, y);
+			if(moving) {
+				moving.style.left = parseInt(nodeX+(x-orgX)*ff)+"px";
+				moving.style.top = parseInt(nodeY+(y-orgY)*ff)+"px";
+				placeEditbar(focaNode);
+			}
 		}
 		
 		function fakeScroll(x, y){
 			debug('fakeScroll', x, y);
 			if(moving) {
-				moving.style.left = parseInt(nodeX+x*ff*1)+"px";
-				moving.style.top = parseInt(nodeY+y*ff*1)+"px";
+				moving.style.left = parseInt(nodeX+x*ff)+"px";
+				moving.style.top = parseInt(nodeY+y*ff)+"px";
 				placeEditbar(focaNode);
 			}
 			if(mobile && !stopScroll) {
+				document.documentElement.style.overflow='hidden';
 				stopScroll=1;
 				if(app) app.lockScroll(sid.get(), true);
 			}
@@ -283,7 +288,7 @@
 			var x = xy(e).clientX, y=e.clientY;
 			//debug('touchend', x, y);
 			//moving = 0;
-			//document.removeEventListener(mobile?'touchmove':'mousemove', dragMove, true);
+			document.removeEventListener(mobile?'touchmove':'mousemove', dragMove, true);
 			document.removeEventListener(mobile?'touchend':'mouseup', dragAbort, true);
 			if(mobile)
 			{
@@ -298,13 +303,14 @@
 			orgY = y;
 			moving = focaNode?focaNode:0;
 			document.addEventListener(mobile?'touchend':'mouseup', dragAbort, true);
-			//document.addEventListener(mobile?'touchmove':'mousemove', dragMove, true);
+			document.addEventListener(mobile?'touchmove':'mousemove', dragMove, true);
 			if(moving) {
 				nodeX = parseInt(moving.style.left)||0;
 				nodeY = parseInt(moving.style.top)||0;
 			}
 			
 			if(mobile) {
+				document.documentElement.style.overflow='hidden';
 				stopScroll=1;
 				if(app) app.lockScroll(sid.get(), true);
 			}
