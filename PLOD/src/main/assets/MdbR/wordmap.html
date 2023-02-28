@@ -478,7 +478,7 @@
 		};
 		
 		
-		var moving = 0, orgX, orgY, nodeX, nodeY, dragResizer={
+		var moving = 0, orgX, orgY, nodeXYs=[], dragResizer={
 			st:mobile?'touchstart':'mousedown'
 			,ed:mobile?'touchend':'mouseup'
 			,mv:mobile?'touchmove':'mousemove'
@@ -493,15 +493,20 @@
 		// check and save moved nodes
 		function checkMoved(){
 			if(moving) {
-				
+				var x=parseInt(moving.style.left)||0, y=parseInt(moving.style.top)||0;
+				if(nodeXYs[0]!=x || nodeXYs[1]!=y) {
+					debug('node changed!', moving);
+					if(word) 
+						word.moveNode(moving.id, x, y);
+				}
 			}
 			moving = 0;
 		}
 		function fakeScroll(x, y){
 			//debug('fakeScroll', x, y);
 			if(moving) {
-				var x = parseInt(nodeX+x*ff);
-				var y = parseInt(nodeY+y*ff);
+				var x = parseInt(nodeXYs[0]+x*ff);
+				var y = parseInt(nodeXYs[1]+y*ff);
 				if(snap) {
 					x = Math.round(x/gx)*gx;
 					y = Math.round(y/gy)*gy;
@@ -541,10 +546,10 @@
 			doc.addEventListener(dragResizer.ed, dragAbort, true);
 			//doc.addEventListener(dragResizer.mv, dragMove, true);
 			if(moving) {
-				nodeX = parseInt(moving.style.left)||0;
-				nodeY = parseInt(moving.style.top)||0;
+				nodeXYs[0] = parseInt(moving.style.left)||0;
+				nodeXYs[1] = parseInt(moving.style.top)||0;
 			}
-			debug('touchstart', x, y, nodeX, nodeY);
+			debug('touchstart', x, y, nodeXYs[0], nodeXYs[1]);
 			if(mobile) {
 				if(app) app.lockScroll(sid.get(), true);
 			}

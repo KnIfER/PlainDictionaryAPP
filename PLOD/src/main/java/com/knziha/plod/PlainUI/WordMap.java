@@ -136,6 +136,14 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			}
 			return false;
 		}
+		
+		@JavascriptInterface
+		public boolean moveNode(String id, int x, int y) {
+			if (map!=null) {
+				return map.moveNode(id, x, y);
+			}
+			return false;
+		}
 	}
 	
 	@Override
@@ -158,7 +166,7 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 	}
 	
 	public void show() {
-		a.showT("功能测试中");
+		a.showT("功能测试中，数据不会保存！");
 		getPageHandler(true);
 		weblistHandler.viewContent();
 //		weblistHandler.getMergedFrame().getSettings().setLoadWithOverviewMode(false);
@@ -276,10 +284,25 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 		return "";
 	}
 	
-	public boolean deleteNode(String id) {
+	private boolean deleteNode(String id) {
 		try {
 			SQLiteDatabase db = this.a.prepareHistoryCon().getDB();
 			return db.delete(LexicalDBHelper.TABLE_WORD_MAP, "id=?", new String[]{id}) > 0;
+		} catch (Exception e) {
+			CMN.debug(e);
+			return false;
+		}
+	}
+	
+	private boolean moveNode(String id, int x, int y) {
+		try{
+			ContentValues cv = new ContentValues();
+			//cv.put("text", text);
+			cv.put("x", x);
+			cv.put("y", y);
+			cv.put(LexicalDBHelper.FIELD_EDIT_TIME, CMN.now());
+			SQLiteDatabase db = this.a.prepareHistoryCon().getDB();
+			return db.update(LexicalDBHelper.TABLE_WORD_MAP, cv, "id=?", new String[]{id}) > 0;
 		} catch (Exception e) {
 			CMN.debug(e);
 			return false;

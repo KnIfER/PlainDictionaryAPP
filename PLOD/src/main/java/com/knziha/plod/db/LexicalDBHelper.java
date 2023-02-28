@@ -49,7 +49,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_APPID_v2 = "appid";
 	
 	/** 记录单词导图 */
-	public static final String TABLE_WORD_MAP = "wordmap";
+	public static final String TABLE_WORD_MAP = "wordmap_d";
 	
 	/* 剪贴板 */
 	public static final String TABLE_PASTE_BIN = "pasteBin";
@@ -375,8 +375,8 @@ if (!VersionUtils.AnnotOff) {
 			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists pastbin_index ON pasteBin (chn, fav, creation_time, id)");
 
-
-//			db.execSQL("DROP TABLE IF EXISTS "+TABLE_WORD_MAP); //hot
+			if(!BuildConfig.DEBUG)
+			db.execSQL("DROP TABLE IF EXISTS "+TABLE_WORD_MAP); //hot
 			// TABLE_WORD_MAP 记录单词导图
 			sqlBuilder = "create table if not exists " +
 					TABLE_WORD_MAP +
