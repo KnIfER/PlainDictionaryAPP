@@ -49,7 +49,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_APPID_v2 = "appid";
 	
 	/** 记录单词导图 */
-	public static final String TABLE_WORD_MAP = "wordmap_d";
+	public static final String TABLE_WORD_MAP = "wordmap";
 	
 	/* 剪贴板 */
 	public static final String TABLE_PASTE_BIN = "pasteBin";
@@ -385,8 +385,8 @@ if (!VersionUtils.AnnotOff) {
 					", type INTEGER DEFAULT 0" + // 0=文本 150=连接
 					", text LONGVARCHAR" +
 					", sheet INTEGER DEFAULT 0"+
-					", x INTEGER NOT NULL"+
-					", y INTEGER NOT NULL"+
+					", x INTEGER DEFAULT 0"+
+					", y INTEGER DEFAULT 0"+
 					", w INTEGER DEFAULT 0"+
 					", h INTEGER DEFAULT 0"+
 					", a INTEGER DEFAULT 0"+

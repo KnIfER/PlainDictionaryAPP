@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.util.ArrayList;
 
 /** 词链 mindmap */
-public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListener {
+public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListener, PopupMenuHelper.PopupMenuListener {
 	MapHandler mapHandler;
 	
 	public WordMap(MainActivityUIBase a) {
@@ -144,6 +145,13 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			}
 			return false;
 		}
+		
+		@JavascriptInterface
+		public void lockScroll(int sid) {
+			if (map!=null) {
+				MainActivityUIBase.CustomViewHideTime = CMN.now();
+			}
+		}
 	}
 	
 	@Override
@@ -213,6 +221,19 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			case R.id.del:{
 				wlh.getMergedFrame().evaluateJavascript("delSel()", null);
 			} break;
+			case R.id.grid:{
+				View actionView = toolbar.findViewById(mmi.getItemId());
+				if (actionView!=null) {
+					PopupMenuHelper popupMenu = a.getPopupMenu();
+					popupMenu.initLayout(new int[]{
+							R.string.expand_map_hor
+							, R.string.expand_map_ver
+					}, this);
+					int[] vLocationOnScreen = new int[2];
+					actionView.getLocationOnScreen(vLocationOnScreen); //todo 校准弹出位置
+					popupMenu.showAt(actionView, vLocationOnScreen[0], vLocationOnScreen[1]+actionView.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+				}
+			} break;
 		}
 		if(closeMenu)
 			closeIfNoActionView(mmi);
@@ -238,11 +259,11 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 		});
 	}
 	
-	public String getSheet(int i) {
+	public String remap(int i) {
 		JSONObject node = new JSONObject();
 		SQLiteDatabase db = a.prepareHistoryCon().getDB();
 		StringBuilder sb = new StringBuilder();
-		try (Cursor cursor = db.rawQuery("select id,text,type,x,y,a,b from "+LexicalDBHelper.TABLE_WORD_MAP+" order by type asc, last_edit_time asc", null)){
+		try (Cursor cursor = db.rawQuery("select id,text,type,x,y,w,h,a,b from "+LexicalDBHelper.TABLE_WORD_MAP+" order by type asc, last_edit_time asc", null)){
 			while (cursor.moveToNext()) {
 				node.clear();
 				node.put("id", ""+cursor.getInt(0));
@@ -250,8 +271,10 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 				node.put("type", cursor.getInt(2));
 				node.put("x", cursor.getInt(3));
 				node.put("y", cursor.getInt(4));
-				node.put("a", cursor.getInt(5));
-				node.put("b", cursor.getInt(6));
+				node.put("w", cursor.getInt(5));
+				node.put("h", cursor.getInt(6));
+				node.put("a", cursor.getInt(7));
+				node.put("b", cursor.getInt(8));
 				CMN.debug("node.toJSONString()::", node.toJSONString());
 				sb.append(node.toJSONString());
 				sb.append("\0");
@@ -307,5 +330,55 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			CMN.debug(e);
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
+		WebViewListHandler wlh = this.weblistHandler;
+		switch (v.getId()) {
+			case R.string.expand_map_hor:
+			case R.string.expand_map_ver:
+				wlh.getMergedFrame().evaluateJavascript(v.getId()==R.string.expand_map_hor?"expandMap(1500, 0)":"expandMap(0, 2500)", new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						try {
+							CMN.debug("onReceiveValue::", value);
+							value = value.substring(1);
+							String[] arr = value.split(",");
+							int w = IU.parsint(arr[0]);
+							int h = IU.parsint(arr[1]);
+							CMN.debug("wh", w, h);
+							long sheetId = -1;
+							SQLiteDatabase db = a.prepareHistoryCon().getDB();
+							try (Cursor cursor = db.rawQuery("select id from " + LexicalDBHelper.TABLE_WORD_MAP + " where type=-1 and sheet=0 limit 1", null)) {
+								if (cursor.moveToNext()) {
+									sheetId = cursor.getLong(0);
+								}
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+							ContentValues cv = new ContentValues();
+							//cv.put("text", text);
+							cv.put("w", w);
+							cv.put("h", h);
+							if (sheetId == -1) {
+								cv.put(LexicalDBHelper.FIELD_EDIT_TIME, CMN.now());
+								cv.put(LexicalDBHelper.FIELD_CREATE_TIME, CMN.now());
+								cv.put("type", -1);
+								db.insert(LexicalDBHelper.TABLE_WORD_MAP, null, cv);
+								CMN.debug("创建");
+							} else {
+								db.update(LexicalDBHelper.TABLE_WORD_MAP, cv, "id=?", new String[]{"" + sheetId});
+								CMN.debug("修改");
+							}
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+					}
+				});
+			break;
+		}
+		popupMenuHelper.dismiss();
+		return false;
 	}
 }

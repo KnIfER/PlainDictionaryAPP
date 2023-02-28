@@ -262,5 +262,7 @@
 	<string name="schtools_show_icon">工具栏显示图标</string>
 	<string name="schtools_auto_hide">对话框弹出时自动收起工具栏</string>
 	<string name="schtools_scroll_pad">工具栏两边空出滚动区域</string>
+	<string name="expand_map_hor">横向扩展画布</string>
+	<string name="expand_map_ver">竖向扩展画布</string>
 	>
 </resources>

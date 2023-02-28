@@ -294,7 +294,7 @@ public abstract class MdictServer extends NanoHTTPD {
 //					session.parseBody(null);
 //					List<String> ids = Arrays.asList(session.getParameters().get("ids").get(0).split(","));
 					//SU.Log("dicts.json::", ids);
-					return newFixedLengthResponse(a.wordMap.getSheet(0)) ;
+					return newFixedLengthResponse(a.wordMap.remap(0)) ;
 				} catch (Exception e) {
 					return emptyResponse;
 				}

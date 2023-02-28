@@ -78,7 +78,7 @@
 			user-select: text;
 			//opacity: 0.1;
         }
-        .hotNode {
+        wordnode.hotNode {
             box-shadow: 0 2px 0px 10px rgb(255 133 0)
         }
         .wordlink {
@@ -150,9 +150,9 @@
 		
 		<wordnode id="editbar" style="transform:scale(1.5);padding-top:0;padding-bottom:0;opacity:0.8">
 			<div class="toolbar-container" style="width:auto;">
-				<div class="toolbar-item" >
-					<a tabindex="-1" role="button"  style="">
-						<span class="codicon codicon-bookmark" id="edit">🖊 编辑</span>
+				<div class="toolbar-item" id="move" style="padding:0">
+					<a tabindex="-1" role="button"  style="cursor:all-scroll">
+						<span class="codicon codicon-bookmark" style="padding-top:15px;padding-bottom:15px;">✥ 移动</span>
 					</a>
 				</div>
 				<!--div class="toolbar-item" >
@@ -165,9 +165,9 @@
 						<span class="codicon codicon-bookmark">🔗 连线</span>
 					</a>
 				</div>
-				<div class="toolbar-item" id="move" style="padding:0">
-					<a tabindex="-1" role="button"  style="cursor:all-scroll">
-						<span class="codicon codicon-bookmark" style="padding-top:15px;padding-bottom:15px;">✥ 移动</span>
+				<div class="toolbar-item" >
+					<a tabindex="-1" role="button"  style="">
+						<span class="codicon codicon-bookmark" id="edit">🖊 编辑</span>
 					</a>
 				</div>
 			</div>
@@ -266,6 +266,11 @@
 							node.style.top = json.y+"px";
 							node.id = json.id;
 							node.lnks = [];
+						} else if(json.type=='-1'){
+							mapX = parseInt(json.w)||mapX;
+							mapY = parseInt(json.h)||mapY;
+							map.style.width = mapX+'px';
+							map.style.height = mapY+'px';
 						}
 					} catch(e) { debug(e) }
 				}
@@ -430,7 +435,13 @@
 				if(linkingNode) {
 					if(linkingNode!=node) {
 						linkNodes(linkingNode, node);
-						if(!linkingContinuous) linkingNode = 0;
+						if(!linkingContinuous) {
+							linkingNode = 0;
+							editbar.style.display = '';
+						}
+					} else {
+						linkingNode = 0;
+						editbar.style.display = '';
 					}
 					return;
 				}
@@ -567,6 +578,7 @@
 			orgX = x;
 			orgY = y;
 			tmPress = setTimeout(function(){longPress(e)},380);
+			if(word) word.lockScroll(sid.get());
 		});
 		edit.addEventListener(dragResizer.mv, function(e){
 			debug('edit touchstart',e);
@@ -600,6 +612,7 @@
 				tmPress = 0;
 				linkingNode = focaNode;
 				linkingContinuous = true;
+				editbar.style.display='none';
 			},380);
 		});
 		lnk.addEventListener(dragResizer.mv, function(e){
@@ -608,6 +621,7 @@
 		lnk.onclick = function(){
 			linkingNode = focaNode;
 			linkingContinuous = false;
+			editbar.style.display = 'none';
 			toast("请点击下一节点");
 		}
 		
@@ -700,6 +714,15 @@
 				}
 			}
 			node.remove();
+		}
+		
+		function expandMap(dw, dh){
+			debug('expandMap', dw, dh);
+			mapX += dw;
+			mapY += dh;
+			map.style.width = mapX+'px';
+			map.style.height = mapY+'px';
+			return mapX+","+mapY;
 		}
 		
 	</script>

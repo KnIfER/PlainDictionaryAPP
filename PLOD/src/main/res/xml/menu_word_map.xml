@@ -18,4 +18,6 @@
 
 <!--1--><item android:title="添加节点" android:id="@+id/add" android:icon="@drawable/ic_add_black_24dp" app:showAsAction="always" />
 
+<!--1--><item android:title="格点" android:id="@+id/grid" android:icon="@drawable/ic_view_comfy_2_black_24dp" app:showAsAction="always" />
+
 </menu>
