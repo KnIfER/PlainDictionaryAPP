@@ -287,6 +287,20 @@ public abstract class MdictServer extends NanoHTTPD {
 			return emptyResponse;
 		}
 		
+		if(key.equals("\\wordmap.json")) {
+//			if (Method.POST.equals(session.getMethod()))
+			{
+				try {
+//					session.parseBody(null);
+//					List<String> ids = Arrays.asList(session.getParameters().get("ids").get(0).split(","));
+					//SU.Log("dicts.json::", ids);
+					return newFixedLengthResponse(a.wordMap.getSheet(0)) ;
+				} catch (Exception e) {
+					return emptyResponse;
+				}
+			}
+		}
+		
 		if(key.equals("\\dicts.json")) {
 			SU.Log("dicts.json::", session.getParameters(), session.getMethod());
 			if (Method.POST.equals(session.getMethod())) {

@@ -150,11 +150,11 @@ function restoreMarks(pw) {
 	var t = _app.remarkByUrl(sid.get(), url);
 	debug('remarkByUrl???', url, t);
 	if(multi) {
-		t = t.split('\t'); // \n\n\n
 		var frames = document.getElementsByClassName('_PDict_body'), map=[];
 	 	for(var i=0,f;f=frames[i++];) {
 			map[f.getAttribute('pd_pos')] = f;
 		}
+		t = t.split('\t\n\0'); // \n\n\n
 		debug('remarkByUrl::multi::', t, 'map=',map);
 	 	for(var i=0,f,n;n=t[i];i+=2) {
 			f = map[t[i+1]];

@@ -5,7 +5,16 @@
 	tools:ignore="AppCompatResource"
 	>
 
-<!--0--><item android:title="刷新" android:id="@+id/refresh" android:icon="@drawable/ic_refresh" app:showAsAction="always" />
+<!--0--><item android:title="刷新" android:id="@+id/refresh" android:icon="@drawable/ic_refresh" app:showAsAction="never" />
+
+
+<!--1--><item android:title="删除" android:id="@+id/del" android:icon="@drawable/ic_baseline_delete_24" app:showAsAction="always" />
+
+<!--1--><item android:title="" android:id="@+id/sep"  app:showAsAction="always" />
+
+<!--&lt;!&ndash;1&ndash;&gt;<item android:title="撤销" android:id="@+id/undo" android:icon="@drawable/ic_baseline_undo_24" app:showAsAction="always" />-->
+<!--	-->
+<!--&lt;!&ndash;1&ndash;&gt;<item android:title="重做" android:id="@+id/redo" android:icon="@drawable/ic_baseline_redo_24" app:showAsAction="always" />-->
 
 <!--1--><item android:title="添加节点" android:id="@+id/add" android:icon="@drawable/ic_add_black_24dp" app:showAsAction="always" />
 

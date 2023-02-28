@@ -892,7 +892,7 @@
     }
 
     function restoreMarks(t, rootNode, doc) {
-        //log('fatal debug annot::restoreMarks::', t);
+        log('fatal debug annot::restoreMarks::', t);
         waiting = 0;
         if(t.length) {
             t = t.split('\0');

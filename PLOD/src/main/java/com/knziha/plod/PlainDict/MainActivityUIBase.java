@@ -8626,7 +8626,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (mime.equals("image/svg")) {
 									mime = "image/svg+xml";
 								}
-								return new WebResourceResponse(mime, "UTF-8", ret.getData());
+								WebResourceResponse resp = new WebResourceResponse(mime, "UTF-8", ret.getData());
+								resp.setResponseHeaders(CrossFireHeaders);
+								return resp;
 							}
 						} catch (Exception e) {
 							CMN.debug(url, e);
@@ -8803,7 +8805,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								String mime = ret.getMimeType();
 								int idx=mime.indexOf(";");
 								if(idx>0) mime = mime.substring(0, idx);
-								return new WebResourceResponse(mime, "UTF-8", ret.getData());
+								
+								WebResourceResponse resp = new WebResourceResponse(mime, "UTF-8", ret.getData());
+								resp.setResponseHeaders(CrossFireHeaders);
+								return resp;
 							}
 						} catch (Exception e) {
 							CMN.debug(url, e);

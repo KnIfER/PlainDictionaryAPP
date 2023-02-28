@@ -48,6 +48,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_DATA_v2 = "data";
 	public static final String TABLE_APPID_v2 = "appid";
 	
+	/** 记录单词导图 */
+	public static final String TABLE_WORD_MAP = "wordmap";
+	
 	/* 剪贴板 */
 	public static final String TABLE_PASTE_BIN = "pasteBin";
 	
@@ -371,6 +374,31 @@ if (!VersionUtils.AnnotOff) {
 					")";
 			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists pastbin_index ON pasteBin (chn, fav, creation_time, id)");
+
+
+//			db.execSQL("DROP TABLE IF EXISTS "+TABLE_WORD_MAP); //hot
+			// TABLE_WORD_MAP 记录单词导图
+			sqlBuilder = "create table if not exists " +
+					TABLE_WORD_MAP +
+					"(" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
+					", type INTEGER DEFAULT 0" + // 0=文本 150=连接
+					", text LONGVARCHAR" +
+					", sheet INTEGER DEFAULT 0"+
+					", x INTEGER NOT NULL"+
+					", y INTEGER NOT NULL"+
+					", w INTEGER DEFAULT 0"+
+					", h INTEGER DEFAULT 0"+
+					", a INTEGER DEFAULT 0"+
+					", b INTEGER DEFAULT 0"+
+					", color INTEGER DEFAULT 0"+
+					", opt INTEGER DEFAULT 0"+
+					", css LONGVARCHAR"+
+					", creation_time INTEGER NOT NULL"+
+					", last_edit_time INTEGER NOT NULL" +
+					", edit_count INTEGER DEFAULT 0 NOT NULL" +
+					")";
+			db.execSQL(sqlBuilder);
 			
 			if (preparedHasBookNoteForEntry ==null) {
 				preparedHasBookNoteForEntry = db.compileStatement("select id from " + TABLE_BOOK_NOTE_v2 + " where lex=? and bid=? and notesType>0");
