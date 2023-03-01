@@ -6,13 +6,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
 	>
-        <com.knziha.plod.widgets.FlowTextView
+        <TextView
 			android:id="@+id/indicator"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-			android:text="分享链接：" />
+			android:text="分享链接："
+			android:maxLines="3"
+			/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"

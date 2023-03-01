@@ -51,7 +51,7 @@ import java.util.List;
 public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHolder> {
 	public final BottomSheetDialog shareDialog;
 	private final View bottomSheet;
-    private final FlowTextView indicator;
+    private final /*Flow*/TextView indicator;
 	private final VU.TintListFilter tintListFilter;
 	private TextPaint textPainter;
     private ArrayList<AppInfoBean> list = new ArrayList<>();
@@ -62,7 +62,8 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	private boolean shareLink;
 	private boolean withIntent;
 	private int headBtnSz = 1;
-	//private String text;
+	public String text;
+	public String url;
 	
 	public AppIconsAdapter(Toastable_Activity a) {
 		textPainter = new TextPaint();
@@ -140,7 +141,13 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         int target = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
         textPainter.setColor(target);
         indicator.setTextColor(target);
-        indicator.setText(shareTargetsInfo1[withIntent?2:shareLink?1:0]);
+		String title = shareTargetsInfo1[withIntent ? 2 : shareLink ? 1 : 0];
+		if (shareLink && url!=null) {
+			title += url;
+		} else if(text!=null){
+			title += text;
+		}
+		indicator.setText(title);
         bottomSheet.setBackground(GlobalOptions.isDark?GrayBG:null);
     }
 	
@@ -159,11 +166,11 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 		if(withIntent) {
 			shareLink=false;
 			headBtnSz = 0;
-			shareTargetsInfo1[2] = text;
+			shareTargetsInfo1[2] = this.text=text;
 		} else {
 			shareLink=text==null;
 			if(shareLink) {
-				intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+				intent=new Intent(Intent.ACTION_VIEW, Uri.parse(this.url=url));
 				//this.text = url;
 			} else {
 //				if(shareWhat==1) {

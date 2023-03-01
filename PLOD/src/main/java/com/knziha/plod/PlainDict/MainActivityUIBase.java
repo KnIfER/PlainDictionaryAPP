@@ -6295,6 +6295,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				shareAdapter = (AppIconsAdapter) dlg.tag;
 			}
+			shareAdapter.url = url;
+			shareAdapter.text = text;
 			//CMN.pt("新建耗时：");
 			if (url==null) {
 				//url = currentWebView.getUrl();
