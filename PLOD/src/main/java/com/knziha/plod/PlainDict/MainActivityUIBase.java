@@ -6661,29 +6661,59 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							CMN.debug("viewMode::onClick isMultiRecord=", weblistHandler.isMultiRecord());
 							if(which>=0 && which<=2) {
 								//which=(which+1)%2;
-								if(weblistHandler.isMultiRecord()
+								if (weblistHandler.isMultiRecord()
 										|| PDICMainAppOptions.getLv2JointOneAsSingle()
-										&& ActivedAdapter==adaptermy2)
-								{
+										&& ActivedAdapter == adaptermy2) {
 									resetMerge(which, true);
 									if (PDICMainAppOptions.remMultiview()) {
 										PDICMainAppOptions.multiViewMode(which);
 									}
+								} else {
+									showT("请从“联合搜索”的内容视图打开。\n\n请点击主界面右上角的“1”按钮以搜索全部词典！");
+									return;
 								}
-								else return;
 							} else if(which==-1){
 								launchSettings(Multiview.id, Multiview.requestCode);
 							}
 							dialog.dismiss();
 						}
 					};
+					String[] items = new String[]{
+						"切换旧版本多页面视图列表"
+						, "切换新版合并的多页面模式"
+						, "切换新版屏风模式"
+					};
 					dd = new AlertDialog.Builder(this)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
-						.setSingleChoiceItems(new String[]{
-								"切换旧版本多页面视图列表"
-								, "切换新版合并的多页面模式"
-								, "切换新版屏风模式"
-						}, 0, listener)
+						.setSingleChoiceItems(items, 0, listener)
+						.setAdapter(new AlertController.CheckedItemAdapter(this, R.layout.singlechoice_plain, android.R.id.text1, items, null){
+							public View getView(int position, @Nullable View view, @NonNull ViewGroup parent) {
+								int schMode = mergeFrames();
+								try {
+									WebViewListHandler wlh = (WebViewListHandler) ((MenuBuilder) tagHolder.tag).tag;
+									WebViewmy wv = wlh.getWebContextNonNull();
+									if (ViewUtils.getNthParentNonNull(wv.rl, 1).getId() == R.id.webholder) {
+										schMode = 0;
+									} else if (wv.merge && !wlh.isFoldingScreens()) {
+										schMode = 1;
+									} else if (wlh.isMultiRecord() && !wlh.isFoldingScreens()) {
+										schMode = 2;
+									}
+								} catch (Exception e) {
+									CMN.debug(e);
+								}
+								View ret = super.getView(position, view, parent);
+								TextView tv = (TextView) ret;
+								if (schMode==position ^ TextUtils.regionMatches(tv.getText(), 0, " >> ", 0, 4)) {
+									if (schMode == position) {
+										tv.setText(" >> " + tv.getText());
+									} else {
+										tv.setText(tv.getText().toString().substring(4));
+									}
+								}
+								return ret;
+							}
+						}, listener)
 						.setTitleBtn(R.drawable.ic_settings, listener)
 						//.setWikiText(getString(R.string.wikiMultiViewMode), null)
 						.setTitle("内容页面设置").create();
@@ -6703,6 +6733,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					dd.dismiss();
 				}
 				ret = true;
+				//dd.getListView().setItemChecked(0, true);
 			}  break;
 			case R.id.setToSingleMode:{
 				if(isCombinedSearching) {

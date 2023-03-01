@@ -636,7 +636,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							}
 						}, listener)
 						.setSingleChoiceItems(items, 0, listener)
-						.setTitle("切换词典模式").create();
+						.setTitle("切换点译词典模式").create();
 				tkMultiV.setTag(new WeakReference<>(dd));
 				dd.getListView().setTag(dd);
 				dd.getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
