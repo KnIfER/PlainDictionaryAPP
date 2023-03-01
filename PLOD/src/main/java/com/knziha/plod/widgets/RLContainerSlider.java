@@ -76,6 +76,11 @@ public class RLContainerSlider extends FrameLayout {
 	public RLContainerSlider(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		detector = new GestureDetector(getContext(), gl);
+		try {
+			ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 400));
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 		density = GlobalOptions.density;
 		quickScaleThreshold = 20*density;
 		
@@ -275,6 +280,11 @@ public class RLContainerSlider extends FrameLayout {
 		if(flingDeteced) {
 			if(tapZoom) {
 				detector = new GestureDetector(getContext(), gl);
+				try {
+					ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 400));
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			}
 			flingDeteced =false;
 			if(dragged==2) resetSwipeIcon();
@@ -749,7 +759,7 @@ public class RLContainerSlider extends FrameLayout {
 			swipeRefresh = !swipeRefresh;
 			swipeRefreshAllow = false;
 		}
-		CMN.debug("quoTapZoom", swipeRefresh, slideTurn, tapZoom);
+		//CMN.debug("quoTapZoom", swipeRefresh, slideTurn, tapZoom);
 		nothing = !swipeRefresh && !slideTurn && !tapZoom;
 	}
 	
