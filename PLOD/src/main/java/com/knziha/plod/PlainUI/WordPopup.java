@@ -1268,6 +1268,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		_treeBuilder.setKeyClashHandler(searchText);
 		ArrayList<myCpr<String, Long>> tmpRangeReceiver = new ArrayList<>(loadManager.md_size/2);
 		LongSparseArray<ArrayList<Long>> refs = new LongSparseArray<>();
+		LongSparseArray<Object> sched = new LongSparseArray<>();
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
 			if (phTmp != null) {
@@ -1316,17 +1317,24 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				long id;
 				while (bookId != -1) {
 					if (i >= firstPage.size()) id = -1;
-					else id = firstPage.get(i);
+					else {
+						id = firstPage.get(i);
+						sched.put(firstPage.get(i+1), this);
+					}
 					if (bookId != id) {
 						ArrayList<Long> ref = refs.get(bookId);
 						if (ref != null) {
 							for (int j = 0; j < ref.size(); j++) {
-								firstPage.add(i, bookId);
-								firstPage.add(i+1, ref.get(j));
-								i += 2;
+								long rp = ref.get(j);
+								if (sched.get(rp)==null) {
+									firstPage.add(i, bookId);
+									firstPage.add(i+1, rp);
+									i += 2;
+								}
 							}
 						}
 						bookId = id;
+						sched.clear();
 					}
 					i += 2;
 				}
