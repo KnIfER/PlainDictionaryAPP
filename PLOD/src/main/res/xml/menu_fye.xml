@@ -19,11 +19,14 @@
 	<!--6--><item android:title="显示全部词典" android:id="@+id/showAll" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
 	</group>
 
-	<!--7--><item android:title="设置…" android:id="@+id/toolbar_action3" android:icon="@drawable/downward" app:showAsAction="never"/>
+	<!--9--><item android:title="合并底栏 |  设置…" android:id="@+id/mergeTools" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
 
-	<!--8--><item android:title="点击翻译" android:id="@+id/tapSch" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+	<group android:id="@+id/tap" >
+	<!--8--><item android:title="点击翻译 | 打开" android:id="@+id/tapSch" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-	<!--9--><item android:title="合并工具底栏" android:id="@+id/mergeTools" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
+	<!--13--><item android:title="点击查词 | 设置" android:id="@+id/tapSch1" android:icon="@drawable/ic_click_search" app:showAsAction="never" android:checkable="true"/>
+	</group>
+
 
 	<group android:id="@+id/sorting"
 		tools:ignore="DuplicateIds">
@@ -33,6 +36,5 @@
 
 	<!--12--><item android:title="暂停自动搜索" android:id="@+id/pause" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
 	</group>
-
 
 </menu>

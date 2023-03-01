@@ -2499,6 +2499,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		boolean isHalo=!GlobalOptions.isDark;
 		MainAppBackground = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
 		int filteredColor = MainAppBackground;//CU.MColor(MainBackground,ColorMultiplier);
 		CMN.AppBackground = MainBackground;
 		UIData.viewpager.setBackgroundColor(AppWhite);
@@ -2531,8 +2532,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		UIData.browserWidget0.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
 		
 		MainPageBackground = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
-		
-		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
 		
 		calcTints();
 		

@@ -3396,4 +3396,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=20, shift=1) public static boolean clearHistoryOnSch() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=20, shift=1) public static void clearHistoryOnSch(boolean val) { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=21, shift=1) public static boolean fyeTapViewDef() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=21, shift=1) public static void fyeTapViewDef(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=22, shift=1) public static boolean fyeTapViewDefInNewWnd() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=22, shift=1) public static void fyeTapViewDefInNewWnd(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
 }

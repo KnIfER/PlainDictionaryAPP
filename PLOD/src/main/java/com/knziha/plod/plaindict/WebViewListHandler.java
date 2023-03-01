@@ -1419,6 +1419,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
+	public void vartakelayaTowardsDarkMode() {
+		ViewGroup vg = getViewGroup();
+		for(int i=0;i<vg.getChildCount();i++) {
+			View ca = vg.getChildAt(i);
+			if (ca!=null && ca.getTag() instanceof WebViewmy) {
+				BookPresenter mdTmp = ((WebViewmy) ca.getTag()).presenter;
+				mdTmp.vartakelayaTowardsDarkMode(null);
+			}
+		}
+	}
+	
 	public static class HighlightVagranter {
 		ViewGroup webviewHolder;
 		int HlightIdx;

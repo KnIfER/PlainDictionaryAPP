@@ -2,6 +2,7 @@ package com.knziha.plod.PlainUI;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -307,5 +308,9 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 			return dialog.getCurrentFocus();
 		}
 		return null;
+	}
+	
+	public Context getContext() {
+		return a;
 	}
 }

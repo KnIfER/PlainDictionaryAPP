@@ -1424,10 +1424,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void fix_dm_color() {
-		//CMN.Log("fix_dm_color");
 		boolean isDark = GlobalOptions.isDark;
-		boolean nii=contentUIData.browserWidget12.getTag(R.id.image)==null;
-		ViewGroup[] holders = new ViewGroup[]{webSingleholder, weblistHandler.getViewGroup()};
 		String js = isDark ? opt.DarkModeIncantation(this) : DeDarkModeIncantation;
 		js+=";app.tintBackground(sid.get())";
 		weblistHandler.evalJsAtAllFrames(js);
@@ -1438,9 +1435,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		popupMenuRef.clear();
-		if(peruseView!=null) {
-			peruseView.refreshUIColors(MainBackground);
-		}
 	}
 
 	public WordPopup wordPopup = new WordPopup(this);
@@ -5672,6 +5666,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			AppBlack = dark?Color.WHITE:Color.BLACK;
 			AppWhite = dark?Color.BLACK:Color.WHITE;
 			MainAppBackground = dark?ColorUtils.blendARGB(MainBackground, Color.BLACK, 0.9f):MainBackground;
+			MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
+			calcTints();
 			if(drawerFragment!=null){
 				drawerFragment.mDrawerListLayout.setBackgroundColor(dark?Color.BLACK:0xffe2e2e2);
 				drawerFragment.HeaderView.setBackgroundColor(AppWhite);
@@ -5683,17 +5679,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				DBrowser.checkColors();
 			}
 			if(peruseView !=null) {
-				//peruseView = null;
-				//CMN.debug("peruseView.isHidden()::", peruseView.isHidden());
-				if (!peruseView.isHidden()) {
-					peruseView.dismiss();
-				} else {
-					peruseView.bNextNoHide = true;
-				}
 				peruseView.refreshUIColors(MainAppBackground);
 			}
 			for(PlainAppPanel pane : settingsPanels) {
-				pane.refresh();
+				if (pane.getContext()!=null) {
+					pane.refresh();
+					if (pane.weblistHandler!=null) {
+						pane.weblistHandler.vartakelayaTowardsDarkMode();
+					}
+				}
 			}
 			if(adaptermy==null) {
 				return;
@@ -5705,18 +5699,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				adaptermy4.notifyDataSetChanged();
 			}
 			setchooser.clear();
-			if(ActivedAdapter!=null){
-				webviewHolder = ActivedAdapter.webviewHolder;
-				if(webviewHolder!=null) {
-					for(int i=0;i<webviewHolder.getChildCount();i++) {
-						View ca = webviewHolder.getChildAt(i);
-						if (ca!=null && ca.getTag() instanceof WebViewmy) {
-							BookPresenter mdTmp = ((WebViewmy) ca.getTag()).presenter;
-							mdTmp.vartakelayaTowardsDarkMode(null);
-						}
-					}
-				}
-			}
+			weblistHandler.vartakelayaTowardsDarkMode();
 			animateUIColorChanges();
 		} catch (Exception e) {
 			CMN.debug(e);
@@ -6769,7 +6752,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			/* 点击查词 */
-			case R.id.tapSch1:{
+			case R.id.tapSch1: {
 				if(isLongClicked){ // 显示设置
 					wordPopup.init();
 					wordPopup.onClick(wordPopup.popupContentView.findViewById(R.id.mode));
@@ -6839,7 +6822,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					};
 					//ViewUtils.setOnClickListenersOneDepth(cv, click, 999, null);
 					View v = vv;
-					View[] ticks = new View[5];
+					View[] ticks = new View[6];
 					cv.setTag(ticks);
 					int tc=0;
 					while((v=ViewUtils.getNextView(v))!=null) {
@@ -6859,7 +6842,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				View[] ticks = (View[]) dd.mAlert.mView.getTag();
 				ticks[0].setActivated((weblist.tapSel & 0x4) != 0);
 				ticks[1].setActivated((weblist.tapSel & 0x2) != 0);
-				ticks[4].setActivated(weblist.tapSch);
+				ticks[4].setActivated(weblist.tapSch&&!weblist.tapDef);
+				ticks[5].setActivated(weblist.tapSch&&weblist.tapDef);
 				ticks[2].setActivated(weblist.zhTrans==1);
 				ticks[3].setActivated(weblist.zhTrans==2);
 				showMenuDialog(tagHolder, mmi.mMenu, dd);

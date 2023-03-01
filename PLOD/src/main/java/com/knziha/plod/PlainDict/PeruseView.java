@@ -45,6 +45,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.ActionMenuPresenter;
@@ -310,6 +311,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
 		
 		AllMenus = (MenuBuilder) toolbar.getMenu();
+		AllMenus.multiColumn = 1|2;
 		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 //		MainMenus = ViewUtils.MapNumberToMenu(AllMenus, );
 		PageMenus = AllMenus.mItems;
@@ -615,8 +617,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(content!=null) {
 				root=content;
 			}
-			Toastable_Activity.setStatusBarColor(win, GlobalOptions.isDark?Color.BLACK:MainBackground);
-			//win.setStatusBarColor(CMN.MainBackground);
+//			Toastable_Activity.setStatusBarColor(win, GlobalOptions.isDark?Color.BLACK:MainBackground);
+
+//			win.setStatusBarColor(CMN.MainBackground);
 			View view = win.getDecorView();
 			view.setBackground(null);
 			
@@ -864,13 +867,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void showPeruseTweaker() {
 		MainActivityUIBase a = getMainActivity();
 		final SettingsPanel settings = new SettingsPanel(a, opt
-				, new String[][]{new String[]{null, "记忆页面位置", "同一词典使用相同的页面缩放", "允许滑动翻页", "使用页面双击缩放"}}
+				, new String[][]{new String[]{null, "记忆页面位置", "同一词典使用相同的页面缩放", "允许滑动翻页", "使用页面双击缩放", "在新窗口打开点击查词"}}
 				, new int[][]{new int[]{Integer.MAX_VALUE
 				//, makeDynInt(100, 0, weblistHandler.tapSch)
 				, makeInt(6, 25, true) // fyeRemPos
 				, makeInt(6, 26, false) // fyeRemScale
 				, makeInt(6, 37, true) // turnPageFye
 				, makeInt(6, 35, false) // tapZoomFye
+				, makeInt(9, 22, true) // fyeTapViewDefInNewWnd
 		}}, null);
 		settings.init(a, root);
 		settings.setActionListener(new SettingsPanel.ActionListener() {
@@ -1110,21 +1114,18 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		CMN.debug("peruseView::refreshUIColors::", MainBackground);
 		MainActivityUIBase a = getMainActivity();
 		boolean isDark = GlobalOptions.isDark;
-
 		int filteredColor = isDark?Color.BLACK:MainBackground; //0xff8f8f8f
-
 		if(PerusePageSearchbar!=null)
 			PerusePageSearchbar.setBackgroundColor(filteredColor);
-		
 		if(mDialog!=null)
 			Toastable_Activity.setStatusBarColor(mDialog.getWindow(), filteredColor);
 		
 		int f_b = ColorUtils.blendARGB(filteredColor, Color.WHITE, 0.20f);
-		
 		handle1.getBackground().setColorFilter(f_b, PorterDuff.Mode.LIGHTEN);
-		
 		handle2.getBackground().setColorFilter(f_b, PorterDuff.Mode.LIGHTEN);
-
+		gridAdapter.notifyDataSetChanged();
+		entryAdapter.notifyDataSetChanged();
+		
 		mWebView.evaluateJavascript(isDark? opt.DarkModeIncantation(a): MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		bottombar.setBackgroundColor(filteredColor);
@@ -1143,6 +1144,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if (dummyPanel.ForegroundColor != color) {
 				dummyPanel.ForegroundColor = color;
 				ViewUtils.setForegroundColor(toolbar, a.tintListFilter);
+				ViewUtils.setForegroundColor(bottombar, a.tintListFilter);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 					handle2.setElevation(a.MainLumen>0.5?10*GlobalOptions.density:0);
 				}
@@ -1289,6 +1291,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				DBrowser = null;
 				return;
 			}
+			if(opt.revisitOnBackPressed()) {
+				//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
+				if (mWebView.canGoBack()) {
+					MainActivityUIBase.layoutScrollDisabled = false;
+					mWebView.goBack();
+					return;
+				}
+			}
 		}
 		if(ViewUtils.removeIfParentBeOrNotBe(contentview, main_pview_layout, true)){
 			return;
@@ -1303,7 +1313,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				&& (PDICMainAppOptions.storePageTurn() == 2)) {
 			a.addHistory(mWebView.word(), SearchUI.Fye.表, weblistHandler, null);
 		}
-		((ViewGroup)contentview.getParent()).removeView(contentview);
+		ViewUtils.removeView(contentview);
 	}
 	
 	
@@ -2106,7 +2116,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				viewholder vh = (viewholder) child.getTag();
 				if(vh!=null) vh.tv.setTextColor(a.MainLumen>0.5?Color.WHITE:Color.BLACK);
 			}
-			if (mWebView.presenter!=currentDictionary || mWebView.currentPos!=pos)
+			contentview.setVisibility(View.VISIBLE);
+			if (mWebView.presenter!=currentDictionary || mWebView.currentPos!=pos || contentview.getParent()==null)
 			{
 				ActivedAdapter=this;
 				lastClickedPosBefore = lastClickedPos;
@@ -2171,13 +2182,17 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						a.addHistory(key , stLv, weblistHandler, stLv==SearchUI.Fye.MAIN?etTools:null);
 					}
 				}
-				
 			}
 	
 			lastClickedPos = pos;
 	
 			resetBottomBar();
-	
+			
+			if(PDICMainAppOptions.revisitOnBackPressed())
+			if (/*userCLick && */!machine) {
+				mWebView.cleanPage = true;
+			}
+			
 			SimpleTextNotifier tn = a.getTopSnackView();
 			if(!(tn.isVisible() && tn.getText().equals(currentKeyText))) {
 				tn.setNextOffsetScale(0.24f);
@@ -2443,26 +2458,43 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		return onMenuItemClickmy(item,true);
+		return fyeMenuClick(item, true);
 	}
 
-	public boolean onMenuItemClickmy(MenuItem m,boolean fromUser) {
+	public boolean fyeMenuClick(MenuItem m, boolean fromUser) {
 		MenuItemImpl trumen = (MenuItemImpl)m;
 		boolean isLongClicked=trumen.isLongClicked!=0;
-		//CMN.Log("onMenuItemClickmy::", m, isLongClicked);
+		//CMN.debug("fyeMenuClick::", m, isLongClicked);
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
 		MainActivityUIBase a = getMainActivity();
 		boolean checked = !m.isChecked();
 		int id=m.getItemId();
-		if(ret) {
-			if(m.isCheckable())
-				m.setChecked(checked);
-			switch(id) {
-				/* 搜索 */
-				case R.id.multiline: {
-					if (TextUtils.equals(firstMenu.getTitle(), "翻阅模式")) {
-						mWebView.evaluateJavascript("getSelection().toString()", value -> {
+		WebViewListHandler wlh = weblistHandler;
+		switch(id) {
+			/* 搜索 */
+			case R.id.multiline: {
+				if(isLongClicked) break;
+				if (TextUtils.equals(firstMenu.getTitle(), "翻阅模式")) {
+					mWebView.evaluateJavascript("getSelection().toString()", value -> {
+						String newKey = "";
+						if (value.length() > 2) {
+							value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+							if (value.length() > 0) {
+								newKey = value;
+							}
+						}
+						a.JumpToPeruseModeWithWord(newKey);
+					});
+				} else {
+				
+				}
+			} break;
+			case R.id.tapSch: {
+				if(isLongClicked){ // 打开点击翻译
+					WebViewmy wv = wlh.getWebContextNonNull();
+					if (trumen.isLongClicked==1 && wv != null && wv.bIsActionMenuShown) {
+						wv.evaluateJavascript("getSelection().toString()", value -> {
 							String newKey = "";
 							if (value.length() > 2) {
 								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
@@ -2470,91 +2502,138 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 									newKey = value;
 								}
 							}
-							a.JumpToPeruseModeWithWord(newKey);
+							if (!TextUtils.isEmpty(newKey)) {
+								a.popupWord(newKey, null, 0, wv, false);
+							} else {
+								a.popupWord(null, null, -100, null, false);
+							}
 						});
 					} else {
-					
+						a.popupWord(null, null, -100, null, false);
 					}
-				} break;
-				case R.id.tapSch: {
-					PDICMainAppOptions.fyeTapSch(weblistHandler.togTapSch());
-					m.setChecked(weblistHandler.tapSch);
-				} break;
-				/* 搜索 */
-				case R.id.search:
-					int textFlag = 0;
-					if (currentDictionary.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-						textFlag = -1;
-					tw1.onTextChanged(etSearch.getText(), -1, -1, textFlag);
-					//a.showT("单本词典列表搜索！");
+					closeMenu=ret=true;
+				} else {
+					if (wlh.tapDef) {
+						wlh.tapDef = false;
+						PDICMainAppOptions.fyeTapViewDef(false);
+						if(!wlh.tapSch) opt.fyeTapSch(wlh.togTapSch());
+					} else {
+						opt.fyeTapSch(wlh.togTapSch());
+					}
+					m.setChecked(wlh.tapSch);
+					MenuItem next = VU.findInMenu(trumen.mMenu.mItems, R.id.tapSch1);
+					if(next!=null) next.setChecked(false);
+					if (a.accessMan.isEnabled()) {
+						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
+					}
+				}
+			} break;
+			case R.id.tapSch1: {
+				if(isLongClicked){ // 显示设置
+					a.wordPopup.init();
+					a.wordPopup.onClick(a.wordPopup.popupContentView.findViewById(R.id.mode));
+					closeMenu=ret=true;
+				} else {
+					if(!wlh.tapSch) wlh.tapDef=true;
+					else wlh.tapDef = !wlh.tapDef;
+					PDICMainAppOptions.fyeTapViewDef(wlh.tapDef);
+					if (wlh.tapDef ^ wlh.tapSch) {
+						opt.fyeTapSch(wlh.togTapSch());
+					}
+					m.setChecked(wlh.tapDef);
+					MenuItem next = VU.findInMenu(trumen.mMenu.mItems, R.id.tapSch);
+					if(next!=null) next.setChecked(false);
+					if (a.accessMan.isEnabled()) {
+						root.announceForAccessibility(((wlh.tapSch && wlh.tapDef)?"已开启":"已关闭")+"点击查词");
+					}
+				}
+			} break;
+			/* 搜索 */
+			case R.id.search:
+				if(isLongClicked) {
+					fromLv1 = false;
+					startSearch(a);
+					//a.showT("已执行联合搜索！");
+					//ret = true;
+					break;
+				}
+				int textFlag = 0;
+				if (currentDictionary.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+					textFlag = -1;
+				tw1.onTextChanged(etSearch.getText(), -1, -1, textFlag);
+				//a.showT("单本词典列表搜索！");
 				break;
-				/* 定位列表位置 */
-				case R.id.locate:
+			/* 定位列表位置 */
+			case R.id.locate:
+				if(isLongClicked) break;
 //					if (true) { //tg
 //					}
-					if(selection!=null) {
-						int gvPos=SelectedV;//((DictTitleHolder)selection.getTag()).pos;
-						if (bExpanded)
-							gridView.setSelection(NumPreEmpter+gvPos);
-						else
-							scrollGridToCenterNaive(gvPos);
-					}
-					scrollListToCenter(entryAdapter.lastClickedPos);
+				if(selection!=null) {
+					int gvPos=SelectedV;//((DictTitleHolder)selection.getTag()).pos;
+					if (bExpanded)
+						gridView.setSelection(NumPreEmpter+gvPos);
+					else
+						scrollGridToCenterNaive(gvPos);
+				}
+				scrollListToCenter(entryAdapter.lastClickedPos);
 				break;
-				/* 页内搜索 */
-				case R.id.schPage:
-					toggleSearchPage();
+			/* 页内搜索 */
+			case R.id.schPage:
+				if(isLongClicked) break;
+				toggleSearchPage();
 				break;
-				/* 设置翻阅 */
-				case R.id.toolbar_action3:
+			/* 重置搜索词 */
+			case R.id.remPagePos:
+				if(isLongClicked) break;
+				etSearch.setText(schKey);
+				break;
+			case R.id.mergeTools: {
+				if (isLongClicked) {
+					/* 设置翻阅 */
 					showPeruseTweaker();
-				break;
-				/* 重置搜索词 */
-				case R.id.remPagePos:
-					etSearch.setText(schKey);
-				break;
-				case R.id.mergeTools: {
+					closeMenu=ret=true;
+				} else {
+					m.setChecked(checked);
 					PDICMainAppOptions.setMergePeruseBottombars(checked);
 					resetBottomBar();
-				} break;
-				/* 添加全部 */
-				case R.id.showAll: {
-					a.opt.setPeruseAddAll(checked);
-					resetAddAll();
-				} break;
-				/* 保持当前网格不变 */
-				case R.id.keepGroup: {
-					PDICMainAppOptions.fyeKeepGroup(checked);
-					a.showTopSnack(PeruseTorso, checked?"保持词典组合不变，不重新搜索。":"启动时重新搜索或添加全部！", 0.8f, -1, -1, 1);
-					closeMenu = false;
-				} break;
-				/* 保持当前词典不变 */
-				case R.id.keepBook: {
-					PDICMainAppOptions.fyeKeepBook(checked);
-					a.showTopSnack(PeruseTorso, checked?"保持词典不变，不自动切换。":"启动时切换至当前词典！", 0.8f, -1, -1, 1);
-					closeMenu = false;
-				} break;
-				case R.id.translate: {
-					a.onMenuItemClick(trumen);
-				} break;
-				case R.id.pause: {
-					PDICMainAppOptions.fyePaused(checked);
-					a.showTopSnack(PeruseTorso, checked?"需点击搜索按钮，手动触发搜索":"打字或切换词典时立即自动搜索！", 0.8f, -1, -1, 1);
-					closeMenu = false;
-				} break;
-			}
-		}
-		else {
-			//ret = trumen.isActionButton();
-			if(id==R.id.search) {
-				fromLv1 = false;
-				startSearch(a);
-				//a.showT("已执行联合搜索！");
-				//ret = true;
-			}
+				}
+			} break;
+			/* 添加全部 */
+			case R.id.showAll: {
+				if(isLongClicked) break;
+				m.setChecked(checked);
+				a.opt.setPeruseAddAll(checked);
+				resetAddAll();
+			} break;
+			/* 保持当前网格不变 */
+			case R.id.keepGroup: {
+				if(isLongClicked) break;
+				m.setChecked(checked);
+				PDICMainAppOptions.fyeKeepGroup(checked);
+				a.showTopSnack(PeruseTorso, checked?"保持词典组合不变，不重新搜索。":"启动时重新搜索或添加全部！", 0.8f, -1, -1, 1);
+				closeMenu = false;
+			} break;
+			/* 保持当前词典不变 */
+			case R.id.keepBook: {
+				if(isLongClicked) break;
+				m.setChecked(checked);
+				PDICMainAppOptions.fyeKeepBook(checked);
+				a.showTopSnack(PeruseTorso, checked?"保持词典不变，不自动切换。":"启动时切换至当前词典！", 0.8f, -1, -1, 1);
+				closeMenu = false;
+			} break;
+			case R.id.translate: {
+				if(isLongClicked) break;
+				a.onMenuItemClick(trumen);
+			} break;
+			case R.id.pause: {
+				if(isLongClicked) break;
+				PDICMainAppOptions.fyePaused(checked);
+				a.showTopSnack(PeruseTorso, checked?"需点击搜索按钮，手动触发搜索":"打字或切换词典时立即自动搜索！", 0.8f, -1, -1, 1);
+				closeMenu = false;
+			} break;
 		}
 		if(closeMenu)
-			closeIfNoActionView(trumen);
+			MainActivityUIBase.closeIfNoActionView(trumen);
 		return ret;
 	}
 	
@@ -2592,10 +2671,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 		}
 		onViewAttached(a, true);
-	}
-
-	void closeIfNoActionView(MenuItemImpl mi) {
-		if(mi!=null && !mi.isActionButton()) toolbar.getMenu().close();
 	}
 
 	public String currentDisplaying() {

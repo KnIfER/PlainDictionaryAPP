@@ -961,7 +961,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (!invoker.weblistHandler.bShowingInPopup)
 			{
 				boolean newWnd = PDICMainAppOptions.tapDefInNewWindow1();
-				if (invoker.merge/* && invoker.weblistHandler.isMultiRecord() && !invoker.weblistHandler.isFoldingScreens()*/) {
+				if (invoker.peruseView!=null) {
+					newWnd = PDICMainAppOptions.fyeTapViewDefInNewWnd();
+				}
+				else if (invoker.merge/* && invoker.weblistHandler.isMultiRecord() && !invoker.weblistHandler.isFoldingScreens()*/) {
 					newWnd = PDICMainAppOptions.tapDefInNewWindowMerged();
 				}
 				else if (ViewUtils.getNthParentNonNull(invoker.rl, 1).getId()==R.id.webholder) {

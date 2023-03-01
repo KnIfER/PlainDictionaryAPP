@@ -906,6 +906,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 	
 	public void resetStatusForeground(View decorView) {
+		CMN.debug("resetStatusForeground::");
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			if (decorView == null) {
 				decorView = getWindow().getDecorView();
