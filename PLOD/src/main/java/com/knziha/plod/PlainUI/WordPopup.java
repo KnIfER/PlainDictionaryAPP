@@ -19,6 +19,8 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.LongSparseArray;
+import android.util.SparseLongArray;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +49,7 @@ import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -79,6 +82,7 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
+import com.knziha.rbtree.additiveMyCpr1;
 
 import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
@@ -1262,6 +1266,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
 		//CMN.debug("isParagraph::", isParagraph);
 		_treeBuilder.setKeyClashHandler(searchText);
+		ArrayList<myCpr<String, Long>> tmpRangeReceiver = new ArrayList<>(loadManager.md_size/2);
+		LongSparseArray<ArrayList<Long>> refs = new LongSparseArray<>();
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
 			if (phTmp != null) {
@@ -1270,15 +1276,84 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					if(book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
 						CrashHandler.hotTracingObject = book;
 						_treeBuilder.resetRealmer(book.getId());
-						book.bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task, false);
+						UniversalDictionaryInterface bookImpl = book.bookImpl;
+						int res = bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task, false);
+						if (res!=0) {
+							for (UniversalDictionaryInterface forma:a.forms) {
+								int alternate = forma.guessRootWord(bookImpl, searchText);
+								if (true && alternate>=0) {
+									tmpRangeReceiver.clear();
+									String alter = bookImpl.getEntryAt(alternate);
+									CMN.debug("alternate::wp::", bookImpl.getEntryAt(alternate));
+									res = bookImpl.lookUpRangeQuick(alternate, alter, tmpRangeReceiver, null, bookImpl.getBooKID(), 1, task, false);
+									if (res >= 0) {
+										int max = 15;
+										ArrayList<Long> arr = new ArrayList(res);
+										for (int j = 0; j < Math.min(res, max); j++)
+											arr.add(tmpRangeReceiver.get(j).value);
+										refs.put(bookImpl.getBooKID(), arr);
+									}
+								}
+							}
+						}
 					}
 				} catch (Exception e) {
 					CMN.Log(CrashHandler.hotTracingObject, e);
 				}
 			}
 		}
-		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), searchText);
-		if (rec.FindFirstIdx(searchText, task) && taskVer==taskVersion.get()) {
+		ArrayList<additiveMyCpr1> data = _treeBuilder.flatten();
+		resultRecorderCombined rec = new resultRecorderCombined(a, data, searchText);
+		rec.FindFirstIdx(searchText, task);
+		boolean found = rec.size() > 0;
+		boolean reflected = refs.size() > 0;
+		if (taskVer==taskVersion.get()) {
+			if (found && reflected) {
+				//CMN.debug("wp::bat::合并!!");
+				ArrayList<Long> firstPage = rec.getRecordAt(0);
+				int i = 0;
+				long bookId = firstPage.get(i);
+				long id;
+				while (bookId != -1) {
+					if (i >= firstPage.size()) id = -1;
+					else id = firstPage.get(i);
+					if (bookId != id) {
+						ArrayList<Long> ref = refs.get(bookId);
+						if (ref != null) {
+							for (int j = 0; j < ref.size(); j++) {
+								firstPage.add(i, bookId);
+								firstPage.add(i+1, ref.get(j));
+								i += 2;
+							}
+						}
+						bookId = id;
+					}
+					i += 2;
+				}
+			}
+			else if(reflected){
+				//CMN.debug("wp::bat::纯折构!!");
+				ArrayList<Long> firstPage = new ArrayList<>();
+				int realmCount = 0;
+				for (int i = 0; i < loadManager.md_size && task.get(); i++) {
+					long bookId = loadManager.getBookIdAt(i);
+					ArrayList<Long> ref = refs.get(bookId);
+					if (ref != null) {
+						for (int j = 0; j < ref.size(); j++) {
+							firstPage.add(i, bookId);
+							firstPage.add(i+1, ref.get(j));
+							i += 2;
+						}
+						realmCount++;
+					}
+				}
+				data.clear();
+				data.add(new additiveMyCpr1());
+				data.get(0).key = searchText;
+				data.get(0).value = firstPage;
+				data.get(0).realmCount = realmCount;
+				rec = new resultRecorderCombined(a, data, searchText);
+			}
 			this.rec = rec;
 			harvest(); // multiple!
 		}
@@ -1655,26 +1730,26 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void PerformSearch(int mType, AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
-		if(mType==TASK_POP_SCH){
-			if(schMode==0||popupForceId!=null) SearchOne(task, taskVer, taskVersion);
-			else SearchMultiple(task, taskVer, taskVersion);
-		}
-		else if(mType==TASK_POP_NAV)
-			SearchNxt(false, task, taskVer, taskVersion);
-		else if(mType==TASK_POP_NAV_NXT)
-			SearchNxt(true, task, taskVer, taskVersion);
-		else if(mType==TASK_LOAD_HISTORY && etTools!=null) {
-			etTools.LoadHistory(task);
-			etTools=null;
-		}
-		else if(mType==TASK_FYE_SCH) {
-			a.peruseView.SearchAll(a, task);
-		}
-		else if(mType==TASK_UPD_SCH) {
-			((PDICMainActivity)a).checkUpdate(task);
-		}
-		else if(mType==TASK_TTS) {
-			((MainActivityUIBase)a).ttsHub.doSendText();
+		try {
+			if (mType == TASK_POP_SCH) {
+				if (schMode == 0 || popupForceId != null) SearchOne(task, taskVer, taskVersion);
+				else SearchMultiple(task, taskVer, taskVersion);
+			} else if (mType == TASK_POP_NAV)
+				SearchNxt(false, task, taskVer, taskVersion);
+			else if (mType == TASK_POP_NAV_NXT)
+				SearchNxt(true, task, taskVer, taskVersion);
+			else if (mType == TASK_LOAD_HISTORY && etTools != null) {
+				etTools.LoadHistory(task);
+				etTools = null;
+			} else if (mType == TASK_FYE_SCH) {
+				a.peruseView.SearchAll(a, task);
+			} else if (mType == TASK_UPD_SCH) {
+				((PDICMainActivity) a).checkUpdate(task);
+			} else if (mType == TASK_TTS) {
+				((MainActivityUIBase) a).ttsHub.doSendText();
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
