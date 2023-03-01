@@ -1436,13 +1436,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		popupMenuRef.clear();
 	}
-
-	public WordPopup wordPopup = new WordPopup(this);
-	public WordMap wordMap = new WordMap(this);
-	public TTSHub ttsHub = new TTSHub(this);
 	
 	public SimpleMorphs simpleMorphs = new SimpleMorphs();
 	public ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
+	
+	public WordPopup wordPopup = new WordPopup(this);
+	public WordMap wordMap = new WordMap(this);
+	public TTSHub ttsHub = new TTSHub(this);
 	
 	public void fix_pw_color() {
 		ChooseFavorDialog.clear();

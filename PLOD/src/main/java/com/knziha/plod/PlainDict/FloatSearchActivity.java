@@ -704,6 +704,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		super.findFurtherViews();
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
+		ivBack.setOnClickListener(this);
 		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
 		
 		//contentviewDetachType = 0;
@@ -814,13 +815,15 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		switch(id) {
 			//返回
 			case R.id.ivBack:{
-				if((etSearch_toolbarMode&1)==0) {//search
+				if((etSearch_toolbarMode&1)==0) {
+					//CMN.debug("search::");
 					//bWantsSelection=true;
 					if(etSearch.getText().toString().trim().length()>0) {
 						bIsFirstLaunch=true;
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 					}
-				} else {//back
+				} else {
+					//CMN.debug("back::");
 					contentUIData.webcontentlister.setVisibility(View.GONE);
 					bWantsSelection=false;
 					if(webSingleholder.getChildCount()!=0) {
