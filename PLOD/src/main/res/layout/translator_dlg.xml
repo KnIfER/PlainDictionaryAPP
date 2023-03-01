@@ -18,13 +18,14 @@
 			style="@style/singlechoice_plain_theme1"
 			android:text="使用谷歌翻译"
 			android:layout_width="0dp"
-			android:layout_weight="1"
+			android:layout_weight="2"
 			/>
 		<TextView
 			android:id="@string/close"
 			style="@style/singlechoice_plain_theme1"
-			android:text="关闭翻译"
-			android:layout_width="wrap_content"
+			android:text="关闭"
+			android:layout_width="0dp"
+			android:layout_weight="1"
 			/>
 	</LinearLayout>
 

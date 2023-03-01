@@ -6686,13 +6686,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}, 0, listener)
 						.setTitleBtn(R.drawable.ic_settings, listener)
 						//.setWikiText(getString(R.string.wikiMultiViewMode), null)
-						.setTitle("内容页面设置").show();
-					dd.mAlert.wikiBtn.getLayoutParams().width=GlobalOptions.btnMaxWidth;
+						.setTitle("内容页面设置").create();
+					topDlg(dd.getWindow(), PDICMainAppOptions.topDialogViewMode());
+					dd.show();
+ 					dd.mAlert.wikiBtn.getLayoutParams().width=GlobalOptions.btnMaxWidth;
 					dd.mAlert.wikiBtn.getLayoutParams().height=GlobalOptions.btnMaxWidth*2/3;
 					dd.mAlert.wikiBtn.setPadding(0,0,0,0);
 					dd.mAlert.wikiSep.getLayoutParams().width=GlobalOptions.btnMaxWidth/5;
 					((LinearLayout.LayoutParams)dd.mAlert.wikiSep.getLayoutParams()).weight=0;
 					tagHolder.tag = null;
+				} else {
+					topDlg(dd.getWindow(), PDICMainAppOptions.topDialogViewMode());
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 				if (bSet) {
@@ -6735,19 +6739,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					closeMenu=ret=true;
 				} else {
 					if (wlh.tapDef) {
-						wlh.tapDef = false;
-						if (wlh.bIsPopup) {
-							PDICMainAppOptions.tapDefPupup(false);
-						} else {
-							PDICMainAppOptions.tapViewDefMain(false);
-						}
-						if(!wlh.tapSch) opt.tapSch(wlh.togTapSch());
+						wlh.tapDef(false);
+						wlh.tapSch(true);
 					} else {
-						opt.tapSch(wlh.togTapSch());
+						wlh.tapSch(!wlh.tapSch);
 					}
-					item.setChecked(wlh.tapSch);
-					MenuItem next = VU.findInMenu(mmi.mMenu.mItems, R.id.tapSch1);
-					if(next!=null) next.setChecked(false);
+					wlh.updateContentMenu(mmi.mMenu.mItems);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility((wlh.tapSch?"已开启":"已关闭")+"点击翻译");
 					}
@@ -6760,19 +6757,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					wordPopup.onClick(wordPopup.popupContentView.findViewById(R.id.mode));
 					closeMenu=ret=true;
 				} else {
-					if(!wlh.tapSch) wlh.tapDef=true;
-					else wlh.tapDef = !wlh.tapDef;
-					if (wlh.bIsPopup) {
-						PDICMainAppOptions.tapDefPupup(wlh.tapDef);
+					if (!wlh.tapSch) {
+						wlh.tapSch(true);
+						wlh.tapDef(true);
 					} else {
-						PDICMainAppOptions.tapViewDefMain(wlh.tapDef);
+						wlh.tapDef(!wlh.tapDef);
 					}
-					if (wlh.tapDef ^ wlh.tapSch) {
-						opt.tapSch(wlh.togTapSch());
-					}
-					item.setChecked(wlh.tapDef);
-					MenuItem next = VU.findInMenu(mmi.mMenu.mItems, R.id.tapSch);
-					if(next!=null) next.setChecked(false);
+					wlh.updateContentMenu(mmi.mMenu.mItems);
 					if (accessMan.isEnabled()) {
 						root.announceForAccessibility(((wlh.tapSch && wlh.tapDef)?"已开启":"已关闭")+"点击查词");
 					}
@@ -6808,8 +6799,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						.setTitle("翻译当前页面")
 						.setWikiText("谷歌翻译已经无法正常使用。\n繁简转换结果仅供参考。", null)
 						.create();
+					topDlg(dd.getWindow(), PDICMainAppOptions.topDialogTranslate());
 					
-					cv.setOverScrollMode(OVER_SCROLL_ALWAYS);
+					//cv.setOverScrollMode(OVER_SCROLL_ALWAYS);
 					AlertDialog finalDd = dd;
 					OnClickListener click = cv.overScroll = new OnClickListener() {
 						@Override
@@ -6840,6 +6832,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					tagHolder.tag = null;
+					ViewGroup row = ((ViewGroup)ticks[ticks.length - 1].getParent());
+					ViewGroup vp = (ViewGroup)row.getParent();
+					vp.removeView(row);
+					vp.addView(row, 0);
+				} else {
+					topDlg(dd.getWindow(), PDICMainAppOptions.topDialogTranslate());
 				}
 				View[] ticks = (View[]) dd.mAlert.mView.getTag();
 				ticks[0].setActivated((weblist.tapSel & 0x4) != 0);
@@ -7867,16 +7865,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}  else if(id==R.string.tapSelOpt) {
 				showT("未实现");
 				return;
-			} else if(id==R.id.tapSch || id==R.string.tapSch) {
-				if (peruseView!=null && wlh==peruseView.weblistHandler) {
-					opt.fyeTapSch(wlh.togTapSch()); // todo dim tapSel
-					ViewUtils.findInMenu(peruseView.PageMenus, R.id.tapSch).setChecked(wlh.tapSch);
+			} else if(id==R.id.tapSch || id==R.string.tapSch || id==R.string.tapDef) {
+				if (id == R.string.tapDef) {
+					if (!wlh.tapSch) {
+						wlh.tapSch(true);
+						wlh.tapDef(true);
+					} else {
+						wlh.tapDef(!wlh.tapDef);
+					}
 				} else {
-					opt.tapSch(wlh.togTapSch()); // todo dim tapSel
-					ViewUtils.findInMenu(SingleContentMenu, R.id.tapSch).setChecked(wlh.tapSch && !wlh.tapDef);
-					ViewUtils.findInMenu(SingleContentMenu, R.id.tapSch1).setChecked(wlh.tapSch && wlh.tapDef);
+					if (wlh.tapDef) {
+						wlh.tapDef(false);
+						wlh.tapSch(true);
+					} else {
+						wlh.tapSch(!wlh.tapSch);
+					}
 				}
-				if(dialog!=null) dialog.dismiss();
+				wlh.updateContentMenu(null);
+				if(dialog!=null) {
+					View[] ticks = (View[]) dialog.mAlert.mView.getTag();
+					ticks[4].setActivated(wlh.tapSch&&!wlh.tapDef);
+					ticks[5].setActivated(wlh.tapSch&&wlh.tapDef);
+					dialog.dismiss();
+				}
 				return;
 			} else {
 				if(id==R.id.closeTrans) {
@@ -11785,5 +11796,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	BasicAdapter getActiveAdapter() {
 		return ActivedAdapter==null?lastActivedAdapter:ActivedAdapter;
+	}
+	
+	private void topDlg(Window window, boolean top) {
+		WindowManager.LayoutParams attr = window.getAttributes();
+		if (top ^ attr.gravity==Gravity.TOP) {
+			if (top) {
+				window.setGravity(Gravity.TOP);
+				float vM = toolbar.getHeight() * 1.9f / dm.heightPixels;
+				if (vM == 0) vM = 0.1f;
+				attr.verticalMargin = vM;
+			} else {
+				window.setGravity(Gravity.CENTER);
+				attr.verticalMargin = 0;
+			}
+		}
+		
 	}
 }

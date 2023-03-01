@@ -3402,4 +3402,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=22, shift=1) public static boolean fyeTapViewDefInNewWnd() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=22, shift=1) public static void fyeTapViewDefInNewWnd(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=23) public static boolean topDialogViewMode() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23) public static void topDialogViewMode(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=25) public static boolean topDialogTranslate() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=25) public static void topDialogTranslate(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
 }

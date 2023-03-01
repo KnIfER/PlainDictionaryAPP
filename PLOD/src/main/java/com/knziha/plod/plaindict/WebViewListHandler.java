@@ -20,6 +20,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1430,6 +1431,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
+	public void updateContentMenu(List<MenuItemImpl> menuItems) {
+		if (menuItems == null) {
+			menuItems = contentMenu();
+		}
+		if (menuItems!=null) {
+			MenuItem m = ViewUtils.findInMenu(menuItems, R.id.tapSch);
+			if(m!=null) m.setChecked(tapSch && !tapDef);
+			m = ViewUtils.findInMenu(menuItems, R.id.tapSch1);
+			if(m!=null) m.setChecked(tapSch && tapDef);
+		}
+	}
+	
 	public static class HighlightVagranter {
 		ViewGroup webviewHolder;
 		int HlightIdx;
@@ -2627,4 +2640,39 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		}
 	}
+	
+	public List<MenuItemImpl> contentMenu() {
+		if (this == a.weblistHandler) {
+			return a.AllMenusStamp;
+		}
+		if (isPopupShowing()) {
+			return alloydPanel.AllMenus.mItems;
+		}
+		if (a.peruseView!=null && this==a.peruseView.weblistHandler) {
+			return alloydPanel.AllMenus.mItems;
+		}
+		return a.AllMenusStamp;
+	}
+	
+	public void tapDef(boolean val) {
+		if (tapDef != val) {
+			tapDef = val;
+			if (this == a.weblistHandler) PDICMainAppOptions.tapViewDefMain(val);
+			if (isPopupShowing()) PDICMainAppOptions.tapDefPupup(val);
+			if (a.peruseView!=null && this==a.peruseView.weblistHandler) PDICMainAppOptions.fyeTapViewDef(val);
+			//if (val) a.showT("不弹出，查看定义");
+		}
+	}
+	
+	public void tapSch(boolean val) {
+		if (tapSch != val) {
+			if (this == a.weblistHandler) opt.tapSch(val);
+			if (isPopupShowing()) PDICMainAppOptions.tapSchPupup(val);
+			if (a.peruseView!=null && this==a.peruseView.weblistHandler) PDICMainAppOptions.fyeTapSch(val);
+			tapSch = !val;
+			togTapSch();
+			//if (val) a.showT("弹出翻译");
+		}
+	}
+	
 }

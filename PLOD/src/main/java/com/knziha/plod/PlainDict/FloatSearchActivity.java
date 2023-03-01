@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
@@ -33,6 +34,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
+import androidx.core.view.MenuCompat;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
@@ -307,10 +309,17 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		toolbar.inflateMenu(R.xml.menu_float);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		AllMenusStamp = Arrays.asList(AllMenus.getItems().toArray(new MenuItemImpl[AllMenus.size()]));
+		AllMenus.multiColumn = 1|2;
+		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 	
+		Drawable drawable = getResources().getDrawable(R.drawable.ic_yes_blue);
+		int sz = (int) (GlobalOptions.density*24);
+		drawable.setBounds(0,0, sz, sz);
+		AllMenus.checkDrawable = drawable;
+		
 		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 13, 1, 7, 3, 2, 10, 14);
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 11, 7, 3, 2, 10, 14, 4, 5, 6);
-		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 12, 7, 3, 2, 10, 14, 4, 5, 6);
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 11, 7, 3, 2, 10, 14, 4, 5, 15, 6);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 12, 7, 3, 2, 10, 14, 4, 5, 15, 6);
 		AllMenus.setItems(MainMenu);
 		//SingleContentMenu = Multi_ContentMenu = MainMenu;
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();

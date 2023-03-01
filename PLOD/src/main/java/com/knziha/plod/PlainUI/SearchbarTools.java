@@ -361,8 +361,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				PopupMenuHelper popupMenu = a.getPopupMenu();
 				int[] vLocationOnScreen = new int[2];
 				popupMenu.initLayout(new int[]{
-						R.layout.page_lieshu
-						//,R.string.page_history_scope
+						R.string.copy
+						,R.layout.page_lieshu
 						,R.string.page_del_this
 						,R.string.page_del_prev
 						, R.layout.page_lnk_fanyi1
@@ -373,6 +373,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 						final int id = view.getId();
 						boolean changed = true;
 						switch (id) {
+							case R.string.copy:
+								a.copyText(getHistoryAt(pos), true);
+								break;
 							case R.id.btn1:
 							case R.id.btn2:
 							case R.id.btn3:

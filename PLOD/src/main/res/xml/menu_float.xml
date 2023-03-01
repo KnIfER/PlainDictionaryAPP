@@ -14,7 +14,7 @@
 
 <!--4--><item android:title="页内查找" android:id="@+id/toolbar_action5" android:checkable="true" android:icon="@drawable/book_list" app:showAsAction="never"/>
 
-<!--5--><item android:title="点击翻译" android:id="@+id/tapSch" android:checkable="true" android:icon="@drawable/book_list" app:showAsAction="never"/>
+<!--5--><item android:title="点击翻译 | 打开" android:id="@+id/tapSch" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
 <!--6--><item android:title="@string/favorite" android:id="@+id/toolbar_action4" android:icon="@drawable/star_ic" app:showAsAction="never"/>
 
@@ -33,5 +33,7 @@
 <!--13--><item android:title="@string/favorite" android:id="@+id/toolbar_action4" android:icon="@drawable/star_ic" app:showAsAction="always"/>
 
 <!--14--><item android:title="搜索工具栏…" android:id="@+id/schtools" android:icon="@drawable/tools_toolbar" app:showAsAction="never"/>
+
+<!--15--><item android:title="点击查词 | 设置" android:id="@+id/tapSch1" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
 </menu>
