@@ -269,12 +269,16 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 		}
 		if (weblistHandler!=null) {
 			if (PDICMainAppOptions.getUseBackKeyClearWebViewFocus()) {
-				WebViewmy wv = weblistHandler.dictView;
-				//CMN.debug("onBackPressed::wv==", wv);
-				if (wv!=null && (wv.bIsActionMenuShown||ViewUtils.isVisibleV2(weblistHandler.toolsBtn))) {
-					wv.clearFocus();
-					if (wv.bIsActionMenuShown) {
-						wv.evaluateJavascript("getSelection().collapseToStart()", null);
+				WebViewmy wv = weblistHandler.getWebContext();
+				//CMN.debug("onBackPressed::wv==", ViewUtils.isVisibleV2(weblistHandler.toolsBtn), wv);
+				if (wv!=null && wv.bIsActionMenuShown || ViewUtils.isVisibleV2(weblistHandler.toolsBtn)) {
+					if (wv != null) {
+						wv.clearFocus();
+						if (wv.bIsActionMenuShown) {
+							wv.evaluateJavascript("getSelection().collapseToStart()", null);
+						} else {
+							wv.weblistHandler.initQuickTranslatorsBar(false, false);
+						}
 					} else {
 						wv.weblistHandler.initQuickTranslatorsBar(false, false);
 					}

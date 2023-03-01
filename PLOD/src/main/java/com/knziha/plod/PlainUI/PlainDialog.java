@@ -14,7 +14,7 @@ public class PlainDialog extends Dialog {
 	}
 	
 	public interface BackPrevention {
-		boolean onBackPressed();
+		boolean onBackPressed(); // return true if handled
 	}
 	
 	public BackPrevention mBackPrevention;
