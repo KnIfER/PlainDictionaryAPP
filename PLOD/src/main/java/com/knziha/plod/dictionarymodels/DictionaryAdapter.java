@@ -209,6 +209,11 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
+	public int lookUpRangeQuick(int startIndex, String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) {
+		return 0;
+	}
+	
+	@Override
 	public InputStream getResourceByKey(String key) {
 		return null;
 	}

@@ -6,6 +6,7 @@ import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
+import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -31,7 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import static com.knziha.plod.dictionary.mdBase.compareByteArrayIsPara;
+import static com.knziha.plod.dictionary.mdBase.checkByteArray;
 import static com.knziha.plod.dictionary.mdict.bakeJoniEncoding;
 import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
 
@@ -212,14 +213,14 @@ public class PlainText extends DictionaryAdapter {
 		//BU.printBytes3(PatternB);
 		BU.printBytes(tmpBlock.data,0,10);
 		int seekStart=0;
-		if(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternA) || compareByteArrayIsPara(tmpBlock.data, seekStart+=2, PatternA) || compareByteArrayIsPara(tmpBlock.data, seekStart+=1, PatternA)){
+		if(checkByteArray(tmpBlock.data, seekStart, PatternA) || checkByteArray(tmpBlock.data, seekStart+=2, PatternA) || checkByteArray(tmpBlock.data, seekStart+=1, PatternA)){
 			seekStart+=PatternA.length;
 			float fmod = 0;
-			while(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternB)){
+			while(checkByteArray(tmpBlock.data, seekStart, PatternB)){
 				seekStart+=PatternB.length;
 				fmod+=0.25;
 			}
-			if(fmod>0 && fmod<=20 && compareByteArrayIsPara(tmpBlock.data, seekStart, PatternA)){
+			if(fmod>0 && fmod<=20 && checkByteArray(tmpBlock.data, seekStart, PatternA)){
 				factor = fmod;
 				CMN.Log("修改块大小：", factor);
 			}

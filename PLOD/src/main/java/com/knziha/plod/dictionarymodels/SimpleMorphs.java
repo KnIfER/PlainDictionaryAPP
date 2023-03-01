@@ -3,9 +3,14 @@ package com.knziha.plod.dictionarymodels;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.plaindict.CMN;
 
+// 去后缀猜测单词原型
 public class SimpleMorphs extends DictionaryAdapter{
 	public final int lookUp(UniversalDictionaryInterface d, String keyword) {
 		return d.lookUp(keyword, true);
+	}
+	
+	public final int lookUp(UniversalDictionaryInterface d, String keyword, boolean str) {
+		return d.lookUp(keyword, str);
 	}
 	
 	public SimpleMorphs() {
@@ -61,6 +66,21 @@ public class SimpleMorphs extends DictionaryAdapter{
 			else if (ch == 't') {
 				if (keyword.endsWith("est")) {
 					return lookUp(d, keyword.substring(0, len - 3));
+				}
+			}
+			else if (ch == 'y') {
+				if (len>3) {
+					if (keyword.endsWith("ly")) {
+						if (keyword.endsWith("ily")) {
+							int ret = lookUp(d, keyword.substring(0, len - 3) + "y");
+							if (ret>=0) return ret;
+						}
+						return lookUp(d, keyword.substring(0, len - 2), false);
+					}
+					if (keyword.endsWith("ity")) {
+						return lookUp(d, keyword.substring(0, len - 3), false);
+					}
+					//return lookUp(d, keyword.substring(0, len - 1));
 				}
 			}
 			else if (ch>='0'&&ch<='9') {

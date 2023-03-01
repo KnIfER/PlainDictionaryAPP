@@ -1269,7 +1269,19 @@ function debug(e){console.log(e)};
 			if (range_query_reveiver==null) {
 				range_query_reveiver = new ArrayList<>();
 			}
-			return bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(),15, task, false);
+			int res = bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(), 15, task, false);
+			if (res!=0) {
+				for (int i = 0; i < a.forms.size(); i++) {
+					UniversalDictionaryInterface forma = a.forms.get(i);
+					int alternate = forma.guessRootWord(bookImpl, keyword);
+					if (true && alternate>=0) {
+						String alter = bookImpl.getEntryAt(alternate);
+						CMN.debug("alternate::", bookImpl.getEntryAt(alternate));
+						bookImpl.lookUpRangeQuick(alternate, alter, range_query_reveiver, null, bookImpl.getBooKID(), 7, task, false);
+					}
+				}
+			}
+			return res;
 		}
 		return -1;
 	}

@@ -17,7 +17,6 @@
 
 package com.knziha.plod.dictionary;
 
-import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.CMN;
 
 import com.alibaba.fastjson.JSONObject;
@@ -2637,7 +2636,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	int key_block_Splitted_flag=-1;
 	int[][] scaler = null;
 
-	public int reduce(String phrase,byte[] data,int[][] scaler,int start,int end) {//via mdict-js
+	public int reduceInBlock(String phrase,byte[] data,int[][] scaler,int start,int end) {//via mdict-js
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
@@ -2653,14 +2652,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				  }
 			  }*/
 			return phrase.compareTo(processMyText(zhujio))>0
-					? reduce(phrase,data,scaler,start+len,end)
-					: reduce(phrase,data,scaler,start,start+len);
+					? reduceInBlock(phrase,data,scaler,start+len,end)
+					: reduceInBlock(phrase,data,scaler,start,start+len);
 		} else {
 			return start;
 		}
 	}
 
-	public int reduce2(byte[] phrase,byte[] data,int[][] scaler,int start,int end) {//via mdict-js
+	public int reduceInBlock(byte[] phrase,byte[] data,int[][] scaler,int start,int end) {//via mdict-js
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
@@ -2678,17 +2677,186 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			byte[] sub_data = processMyText(zhujio).getBytes(_charset);
 
 			return compareByteArray(phrase, sub_data)>0
-					? reduce2(phrase,data,scaler,start+len,end)
-					: reduce2(phrase,data,scaler,start,start+len);
+					? reduceInBlock(phrase,data,scaler,start+len,end)
+					: reduceInBlock(phrase,data,scaler,start,start+len);
 		} else {
 			return start;
 		}
 	}
 
+	//快速联合搜索
+	public int lookUpRangeQuick(int startIndex, String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) //多线程
+	{
+		long position = startIndex;
+		if(position==-1 || position>=_num_entries) return 0;
+		if(_key_block_info_list==null) read_key_block_info(null);
+		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
+		key_info_struct infoI;
+		
+		int[][] scaler_ = null;
+		byte[] key_block_cache_ = null;
+		if(keyword==null) keyword = getEntryAt(position);
+		keyword = processMyText(keyword);
+		byte[] kAB = keyword.getBytes(_charset);
+		
+		boolean doHarvest=false;
+		int results=0;
+		//OUT:
+		while(theta>0) {
+			infoI = _key_block_info_list[blockId];
+			try {
+				long start = infoI.key_block_compressed_size_accumulator;
+				long compressedSize;
+				if(key_block_cacheId!=blockId || key_block_cache==null) {
+					if(blockId==_key_block_info_list.length-1)
+						compressedSize = _key_block_size - _key_block_info_list[_key_block_info_list.length-1].key_block_compressed_size_accumulator;
+					else
+						compressedSize = _key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator;
+					
+					DataInputStream data_in = getStreamAt(_key_block_offset+start, false);
+					
+					byte[]  _key_block_compressed = new byte[(int) compressedSize];
+					data_in.read(_key_block_compressed, 0, _key_block_compressed.length);
+					data_in.close();
+					
+					//int adler32 = getInt(_key_block_compressed[(int) (+4)],_key_block_compressed[(int) (+5)],_key_block_compressed[(int) (+6)],_key_block_compressed[(int) (+7)]);
+					if(checkByteArray(_zero4, _key_block_compressed)){
+						//System.out.println("no compress!");
+						key_block_cache_ = new byte[(int) (_key_block_compressed.length-start-8)];
+						System.arraycopy(_key_block_compressed, (int)(start+8), key_block_cache_, 0,key_block_cache_.length);
+					}
+					else if(checkByteArray(_1zero3, _key_block_compressed)) {
+						//MInt len = new MInt((int) infoI.key_block_decompressed_size);
+						//key_block_cache_ = new byte[len.v];
+						//byte[] arraytmp = new byte[(int) compressedSize];
+						//System.arraycopy(_key_block_compressed, (int)(+8), arraytmp, 0,(int) (compressedSize-8));
+						//MiniLZO.lzo1x_decompress(arraytmp,arraytmp.length,key_block_cache_,len);
+						key_block_cache_ =  new byte[(int) infoI.key_block_decompressed_size];
+						new LzoDecompressor1x().decompress(_key_block_compressed, 8, (int)(compressedSize-8), key_block_cache_, 0, new lzo_uintp());
+					}
+					else if(checkByteArray(_2zero3, _key_block_compressed)) {
+						//key_block_cache_ = zlib_decompress(_key_block_compressed,(int) (+8),(int)(compressedSize-8));
+						key_block_cache_ =  new byte[(int) infoI.key_block_decompressed_size];
+						Inflater inf = new Inflater();
+						inf.setInput(_key_block_compressed,8,(int)compressedSize-8);
+						int ret = inf.inflate(key_block_cache_,0,key_block_cache_.length);
+						inf.end();
+					}
+					key_block_cache=key_block_cache_;
+					key_block_cacheId = blockId;
+				} else {
+					key_block_cache_=key_block_cache;
+				}
+				/*!!spliting curr Key block*/
+				if(key_block_Splitted_flag!=blockId || scaler==null) {
+					if(!doHarvest)
+						scaler_ = new int[(int) infoI.num_entries][2];
+					int key_start_index = 0;
+					int key_end_index;
+					int keyCounter = 0;
+					
+					while(key_start_index < key_block_cache_.length){
+						key_end_index = key_start_index + _number_width + entryNumExt;
+						SK_DELI:
+						while(true){
+							for(int sker=0;sker<delimiter_width;sker++) {
+								if(key_block_cache_[key_end_index+sker]!=0) {
+									key_end_index+=delimiter_width;
+									continue SK_DELI;
+								}
+							}
+							break;
+						}
+						//SU.Log(new String(key_block_cache_,key_start_index+_number_width,key_end_index-(key_start_index+_number_width),_charset));
+						//if(EntryStartWith(key_block_cache_,key_start_index+_number_width,key_end_index-(key_start_index+_number_width),matcher)) {
+						if(doHarvest) {
+							String kI = new String(key_block_cache_, key_start_index+_number_width + entryNumExt,key_end_index-(key_start_index+_number_width + entryNumExt), _charset);
+							String proKey = processMyText(kI);
+							if(proKey.startsWith(keyword) && (!strict || proKey.equals(keyword))) {
+								long toAdd = keyCounter+infoI.num_entries_accumulator;
+								for (int i = 0; i < rangReceiver.size(); i++) if(rangReceiver.get(i).value==toAdd) return results;
+								if(treeBuilder !=null) treeBuilder.insert(kI, SelfAtIdx, toAdd);
+								else rangReceiver.add(new myCpr<String, Long>(kI, toAdd));
+								theta--;
+								results++;
+							} else return results;
+							if(theta<=0) {
+								if (results<1000 && proKey.equals(keyword)) {
+									theta += 30;
+								} else {
+									return results;
+								}
+							}
+						} else {
+							scaler_[keyCounter][0] = key_start_index+_number_width + entryNumExt;
+							scaler_[keyCounter][1] = key_end_index-(key_start_index+_number_width + entryNumExt);
+						}
+						
+						key_start_index = key_end_index + delimiter_width;
+						keyCounter++;
+					}
+					if(!doHarvest) {
+						scaler=scaler_;
+						key_block_Splitted_flag=blockId;
+					}
+				} else {
+					scaler_=scaler;
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+			
+			if(!doHarvest) {
+				int idx;
+				
+				if(_encoding.startsWith("GB")) idx = reduceInBlock(kAB, key_block_cache_, scaler_, 0, (int) infoI.num_entries);
+				else idx = reduceInBlock(keyword, key_block_cache_, scaler_, 0, (int) infoI.num_entries);
+				
+				//SU.Log(new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset));
+				//SU.Log(new String(key_block_cache_, scaler_[idx+1][0],scaler_[idx+1][1], _charset));
+				String kI = new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset);
+				while(true) {
+					String proKey = processMyText(kI);
+					if(proKey.startsWith(keyword) && (!strict || proKey.equals(keyword))) {
+						long toAdd = idx+infoI.num_entries_accumulator;
+						for (int i = 0; i < rangReceiver.size(); i++) if(rangReceiver.get(i).value==toAdd) return results;
+						if(treeBuilder !=null) treeBuilder.insert(kI, SelfAtIdx, toAdd);
+						else rangReceiver.add(new myCpr<>(kI, toAdd));
+						theta--;
+						results++;
+					} else {
+						if (results==0) {
+							return -1*(int) ((infoI.num_entries_accumulator+idx+2));
+						}
+						return results;
+					}
+					idx++;
+					//if(idx>=infoI.num_entries) SU.Log("nono!");
+					if(theta<=0) { // Max limit reached.
+						if (results<1000 && proKey.equals(keyword)) {
+							theta += 30;
+						} else {
+							return results;
+						}
+					}
+					if(idx>=infoI.num_entries) {
+						break;
+					}
+					kI = new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset);
+				}
+				doHarvest=true;
+				// todo optimize the loop
+			}
+			++blockId;
+			if(_key_block_info_list.length<=blockId) return results;
+		}
+		return results;
+	}
+	
 	//联合搜索  555
 	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task, boolean strict) //多线程
 	{
-		if(virtualIndex!=null){
+		if(virtualIndex!=null) {
 			return virtualIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta, task, false);
 		}
 		int[][] scaler_ = null;
@@ -2723,7 +2891,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		boolean doHarvest=false;
 		int results=0;
 		//OUT:
-		while(theta>0) {//complexity explanation: the aim is to harvest at most number theta matching results. but they might be crossing-blocks.
+		while(theta>0) {
 			key_info_struct infoI = _key_block_info_list[blockId];
 			try {
 				long start = infoI.key_block_compressed_size_accumulator;
@@ -2741,12 +2909,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					data_in.close();
 
 					//int adler32 = getInt(_key_block_compressed[(int) (+4)],_key_block_compressed[(int) (+5)],_key_block_compressed[(int) (+6)],_key_block_compressed[(int) (+7)]);
-					if(compareByteArrayIsPara(_zero4, _key_block_compressed)){
+					if(checkByteArray(_zero4, _key_block_compressed)){
 						//System.out.println("no compress!");
 						key_block_cache_ = new byte[(int) (_key_block_compressed.length-start-8)];
 						System.arraycopy(_key_block_compressed, (int)(start+8), key_block_cache_, 0,key_block_cache_.length);
-					}else if(compareByteArrayIsPara(_1zero3, _key_block_compressed))
-					{
+					}
+					else if(checkByteArray(_1zero3, _key_block_compressed)) {
 						//MInt len = new MInt((int) infoI.key_block_decompressed_size);
 						//key_block_cache_ = new byte[len.v];
 						//byte[] arraytmp = new byte[(int) compressedSize];
@@ -2755,7 +2923,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						key_block_cache_ =  new byte[(int) infoI.key_block_decompressed_size];
 						new LzoDecompressor1x().decompress(_key_block_compressed, 8, (int)(compressedSize-8), key_block_cache_, 0, new lzo_uintp());
 					}
-					else if(compareByteArrayIsPara(_2zero3, _key_block_compressed)){
+					else if(checkByteArray(_2zero3, _key_block_compressed)) {
 						//key_block_cache_ = zlib_decompress(_key_block_compressed,(int) (+8),(int)(compressedSize-8));
 						key_block_cache_ =  new byte[(int) infoI.key_block_decompressed_size];
 						Inflater inf = new Inflater();
@@ -2820,23 +2988,21 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						scaler=scaler_;
 						key_block_Splitted_flag=blockId;
 					}
-				}else {
+				} else {
 					scaler_=scaler;
 				}
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}
 
-
 			if(!doHarvest) {
 				int idx;
-				if(_encoding.startsWith("GB"))
-					idx = reduce2(kAB, key_block_cache_, scaler_, 0, (int) infoI.num_entries);
-				else
-					idx = reduce(keyword, key_block_cache_, scaler_, 0, (int) infoI.num_entries);
+				
+				if(_encoding.startsWith("GB")) idx = reduceInBlock(kAB, key_block_cache_, scaler_, 0, (int) infoI.num_entries);
+				else idx = reduceInBlock(keyword, key_block_cache_, scaler_, 0, (int) infoI.num_entries);
+				
 				//SU.Log(new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset));
 				//SU.Log(new String(key_block_cache_, scaler_[idx+1][0],scaler_[idx+1][1], _charset));
-
 				String kI = new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset);
 				while(true) {
 					String proKey = processMyText(kI);
@@ -2847,7 +3013,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							rangReceiver.add(new myCpr<>(kI, idx+infoI.num_entries_accumulator));
 						theta--;
 						results++;
-					} else return results;
+					} else {
+						if (results==0) {
+							return -1*(int) ((infoI.num_entries_accumulator+idx+2));
+						}
+						return results;
+					}
 					idx++;
 					//if(idx>=infoI.num_entries) SU.Log("nono!");
 					if(theta<=0) { // Max limit reached.
@@ -2863,6 +3034,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					kI = new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset);
 				}
 				doHarvest=true;
+				// todo optimize the loop
 			}
 			++blockId;
 			if(_key_block_info_list.length<=blockId) return results;

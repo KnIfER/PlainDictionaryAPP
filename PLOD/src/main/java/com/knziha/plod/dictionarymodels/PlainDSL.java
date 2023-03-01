@@ -19,6 +19,7 @@ import com.knziha.plod.dictionary.Utils.LinkastReUsageHashMap;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionaryBuilder.mdictBuilder;
 import com.knziha.plod.plaindict.CMN;
@@ -49,7 +50,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import static com.knziha.plod.dictionary.mdBase.compareByteArrayIsPara;
+import static com.knziha.plod.dictionary.mdBase.checkByteArray;
 import static com.knziha.plod.dictionary.mdBase.processText;
 import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
 
@@ -778,7 +779,7 @@ public class PlainDSL extends DictionaryAdapter {
 						charset = match.getName();
 					if(GlobalOptions.debug)CMN.Log("检测结果：", charset, isDictZip);
 					setCharset(charset);
-					if(compareByteArrayIsPara(tmpBlock.data, 0, UTF16BOMBYTES)) _BOM_SIZE=2;
+					if(checkByteArray(tmpBlock.data, 0, UTF16BOMBYTES)) _BOM_SIZE=2;
 					try {
 						String infos = new String(tmpBlock.data, _BOM_SIZE, Math.min(128, tmpBlock.blockSize)/2*2-2, _charset);
 						if(infos.charAt(0)=='#') {
@@ -1175,7 +1176,7 @@ public class PlainDSL extends DictionaryAdapter {
 	private boolean startWithEntry(TextBlock tmpBlock, int nowIndex) {
 		if(nowIndex>=tmpBlock.blockSize) return false;
 		for(byte[] eI:excludesNextBytes){
-			if(compareByteArrayIsPara(tmpBlock.data, nowIndex, tmpBlock.blockSize, eI))
+			if(checkByteArray(tmpBlock.data, nowIndex, tmpBlock.blockSize, eI))
 				return false;
 		}
 		return true;
@@ -1186,11 +1187,11 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 
 	private boolean startWithContent(TextBlock tmpBlock, int nowIndex) {
-		if(compareByteArrayIsPara(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText)) {
+		if(checkByteArray(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText)) {
 			contentBreakText_length = contentBreakText.length;
 			return true;
 		}
-		if(compareByteArrayIsPara(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText1)) {
+		if(checkByteArray(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText1)) {
 			contentBreakText_length = contentBreakText1.length;
 			return true;
 		}
@@ -1198,13 +1199,13 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 
 	private boolean startWithBreak(TextBlock tmpBlock) {
-		if(compareByteArrayIsPara(tmpBlock.data, 0, lineBreakText))
+		if(checkByteArray(tmpBlock.data, 0, lineBreakText))
 			return true;
 		return false;
 	}
 
 	private boolean endWithLineBreak(ReusableByteOutputStream tmpBlock) {
-		if(compareByteArrayIsPara(tmpBlock.getBytes(), tmpBlock.size()-lineBreakText.length, lineBreakText))
+		if(checkByteArray(tmpBlock.getBytes(), tmpBlock.size()-lineBreakText.length, lineBreakText))
 			return true;
 		return false;
 	}

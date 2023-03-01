@@ -202,6 +202,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.dictionarymodels.SimpleMorphs;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
@@ -1314,11 +1315,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.mid = SU.mid = Thread.currentThread().getId();
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		thisActMask = 1 << thisActType.ordinal();
+		forms.add(simpleMorphs);
 		super.onCreate(savedInstanceState);
 		ViewGroup tmp =  new ScrollViewmy(this);
 		if(shunt) return;
 		AgentApplication.activities[thisActType.ordinal()] = new WeakReference<>(this);
 		wordPopup.opt = opt;
+		forms.add(simpleMorphs);
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
@@ -1443,6 +1446,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WordPopup wordPopup = new WordPopup(this);
 	public WordMap wordMap = new WordMap(this);
 	public TTSHub ttsHub = new TTSHub(this);
+	
+	public SimpleMorphs simpleMorphs = new SimpleMorphs();
+	public ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
 	
 	public void fix_pw_color() {
 		ChooseFavorDialog.clear();

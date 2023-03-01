@@ -28,7 +28,6 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.key_info_struct;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.Utils.record_info_struct;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.RBTree;
 
 import org.anarres.lzo.LzoAlgorithm;
@@ -926,7 +925,7 @@ public abstract class mdBase {
 		retriever.ral=record_start+RinfoI_cache.blockOff;
 		retriever.val=record_end+RinfoI_cache.blockOff;
 		/* May have resource reroute target */
-		if(compareByteArrayIsPara(RinfoI_cache.record_block_, retriever.ral, linkRenderByt)){
+		if(checkByteArray(RinfoI_cache.record_block_, retriever.ral, linkRenderByt)){
 			int length = (int) (record_end-record_start-linkRenderByt.length);
 			if(length>0){
 				String rT = new String(RinfoI_cache.record_block_, retriever.ral+linkRenderByt.length, length, StandardCharsets.UTF_16LE).trim();
@@ -1252,14 +1251,14 @@ public abstract class mdBase {
 		return la>lb?1:-1;
 	}
 	//per-byte byte array comparing
-	static boolean compareByteArrayIsPara(byte[] A,byte[] B){
+	static boolean checkByteArray(byte[] A, byte[] B){
 		for(int i=0;i<A.length;i++){
 			if(A[i]!=B[i])
 				return false;
 		}
 		return true;
 	}
-	public static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
+	public static boolean checkByteArray(byte[] A, int offA, byte[] B){
 		if(offA+B.length>A.length)
 			return false;
 		for(int i=0;i<B.length;i++){
@@ -1268,7 +1267,7 @@ public abstract class mdBase {
 		}
 		return true;
 	}
-	public static boolean compareByteArrayIsPara(byte[] A,int offA,int sizeA, byte[] B){
+	public static boolean checkByteArray(byte[] A, int offA, int sizeA, byte[] B){
 		if(offA+B.length>sizeA)
 			return false;
 		for(int i=0;i<B.length;i++){
