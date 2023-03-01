@@ -716,6 +716,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(removeBlack())
 			return true;
 		if(ActivedAdapter!=null && isContentViewAttached()) {
+			BasicAdapter ada = lastActivedAdapter = ActivedAdapter;
 			contentUIData.mainProgressBar.setVisibility(View.GONE);
 			
 			applyMainMenu();
@@ -738,10 +739,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			contentUIData.PageSlider.setTranslationX(0);
 			contentUIData.PageSlider.setTranslationY(0);
-			int lastPos = ActivedAdapter.lastClickedPos;
+			int lastPos = ada.lastClickedPos;
 			DetachContentView(true);
 			PostDCV_TweakTBIC();
-			ListView lva = ActivedAdapter.lava;
+			ListView lva = ada.lava;
 			if(lva!=null && (lastPos<lva.getFirstVisiblePosition() || lastPos>lva.getLastVisiblePosition()))
 				lva.setSelection(lastPos);
 			ActivedAdapter=null;
@@ -3028,7 +3029,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					weblistHandler.showMoreToolsPopup(v);
 				} else {
 					viewContent(weblistHandler);
-					AllMenus.setItems(weblistHandler.isMultiRecord()?Multi_ContentMenu:SingleContentMenu);
+					if(ActivedAdapter==null)
+						ActivedAdapter = getActiveAdapter();
+					AllMenus.setItems(getActiveAdapter()==adaptermy2?Multi_ContentMenu:SingleContentMenu);
 				}
 			} return true;
 			case R.drawable.ic_prv_dict_chevron:

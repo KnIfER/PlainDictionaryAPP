@@ -443,6 +443,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BasicAdapter adaptermy3;
 	public ListViewAdapter2 adaptermy4;
 	public ListViewAdapter2 adaptermy5;
+	public BasicAdapter lastActivedAdapter;
 	public BasicAdapter ActivedAdapter;
 	public BaseHandler hdl;
 	public int  CurrentViewPage = 1;
@@ -7098,43 +7099,47 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private void resetMerge(int which, boolean dlg) {
-		WebViewListHandler weblist = weblistHandler;
-		if (weblist.isMultiRecord()
-			|| PDICMainAppOptions.getLv2JointOneAsSingle()
-				&& ActivedAdapter==adaptermy2 && true/*...*/) {
-			if(which==-1) which=mergeFrames();
-			boolean bUseMergedUrl = which!=0;
-			if(which!=weblist.bMergeFrames) {
-				resultRecorderCombined record = weblist.multiRecord;
-				if (record==null) record = adaptermy2.results.size()==0? null
-						: (resultRecorderCombined) adaptermy2.results;
-				weblist.setViewMode(record, opt.multiViewMode(), weblist.dictView);
-				weblist.bMergeFrames = which;
-				weblist.webHolderSwapHide = true;
-				// 旧版本切换新版本出现闪黑，
-				//boolean delay = opt.getDelayContents();
-				//boolean animate = opt.getAnimateContents();
-				//if(delay||animate) {
-				//	opt.setDelayContents(false);
-				//	opt.setAnimateContents(false);
-				//}
-				viewContent(weblist);
-				//if(delay||animate) {
-				//	opt.setDelayContents(delay);
-				//	opt.setAnimateContents(animate);
-				//}
-				
-				// only handle popup
-				//weblist.initMergedFrame(weblist.bMergingFrames, false, false);
-				if(recCom!=null)
-					recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblist);
-			} else {
-				if (dlg) {
-					showT("已经是了");
+		try {
+			WebViewListHandler weblist = weblistHandler;
+			if (/*weblist.isMultiRecord()
+					|| PDICMainAppOptions.getLv2JointOneAsSingle()
+					&& */getActiveAdapter() == adaptermy2 && true/*...*/) {
+				if (which == -1) which = mergeFrames();
+				boolean bUseMergedUrl = which != 0;
+				if (which != weblist.bMergeFrames) {
+					resultRecorderCombined record = weblist.multiRecord;
+					if (record == null) record = adaptermy2.results.size() == 0 ? null
+							: (resultRecorderCombined) adaptermy2.results;
+					weblist.setViewMode(record, opt.multiViewMode(), weblist.dictView);
+					weblist.bMergeFrames = which;
+					weblist.webHolderSwapHide = true;
+					// 旧版本切换新版本出现闪黑，
+					//boolean delay = opt.getDelayContents();
+					//boolean animate = opt.getAnimateContents();
+					//if(delay||animate) {
+					//	opt.setDelayContents(false);
+					//	opt.setAnimateContents(false);
+					//}
+					viewContent(weblist);
+					//if(delay||animate) {
+					//	opt.setDelayContents(delay);
+					//	opt.setAnimateContents(animate);
+					//}
+					
+					// only handle popup
+					//weblist.initMergedFrame(weblist.bMergingFrames, false, false);
+					if (recCom != null)
+						recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblist);
 				} else {
-					weblist.setViewMode(weblist.multiRecord, which, weblist.dictView);
+					if (dlg) {
+						showT("已经是了");
+					} else {
+						weblist.setViewMode(weblist.multiRecord, which, weblist.dictView);
+					}
 				}
 			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -7301,7 +7306,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				.putExtra("realm", id)
 				.setClass(this, SettingsActivity.class);
 		if (id==Multiview.id) {
-			intent.putExtra("where", weblistHandler.isMultiRecord()?weblistHandler.bMergingFrames:-1);
+			int num = -1;
+			WebViewmy wv = weblistHandler.getWebContextNonNull();
+			if (ViewUtils.getNthParentNonNull(wv.rl, 1).getId() == R.id.webSingleholder) {
+				if (wv.merge) num = 1;
+				else if(getActiveAdapter()==adaptermy2/*weblistHandler.isMultiRecord()*/) num=weblistHandler.bMergingFrames; // todo url 区分安单本阅读与屏风模式
+			} else {
+				num = 0;
+			}
+			//intent.putExtra("where", weblistHandler.isMultiRecord()?weblistHandler.bMergingFrames:-1);
+			intent.putExtra("where", num);
 		}
 		if (result==0) {
 			startActivity(intent);
@@ -11777,4 +11791,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 	
+	BasicAdapter getActiveAdapter() {
+		return ActivedAdapter==null?lastActivedAdapter:ActivedAdapter;
+	}
 }
