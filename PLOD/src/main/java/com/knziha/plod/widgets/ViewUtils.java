@@ -2031,7 +2031,7 @@ public class ViewUtils extends VU {
 		return ret;
 	}
 	
-	public static void setForegroundColor(ViewGroup view, VU.TintListFilter tintListFilter) {
+	public static void setForegroundColor(ViewGroup view, TintListFilter tintListFilter) {
 		CMN.debug("setTitlebarForegroundColor", "color = [" + tintListFilter.sForeground + "], ForegroundFilter = [" + tintListFilter.sForegroundFilter + "], colorList = [" + tintListFilter.sForegroundTint + "]view = [" + view + "],");
 		LinkedList<ViewGroup> linkedList = new LinkedList<>();
 		linkedList.add(view);
@@ -2060,7 +2060,9 @@ public class ViewUtils extends VU {
 					} else if(cI instanceof TextView){
 						TextView tv = ((TextView) cI);
 						tv.setTextColor(tintListFilter.sForeground);
-						tv.setCompoundDrawableTintList(tintListFilter.sForegroundTint);
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+							tv.setCompoundDrawableTintList(tintListFilter.sForegroundTint);
+						}
 					} else if(cI instanceof FlowTextView){
 						((FlowTextView)cI).setTextColor(tintListFilter.sForeground);
 					}

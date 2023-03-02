@@ -107,13 +107,14 @@ android {
 //        }
 //    }
 
-//    buildFeatures {
-//        dataBinding = true
-//    }
-    dataBinding{
-        enabled=true
+    buildFeatures {
+        dataBinding = true
     }
+//    dataBinding{
+//        enabled=true
+//    }
     compileOptions {
+        coreLibraryDesugaringEnabled = true
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -156,19 +157,19 @@ android {
     }
 }
 
-task delog {
-    group 'delog'
-    description 'delog'
-    doLast {
-        def gradle = project.getGradle()
-        new File("${gradle.getGradleUserHomeDir().getAbsolutePath()}/daemon/${gradle.getGradleVersion()}").listFiles().each {
-            if (it.getName().endsWith('.out.log')) {
-                logger.debug("Cleaning up daemon log file $it")
-                it.delete()
-            }
-        }
-    }
-}
+//task delog {
+//    group 'delog'
+//    description 'delog'
+//    doLast {
+//        def gradle = project.getGradle()
+//        new File("${gradle.getGradleUserHomeDir().getAbsolutePath()}/daemon/${gradle.getGradleVersion()}").listFiles().each {
+//            if (it.getName().endsWith('.out.log')) {
+//                logger.debug("Cleaning up daemon log file $it")
+//                it.delete()
+//            }
+//        }
+//    }
+//}
 
 configurations {
     compile.exclude group:'androidx.core', module: 'core'
@@ -270,18 +271,21 @@ dependencies {
 
     implementation 'org.jsoup:jsoup:1.15.3'
 
-   // implementation fileTree(dir: 'lib', include: ['*.jar'])
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+
+
+    // implementation fileTree(dir: 'lib', include: ['*.jar'])
 }
 
-afterEvaluate {
-    gradle.buildFinished{ BuildResult buildResult ->
-        if (buildResult.failure) {
-            ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\error.wav").PlaySync();"""].execute()
-            println("failed doing task")
-        } else {
-            ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\muse_SchivoNo.2.wav").PlaySync();"""].execute()
-            println("build finished")
-        }
-    }
-}
+//afterEvaluate {
+//    gradle.buildFinished{ BuildResult buildResult ->
+//        if (buildResult.failure) {
+//            ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\error.wav").PlaySync();"""].execute()
+//            println("failed doing task")
+//        } else {
+//            ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\muse_SchivoNo.2.wav").PlaySync();"""].execute()
+//            println("build finished")
+//        }
+//    }
+//}
 

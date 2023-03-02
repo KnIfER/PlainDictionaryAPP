@@ -37,7 +37,6 @@
 		android:layout_above="@+id/btnPanel"
 		android:background="@drawable/popup_background3__"
 		android:padding="5dp"
-		android:src="@drawable/ic_edit_black_24dp"
 		android:layout_alignParentRight="true"
 		/>
 

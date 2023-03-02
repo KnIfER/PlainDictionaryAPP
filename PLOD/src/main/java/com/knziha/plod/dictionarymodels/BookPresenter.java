@@ -2726,7 +2726,6 @@ function debug(e){console.log(e)};
 			return WordBreakFilter.isBigram(ch);
 		}
 		
-		
 		@JavascriptInterface
 		public long probeWord(int sid, String paragraph, String text) {
 			if (presenter!=null) {

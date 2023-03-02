@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
@@ -381,9 +383,9 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 		}
 	}
 	
-	// todo use multi field pading adaptor
 	void rebuildCursor(MainActivityUIBase a, long folderId) {
-		boolean bSingleThreadLoadAll = false;
+		boolean bSingleThreadLoadAll = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
+		//bSingleThreadLoadAll = true; // todo 修复时间分栏不对
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
 		data.dataAdapter.close();

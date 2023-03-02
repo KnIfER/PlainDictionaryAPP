@@ -40,7 +40,7 @@ if(frameElement) {
 	};
 }
 w.shzh=0;
-var remarked=false;
+var remarked=false, withSel;
 w.addEventListener('load',wrappedOnLoadFunc,false);
 w.addEventListener('click',wrappedClickFunc);
 w.addEventListener('mousedown',wrappedDown);
@@ -242,7 +242,7 @@ function hiPlaySound(e){
 		else audio = new Audio();
 		audio.src = vc;
 		var pro = audio.play();
-		pro.catch(error => {
+		pro.catch(function(error){
 			if(((error+'').indexOf('found'))>0) {
 				//debug("播放失败.. ");
 				if(_app) location.href = 'sound://happy.mp3'
@@ -255,7 +255,9 @@ function hiPlaySound(e){
 function popupEntry(e){
 	if(pw._touchtarget_lck) return true;
 	var t;
-	for(var i=0;i<10 && (t=e.path[i]);i++)
+	var p=e.path;
+	if(!p && e.composedPath) p=e.composedPath();
+	for(var i=0;i<10 && (t=p[i]);i++)
 		if(t.href!==undefined)
 			break;
 	debug('popupEntry', t)
@@ -310,7 +312,9 @@ function wrappedDown(e){
 	debug('wrappedDown', e);
 	var t;
 	if(pw.scrollLck) pageScroll();
-	for(var i=0;i<10 && (t=e.path[i]);i++)
+	var p=e.path;
+	if(!p && e.composedPath) p=e.composedPath();
+	for(var i=0;i<10 && (t=p[i]);i++)
 		if(t.href!==undefined)
 			break;
 	if(!pw._touchtarget_lck && e.touches && e.touches.length==1){
@@ -321,6 +325,7 @@ function wrappedDown(e){
 		pw.tFrame(frameElement.dictInfo);
 	}
 	stopLnk = 0;
+	withSel = !getSelection().isCollapsed;
 	if(t && t.href) { //  && (e.button==1||e.button==0)
 		stopLnk = 1;
 		debug("01! found link : "+t.href+" : testSound="+regSound.test(t.href));
@@ -374,7 +379,7 @@ function wrappedDown(e){
 w._pd_d = wrappedDown;
 
 function wrappedClickFunc(e){
-	debug('wrappedClickFunc', stopLnk)
+	debug('wrappedClickFunc'+stopLnk+' '+withSel);
 	if(pw._touchtarget_lck) {
 		stopLnk=nxtEntry=0;
 		e.stopPropagation();
@@ -398,6 +403,9 @@ function wrappedClickFunc(e){
 		e.preventDefault();
 		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
 		nxtEntry=0;
+	}
+	if(_app && withSel && getSelection().isCollapsed) {
+		_app.textMenu(sid.get(), false);
 	}
 }
 

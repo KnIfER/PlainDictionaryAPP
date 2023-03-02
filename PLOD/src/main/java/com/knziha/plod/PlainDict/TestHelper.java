@@ -374,6 +374,7 @@ public class TestHelper {
 	}
 	
 	public static void PagingVerdict(MainActivityUIBase a, PagingAdapterInterface<DBListAdapter.HistoryDatabaseReader> dataAdapter, long id) {
+		CMN.debug("PagingVerdict");
 		try {
 			Cursor cursor = LexicalDBHelper.getInstance().getDB().rawQuery("select lex from "
 					+ (id == -1 ? LexicalDBHelper.TABLE_HISTORY_v2 : (LexicalDBHelper.TABLE_FAVORITE_v2 + " where folder=? "))

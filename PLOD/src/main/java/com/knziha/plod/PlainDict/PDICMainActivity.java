@@ -931,15 +931,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			return;
 		}
 		
+		try {
+			if (Build.VERSION.SDK_INT <= 22) {
+				supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+				requestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+			}
+			requestWindowFeature(Window.FEATURE_NO_TITLE);
+		} catch (Exception e) {
+			//CMN.debug(e);
+		}
+		
 		LauncherInstanceCount=1;
 		Window win = getWindow();
-		
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		//if(Utils.littleCake) {
-		if(Build.VERSION.SDK_INT<=22) {
-			requestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
-			supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
-		}
 		
 		softModeStd = softModeResize;
 		setSoftInputMode(softModeStd);

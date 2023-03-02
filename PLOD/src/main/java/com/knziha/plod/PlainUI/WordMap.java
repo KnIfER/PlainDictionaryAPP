@@ -244,17 +244,21 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 		wv.evaluateJavascript("getPos()", new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
-				value = value.substring(1);
-				String[] arr = value.split(",");
-				ContentValues cv = new ContentValues();
-				cv.put("text", text);
-				cv.put("x", ""+IU.parsint(arr[0], 0));
-				cv.put("y", ""+IU.parsint(arr[1], 0));
-				cv.put(LexicalDBHelper.FIELD_EDIT_TIME, CMN.now());
-				cv.put(LexicalDBHelper.FIELD_CREATE_TIME, CMN.now());
-				SQLiteDatabase db = a.prepareHistoryCon().getDB();
-				long rowId = db.insert(LexicalDBHelper.TABLE_WORD_MAP, null, cv);
-				wv.evaluateJavascript("add(\""+StringEscapeUtils.escapeJava(text)+"\", \""+rowId+"\")", null);
+				try {
+					value = value.substring(1);
+					String[] arr = value.split(",");
+					ContentValues cv = new ContentValues();
+					cv.put("text", text);
+					cv.put("x", "" + IU.parsint(arr[0], 0));
+					cv.put("y", "" + IU.parsint(arr[1], 0));
+					cv.put(LexicalDBHelper.FIELD_EDIT_TIME, CMN.now());
+					cv.put(LexicalDBHelper.FIELD_CREATE_TIME, CMN.now());
+					SQLiteDatabase db = a.prepareHistoryCon().getDB();
+					long rowId = db.insert(LexicalDBHelper.TABLE_WORD_MAP, null, cv);
+					wv.evaluateJavascript("add(\"" + StringEscapeUtils.escapeJava(text) + "\", \"" + rowId + "\")", null);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			}
 		});
 	}

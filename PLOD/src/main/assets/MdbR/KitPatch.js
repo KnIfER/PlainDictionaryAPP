@@ -23,6 +23,21 @@ if (typeof String.prototype.startsWith != 'function') {
     };  
     window.kit=1;
 } 
+if (typeof Event.prototype.composedPath	!= 'function') {  
+    Event.prototype.composedPath = function (){  
+		var e=this;
+		if (e.path) return e.path
+		var target = e.target;
+		e.path = [];
+		while (target.parentNode !== null) {
+			e.path.push(target);
+			target = target.parentNode;
+		}
+		e.path.push(document, window);
+		return e.path;  
+    };  
+    window.kit=1;
+} 
 if (typeof String.prototype.endsWith != 'function') {  
     String.prototype.endsWith = function (suffix){  
         return this.slice(-suffix.length) === suffix;  
@@ -50,7 +65,7 @@ if (typeof Object.assign != 'function') {
     };
 }
 
-if(![].at) {
+if(![].at && window.Reflect) {
 	function at(n) {
 		try{n = Math.trunc(n) || 0;
 		if (n < 0) n += this.length;
@@ -60,7 +75,9 @@ if(![].at) {
 	}
 
 	var TypedArray = Reflect.getPrototypeOf(Int8Array);
-	for (var C of [Array, String, TypedArray]) {
+	var arr = [Array, String, TypedArray];
+	for (var i=0;i<3;i++) {
+		var C = arr[i];
 		Object.defineProperty(C.prototype, "at",
 							{ value: at,
 								writable: true,

@@ -93,6 +93,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -6689,19 +6690,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						.setAdapter(new AlertController.CheckedItemAdapter(this, R.layout.singlechoice_plain, android.R.id.text1, items, null){
 							public View getView(int position, @Nullable View view, @NonNull ViewGroup parent) {
 								int schMode = mergeFrames();
-								try {
-									WebViewListHandler wlh = (WebViewListHandler) ((MenuBuilder) tagHolder.tag).tag;
-									WebViewmy wv = wlh.getWebContextNonNull();
-									if (ViewUtils.getNthParentNonNull(wv.rl, 1).getId() == R.id.webholder) {
-										schMode = 0;
-									} else if (wv.merge && !wlh.isFoldingScreens()) {
-										schMode = 1;
-									} else if (wlh.isMultiRecord() && !wlh.isFoldingScreens()) {
-										schMode = 2;
-									}
-								} catch (Exception e) {
-									CMN.debug(e);
+								WebViewListHandler wlh = weblistHandler;
+								WebViewmy wv = wlh.getWebContextNonNull();
+								if (ViewUtils.getNthParentNonNull(wv.rl, 1).getId() == R.id.webholder) {
+									schMode = 0;
+								} else if (wv.merge && !wlh.isFoldingScreens()) {
+									schMode = 1;
+								} else if (wlh.isMultiRecord() && !wlh.isFoldingScreens()) {
+									schMode = 2;
 								}
+
 								View ret = super.getView(position, view, parent);
 								TextView tv = (TextView) ret;
 								if (schMode==position ^ TextUtils.regionMatches(tv.getText(), 0, " >> ", 0, 4)) {
@@ -6806,6 +6804,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(dd==null || dd.isDark!=GlobalOptions.isDark)
 				{
 					View vv = (View) getLayoutInflater().inflate(R.layout.translator_dlg, root, false);
+					vv.setLayoutParams(new AbsListView.LayoutParams(vv.getLayoutParams()));
 					ListViewOverscroll cv = new ListViewOverscroll(this);
 					cv.setAdapter(new BaseAdapter() {
 						@Override
@@ -8675,7 +8674,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									mime = "image/svg+xml";
 								}
 								WebResourceResponse resp = new WebResourceResponse(mime, "UTF-8", ret.getData());
-								resp.setResponseHeaders(CrossFireHeaders);
+								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && BuildConfig.DEBUG) {
+									resp.setResponseHeaders(CrossFireHeaders);
+								}
 								return resp;
 							}
 						} catch (Exception e) {
@@ -10340,6 +10341,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				lv.setSelection(tmpIdx);
+				lv.smoothScrollToPosition(tmpIdx);
+				ViewUtils.preventDefaultTouchEvent(lv, 0, 0);
 				if(bIsFirstLaunch||bWantsSelection||来一发) {
 					if(normal_idx>=0) {
 						boolean proceed = true;

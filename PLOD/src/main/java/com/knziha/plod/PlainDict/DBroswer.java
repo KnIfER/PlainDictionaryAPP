@@ -438,7 +438,6 @@ public class DBroswer extends DialogFragment implements
 				@Override
 				public boolean isSameGroup(int prvPos, int thPos) {
 					//return prvPos/5==thPos/5;
-					
 					try {
 						HistoryDatabaseReader reader1 = mAdapter.getReaderAt(prvPos);
 						HistoryDatabaseReader reader2 = mAdapter.getReaderAt(thPos);
@@ -1426,6 +1425,7 @@ public class DBroswer extends DialogFragment implements
 				case R.string.tapSch:
 					a.popupWord(getRowText(), null, -1, null, false);
 					break;
+				case R.string.share:
 				case R.string.page_ucc:
 					if (isLongClick) {
 						a.copyText(getRowText(), true);
@@ -1489,10 +1489,11 @@ public class DBroswer extends DialogFragment implements
 			PopupMenuHelper popupMenu = a.getPopupMenu();
 			boolean b1 = getFragmentId()==-1;
 			popupMenu.initLayout(new int[]{
-					R.layout.poplist_quci_fuzhi
+					R.string.copy
+					, R.layout.poplist_quci_fuzhi
 					, R.string.tapSch
 					, R.string.peruse_mode
-					, R.string.page_ucc
+					//, R.string.page_ucc
 					, b1?0:R.string.elevate_fav
 					, b1?0:R.string.decrease_fav
 					//, R.string.copy
