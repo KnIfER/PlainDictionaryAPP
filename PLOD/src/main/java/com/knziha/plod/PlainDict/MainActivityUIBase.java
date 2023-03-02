@@ -4145,7 +4145,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				,R.string.f_scale_up
 				,R.string.f_scale_down
 			};
-			lastInDark = GlobalOptions.isDark;
 		}
 		
 		public void setInvoker(BookPresenter presenter, WebViewmy _mWebView, TextView _tv, String text) {
@@ -4921,6 +4920,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("重建对话???", hasText());
 			if(GlobalOptions.isDark!=lastInDark || d==null)
 			{
+				lastInDark=GlobalOptions.isDark;
+				if(d!=null) d.dismiss();
 				CMN.debug("重建对话框…");
 				needRecreate=false;
 				d = new AlertDialog.Builder(MainActivityUIBase.this
@@ -4963,10 +4964,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					objectAnimator.start();
 					return true;
 				});
-				
-
 				dialogList.addFooterView(bottomView);
-
+				twoColumnView = null;
 				if(twoColumnAda!=null)  twoColumnAda.notifyDataSetChanged();
 			}
 			
@@ -5118,8 +5117,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//	getCurrentFocus().clearFocus();
 
 			d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-			
-			lastInDark=GlobalOptions.isDark;
 
 			bLastFromWebView=bFromWebView||bFromTextView;
 			firstCreateUcc=false;
@@ -10873,16 +10870,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showBookPreferences(FragmentActivity fa, BookPresenter...books) {
 		int jd = WeakReferenceHelper.dict_opt;
 		BookOptionsDialog dialog = (BookOptionsDialog) getReferencedObject(jd);
-		if (dialog==null || dialog.isDark!=GlobalOptions.isDark) {
+		if (dialog==null || dialog.isDark!=GlobalOptions.isDark)
+		{
+			if(dialog!=null) dialog.dismiss();
 			dialog = new BookOptionsDialog();
-			dialog.bookOptions.setContext(this);
 			dialog.isDark = GlobalOptions.isDark;
+			dialog.bookOptions.setContext(this);
 			putReferencedObject(jd, dialog);
 		}
 		dialog.bookOptions.setData(books);
 		try {
 			if (!dialog.isAdded()) {
-				dialog.show(fa.getSupportFragmentManager(), "");
+				dialog.show(fa.getSupportFragmentManager(), "dictOpt");
 			} else {
 				dialog.getDialog().show();
 			}

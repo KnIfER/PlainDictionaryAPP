@@ -92,7 +92,7 @@ public class BookOptionsDialog extends DialogFragment {
 		
 		Window win = ret.getWindow();
 		if (win!=null) {
-			win.setBackgroundDrawableResource(GlobalOptions.isDark? androidx.appcompat.R.drawable.popup_shadow_d: androidx.appcompat.R.drawable.popup_shadow_l);
+			win.setBackgroundDrawableResource(isDark? androidx.appcompat.R.drawable.popup_shadow_d: androidx.appcompat.R.drawable.popup_shadow_l);
 			win.getDecorView().setPadding(0, 0, 0, 0);
 			View.OnLayoutChangeListener layout = (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
 				DisplayMetrics dm = getResources().getDisplayMetrics();
@@ -110,7 +110,7 @@ public class BookOptionsDialog extends DialogFragment {
 			};
 			win.getDecorView().addOnLayoutChangeListener(layout);
 			layout.onLayoutChange(null, 0, 0, 0, 0, 0, 0, 0, 0);
-			if (!GlobalOptions.isDark && b1) {
+			if (!isDark && b1) {
 				win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 			}
 		}
