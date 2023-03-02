@@ -20,6 +20,7 @@ import android.view.animation.Interpolator;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
 import java.util.Random;
@@ -172,6 +173,7 @@ public class DarkToggleButton extends View {
 			// 拷贝当前状态数值，作为插值起点。
 			System.arraycopy(values, 0, lastValues, 0, animatePropsCnt);
 			animating = true;
+			bAnimationSuppressed = false;
 			animatorTime = System.currentTimeMillis();
 		} else {
 			System.arraycopy(targetValues, 0, values, 0, animatePropsCnt);
@@ -302,6 +304,8 @@ public class DarkToggleButton extends View {
 		long now = System.currentTimeMillis();
 		long elapsed = now - animatorTime;
 		progress = Math.min(1, elapsed*1.f/duration);
+		//CMN.debug("progress::", progress, elapsed >= duration, progress >= springStopFactor);
+		//CMN.debug("animating::", animating, bAnimationSuppressed);
 		if(animatorListener!=null) {
 			animatorListener.onAnimationUpdate(progress/springStopFactor);
 		}

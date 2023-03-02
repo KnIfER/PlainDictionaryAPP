@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.app.CMN;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -18,6 +19,7 @@ public class NightModeSwitchPanel extends PlainAppPanel {
 	protected int mSettingsChanged;
 	protected static int mScrollY;
 	private DarkToggleButton dayNightArt;
+	boolean animating = false;
 	
 	public NightModeSwitchPanel(MainActivityUIBase a) {
 		super(a, true);
@@ -49,10 +51,13 @@ public class NightModeSwitchPanel extends PlainAppPanel {
 	
 	@Override
 	public void refresh() {
-		if (dayNightArt.stateIsNightMode()!=GlobalOptions.isDark) {
-			dayNightArt.toggle(false);
-		} else {
-			dayNightArt.abortAnimation();
+		CMN.debug("refresh::", animating);
+		if (!animating) {
+			if (dayNightArt.stateIsNightMode()!=GlobalOptions.isDark) {
+				dayNightArt.toggle(false);
+			} else {
+				dayNightArt.abortAnimation();
+			}
 		}
 	}
 	
@@ -60,8 +65,10 @@ public class NightModeSwitchPanel extends PlainAppPanel {
 	@Override
 	public void onClick(View v) {
 		if (v.getId() == R.id.dayNightBtn) {
+			animating = true;
 			dayNightArt.toggle(true);
 			a.toggleDarkMode();
+			animating = false;
 		} else {
 			dismiss();
 			if (v.getId() != R.drawable.ic_menu_24dp) {
