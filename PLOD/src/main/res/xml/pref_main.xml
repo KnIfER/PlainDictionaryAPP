@@ -7,12 +7,13 @@
 	>
 	<PreferenceCategory android:key="cat_prog" android:title="内容页"  >
 		<com.knziha.filepicker.settings.IntPreference
-			android:defaultValue="@integer/MIN"
+			android:defaultValue="100"
 			android:key="f_size"
 			android:persistent="true"
 			android:title="@string/wv_font"
 			suffix=" %"
 			app:inlineSummary="true"
+			app:wiki="此项为全局默认值。\n\n也可点击内容页标题栏，进行设置，如欲修改词典级别设置，请前往“词典设置”。"
 			/>
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="GPBC"

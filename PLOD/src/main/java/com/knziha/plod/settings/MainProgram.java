@@ -27,8 +27,6 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 		PDICMainAppOptions opt = ((Toastable_Activity) getActivity()).opt;
 		mPreferenceId = R.xml.pref_main;
 		super.onCreate(savedInstanceState);
-		
-		
 		ArrayList<Preference> preferences = new ArrayList<>(64);
 		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
 		if(screen!=null){
@@ -41,16 +39,16 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 					String key = p.getKey();
 					switch (key) {
 						case "noext":
-							init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null, null);
+							init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null, p);
 							break;
 						case "back_web":
-							init_switch_preference(this, "back_web", PDICMainAppOptions.revisitOnBackPressed(), null, null, null);
+							init_switch_preference(this, "back_web", PDICMainAppOptions.revisitOnBackPressed(), null, null, p);
 							break;
 						case "swipeIME":
-							init_switch_preference(this, "swipeIME", PDICMainAppOptions.swipeTopShowKeyboard(), null, null, null);
+							init_switch_preference(this, "swipeIME", PDICMainAppOptions.swipeTopShowKeyboard(), null, null, p);
 							break;
 						case "conext":
-							init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null, null);
+							init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null, p);
 							p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 								@Override
 								public boolean onPreferenceClick(Preference preference) {
@@ -69,34 +67,34 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 							});
 							break;
 						case "enable_pastebin":
-							init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null, null);
+							init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null, p);
 							break;
 						case "keep_screen":
-							init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null, null);
+							init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null, p);
 							break;
 						case "GPBC":
-							init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null, null);
+							init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null, p);
 							break;
 						case "BCM":
-							init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null, null);
+							init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null, p);
 							break;
 						case "BCF":
-							init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null, null);
+							init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null, p);
 							break;
 						case "f_paste_peruse":
-							init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null, null);
+							init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null, p);
 							break;
 						case "f_move_bg":
-							init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null, null);
+							init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null, p);
 							break;
 						case "f_hide_recent":
-							init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null, null);
+							init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null, p);
 							break;
 						case "stsch":
-							init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null, null);
+							init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null, p);
 							break;
 						case "f_size":
-							findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
+							p.setDefaultValue(GlobalOptions.isLarge?150:125);
 							break;
 						case "dev":
 						case "sspec":

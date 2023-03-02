@@ -209,6 +209,13 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "pzoomx":
 					if(get) return datum.getImgPresetOffsetX(); else datum.setImgPresetOffsetX((float)val);
 					break;
+				case "use_f_size":
+					if(get) return datum.getUseInternalFS(); else datum.setUseInternalFS((boolean)val);
+					break;
+				case "f_size":
+					if((int)val<0 || (int)val>9999) val = 100;
+					if(get) return datum.getFontSize(); else datum.internalScaleLevel=(int)val;
+					break;
 			}
 			datum.checkTint();
 			if(datum.getIsManagerAgent()>0)datum.isDirty=true;
@@ -343,6 +350,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 							break;
 						case "imdz2":
 							init_color("imdz2", p);
+							break;
+						case "f_size":
+							init_color("f_size", p);
 							break;
 						case "dz12":
 							init_switcher("dz12", false, 20, p);
@@ -685,8 +695,10 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		try {
 			if (multiple_vals_str == null)
 				multiple_vals_str = context.getResources().getString(R.string.multiple_vals);
-			text1.setSingleLine(true);
-			text1.setText("词典设置 - " + (data.length == 1 ? "" : multiple_vals_str+" ") + data[0].bookImpl.getDictionaryName());
+			if (text1!=null) {
+				text1.setSingleLine(true);
+				text1.setText("词典设置 - " + (data.length == 1 ? "" : multiple_vals_str+" ") + data[0].bookImpl.getDictionaryName());
+			}
 		} catch (Exception e) {
 			CMN.debug(e);
 		}

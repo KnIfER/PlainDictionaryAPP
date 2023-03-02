@@ -27,6 +27,7 @@ import com.knziha.plod.widgets.ViewUtils;
 
 public class BookOptionsDialog extends DialogFragment {
 	public BookOptions bookOptions = new BookOptions();
+	public boolean isDark;
 	FrameLayout layout;
 	@Nullable
 	@Override

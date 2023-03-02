@@ -460,6 +460,7 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=5) public void setUseInternalBG(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=4) public boolean getUseInternalFS(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=4) public void setUseInternalFS(boolean val){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=9) public boolean getUseTitleBackground(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=9) public void setUseTitleBackground(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=10) public boolean getUseTitleForeground(){ firstFlag=firstFlag; throw new RuntimeException(); }
@@ -3100,6 +3101,7 @@ function debug(e){console.log(e)};
 				//CMN.Log("textMenu!!!");
 			}
 		}
+		
 		@JavascriptInterface
 		public void textMenu(int sid, boolean show) {
 			if (presenter!=null && PDICMainAppOptions.toolsBoost()) {

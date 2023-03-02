@@ -10873,8 +10873,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showBookPreferences(FragmentActivity fa, BookPresenter...books) {
 		int jd = WeakReferenceHelper.dict_opt;
 		BookOptionsDialog dialog = (BookOptionsDialog) getReferencedObject(jd);
-		if (dialog==null) {
+		if (dialog==null || dialog.isDark!=GlobalOptions.isDark) {
 			dialog = new BookOptionsDialog();
+			dialog.bookOptions.setContext(this);
+			dialog.isDark = GlobalOptions.isDark;
 			putReferencedObject(jd, dialog);
 		}
 		dialog.bookOptions.setData(books);
@@ -11460,9 +11462,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void checkTint() {
 		try {
-			if (weblist != null) {
-				if (weblist.dictView != null && weblist.dictView == weblist.mMergedFrame) {
-					weblist.getWebContext().presenter.tintBackground(weblist.getWebContext());
+			WebViewListHandler wlh = weblist;
+			if (wlh != null) {
+				if (wlh.dictView != null && wlh.dictView == wlh.mMergedFrame) {
+					WebViewmy wv = wlh.getWebContext();
+					wv.presenter.tintBackground(weblist.getWebContext());
+					if (wv.getSettings().getTextZoom()!=wv.presenter.getFontSize()) {
+						wv.getSettings().setTextZoom(wv.presenter.getFontSize());
+					}
 				}
 			}
 		} catch (Exception e) {
