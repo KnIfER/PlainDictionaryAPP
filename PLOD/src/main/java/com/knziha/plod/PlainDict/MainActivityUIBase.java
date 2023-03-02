@@ -8615,6 +8615,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							String mime="*/*";
 							if(key.endsWith(".css")) mime = "text/css";
 							if(key.endsWith(".js")) mime = "text/js";
+							if(key.contains(".html")) mime = "text/html";
 							return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
 						} catch (Exception e) {
 							CMN.debug(e);

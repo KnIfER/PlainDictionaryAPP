@@ -112,18 +112,19 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(usr==null) return null;
 		
 		if(uri.startsWith("/MdbR/")) {
-			//SU.Log("[fetching internal res : ]", uri);
+			CMN.debug("[fetching internal res : ]", uri);
 			//InputStream candi = MdictServer.class.getResourceAsStream("Mdict-browser"+uri);
 			InputStream candi = OpenMdbResourceByName(uri.replace("/", "\\"));
 			if(candi!=null) {
 				String mime="*/*";
 				if(uri.contains(".css")) mime = "text/css";
 				if(uri.contains(".js")) mime = "text/js";
+				if(uri.contains(".html")) mime = "text/html";
 				try {
 					return newChunkedResponse(Status.OK,mime,  candi);
 					//return newFixedLengthResponse(Status.OK,mime,  candi, candi.available());
 				} catch (Exception e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 			}
 		}

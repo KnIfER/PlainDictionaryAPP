@@ -77,7 +77,7 @@ public class RLContainerSlider extends FrameLayout {
 		super(context, attrs);
 		detector = new GestureDetector(getContext(), gl);
 		try {
-			ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 400));
+			ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 1200));
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
@@ -281,7 +281,7 @@ public class RLContainerSlider extends FrameLayout {
 			if(tapZoom) {
 				detector = new GestureDetector(getContext(), gl);
 				try {
-					ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 400));
+					ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 1200));
 				} catch (Exception e) {
 					CMN.debug(e);
 				}

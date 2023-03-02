@@ -49,7 +49,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_APPID_v2 = "appid";
 	
 	/** 记录单词导图 */
-	public static final String TABLE_WORD_MAP = "wordmap";
+	public static final String TABLE_WORD_MAP = BuildConfig.DEBUG?"wordmap":"wordmap_d";
 	
 	/* 剪贴板 */
 	public static final String TABLE_PASTE_BIN = "pasteBin";

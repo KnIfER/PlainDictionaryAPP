@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -121,7 +122,6 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 		public void add(String text, int posX, int posY) {
 
 		}
-		
 		@JavascriptInterface
 		public String createLnk(int sid, String A, String B) {
 			if (map!=null) {
@@ -129,7 +129,6 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			}
 			return "";
 		}
-		
 		@JavascriptInterface
 		public boolean removeNode(String id) {
 			if (map!=null) {
@@ -137,7 +136,6 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			}
 			return false;
 		}
-		
 		@JavascriptInterface
 		public boolean moveNode(String id, int x, int y) {
 			if (map!=null) {
@@ -145,7 +143,13 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			}
 			return false;
 		}
-		
+		@JavascriptInterface
+		public boolean editNode(String id, String text) {
+			if (map!=null) {
+				return map.editNode(id, text);
+			}
+			return false;
+		}
 		@JavascriptInterface
 		public void lockScroll(int sid) {
 			if (map!=null) {
@@ -180,9 +184,13 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 //		weblistHandler.getMergedFrame().getSettings().setLoadWithOverviewMode(false);
 //		weblistHandler.getMergedFrame().getSettings().setUseWideViewPort(true);
 //		weblistHandler.getMergedFrame().setInitialScale((int) (100 * (1000 / BookPresenter.def_zoom) * opt.dm.density));
-		weblistHandler.getMergedFrame().loadUrl("https://jv7pl7wn15.csb.app/");
+//		weblistHandler.getMergedFrame().loadUrl("https://jv7pl7wn15.csb.app/");
 //		weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/3/MdbR/wordmap.html");
-		weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/4/wordmap.html");
+		weblistHandler.getMergedFrame().loadUrl("http://mdbr.com/MdbR/wordmap.html");
+		//weblistHandler.getMergedFrame().loadUrl("file:///android_asset/MdbR/wordmap.html");
+		if (BuildConfig.DEBUG && GlobalOptions.debug) {
+			weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/4/wordmap.html");
+		}
 		
 //		VU.setVisible(weblistHandler.contentUIData.bottombar2, false);
 		
@@ -327,6 +335,20 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			//cv.put("text", text);
 			cv.put("x", x);
 			cv.put("y", y);
+			cv.put(LexicalDBHelper.FIELD_EDIT_TIME, CMN.now());
+			SQLiteDatabase db = this.a.prepareHistoryCon().getDB();
+			return db.update(LexicalDBHelper.TABLE_WORD_MAP, cv, "id=?", new String[]{id}) > 0;
+		} catch (Exception e) {
+			CMN.debug(e);
+			return false;
+		}
+	}
+	
+	private boolean editNode(String id, String text) {
+		try{
+			CMN.debug("text::", text);
+			ContentValues cv = new ContentValues();
+			cv.put("text", text);
 			cv.put(LexicalDBHelper.FIELD_EDIT_TIME, CMN.now());
 			SQLiteDatabase db = this.a.prepareHistoryCon().getDB();
 			return db.update(LexicalDBHelper.TABLE_WORD_MAP, cv, "id=?", new String[]{id}) > 0;

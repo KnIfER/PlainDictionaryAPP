@@ -247,7 +247,7 @@ public class MdictServerMobile extends MdictServer {
 			InputStream ret = getRemoteServerRes(key, false);
 			if(ret!=null) return ret;
 		}
-		if (BuildConfig.DEBUG || hasRemoteDebugServer)
+		if (BuildConfig.DEBUG || !BuildConfig.isDevBuild)
 		{
 			try {
 				return a.getAssets().open(key.substring(1).replace("\\", "/"));
