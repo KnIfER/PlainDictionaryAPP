@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -42,6 +43,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerListener;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout2;
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -113,7 +116,8 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 		this.a = dummyPanel.a = a;
 	}
 	
-	public void show(WebViewmy wv, int type, boolean showAnteNotes, boolean retry) {
+	/**  showAnteNotes -- null：不展示  --   SU.EmptyString：展示   -- 非空：直接修改笔记 */
+	public void show(WebViewmy wv, int type, String showAnteNotes, boolean retry) {
 		shownVtk = a.ucc == null || a.ucc.detached() ? null : a.ucc.getDialog();
 		mWebView = wv;
 		if(shownVtk !=null) shownVtk.hide();
@@ -123,6 +127,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 		}
 		int finalType = type;
 		final boolean annotMarkUI = type < -1;
+		final boolean bShowAnteNotes = showAnteNotes==SU.EmptyString;
 		if (annotMarkUI) {
 			type = -2-type;
 			if (type>1) type=-1;
@@ -219,7 +224,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			noteTypes.setTag(null);
 		}
 		ViewUtils.setVisible(alphaSeek, PDICMainAppOptions.alphaLockVisible());
-		ViewUtils.setVisible(editPanel, !annotMarkUI && !showAnteNotes && (PDICMainAppOptions.editNote()||true));
+		ViewUtils.setVisible(editPanel, !annotMarkUI && !bShowAnteNotes && (PDICMainAppOptions.editNote()||true));
 		if (a.isFloating() && noteDlg.mDialog != null) {
 			noteDlg.mDialog.show();
 			ViewUtils.ensureTopAndTypedDlg(noteDlg.mDialog, a);
@@ -250,16 +255,36 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			ViewUtils.removeView(editTools);
 			ViewUtils.addViewToParent(editTools, editPanel, 1);
 		}
-		if (showAnteNotes) {
+		if (bShowAnteNotes) {
 			ViewUtils.setVisible(btnEditNotes, true);
 			a.hdl.postDelayed(btnEditNotes::performClick, 100);
 		}
-		else {
+		else if(showAnteNotes==null){
 			mWebView.evaluateJavascript("NidsInRange(1)", value -> ViewUtils.setVisible(btnEditNotes, "1".equals(value)));
 		}
-		setEditingNote(-1);
+		if (showAnteNotes != null) {
+			AnnotAdapter.AnnotationReader reader = new AnnotAdapter.AnnotationReader();
+			reader.row_id = -1;
+			try {
+				Cursor cursor = a.prepareFavoriteCon().getDB().rawQuery("select id," + LexicalDBHelper.FIELD_EDIT_TIME + "," + AnnotAdapter.data_fields + " from "+LexicalDBHelper.TABLE_BOOK_ANNOT_v2+" where id=? limit 1", new String[]{showAnteNotes});
+				//reader.multiSorts = 0;
+				if (cursor.moveToNext()) {
+					reader.ReadCursor(null, cursor, -1, -1);
+				}
+				cursor.close();
+				eidtNoteByReader(reader);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			if (reader.row_id==-1)
+				setEditingNote(-1);
+		} else {
+			setEditingNote(-1);
+		}
 		if (annotMarkUI) {
+			noteTypes.setTag(noteTypes);
 			btnTypes[type<0? uiStates.toolIdx:type].performClick();
+			noteTypes.setTag(null);
 		}
 		//ViewUtils.setVisible(btnEditNotes, true);
 		if (!dummyPanel.isVisible()) {
@@ -941,49 +966,53 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			View v = pressedV.get();
 			AnnotAdapter.VueHolder vh = (AnnotAdapter.VueHolder) v.getTag();
 			AnnotAdapter.AnnotationReader reader = rangeAdapter.dataAdapter.getReaderAt(vh.vh.position, false);
-			setEditingNote(reader.row_id);
-			JSONObject json = reader.getAnnot();
-			String note = reader.notes!=null?reader.notes:JsonNames.readString(json, JsonNames.note);
-			int color = JsonNames.readInt(json, JsonNames.clr, 0xffffaaaa);
-			int type = JsonNames.readInt(json, JsonNames.typ, 0);
-			int ntyp = JsonNames.readInt(json, JsonNames.ntyp, 0);
-			CMN.debug("editPressedNote::", type, ntyp);
-			
-			uiStates.toolIdx = type;
-			uiStates.alphaLocks[type] = color>>24&0xFF;
-			uiStates.colors[type] = color|0xFF000000;
-			btnTypes[type].performClick();
-			
-			getText().clear();
-			if (note != null) {
-				noteTypes.getChildAt(ntyp).performClick();
-				getText().append(note);
-				int k = PDICMainAppOptions.colorSameForNoteTypes()?0:ntyp;
-				try {
-					uiStates.noteOnBubble = json.containsKey("bon");
-					uiStates.showBubbles[ntyp] = ntyp==1||JsonNames.hasKey(json, JsonNames.bin);
-					if (uiStates.bubbleColorsEnabled[k] = JsonNames.hasKey(json, JsonNames.bclr)) {
-						uiStates.bubbleColors[k] = JsonNames.readInt(json, JsonNames.bclr, 0);
-					}
-					if (uiStates.fontColorEnabled[k] = JsonNames.hasKey(json, JsonNames.fclr)) {
-						uiStates.fontColors[k] = JsonNames.readInt(json, JsonNames.fclr, 0);
-					}
-					if (uiStates.fontSizesEnabled[k] = JsonNames.hasKey(json, JsonNames.fsz)) {
-						uiStates.fontSizes[k] = JsonNames.readInt(json, JsonNames.fsz, 0);
-					}
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-				if (!ViewUtils.isVisible(editPanel)) {
-					onClick(a.anyView(R.id.editShow));
-				}
-			}
-			
-			PopupMenuHelper helper = popupMenuRef.get();
-			if (helper !=null) helper.dismiss();
+			eidtNoteByReader(reader);
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
+	}
+	
+	private void eidtNoteByReader(AnnotAdapter.AnnotationReader reader) {
+		setEditingNote(reader.row_id);
+		JSONObject json = reader.getAnnot();
+		String note = reader.notes!=null?reader.notes:JsonNames.readString(json, JsonNames.note);
+		int color = JsonNames.readInt(json, JsonNames.clr, 0xffffaaaa);
+		int type = JsonNames.readInt(json, JsonNames.typ, 0);
+		int ntyp = JsonNames.readInt(json, JsonNames.ntyp, 0);
+		CMN.debug("editPressedNote::", type, ntyp);
+		
+		uiStates.toolIdx = type;
+		uiStates.alphaLocks[type] = color>>24&0xFF;
+		uiStates.colors[type] = color|0xFF000000;
+		btnTypes[type].performClick();
+		
+		getText().clear();
+		if (note != null) {
+			noteTypes.getChildAt(ntyp).performClick();
+			getText().append(note);
+			int k = PDICMainAppOptions.colorSameForNoteTypes()?0:ntyp;
+			try {
+				uiStates.noteOnBubble = json.containsKey("bon");
+				uiStates.showBubbles[ntyp] = ntyp==1||JsonNames.hasKey(json, JsonNames.bin);
+				if (uiStates.bubbleColorsEnabled[k] = JsonNames.hasKey(json, JsonNames.bclr)) {
+					uiStates.bubbleColors[k] = JsonNames.readInt(json, JsonNames.bclr, 0);
+				}
+				if (uiStates.fontColorEnabled[k] = JsonNames.hasKey(json, JsonNames.fclr)) {
+					uiStates.fontColors[k] = JsonNames.readInt(json, JsonNames.fclr, 0);
+				}
+				if (uiStates.fontSizesEnabled[k] = JsonNames.hasKey(json, JsonNames.fsz)) {
+					uiStates.fontSizes[k] = JsonNames.readInt(json, JsonNames.fsz, 0);
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			if (!ViewUtils.isVisible(editPanel)) {
+				onClick(a.anyView(R.id.editShow));
+			}
+		}
+		
+		PopupMenuHelper helper = popupMenuRef.get();
+		if (helper !=null) helper.dismiss();
 	}
 	
 	private void setEditingNote(long nid) {

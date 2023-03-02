@@ -4686,7 +4686,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
 								@Override
 								public void onReceiveValue(String value) {
-									annotText(mWebView, 0, "1".equals(value));
+									annotText(mWebView, 0, "1".equals(value)?SU.EmptyString:null);
 								}
 							});
 						}
@@ -4706,7 +4706,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
 								@Override
 								public void onReceiveValue(String value) {
-									annotText(mWebView, 1, false);
+									annotText(mWebView, 1, null);
 								}
 							});
 						}
@@ -11569,11 +11569,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void annotMarkUI(WebViewmy mWebView, int type) {
-		annotText(mWebView, type>=0?-2-type:type, false);
+		annotText(mWebView, type>=0?-2-type:type, null);
 	}
 	
-	/** type: 0=下划线  1=高亮 -1=保持不变   */
-	public void annotText(WebViewmy wv, int type, boolean showAnteNotes) {
+	/** type: 0=下划线  1=高亮 -1=保持不变
+	 * showAnteNotes -- null：不展示  --   SU.EmptyString：展示   -- 非空：直接修改笔记 */
+	public void annotText(WebViewmy wv, int type, String showAnteNotes) {
 		AnnotationDialog dialog = annotDlgRef.get();
 		if(dialog==null)
 		{

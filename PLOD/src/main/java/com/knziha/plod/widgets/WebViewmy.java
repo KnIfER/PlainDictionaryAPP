@@ -53,6 +53,7 @@ import androidx.appcompat.view.VU;
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -839,7 +840,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			} return true;
 			case R.id.toolbar_action2:{
 				MainActivityUIBase a = presenter.a;
-				a.annotText(WebViewmy.this, -1, false);
+				a.annotText(WebViewmy.this, -1, null);
 			} return true;
 			case R.id.toolbar_action1:{//工具复用，我真厉害啊啊啊啊！
 				//evaluateJavascript("document.execCommand('selectAll'); console.log('dsadsa')",null);
@@ -1009,7 +1010,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																	@Override
 																	public boolean onLongClick(View v) {
 																		MainActivityUIBase a = presenter.a;
-																		a.annotText(WebViewmy.this, -1, true);
+																		a.annotText(WebViewmy.this, -1, SU.EmptyString);
 																		return true;
 																	}
 																});

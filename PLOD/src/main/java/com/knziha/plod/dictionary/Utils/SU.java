@@ -19,6 +19,8 @@ package com.knziha.plod.dictionary.Utils;
 
 import com.knziha.plod.plaindict.CMN;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -34,6 +36,7 @@ public class  SU{
 	public static Object UniversalObject;
     public static boolean debug = true;//StringUtils
 	public static byte[] EmptyBytes = new byte[0];
+	public final static String EmptyString = StringUtils.EMPTY;
 	public static long mid;
 	public static String days = "一二三四五六七";
 	

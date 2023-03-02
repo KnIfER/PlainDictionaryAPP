@@ -2822,6 +2822,22 @@ function debug(e){console.log(e)};
 			return ret;
 		}
 		
+		@JavascriptInterface
+		public String editNode(int sid, String nid) {
+			String ret = null;
+			try {
+				if (presenter!=null) {
+					WebViewmy wv = findWebview(sid);
+					if (wv != null) {
+						wv.post(() -> wv.weblistHandler.a.annotText(wv, -1, nid));
+					}
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return ret;
+		}
+		
         @JavascriptInterface
         public long annot(int sid, String text, String annot, String entry, int pos, int tPos, int type, int color, String note, String did) {
 			if (presenter!=null) {

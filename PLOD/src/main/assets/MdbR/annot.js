@@ -1,5 +1,4 @@
-/* License GPL3 + 四绝协议
-	based on rangy.js , optimized so that you can modify notes in db in random order. */ 
+/* License GPL3 + 四绝协议 modify notes in db in random order. */ 
 (function(){
     var doc = document;
     var log = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c ANNOT ","color:#000;background:#ffaaaa;",t[0],t[1],t[2],t[3],t[4])}
@@ -256,6 +255,10 @@
                     bel.classList.add('_PDBV');
                     bel.setAttribute('data-tex', '···');
                 }
+				bel.onclick = function(e){
+					debug('bid='+nid, e, e.target);
+					app.editNode(sid.get(), e.target.nid);
+				}
                 if(tcn.fclr) 
                     bel.style.color = toRgb(tcn.fclr);
                 if(tcn.fsz) 
