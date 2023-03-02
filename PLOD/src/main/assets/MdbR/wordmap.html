@@ -199,6 +199,7 @@
 		var paths = ge("paths");
 		var move = ge("move"), edit=ge("edit"), lnk=ge("lnk");
 		var focaNode;
+		var editingNode;
 		var app = w.app;
 		var word = w.word;
 		var snap = true;
@@ -293,12 +294,15 @@
 		function add(text, nid){
 			debug('add', text, nid);
 			var node = craft("WORDNODE", map);
-			craft("DIV", node).innerHTML = text;
+			if(!text.startsWith('<div>'))
+				craft("DIV", node).innerHTML = text;
+			else
+				node.innerHTML = text;
 			node.style.left = loca.style.left;
 			node.style.top = loca.style.top;
-			node.nid = nid;
+			node.id = nid;
 			node.lnks = [];
-			editNode(node);
+			selectNode(node);
 		}
 		
 		// https://blog.csdn.net/yiyueqinghui/article/details/108004272
@@ -345,7 +349,6 @@
 			var d = "M "+x+" "+y+" Q "+(x+x1)/2+" "+(y+y1)/2+","+x1+" "+y1;
 			if(!path) {
 				path = makeSVG("path", {d:d, class:"wordlink"});
-				path.id = "path1";
 				paths.firstElementChild.appendChild(path);
 				path.A=A;
 				path.B=B;
@@ -399,7 +402,7 @@
 		var onNodeResizeOpt = { attributes: true, childList: true, subtree: false };
 		var nodeResizeObz = new MutationObserver(onNodeResize);
 
-		function editNode(node){
+		function selectNode(node){
 			loca.style.display='none';
 			if(node==editbar || focaNode==node) return;
 			if(focaNode) {
@@ -446,7 +449,7 @@
 					return;
 				}
 				var editing = focaNode && focaNode.getAttribute("contenteditable")=="true";
-				editNode(node);
+				selectNode(node);
 				if(editing) edit.click();
 				return;
 			}
@@ -467,8 +470,10 @@
 			//loca.setAttribute("transform", "translate("++","++")");
 			if(!getSelection().isCollapsed)
 				getSelection().collapseToEnd();
-			if(focaNode && focaNode.getAttribute("contenteditable")=="true") {
-				focaNode.setAttribute("contenteditable", "false")
+			if(editingNode) {
+				editingNode.setAttribute("contenteditable", "false");
+				commitEdits(editingNode);
+				editingNode = null;
 			} else {
 				editbar.style.display='none';
 				if(focaNode) {
@@ -593,11 +598,13 @@
 			}
 		});
 		edit.onclick = function(e){
-			focaNode.setAttribute("contenteditable", "true");
-			focaNode.focus();
-			if(focaNode.innerText.trim().length==0) {
+			editingNode = focaNode;
+			editingNode.setAttribute("contenteditable", "true");
+			editingNode.focus();
+			editingNode.oldText = editingNode.innerHTML;
+			if(editingNode.innerText.trim().length==0) {
 				var r = new Range();
-				r.selectNode(focaNode.firstElementChild);
+				r.selectNode(editingNode.firstElementChild);
 				getSelection().empty();
 				getSelection().addRange(r);
 			} else {
@@ -605,6 +612,15 @@
 			}
 			if(app)
 				app.ntxt = e.timeStamp
+		}
+		function commitEdits(node) {
+			var t = node.innerHTML;
+			if(node.oldText!=t) {
+				if(t.startsWith('<div>') && t.endsWith('</div>'))
+					t = t.slice(5, t.length-6);
+				word.editNode(node.id, t);
+			}
+			node.oldText=0;
 		}
 		lnk.addEventListener(dragResizer.st, function(e){
 			tmPress = setTimeout(function longPress(e){

@@ -15,6 +15,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -105,7 +106,8 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 				fetchWordMenu.setChecked(true);
 			}
 			
-			if (BuildConfig.DEBUG) {
+			//if (BuildConfig.DEBUG)
+			{
 				ViewUtils.findInMenu(RandomMenu, R.id.refresh).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
 			
@@ -192,7 +194,8 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 			weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/4/wordmap.html");
 		}
 		
-//		VU.setVisible(weblistHandler.contentUIData.bottombar2, false);
+		if(!BuildConfig.DEBUG)
+		VU.setVisible(weblistHandler.contentUIData.bottombar2, false);
 		
 		weblistHandler.getMergedFrame().setHorizontalScrollBarEnabled(true);
 		weblistHandler.resetScrollbar();
