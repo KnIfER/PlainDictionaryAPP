@@ -218,8 +218,8 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			noteDlg.forceAlphaLock(true);
 			noteDlg.setColorPickerListener(this);
 			alphaSeek.setOnSeekBarChangeListener(this);
-			btnTypes[type<0? uiStates.toolIdx:type].performClick();
 			noteTypes.setTag(this);
+			btnTypes[type<0? uiStates.toolIdx:type].performClick();
 			noteTypes.getChildAt(uiStates.noteType).performClick();
 			noteTypes.setTag(null);
 		}
@@ -282,7 +282,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 			setEditingNote(-1);
 		}
 		if (annotMarkUI) {
-			noteTypes.setTag(noteTypes);
+			noteTypes.setTag(this);
 			btnTypes[type<0? uiStates.toolIdx:type].performClick();
 			noteTypes.setTag(null);
 		}
@@ -707,7 +707,7 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 		ViewUtils.setVisible(seekBar, vis);
 		ViewUtils.setVisible(value, vis);
 		name.setText(pBc?"不透明度":"字体大小");
-		pickName.setText(pBc?"点击修改气泡颜色":"点击修改笔记文本的字体颜色");
+		pickName.setText(pBc?"<<点击这里>>修改气泡颜色":"<<点击这里>>修改笔记文本的字体颜色");
 
 		final boolean enabled = !pBc&& uiStates.fontColorEnabled[k] || pBc&& uiStates.bubbleColorsEnabled[k];
 		boolean visible = true;
@@ -988,7 +988,9 @@ public class AnnotationDialog /*extends PlainAppPanel*/ implements View.OnClickL
 		
 		getText().clear();
 		if (note != null) {
+			noteTypes.setTag(this);
 			noteTypes.getChildAt(ntyp).performClick();
+			noteTypes.setTag(null);
 			getText().append(note);
 			int k = PDICMainAppOptions.colorSameForNoteTypes()?0:ntyp;
 			try {
