@@ -112,6 +112,16 @@ public class MenuGrid extends PlainAppPanel {
 		dismiss();
 		//MenuClicked = true;
 		switch (v.getId()) {
+			case R.id.nav_back:
+			case R.id.nav_forward:
+			{
+				a.findWebList(v);
+				int delta = (v.getId()==R.id.nav_back?-1:1);
+				a.weblist.NavWeb(delta);
+			} break;
+			case R.id.schPage: {
+				a.weblist.togSchPage(2);
+			} break;
 			case R.drawable.ic_menu_24dp: {
 				a.mInterceptorListenerHandled=true;
 				dismiss();

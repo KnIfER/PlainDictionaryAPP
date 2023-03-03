@@ -1636,7 +1636,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	void togSchPage(int forceShow) {
+	public void togSchPage(int forceShow) {
 		final HighlightVagranter hData = getHData();
 		hData.HlightIdx =
 		hData.AcrArivAcc = 0;
@@ -2140,7 +2140,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return bottomNavWeb;
 	}
 	
-	void NavWeb(int d) {
+	public void NavWeb(int d) {
 		WebViewmy wv = getWebContext();
 		if (wv !=null) {
 			CMN.debug("NavWeb", wv.getUrl(), d, wv.canGoBack(), wv.canGoForward());

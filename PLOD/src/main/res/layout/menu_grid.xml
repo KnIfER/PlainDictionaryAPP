@@ -36,6 +36,42 @@
 				android:orientation="horizontal"
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/_90_">
+				<com.knziha.plod.widgets.DescriptiveImageView
+					android:id="@+id/nav_back"
+					style="@style/MenuIconIVStyle"
+					android:text="页面后退"
+					android:src="@drawable/ic_baseline_arrow_back_24"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					android:id="@+id/nav_forward"
+					style="@style/MenuIconIVStyle"
+					android:text="页面前进"
+					android:src="@drawable/ic_arrow_forward_black_24dp"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					android:id="@drawable/ic_baseline_mindmap"
+					style="@style/MenuIconIVStyle_PDFX"
+					android:text="词条图谱"
+					android:src="@drawable/ic_baseline_mindmap"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					style="@style/MenuIconIVStyle_PDFX"
+					android:text="页面高亮"
+					android:src="@drawable/ic_baseline_find_in_page_24"
+					android:alpha="0.1"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					android:id="@drawable/customize_bars"
+					style="@style/MenuIconIVStyle_PDFX"
+					android:text="定制工具栏"
+					android:src="@drawable/customize_bars"
+					/>
+			</LinearLayout>
+
+			<LinearLayout
+				android:orientation="horizontal"
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_90_">
 
 				<com.knziha.plod.widgets.DescriptiveImageView
 					android:id="@drawable/star_ic"
@@ -57,10 +93,10 @@
 					android:src="@drawable/historyg"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
-					android:id="@drawable/customize_bars"
+					android:id="@+id/schPage"
 					style="@style/MenuIconIVStyle_PDFX"
-					android:text="定制工具栏"
-					android:src="@drawable/customize_bars"
+					android:src="@drawable/ic_baseline_find_in_page_24"
+					android:text="页面查找"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
 					android:id="@drawable/abc_ic_menu_share_mtrl_alpha"
@@ -69,36 +105,6 @@
 					android:src="@drawable/abc_ic_menu_share_mtrl_alpha"
 					/>
 			</LinearLayout>
-
-<!--			<LinearLayout
-				android:orientation="horizontal"
-				android:layout_width="match_parent"
-				android:layout_height="@dimen/_90_">
-				<com.knziha.plod.widgets.DescriptiveImageView
-					style="@style/MenuIconIVStyle"
-					android:visibility="invisible"
-					/>
-				<com.knziha.plod.widgets.DescriptiveImageView
-					style="@style/MenuIconIVStyle"
-					android:text="笔记列表"
-					android:src="@drawable/ic_edit_booknotes"
-					/>
-				<com.knziha.plod.widgets.DescriptiveImageView
-					style="@style/MenuIconIVStyle"
-					android:text="黑暗模式"
-					android:src="@drawable/ic_baseline_nightmode_24"
-					/>
-				<com.knziha.plod.widgets.DescriptiveImageView
-					style="@style/MenuIconIVStyle"
-					android:src="@drawable/ic_options_toolbox"
-					android:text="浏览选项"
-					/>
-				<com.knziha.plod.widgets.DescriptiveImageView
-					style="@style/MenuIconIVStyle"
-					android:src="@drawable/ic_view_options"
-					android:text="页面设置"
-					/>
-			</LinearLayout>-->
 
 
 			<LinearLayout

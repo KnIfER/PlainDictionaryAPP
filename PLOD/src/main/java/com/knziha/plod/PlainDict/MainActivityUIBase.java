@@ -5931,8 +5931,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.drawable.ic_baseline_find_in_page_24: {
 				findWebList(v);
-				//weblist.togSchPage(2);
-				weblist.togSchPage(0);
+				weblist.togSchPage(2);
+//				weblist.togSchPage(0);
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
