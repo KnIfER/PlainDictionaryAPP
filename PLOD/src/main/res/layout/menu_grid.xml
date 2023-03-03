@@ -70,6 +70,37 @@
 					/>
 			</LinearLayout>
 
+<!--			<LinearLayout
+				android:orientation="horizontal"
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_90_">
+				<com.knziha.plod.widgets.DescriptiveImageView
+					style="@style/MenuIconIVStyle"
+					android:visibility="invisible"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					style="@style/MenuIconIVStyle"
+					android:text="笔记列表"
+					android:src="@drawable/ic_edit_booknotes"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					style="@style/MenuIconIVStyle"
+					android:text="黑暗模式"
+					android:src="@drawable/ic_baseline_nightmode_24"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					style="@style/MenuIconIVStyle"
+					android:src="@drawable/ic_options_toolbox"
+					android:text="浏览选项"
+					/>
+				<com.knziha.plod.widgets.DescriptiveImageView
+					style="@style/MenuIconIVStyle"
+					android:src="@drawable/ic_view_options"
+					android:text="页面设置"
+					/>
+			</LinearLayout>-->
+
+
 			<LinearLayout
 				android:orientation="horizontal"
 				android:layout_width="match_parent"
@@ -103,7 +134,6 @@
 					android:src="@drawable/ic_view_options"
 					android:text="页面设置"
 					/>
-
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>

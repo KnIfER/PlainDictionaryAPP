@@ -1268,7 +1268,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		_treeBuilder.setKeyClashHandler(searchText);
 		ArrayList<myCpr<String, Long>> tmpRangeReceiver = new ArrayList<>(loadManager.md_size/2);
 		LongSparseArray<ArrayList<Long>> refs = new LongSparseArray<>();
-		LongSparseArray<Object> sched = new LongSparseArray<>();
+		LongSparseArray<Object> schedPosInLastBook = new LongSparseArray<>();
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
 			if (phTmp != null) {
@@ -1313,20 +1313,44 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				//CMN.debug("wp::bat::合并!!");
 				ArrayList<Long> firstPage = rec.getRecordAt(0);
 				int needle_idx = 0;
+				int previous_section_start_idx = 0;
+				int book_idx = 0;
 				long bookId = firstPage.get(needle_idx);
 				long id;
 				while (bookId != -1) {
 					if (needle_idx >= firstPage.size()) id = -1;
-					else {
+					else { // still in the array constituting the first page content [id#1,pos#1, id#1,pos#2, ..., id#2,pos#1]
+						// dictionary id -- is also stored in the array, on even slots.
 						id = firstPage.get(needle_idx);
-						sched.put(firstPage.get(needle_idx+1), this);
+						// prepare -- put the record ( entry position ) to avoid duplication.
+						schedPosInLastBook.put(firstPage.get(needle_idx+1), this);
 					}
-					if (bookId != id) { // reached new book items
+					if (bookId != id) { // reached new book  ( dictionary ) section.
+						// ![0] first pass, insert left-overs.
+						for (; book_idx < loadManager.md_size; book_idx++) {
+							long leftId = loadManager.getBookIdAt(book_idx);
+							if (leftId==bookId) {
+								book_idx++;
+								break;
+							}
+							ArrayList<Long> ref = refs.get(leftId);
+							if (ref != null) {
+								for (int j = 0; j < ref.size(); j++) {
+									// insert to previous section
+									firstPage.add(previous_section_start_idx, leftId);
+									firstPage.add(previous_section_start_idx+1, ref.get(j));
+									previous_section_start_idx += 2;
+									// also increase the current needle
+									needle_idx += 2;
+								}
+							}
+						}
+						// ![1] second pass, merge pending contents.
 						ArrayList<Long> ref = refs.get(bookId);
 						if (ref != null) {
 							for (int j = 0; j < ref.size(); j++) {
 								long rp = ref.get(j);
-								if (sched.get(rp)==null) {
+								if (schedPosInLastBook.get(rp)==null) {
 									firstPage.add(needle_idx, bookId);
 									firstPage.add(needle_idx+1, rp);
 									needle_idx += 2;
@@ -1334,7 +1358,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 							}
 						}
 						bookId = id;
-						sched.clear();
+						schedPosInLastBook.clear();
+						previous_section_start_idx = needle_idx;
 					}
 					needle_idx += 2;
 				}
