@@ -61,6 +61,7 @@ public class BookManagerWebsites extends BookManagerFolderAbs {
 		
 		dataTree = new ArrayList<>(data.getList());
 		adapter = new MyAdapter(dataTree);
+		adapterAll = new MyAdapter(data.getList());
 		super.setListAdapter(adapter);
 	}
 }

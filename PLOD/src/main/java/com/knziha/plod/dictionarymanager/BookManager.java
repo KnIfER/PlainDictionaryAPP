@@ -453,8 +453,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	protected void onDestroy() {
 		super.onDestroy();
 		checkAll(); // 退出
-		viewPager.clearOnPageChangeListeners();
-		mTabLayout.clearOnTabSelectedListeners();
+		if (viewPager!=null) {
+			viewPager.clearOnPageChangeListeners();
+			mTabLayout.clearOnTabSelectedListeners();
+		}
 	}
 
 	private void writeForOneLine(Writer out, int position, String parent) throws IOException {
@@ -516,6 +518,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		MainLumen = ColorUtils.calculateLuminance(MainAppBackground);
 		
 		searchbar = (Toolbar) VU.findViewById(root, R.id.searchbar);
+		searchbar.inflateMenu(R.xml.menu_dict_manager_bottom);
+		searchbar.setOnMenuItemClickListener(this);
 		int barSzBot = (int) mResource.getDimension(R.dimen.barSzBot);//opt.getBottombarSize();
 		searchbar.getChildAt(0).getLayoutParams().height = barSzBot;
 		//searchbar.setNavigationIcon(R.drawable.ic_baseline_double_arrow_24);
@@ -918,10 +922,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					int realPos = filtered.keyAt(position);
 					Fragment frame = getFragment();
 					View ret = null;
-					if (frame instanceof BookManagerFragment) {
-						ret = ((BookManagerFragment) frame).adapter.getView(realPos, convertView, lv);
-					} else {
-						ret = ((BookManagerFolderAbs) frame).adapter.getView(realPos, convertView, lv);
+					try {
+						if (frame instanceof BookManagerFragment) {
+							ret = ((BookManagerFragment) frame).adapter.getView(realPos, convertView, lv);
+						} else {
+							ret = ((BookManagerFolderAbs) frame).adapterAll.getView(realPos, convertView, lv);
+						}
+					} catch (Exception e) {
+						TextView tv = new TextView(getBaseContext());
+						tv.setText("ERROR!!! "+e);
+						return tv;
 					}
 					if (ret.getTag() instanceof BookViewHolder) {
 						((BookViewHolder)ret.getTag()).position = position;
@@ -1267,7 +1277,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		boolean closeMenu=!isLongClicked;
 		AlertDialog d;
 		BookManagerFolderAbs f3=CurrentPage==2?f4:this.f3;
-		ArrayList<mFile> list = f3.dataTree;
+		ArrayList<mFile> list = f3.data.getList();
 		int szf1 = f1.manager_group().size(), cnt=0;
 		boolean sf1 = !opt.dictManager1MultiSelecting() && !isLongClicked && szf1>0;
 		switch (item.getItemId()) {
@@ -1291,6 +1301,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				PDICMainAppOptions.dictManager1MultiSelecting(item.isChecked());
 				f1.dataSetChanged(false);
 				showT(item.isChecked()?"多选模式已开启":"多选模式已关闭");
+			} break;
+			case R.id.refresh:{
+				if(isLongClicked) {ret=false; break;}
+				viewPager.setCurrentItem(0);
+				f1.resumePos();
 			} break;
 			case R.id.clearSel:{
 				if(isLongClicked) {ret=false; break;}
@@ -1457,14 +1472,15 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 折叠全部 */
             case R.id.toolbar_action13:{
 				if(isLongClicked) {ret=false; break;}
-				for(int i=0;i<list.size();i++) {
-					mFile mdTmp = list.get(i);
+				final ArrayList<mFile> listTree = f3.dataTree;
+				for(int i=0;i<listTree.size();i++) {
+					mFile mdTmp = listTree.get(i);
 					if(mdTmp.isDirectory()) {
 						f3.hiddenParents.add(mdTmp);
-						for(i++;i<list.size();i++) {
-							if(!mFile.isDirScionOf(list.get(i), mdTmp)) {break;}
-							if(list.get(i).isDirectory()) {break;}
-							mdTmp.children.add(list.remove(i));
+						for(i++;i<listTree.size();i++) {
+							if(!mFile.isDirScionOf(listTree.get(i), mdTmp)) {break;}
+							if(listTree.get(i).isDirectory()) {break;}
+							mdTmp.children.add(listTree.remove(i));
 							i--;
 						}
 						i--;
@@ -1475,11 +1491,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			/* 展开全部 */
             case R.id.tapSch:{
 				if(isLongClicked) {ret=false; break;}
-				for(int i=0;i<list.size();i++) {
+				final ArrayList<mFile> listTree = f3.dataTree;
+				for(int i=0;i<listTree.size();i++) {
 					f3.hiddenParents.clear();
-					mFile mdTmp = list.get(i);
+					mFile mdTmp = listTree.get(i);
 					if(mdTmp.isDirectory()) {
-						list.addAll(i + 1, mdTmp.children);
+						listTree.addAll(i + 1, mdTmp.children);
 						i += mdTmp.children.size();
 						mdTmp.children.clear();
 					}
@@ -1581,7 +1598,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if(isLongClicked) {
 					closeMenu = false;
 				} else {
-					deleteFromF3SelHardInAll(f3, list);
+					deleteFromF3SelHardInAll(f3);
 				}
 			} break;
 			/* 移动文件 */
@@ -2058,100 +2075,108 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				.setTitle(mResource.getString(R.string.surerrecords, f3.calcSelectionSz()).replace("彻底", ""))
 				.setMessage("从当前分组删除记录，不会删除文件或全部词典记录，但不可撤销。")
 				.setPositiveButton(R.string.confirm, (dialog, which) -> {
-					deleteRecordsHard(f3, true);
+					deleteRecordsHard(f3, true, false);
 					dialog.dismiss();
 				})
 				.create().show();
 	}
 	
-	public void deleteFromF3SelHardInAll(BookManagerFolderAbs f3, ArrayList<mFile> list) {
+	private void doDeleteFromF3SelHardInAll(
+			final BookManagerFolderAbs folderMangager
+			, final boolean deleteFromAllGroup
+	) {
+		final mFile[] arr = folderMangager.Selection.toArray(new mFile[0]);
+		final HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
+	 	final ArrayList<mFile> lstViewFiles =  folderMangager.data.getList();
+		for (int i = lstViewFiles.size()-1; i >= 0; i--) {
+			mFile fn = lstViewFiles.get(i)/*.getRealPath()*/;
+			if (removePool.contains(fn) // selected
+					&& fn.webAsset==null // not embedded webx
+					&& !(fn instanceof mAssetFile) // not embedded asset
+					&& !fn.isDirectory() // not directory
+			) {
+				lstViewFiles.remove(i);
+				mdlibsCon.remove(mFile.removeFolderPrefix(fn, opt.lastMdlibPath));
+				folderMangager.isDirty = true;
+				mFile p = fn.getParentFile(); // check for folder
+				if (p != null)
+				{
+					mFile prev = i-1 >= 0 ? lstViewFiles.get(i-1) : null;
+					if (p.equals(prev) // found
+							&& prev.children.size()==0 // no other children
+							&& (  i>=lstViewFiles.size() || !mFile.isDirScionOf(lstViewFiles.get(i), p))  ) {
+						lstViewFiles.remove(--i);
+					}
+				}
+			}
+		}
+		deleteRecordsHard(folderMangager, false, true);
+		if (!PDICMainAppOptions.getDebuggingRemoveRec())
+		{
+			//PDICMainAppOptions.setDelRecApplyAll(deleteFromAllGroup);
+			ArrayList<File> moduleFilesArr = ScanInModlueFiles(deleteFromAllGroup, folderMangager.isDirty);
+			AgentApplication app = ((AgentApplication) getApplication());
+			char[] cb = app.get4kCharBuff();
+			boolean bNeedRewrite;
+			for (File fI : moduleFilesArr) {
+				StringBuilder sb = new StringBuilder();
+				String line;
+				try {
+					ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+					bNeedRewrite = false;
+					while ((line = br.readLine()) != null) {
+						try {
+							String key = line;
+							if(key.startsWith("[:")){
+								int idx = key.indexOf("]",2);
+								if(idx>=2) key = key.substring(idx+1);
+							}
+							key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
+							//CMN.debug("rewrite::", key, removePool.contains(new mFile(key)));
+							if (removePool.contains(new mFile(key))
+									|| removePool.contains(  new mFile(new File(key).getCanonicalPath()))  ) {
+								bNeedRewrite = true;
+								continue;
+							}
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+						sb.append(line).append("\n");
+					}
+					br.close();
+					cb = br.cb;
+					if (bNeedRewrite) {
+						CMN.debug("rewrite::", fI);
+						ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+						bw.write(sb.toString());
+						bw.flush();
+						bw.close();
+						cb = br.cb;
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
+			app.set4kCharBuff(cb);
+		}
+		showT("移除完毕!");
+	}
+	
+	public void deleteFromF3SelHardInAll(final BookManagerFolderAbs f3) {
 		final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
-		CheckBox ck = dv.findViewById(R.id.ck);
+		final CheckBox ck = dv.findViewById(R.id.ck);
+		final int sz = f3.Selection.size();
 		ck.setChecked(PDICMainAppOptions.getDelRecApplyAll());
 		dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
-		builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
-				.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！！")
-				.setPositiveButton(R.string.confirm, (dialog, which) -> {
-					mFile[] arr = f3.Selection.toArray(new mFile[0]);
-					HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
-					int s2 = list.size();
-					for (int i = 0; i < s2; i++) {
-						mFile fn = list.get(i)/*.getRealPath()*/;
-						if (fn.webAsset==null) {
-							if (fn instanceof mAssetFile)
-								continue;
-							if (fn.isDirectory())
-								continue;
-							if (removePool.contains(fn)) {
-								list.remove(i--);
-								s2--;
-								mdlibsCon.remove(mFile.tryDeScion(fn, opt.lastMdlibPath));
-								f3.isDirty = true;
-								mFile p = fn.getParentFile();
-								if (p != null) {
-									mFile pTmp = i<list.size()?list.get(i):null;
-									if (p.equals(pTmp) && pTmp.children.size()==0
-											&& (i+1>=list.size() || !mFile.isDirScionOf(list.get(i+1), p))) {
-										list.remove(i--);
-										s2--;
-									}
-								}
-							}
-						}
-					}
-					PDICMainAppOptions.setDelRecApplyAll(ck.isChecked());
-					deleteRecordsHard(f3, false);
-					if (!PDICMainAppOptions.getDebuggingRemoveRec()) {
-						ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(PDICMainAppOptions.getDelRecApplyAll(), f3.isDirty);
-						AgentApplication app = ((AgentApplication) getApplication());
-						char[] cb = app.get4kCharBuff();
-						boolean bNeedRewrite;
-						for (File fI : moduleFullScannerArr) {
-							StringBuilder sb = new StringBuilder();
-							String line;
-							try {
-								ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
-								bNeedRewrite = false;
-								while ((line = br.readLine()) != null) {
-									try {
-										String key = line;
-										if(key.startsWith("[:")){
-											int idx = key.indexOf("]",2);
-											if(idx>=2) key = key.substring(idx+1);
-										}
-										key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
-										//CMN.debug("rewrite::", key, removePool.contains(new mFile(key)));
-										if (removePool.contains(new mFile(key)) || removePool.contains(new mFile(new File(key).getCanonicalPath()))) {
-											bNeedRewrite = true;
-											continue;
-										}
-									} catch (Exception e) {
-										CMN.debug(e);
-									}
-									sb.append(line).append("\n");
-								}
-								br.close();
-								cb = br.cb;
-								if (bNeedRewrite) {
-									CMN.debug("rewrite::", fI);
-									ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
-									bw.write(sb.toString());
-									bw.flush();
-									bw.close();
-									cb = br.cb;
-								}
-							} catch (Exception e) {
-								CMN.debug(e);
-							}
-						}
-						app.set4kCharBuff(cb);
-					}
-					showT("移除完毕!");
-				})
-				.setNeutralButton(R.string.cancel, null);
-		d = builder2.create();
-		d.show();
+		d = new AlertDialog.Builder(BookManager.this)
+			.setView(dv)
+			.setTitle(  mResource.getString(R.string.surerrecords, sz)  )
+			.setMessage("从分组和全部词典记录中彻底清理记录，不可撤销！！")
+			.setPositiveButton(R.string.confirm
+					, (dialog, which) ->
+							doDeleteFromF3SelHardInAll(f3, ck.isChecked()))
+			.setNeutralButton(R.string.cancel, null)
+			.show();
 	}
 	
 	// 缝合怪
@@ -2238,24 +2263,32 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	private void deleteRecordsHard(BookManagerFolderAbs f3, boolean toast) {
-		int cc1 = 0;
-		int size = f1.manager_group().size();
-		int total = f3.calcSelectionSz();
-		for(int i=0;i<size;i++) {
-			if(f3.Selection.remove(new mFile(f1.getPathAt(i)))) {
+	 /* Delete file records from folderlike manager
+			in current dictionary group. */
+	private void deleteRecordsHard(BookManagerFolderAbs folderLike, boolean showToast, boolean folderStuctureChange) {
+		int count = 0;
+		int f1_size = f1.manager_group().size();
+		int total = folderLike.calcSelectionSz();
+		for(int i=0;i<f1_size;i++)
+		{
+			if(folderLike.Selection.remove(new mFile(f1.getPathAt(i))))
+			{
 				f1.markDirty(-1);
 				f1.replace(i--, -1);
-				size--;
-				cc1++;
+				f1_size--;
+				count++;
 			}
 		}
 		f1.refreshSize();
-		if (toast) {
-			showT("移除完毕!("+cc1+"/"+total+")");
+		f1.dataSetChanged(count>0);
+		folderLike.selFolders.clear();
+		folderLike.Selection.clear();
+		folderLike.dataSetChanged(folderStuctureChange);
+		if (folderStuctureChange) {
+			folderLike.rebuildDataTree();
 		}
-		f1.dataSetChanged(cc1>0);
-		f3.dataSetChanged(!toast);
+		if (showToast)
+			showT("移除完毕!("+count+"/"+total+")");
 	}
 	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){

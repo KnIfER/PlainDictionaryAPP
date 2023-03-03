@@ -167,10 +167,10 @@
 	<string name="save_as">另存为</string>
 	<string name="disable_all">禁用全部 | 禁用选中项</string>
 	<string name="enable_all">启用全部 | 启用选中项</string>
-	<string name="select_all_invalid">选中失效项 | 不选失效</string>
+	<string name="select_all_invalid">全选失效项 | 不选失效</string>
 	<string name="add_selection_to_set">启用选中词典 | 插入至…</string>
 	<string name="remove_selection_from_set">禁用选中词典 | 删除选中项</string>
-	<string name="remove_records">删除全部记录</string>
+	<string name="remove_records">从全部记录删除……</string>
 	<string name="move_files">移动文件</string>
 	<string name="new___">新建</string>
 	<string name="dict_specs">&#160;全局_ 特定_ 现代_ 旧版_ ×_ √</string>
@@ -265,5 +265,6 @@
 	<string name="schtools_scroll_pad">工具栏两边空出滚动区域</string>
 	<string name="expand_map_hor">横向扩展画布</string>
 	<string name="expand_map_ver">竖向扩展画布</string>
+	<string name="copyFileNamace">复制文件名</string>
 	>
 </resources>

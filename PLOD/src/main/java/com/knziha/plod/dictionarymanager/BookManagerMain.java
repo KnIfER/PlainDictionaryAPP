@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.SparseIntArray;
@@ -53,6 +52,7 @@ import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.FIlePickerOptions;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.TextMenuView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortController;
@@ -82,6 +82,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	private Drawable mPDFDrawable;
 	private Drawable mRightDrawable;
 	private boolean tweakedDict;
+	private long listView_savedPos;
 	
 	public BookManagerMain(){
 		super();
@@ -571,6 +572,14 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							a.addElementsToF1(a.f3, null, true, true, pressedPos+1, null);
 						} break;
 						// 添加网络词典
+						case R.string.copyFileNamace: {
+							try {
+								a.copyText(((FlowTextView) pressedV.findViewById(R.id.text)).getText().toString(), true);
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
+						} break;
+						// 添加网络词典
 						case R.string.addWebHere: {
 							if(b1) return true;
 							a.addElementsToF1(a.f4, null, true, true, pressedPos+1, null);
@@ -655,7 +664,8 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							if(b1) return true;
 							PopupMenuHelper popup = a.getPopupMenu();
 							popup.initLayout(new int[]{
-								R.string.addWebHere
+								R.string.copyFileNamace
+								, R.string.addWebHere
 								, R.string.addAllHere
 								, R.layout.poplist_quanzhong_jinxuan
 								, R.string.addRecentPasteHere
@@ -672,12 +682,14 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						} break;
 						case R.string.move_top: {//移至顶部
 							markDirty(-1);
+							remPos();
 							replace(position, 0);
 							dataSetChanged(true);
 							getListView().setSelection(0);
 						} break;
 						case R.string.move_bottom: {//移至底部
 							markDirty(-1);
+							remPos();
 							int last = manager_group().size() - 1;
 							replace(position, last);
 							dataSetChanged(true);
@@ -700,7 +712,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
 							properties.selection_type = DialogConfigs.FILE_SELECT;
 							properties.root = new File("/");
-							properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
+							properties.error_dir = new File(GlobalOptions.extPath);
 							properties.offset = new File(getRecordedPathAt(position)).getParentFile(); // here
 							properties.opt_dir = new File(getOpt().pathToDatabases() + "favorite_dirs/");
 							properties.dedicatedTarget = magent.f().getName();
@@ -844,6 +856,16 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		View lv = ViewUtils.getParentByClass(pressedV, ListView.class);
 		tv.setText(lv == listView ? "间选" : "全选");
 		return mPopup;
+	}
+	
+	public void resumePos() {
+		ViewUtils.restoreListPos(listView, listView_savedPos);
+	}
+	
+	private void remPos() {
+		BookManager a = getBookManager();
+		a.searchbar.getMenu().findItem(R.id.refresh).setVisible(true);
+		listView_savedPos = ViewUtils.saveListPos(listView);
 	}
 	
 	private PasteBinHub getPastBin() {

@@ -2548,16 +2548,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	protected File getStartupFile(File ConfigFile){
-		File def = null;
-		if (thisActType==ActType.PlainDict && opt.getCacheCurrentGroup()) {
-			def = new File(getExternalFilesDir(null),"default.txt");
-			if(def.length()<=0) def=null;
-		}
-		if(def==null){
-			def = opt.fileToSet(ConfigFile, opt.getLastPlanName(LastPlanName));
-		}
-		//CMN.debug("getStartupFile::", def);
-		return def;
+		return opt.fileToSet(ConfigFile, opt.getLastPlanName(LastPlanName));
 	}
 	
 	public static class LazyLoadManager {
@@ -2595,12 +2586,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			while((line = in.readLine())!=null) {
 				int flag = 0;
 				boolean chair = true;
+				String unhide = null;
 				if(line.startsWith("[:")){
 					int idx = line.indexOf("]",2);
-					if(idx>=2){
-						String[] arr = line.substring(2, idx).split(":");
+					if(idx>=2)
+					{
+						String[] parameters = line.substring(2, idx).split(":");
 						line = line.substring(idx+1);
-						for (String pI:arr) {
+						for (String pI:parameters) {
 							switch (pI){
 								case "F":
 									flag|=0x1;
@@ -2618,6 +2611,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									//lazyMan.hiddenCount++;
 									chair = false;
 									break;
+								case "UH":
+									unhide = line;
+									break;
 								case "Z":
 									flag|=0x10;
 									break;
@@ -2629,10 +2625,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 				}
-				if (line.endsWith("liba.mdx") && line.startsWith(CMN.AssetTag)) {
-					line = CMN.AssetTag + "李白全集.mdx";
+				if (unhide!=null) {
+					// unhide previously hidden
+					for (PlaceHolder phI:placeHolders) {
+						if (unhide.equals(phI.pathname)) {
+							phI.tmpIsFlag &= ~0x8;
+							chairCount++;
+							break;
+						}
+					}
 				}
-				if (map.add(line)) { // 避免重复
+				else if (map.add(line)) { // 避免重复
 					PlaceHolder phI = new PlaceHolder(line);
 					phI.lineNumber = cc++;
 					phI.tmpIsFlag = flag;
@@ -11610,14 +11613,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void keepWordAsFavorite(String word, WebViewListHandler weblistHandler) {
 		if (prepareFavoriteCon().insert(MainActivityUIBase.this, word, -1, weblistHandler) > 0)
 			showT(word + " 已收藏");
-	}
-	
-	public void copyText(String text, boolean toast) {
-		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-		if(cm!=null){
-			cm.setPrimaryClip(ClipData.newPlainText(null, text));
-			if(toast) showT("已复制"+text);
-		}
 	}
 	
 	public final static int softModeHold = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;

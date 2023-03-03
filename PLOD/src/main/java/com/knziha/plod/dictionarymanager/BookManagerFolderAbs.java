@@ -11,6 +11,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -30,14 +31,13 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-@SuppressLint("ResourceType")
+@SuppressLint({"ResourceType", "NonConstantResourceId"})
 public abstract class BookManagerFolderAbs extends ListFragment
 		implements BookManagerFragment.SelectableFragment, View.OnClickListener, PopupMenuHelper.PopupMenuListener {
 	int type=0;
@@ -63,6 +63,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	protected View pressedV;
 	protected int pressedPos;
 	PopupMenuHelper mPopup;
+	protected HashSet<mFile> topParent = new HashSet<>();
 	
 	protected void showPopup(View v, View rootV) {
 		PopupMenuHelper popupMenu = getPopupMenu();
@@ -78,14 +79,15 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public PopupMenuHelper getPopupMenu() {
 		if (mPopup==null) {
 			mPopup  = new PopupMenuHelper(getActivity(), null, null);
-			mPopup.initLayout(new int[]{
-					//R.string.switch_pick
-					 R.string.tianjia
-					, R.string.addTo
-					, R.string.addToPrv
-			}, this);
-			mPopup.lv.findViewById(R.string.addToPrv).getLayoutParams().height = 0;
 		}
+		mPopup.initLayout(new int[]{
+				//R.string.switch_pick
+				R.string.tianjia
+				, R.string.addTo
+				, R.string.addToPrv
+				, R.string.copyFileNamace
+		}, this);
+		mPopup.lv.findViewById(R.string.addToPrv).getLayoutParams().height = 0;
 		return mPopup;
 	}
 	
@@ -113,6 +115,9 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			} break;
 			case R.string.addToPrv:{
 			
+			} break;
+			case R.string.copyFileNamace:{
+				getBookManager().copyText(vh.dataLet.getName(), true);
 			} break;
 		}
 		popupMenuHelper.dismiss();
@@ -145,6 +150,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	
 	protected ListView listView;
 	ArrayAdapter<mFile> adapter;
+	ArrayAdapter<mFile> adapterAll;
 	boolean isDirty = false;
 	BookManager a;
 	int[] lastClickedPos=new int[]{-1, -1};
@@ -194,23 +200,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			case R.id.folderIcon: {
 				mFile mdTmp = vh.dataLet;
 				int pos = vh.position;
-				if(mdTmp.children.size()==0) {
-					hiddenParents.add(mdTmp);
-					for(int i=pos+1;i<dataTree.size();i++) {
-						mFile item = dataTree.get(i);
-						if(!mFile.isDirScionOf(item, mdTmp))
-							break;
-						if(item.isDirectory())
-							break;
-						mdTmp.children.add(dataTree.remove(i));
-						i--;
-					}
-				} else {
-					dataTree.addAll(pos+1, mdTmp.children);
-					mdTmp.children.clear();
-					hiddenParents.remove(mdTmp);
-				}
-				dataSetChanged(true);
+				toggleFolder(mdTmp, pos);
 			} break;
 			case R.id.drag_handle:
 			{
@@ -230,6 +220,30 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		}
 	}
 	
+	private void toggleFolder(mFile folder, int pos) {
+		if (pos == -1) {
+			pos = dataTree.indexOf(folder);
+			if (pos == -1) return;
+		}
+		if(folder.children.size()==0) {
+			hiddenParents.add(folder);
+			for(int i=pos+1;i<dataTree.size();i++) {
+				mFile item = dataTree.get(i);
+				if(!mFile.isDirScionOf(item, folder))
+					break;
+				if(item.isDirectory())
+					break;
+				folder.children.add(dataTree.remove(i));
+				i--;
+			}
+		} else {
+			dataTree.addAll(pos+1, folder.children);
+			folder.children.clear();
+			hiddenParents.remove(folder);
+		}
+		dataSetChanged(true);
+	}
+	
 	private void addIt(BookManagerFolderlike.ViewHolder vh) {
 		mFile mdTmp = vh.dataLet;
 		if(!mdTmp.isDirectory()) {
@@ -247,7 +261,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		parentFile=a.opt.lastMdlibPath.getPath();
 		// setListview
 		listView = getListView();
-		listView.setChoiceMode(listView.CHOICE_MODE_MULTIPLE);
+		listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 		View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);
 		listView.addHeaderView(v);
 		listView.setOnItemClickListener((parent, view, position, id) -> {
@@ -256,39 +270,40 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				pressedV = view;
 				//mFile p = data.getList().get(position);
 				ViewHolder vh = (ViewHolder)view.getTag();
-				mFile mdTmp = vh.dataLet;
-				if(SelectionMode/* && (!PDICMainAppOptions.dictManagerClickPopup() || vh.selecting)*/) {
+				mFile filelet = vh.dataLet;
+				if(SelectionMode && (!filelet.isDirectory() || vh.selecting)
+					/* && (!PDICMainAppOptions.dictManagerClickPopup() || vh.selecting)*/) {
 					int pos = vh.position;
 					//CMN.Log(pos+" ?= "+position);
-					if(Selection.remove(mdTmp.getRealPath())) {
-						if(mdTmp.isDirectory()){
+					if(Selection.remove(filelet.getRealPath())) {
+						if(filelet.isDirectory()){
 							for(int i=pos+1;i<dataTree.size();i++) {
 								mFile item = dataTree.get(i);
-								if(!mFile.isDirScionOf(item, mdTmp))
+								if(!mFile.isDirScionOf(item, filelet))
 									break;
 								if(item.isDirectory())
 									break;
 								Selection.remove(item.getRealPath());
 							}
 						}
-						for(int i=0;i<mdTmp.children.size();i++) {
-							Selection.remove(mdTmp.children.get(i).getRealPath());
+						for(int i=0;i<filelet.children.size();i++) {
+							Selection.remove(filelet.children.get(i).getRealPath());
 						}
 					}
 					else {
 						lastClickedPos[(++lastClickedPosIndex)%2]=position;
-						Selection.add(mdTmp.getRealPath());
-						if(mdTmp.isDirectory()){
-							if (hiddenParents.remove(mdTmp)) {
-								dataTree.addAll(pos + 1, mdTmp.children);
-								for(int i=0;i<mdTmp.children.size();i++) {
-									Selection.add(mdTmp.children.get(i).getRealPath());
+						Selection.add(filelet.getRealPath());
+						if(filelet.isDirectory()){
+							if (hiddenParents.remove(filelet)) {
+								dataTree.addAll(pos + 1, filelet.children);
+								for(int i=0;i<filelet.children.size();i++) {
+									Selection.add(filelet.children.get(i).getRealPath());
 								}
-								mdTmp.children.clear();
+								filelet.children.clear();
 							} else {
 								for(int i=pos+1;i<dataTree.size();i++) {
 									mFile item = dataTree.get(i);
-									if(!mFile.isDirScionOf(item, mdTmp))
+									if(!mFile.isDirScionOf(item, filelet))
 										break;
 									if(item.isDirectory())
 										break;
@@ -303,7 +318,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					dataSetChanged(false);
 				}
 				else {
-					if(mdTmp.isDirectory()) {
+					if(filelet.isDirectory()) {
 						((ViewHolder)view.getTag()).folderIcon.performClick();
 						//adapter.notifyDataSetChanged();
 					}
@@ -312,14 +327,18 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		});
 		listView.setOnItemLongClickListener((parent, view, position, id) -> {
 			if(position>= listView.getHeaderViewsCount()) {
-				pressedPos = position - listView.getHeaderViewsCount();
-				pressedV = view;
 //				SelectionMode=true;
 //				if(oes!=null) oes.onEnterSelection(this, true);
 //				//Selection.put(adapter.getItem(position).getAbsolutePath());
 //				listView.getOnItemClickListener().onItemClick(parent, view, position+ listView.getHeaderViewsCount(), id);
 //				adapter.notifyDataSetChanged();
-				showPopup(view, null);
+				ViewHolder vh = (ViewHolder)view.getTag();
+				mFile filelet = vh.dataLet;
+				if (!filelet.isDirectory()) {
+					pressedPos = position - listView.getHeaderViewsCount();
+					pressedV = view;
+					showPopup(view, null);
+				}
 			}
 			return true;
 		});
@@ -327,6 +346,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		List<mFile> list = data.getList();
 		dataTree = new ArrayList<>(list);
 		adapter = new MyAdapter(dataTree);
+		adapterAll = new MyAdapter(list);
 		//ViewUtils.restoreListPos(listView, BookManager.framePos[a.fragments.indexOf(this)]);
 	}
 	
@@ -334,7 +354,6 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		public MyAdapter(List<mFile> mdicts) {
 			super(getActivity(), R.layout.dict_manager_dslitem2, R.id.text, mdicts);
 		}
-		
 		public View getView(int pos, View convertView, ViewGroup parent) {
 			if (parent != listView && convertView!=null) {
 				if (!(convertView.getTag() instanceof BookManagerFolderlike.ViewHolder)) {
@@ -342,6 +361,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					convertView = null;
 				}
 			}
+			// todo fix crash, after del two books?
 			View v = super.getView(pos, convertView, parent);
 			BookManagerFolderlike.ViewHolder vh;
 			if (v.getTag() == null) {
@@ -356,13 +376,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				vh = (BookManagerFolderlike.ViewHolder) v.getTag();
 			}
 			vh.position = pos;
-			final mFile mdTmp = getItem(pos);
-			vh.dataLet=mdTmp;
+			final mFile lstFile = getItem(pos);
+			vh.dataLet=lstFile;
 			//vh.position=pos;
 			//vh.dataLet=data.getList().get(pos);
 			if(SelectionMode) {
 				vh.ck.setVisibility(View.VISIBLE);
-				if(Selection.contains(mdTmp.getRealPath()))
+				if(Selection.contains(lstFile.getRealPath()))
 					vh.ck.setChecked(true);
 				else
 					vh.ck.setChecked(false);
@@ -379,67 +399,78 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			//	((TextView)v.findViewById(R.id.text)).setText(ssb);
 			//}else
 			String displayName = null;
-			if(mdTmp.getClass()==mAssetFile.class)
-				displayName = CMN.getAssetName(mdTmp.getAbsolutePath());
-			if(mdTmp.webAsset!=null || (displayName!=null) || mdTmp.getIsDirectory() || mdTmp.exists())
+			if(lstFile.getClass()==mAssetFile.class)
+				displayName = CMN.getAssetName(lstFile.getAbsolutePath());
+			if(lstFile.webAsset!=null || (displayName!=null) || lstFile.getIsDirectory() || lstFile.exists())
 				vh.text.setTextColor(GlobalOptions.isDark? Color.WHITE:Color.BLACK);
 			else
 				vh.text.setTextColor(Color.RED);
 			vh.text.setMaxLines(1);
 			
-			
-			if (parent == listView) {
-				if (!TextUtils.isEmpty(query)
-						//&& mdTmp.getName().toLowerCase().contains(query)
-						&& filtered.get(pos) != null
-				)
+			if (parent == listView) { // if for fragment itself
+				if (!TextUtils.isEmpty(query) && filteredFilesHelper.get(data.indexOf(lstFile)) == lstFile)
 					vh.text.setBackgroundResource(GlobalOptions.isDark ? R.drawable.xuxian2_d : R.drawable.xuxian2);
 				else
 					vh.text.setBackground(null);
 				if (GlobalOptions.isDark) {
 					v.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 				}
-				if (mdTmp.isDirectory()) {//目录 todo opt
+				int leftPadding = 0;
+				String text;
+				if (lstFile.isDirectory()) {//目录 todo opt
 					if (type == 0) {
-						if (displayName != null) {
-							vh.text.setText(displayName);
-						} else
-							vh.text.setText(mFile.tryDeScion(mdTmp, parentFile));
+						if (displayName != null)
+							text = displayName;
+						else
+							text = mFile.removeFolderPrefix(lstFile, parentFile);
 					} else {
-						vh.text.setText(mdTmp.getPath());
+						text = lstFile.getPath();
 					}
 					vh.folderIcon.setVisibility(View.VISIBLE);
 					vh.drag_handle.setVisibility(View.GONE);
 					vh.splitterIcon.setVisibility(View.GONE);
 					vh.text.setSingleLine(false);
-				} else {//路径
+				} else {//文件
 					if (displayName != null) {
-						vh.text.setText(displayName);
-					} else if (mFile.isScionOf(mdTmp, parentFile)) {
-						vh.text.setPadding((int) (9 * GlobalOptions.density), 0, 0, 0);
-						vh.text.setText(a.isDebug ? mdTmp.getPath() : BU.unwrapMdxName(mdTmp.getName()));//BU.unwrapMdxName(mdTmp.getName())
+						text = displayName;
+					} else if (mFile.isScionOf(lstFile, parentFile)) {
+						leftPadding = (int) (9 * GlobalOptions.density);
+						text = a.isDebug ? lstFile.getPath() : BU.removeMdxSuffix(lstFile.getName());
 					} else {
 						vh.text.setPadding(0, 0, 0, 0);
-						vh.text.setText(mdTmp.getAbsolutePath());
+						text = lstFile.getAbsolutePath();
 					}
-					mFile p = data.get(mdTmp.getParentFile().init(a.opt)); //todo opt
-					if (p != null) {//有父文件夹节点
-						vh.text.setPadding(5, 0, 0, 0);
-						vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
+					mFile p = getParentFolderInData(lstFile);
+					if (p != null && !topParent.contains(p)) {//有父文件夹节点
+						leftPadding = 5;
+						text = BU.removeMdxSuffix(lstFile.getName());
 						vh.splitterIcon.setVisibility(View.VISIBLE);
+						// debug path
+						//vh.text.setSingleLine(false); vh.text.setMaxLines(9);
+						//text = BU.unwrapMdxName(mdTmp.getName())+"\n"+p;
 					} else {
-						//((TextView)v.findViewById(R.id.text)).setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
-						((View) v.findViewById(R.id.splitterIcon)).setVisibility(View.GONE);
+						//leftPadding = (int) (9 * GlobalOptions.density);
+						v.findViewById(R.id.splitterIcon).setVisibility(View.GONE);
 					}
+					if (a.isDebug) {
+						vh.text.setSingleLine(false); vh.text.setMaxLines(9);
+						text = lstFile.getPath();
+					}
+					vh.text.setEllipsize( TextUtils.TruncateAt.MIDDLE );
 					vh.drag_handle.setVisibility(View.VISIBLE);
 					vh.folderIcon.setVisibility(View.GONE);
 				}
-			} else {
-				vh.text.setText(mdTmp.getName());
+				if (leftPadding != vh.text.getPaddingLeft()) {
+					vh.text.setPadding(leftPadding, 0, 0, 0);
+				}
+				if (text.startsWith(GlobalOptions.extPath)) {
+					text = "/sdcard"+text.substring(GlobalOptions.extPath.length());
+				}
+				vh.text.setText( text );
+			} else { // if for searched list
+				vh.text.setText(lstFile.getName());
 			}
-			
 			//((TextView)v.findViewById(R.id.text)).setTextColor(Color.parseColor("#000000"));
-			
 			return v;
 		}
 	}
@@ -469,7 +500,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		}
 		public void tweakCheck() {
 			if (isDark!=GlobalOptions.isDark) {
-				isDark = isDark!=GlobalOptions.isDark;
+				isDark = !isDark;
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					ck.getButtonDrawable().setColorFilter(isDark?GlobalOptions.NEGATIVE_1:null);
 				}
@@ -478,7 +509,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	}
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 		listView = (ListView) inflater.inflate(R.layout.dict_dsl_main2, null);
@@ -491,10 +522,17 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	
 	String query;
 	SparseArray<String> filtered = new SparseArray<>();
-	SparseArray<mFile[]> filteredHelper = new SparseArray<>();
+	SparseArray<mFile> filteredFilesHelper = new SparseArray<>();
 	
 	public void selectFilteredPos(int position) {
-		int lstPos = realFilterPos(position);
+		mFile file = filteredFilesHelper.get(position);
+		mFile parent = getParentFolderInData(file);
+		if (parent!=null && parent.children.size()>0) {
+			toggleFolder(parent, -1);
+		}
+		// todo use binary search
+		int lstPos = dataTree.indexOf(file);
+		//int lstPos = realFilterPos(position);
 		int h;
 		if(listView.getChildAt(0)!=null) h = listView.getChildAt(0).getHeight() / 4;
 		else h = 18;
@@ -502,13 +540,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	}
 	
 	private int realFilterPos(int dataPos) {
-		mFile[] folders = filteredHelper.get(dataPos);
-		for (int i = 0; i < folders.length; i++) {
-			if (folders[i].isHidden()) {
-				dataPos -= folders[i].children.size();
-			}
+		mFile file = filteredFilesHelper.get(dataPos);
+		mFile parent = getParentFolderInData(file);
+		// todo use binary search
+		if (parent!=null && parent.children.size()>0) {
+			return dataTree.indexOf(parent);
 		}
-		return dataPos;
+		return dataTree.indexOf(file);
 	}
 	
 	public void dataSetChanged(boolean structChanged) {
@@ -527,27 +565,52 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		}
 	}
 	
+	public void rebuildDataTree() {
+		ArrayList<mFile> rawData = data.getList();
+		mFile fileAt, childAt; List<mFile> hidden;
+		for (int i = 0; i < rawData.size(); i++) {
+			fileAt = rawData.get(i);
+			hidden = fileAt.children;
+			if (hidden.size() > 0) {
+				final ArrayList<mFile> children = new ArrayList<>();
+				for (int j = 0; j < hidden.size(); j++) {
+					childAt = hidden.get(j);
+					//if (data.getList().remove(childAt)) children.add(childAt);
+					int idx = data.indexOf(childAt);
+					if (idx==-1) idx = rawData.indexOf(childAt);
+					if (idx >= 0) {
+						rawData.remove(idx);
+						children.add(childAt);
+					}
+				}
+				fileAt.children = children;
+			}
+		}
+		dataTree = new ArrayList<>(rawData);
+		adapter = new MyAdapter(dataTree);
+		super.setListAdapter(adapter);
+	}
+	
 	public int schFilter(String query, boolean shouldInval) {
 		int sz = filtered.size();
 		filtered.clear();
+		filteredFilesHelper.clear();
 		if (!query.equals(this.query)) {
 			getBookManager().popupPos[this==getBookManager().f3?2:3] = 0;
 			this.query = query;
 		}
 		if (!TextUtils.isEmpty(query)) {
 			mFile item;
-			ArrayList<mFile> folders = new ArrayList<>();
 			if (adapter != null) {
 				for (int i = 0; i < data.size(); i++) {
 					item = data.getList().get(i);
-					if (item.isDirectory()) {
-						folders.add(item);
-					} else {
+					if (!item.isDirectory()) { // if file
 						String name = item.getName();
 						int suffixIdx = name.lastIndexOf("."), sch=name.toLowerCase().indexOf(query);
-						if (sch>=0 && (suffixIdx==-1 || sch<suffixIdx)) {
+						if (sch>=0 && (suffixIdx==-1 || sch<suffixIdx)) // if match
+						{
 							filtered.put(i, name);
-							filteredHelper.put(i, folders.toArray(new mFile[0]));
+							filteredFilesHelper.put(i, item);
 						}
 					}
 				}
@@ -604,5 +667,11 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	
 	public int selected_size() {
 		return Selection.size();
+	}
+	
+	private mFile getParentFolderInData(mFile file) {
+		file = file.getParentFile();
+		if(file==null) return file;
+		return data.get(file.init(a.opt)); //todo opt
 	}
 }

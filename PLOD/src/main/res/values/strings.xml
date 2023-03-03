@@ -304,4 +304,5 @@
 	<string name="schtools_scroll_pad">工具栏两边空出滚动区域</string>
 	<string name="expand_map_hor">横向扩展画布</string>
 	<string name="expand_map_ver">竖向扩展画布</string>
+	<string name="copyFileNamace">复制文件名</string>
 </resources>

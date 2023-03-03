@@ -349,10 +349,10 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			mPopup  = new PopupMenuHelper(getActivity(), null, null);
 			mPopup.initLayout(new int[]{
 					R.string.rename
-					, R.string.delete
-					, R.string.duplicate
-					, R.string.qiehan_sel
 					, R.string.load
+					, R.string.qiehan_sel
+					, R.string.duplicate
+					, R.string.delete
 			}, new PopupMenuHelper.PopupMenuListener() {
 				@Override
 				public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
@@ -518,6 +518,40 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		return mPopup;
 	}
 	
+	private void loadNewDictionaryGroup(int position) {
+		String name = adapter.getItem(position);
+		File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
+		a.checkModuleDirty(false);
+		BookManager.listPos[0] = 0;
+		try {
+			BookManagerMain f1 = a.f1;
+			f1.markDirty(-1);
+			for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+				f1.setPlaceSelected(i, false);
+			}
+			a.loadMan.lazyMan.chairCount = -1;
+			a.loadMan.LoadLazySlots(newf, true, name);
+			f1.refreshSize();
+			f1.markDataDirty(false);
+			((BookManager)getActivity()).scrollTo(0);
+			try {
+				String plan = a.loadMan.dictPicker.planSlot;
+				a.opt.putLastPlanName(plan, LastSelectedPlan = name);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			dataSetChanged(false);
+			f1.dataSetChanged(true);
+			f1.listView.setSelection(0);
+			//a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
+			MainActivityUIBase.LazyLoadManager neoLM = a.loadMan.lazyMan;
+			CMN.debug("LoadLazySlots::", neoLM.chairCount, neoLM.CosyChair.length, neoLM.filterCount, neoLM.CosySofa.length);
+		} catch (Exception e) {
+			CMN.debug(e);
+			a.showT("加载异常!LOAD ERRO: "+e.getLocalizedMessage());
+		}
+	}
+	
 	private void showLoadModuleDlg(boolean warn, int position) {
 		if (warn && !PDICMainAppOptions.debug()) {
 			final View dv = getActivity().getLayoutInflater().inflate(R.layout.dialog_sure_and_all, null);
@@ -537,37 +571,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			builder2.create().show();
 			dlg.getWindow().setDimAmount(0);
 		} else {
-			String name = adapter.getItem(position);
-			File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
-			int cc=0;
-			a.checkModuleDirty(false);
-			BookManager.listPos[0] = 0;
-			try {
-				BookManagerMain f1 = a.f1;
-				f1.markDirty(-1);
-				for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-					f1.setPlaceSelected(i, false);
-				}
-				a.loadMan.lazyMan.chairCount = -1;
-				a.loadMan.LoadLazySlots(newf, true, name);
-				f1.refreshSize();
-				f1.markDataDirty(false);
-				((BookManager)getActivity()).scrollTo(0);
-				try {
-					String plan = a.loadMan.dictPicker.planSlot;
-					a.opt.putLastPlanName(plan, LastSelectedPlan = name);
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
-				dataSetChanged(false);
-				f1.dataSetChanged(true);
-				//a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
-				MainActivityUIBase.LazyLoadManager neoLM = a.loadMan.lazyMan;
-				CMN.debug("LoadLazySlots::", neoLM.chairCount, neoLM.CosyChair.length, neoLM.filterCount, neoLM.CosySofa.length);
-			} catch (Exception e) {
-				CMN.debug(e);
-				a.showT("加载异常!LOAD ERRO: "+e.getLocalizedMessage());
-			}
+			loadNewDictionaryGroup(position);
 		}
 	}
 	

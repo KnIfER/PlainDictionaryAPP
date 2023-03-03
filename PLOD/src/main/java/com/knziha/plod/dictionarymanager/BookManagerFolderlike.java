@@ -1,9 +1,14 @@
 package com.knziha.plod.dictionarymanager;
 
+import android.os.Environment;
+
+import androidx.appcompat.app.GlobalOptions;
+
 import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
@@ -30,6 +35,13 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 	private void pullData() {
 		dataPrepared = true;
 		File rec = a.fRecord;
+		try {
+			PDICMainAppOptions opt = getBookManager().opt;
+			topParent.add(new mFile(opt.lastMdlibPath));
+			topParent.add(new mFile(opt.lastMdlibPath.getPath().replace(GlobalOptions.extPath, "/sdcard")));
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 		if(CMN.sData!=null) {
 			data = (ArrayListBookTree<mFile>) CMN.sData;
 			dataTree = (ArrayList<mFile>) CMN.sDataTree;
@@ -41,6 +53,9 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 				//int idx=0;
 				String lastMdlibPath = a.opt.lastMdlibPath.getPath();
 				while((line=in.readLine())!=null){
+					if (line.startsWith("/sdcard/")) {
+						line = GlobalOptions.extPath + line.substring(7);
+					}
 					boolean isForeign=false;
 					mFile fI;
 					if(!line.startsWith("/")) {//是相对路径
@@ -87,11 +102,18 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 			CMN.sDataTree = dataTree;
 		}
 		adapter = new MyAdapter(dataTree);
+		adapterAll = new MyAdapter(data.getList());
 		super.setListAdapter(adapter);
 		if(a!=null) ViewUtils.restoreListPos(listView, BookManager.listPos[a.fragments.indexOf(this)]);
 	}
-
-
+	
+	@Override
+	public void rebuildDataTree() {
+		super.rebuildDataTree();
+		CMN.sData = data;
+		CMN.sDataTree = dataTree;
+	}
+	
 	//构造
 	public BookManagerFolderlike(){
 		super();

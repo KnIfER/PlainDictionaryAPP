@@ -17,8 +17,6 @@
 
 package com.knziha.plod.dictionary.Utils;
 
-import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
-
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.CMN;
@@ -422,7 +420,7 @@ public class  BU{//byteUtils
 	}
 	
     
-    public static String unwrapMdxName(String in) {
+    public static String removeMdxSuffix(String in) {
     	if(in.toLowerCase().endsWith(".mdx"))
     		return in.substring(0,in.length()-4);
     	return in;

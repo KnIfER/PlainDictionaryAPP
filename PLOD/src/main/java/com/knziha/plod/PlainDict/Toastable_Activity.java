@@ -948,6 +948,14 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 		return tintListFilter.sForeground;
 	}
+	
+	public void copyText(String text, boolean toast) {
+		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+		if(cm!=null){
+			cm.setPrimaryClip(ClipData.newPlainText(null, text));
+			if(toast) showT("已复制"+text);
+		}
+	}
 }
 
 

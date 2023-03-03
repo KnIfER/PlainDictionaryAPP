@@ -866,7 +866,7 @@ public class Drawer extends Fragment implements
 					properties.title_id = R.string.addd;
 					properties.isDark = a.AppWhite==Color.BLACK;
 					FilePickerDialog dialog = new FilePickerDialog(a, properties);
-					HashSet<String> currentGroup = new HashSet<>();
+					HashMap<String, PlaceHolder> currentGroup_HashSet = new HashMap<>();
 					dialog.setDialogSelectionListener(new DialogSelectionListener()
 					{
 						void openFiles(String[] files)
@@ -874,108 +874,138 @@ public class Drawer extends Fragment implements
 							if(files.length==0) return;
 							int newAdapterIdx=-1;
 							int bscAdapterIdx=-1;
-							final File def = a.opt.getCacheCurrentGroup()?new File(a.getExternalFilesDir(null),"default.txt")
-									:a.getStartupFile(a.opt.fileToConfig());      //!!!原配
-							File ConfigFile = a.opt.fileToConfig();
-							File rec = a.opt.fileToDecords(ConfigFile);
-							a.ReadInMdlibs(rec);
-							HashMap<String, String> add_book_checker = a.lostFiles;
+							PlaceHolder unhidden = null;
 							
-							HashSet<String> renameRec = new HashSet<>();
-							HashMap<String,String> renameList = new HashMap<>();
-							
+							final File fileCurrentGroup = a.getStartupFile(a.opt.fileToConfig());
+							final File profilesFolder = a.opt.fileToConfig();
+							final File fileToLibrary = a.opt.fileToDecords(profilesFolder);
+							a.ReadInMdlibs(fileToLibrary);
+							final HashMap<String, String> lostFiles = a.lostFiles;
+							final HashSet<String> renameRec = new HashSet<>();
+							final HashMap<String,String> renameList = new HashMap<>();
+							final boolean skipWrite = false;
+							final MainActivityUIBase.LoadManager loadMain = a.loadManager;
 							try {
-								BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
-								BufferedWriter output2 = null;
+								BufferedWriter output_Library = new BufferedWriter(  new FileWriter(fileToLibrary,true)  );
+								BufferedWriter output_CurrentGroup = null;
 								int countAdd=0;
 								int countRename=0;
 								String removedAPath;
 								boolean bNextPlaceHolder = false;
-								for (int i = 0; i < files.length; i++) {
-									String fnI = files[i];
-									if(fnI==null) break;
-									File fI = new File(fnI);
-									CMN.debug("AddFiles", fnI, currentGroup.contains(fI.getPath()));
-									if(fI.isDirectory()) continue;
+								boolean hasHidden=false;
+								for (int i = 0; i < files.length; i++)
+								{
+									String addingFilePath = files[i];
+									if(addingFilePath==null) break;
+									final File addingFile = new File(addingFilePath);
+									final PlaceHolder tryGet = currentGroup_HashSet.get(addingFile.getPath());
+									CMN.debug("AddFiles::", addingFilePath, tryGet);
+									if(addingFile.isDirectory()) continue;
 									//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
 									/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
-									if(!bNextPlaceHolder && AutoFixLostRecords && (removedAPath=add_book_checker.get(fI.getName()))!=null) {
-										renameList.put(removedAPath, fnI);
-										renameRec.add(fnI);
+									if(!bNextPlaceHolder && AutoFixLostRecords && (removedAPath=lostFiles.get(addingFile.getName()))!=null) {
+										renameList.put(removedAPath, addingFilePath);
+										renameRec.add(addingFilePath);
 									}
-									else if(!currentGroup.contains(fI.getPath()))
-									{
-										CMN.debug("正式添加::", fI);
+									else if(tryGet!=null && PDICMainAppOptions.getTmpIsHidden(tryGet.tmpIsFlag))
+									{ // need to unhide the dictionary in currentGroup.
+										tryGet.tmpIsFlag = PDICMainAppOptions.setTmpIsHidden(tryGet.tmpIsFlag, false);
+										countAdd++;
+										hasHidden = true;
+										loadMain.lazyMan.chairCount++;
+										if (newAdapterIdx == -1) {
+											newAdapterIdx = -2;
+											unhidden = tryGet;
+										}
+										if (!skipWrite) {
+											if(output_CurrentGroup==null) {
+												//boolean has = fileCurrentGroup.exists();
+												output_CurrentGroup = new BufferedWriter(new FileWriter(fileCurrentGroup,true));
+												//if(!has) 莫忘添加默认(output_CurrentGroup);
+											}
+											output_CurrentGroup.write("[:UH]");
+											addingFilePath = mFile.removeFolderPrefix(addingFile, a.opt.lastMdlibPath);
+											output_CurrentGroup.write(addingFilePath);
+											output_CurrentGroup.write("\n");
+										}
+									}
+									else if(tryGet==null)
+									{ // nothing found. just append new files to currentGroup.
+										CMN.debug("正式添加::", addingFile);
 										try {
 											BookPresenter newBook;
 											if (bNextPlaceHolder) {
-												a.AddIndexingBookIdx(-1, a.loadManager.md_size);
+												a.AddIndexingBookIdx(-1, loadMain.md_size);
 												newBook = null;
 												bNextPlaceHolder=false;
 											} else {
-												newBook=MainActivityUIBase.new_book(fnI, a);
+												newBook=MainActivityUIBase.new_book(addingFilePath, a);
 											}
-											PlaceHolder phI = new PlaceHolder(fnI);
-											a.loadManager.addBook(newBook, phI);
-											if(newAdapterIdx==-1) newAdapterIdx = a.loadManager.md_size-1;
-											String raw=fnI;
-											fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
-											if(output2==null){
-												boolean def_exists = def.exists();
-												//tofo check
-												output2 = new BufferedWriter(new FileWriter(def,true));
-												if(!def_exists) { // 莫忘添加默认
-													for (int j = 0; j < a.loadManager.md_size-1; j++) {
-														BookPresenter book = a.loadManager.md_get(j);
-														if (book!=a.EmptyBook) {
-															output2.write(book.getPath());
-															output2.write("\n");
-														}
-													}
+											PlaceHolder phI = new PlaceHolder(addingFilePath);
+											loadMain.addBook(newBook, phI);
+											if(newAdapterIdx==-1) newAdapterIdx = loadMain.md_size-1;
+											String raw=addingFilePath;
+											addingFilePath = mFile.removeFolderPrefix(addingFile, a.opt.lastMdlibPath);
+											countAdd++;
+											if (!skipWrite) {
+												if(output_CurrentGroup==null) {
+													boolean has = fileCurrentGroup.exists();
+													output_CurrentGroup = new BufferedWriter(new FileWriter(fileCurrentGroup,true));
+													if(!has) 莫忘添加默认(output_CurrentGroup);
+												}
+												output_CurrentGroup.write(addingFilePath);
+												output_CurrentGroup.write("\n");
+												/* 需追加至全部记录而无须重命名者 */
+												if(a.mdlibsCon.add(addingFilePath) && !renameRec.contains(raw)) {
+													output_Library.write(addingFilePath);
+													output_Library.write("\n");
 												}
 											}
-											output2.write(fnI);
-											output2.write("\n");
-											output2.flush();
-											/* 需追加至全部记录而无须重命名者 */
-											if(a.mdlibsCon.add(fnI) && !renameRec.contains(raw)) {
-												output.write(fnI);
-												output.write("\n");
-											}
-											countAdd++;
 										} catch (Exception e) {
 											if(e instanceof IllegalStateException && "Needs Index Building!".equals(e.getMessage())) {
 												bNextPlaceHolder=true;
 												i--;
 											} else {
 												CMN.Log(e);
-												a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
+												a.showT("词典 "+new File(addingFilePath).getName()+" 加载失败 @"+addingFilePath+" Load Error！ "+e.getLocalizedMessage());
 											}
 										}
 									}
-									else if(newAdapterIdx==-1 && bscAdapterIdx==-1) {
-										for (int j = 0; j < a.loadManager.md_size; j++) {
-											PlaceHolder phI = a.loadManager.getPlaceHolderAt(j);
-											if(fI.equals(phI.getPath(a.opt))) {
+									else if(newAdapterIdx==-1 && bscAdapterIdx==-1)
+									{ // find the new place for dictPicker
+										for (int j = 0; j < loadMain.md_size; j++) {
+											PlaceHolder phI = loadMain.getPlaceHolderAt(j);
+											if(addingFile.equals(phI.getPath(a.opt))) {
 												bscAdapterIdx = j;
 												break;
 											}
 										}
 									}
 								}
-								CMN.Log(add_book_checker);
-								CMN.Log(renameRec.toString());
+								CMN.debug(lostFiles);
+								CMN.debug(renameRec.toString());
+								if (hasHidden) {
+									loadMain.buildUpDictionaryList(loadMain.lazyMan.lazyLoaded, a.mdict_cache);
+									if (newAdapterIdx==-2){
+										newAdapterIdx = a.dictPicker.adapter_idx;
+										for (int j = 0; j < loadMain.md_size; j++) {
+											if (loadMain.getPlaceHolderAt(j)==unhidden) {
+												newAdapterIdx = j;
+												break;
+											}
+										}
+									}
+								}
 								if(a.dictPicker !=null) {
 									a.dictPicker.dataChanged();
 									a.dictPicker.isDirty=true;
 								}
-								output.close();
-								if(output2!=null) {
-									output2.close();
-								}
+								output_Library.close();
+								if(output_CurrentGroup!=null)
+									output_CurrentGroup.close();
 								renameRec.clear();
 								
-								for (PlaceHolder phI:a.lazyLoadManager().placeHolders){
+								for (PlaceHolder phI:a.lazyLoadManager().placeHolders) {
 									String newPath = renameList.get(phI.getPath(a.opt));
 									if(newPath!=null){
 										PlaceHolder phTmp = new PlaceHolder(newPath);
@@ -985,10 +1015,10 @@ public class Drawer extends Fragment implements
 								
 								if(AutoFixLostRecords && renameList.size()>0){
 									ArrayList<File> moduleFullScannerArr;
-									File[] moduleFullScanner = ConfigFile.listFiles(pathname -> !SU.isNotGroupSuffix(pathname.getPath()));
+									File[] moduleFullScanner = profilesFolder.listFiles(pathname -> !SU.isNotGroupSuffix(pathname.getPath()));
 									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
-									moduleFullScannerArr.add(rec);
-									moduleFullScannerArr.add(def);
+									moduleFullScannerArr.add(fileToLibrary);
+									moduleFullScannerArr.add(fileCurrentGroup);
 									StringBuilder sb = a.MainStringBuilder;
 									AgentApplication app = ((AgentApplication) a.getApplication());
 									char[] cb = app.get4kCharBuff();
@@ -1012,7 +1042,7 @@ public class Drawer extends Fragment implements
 												String finder = renameList.get(line.startsWith("/")?line:a.opt.lastMdlibPath+"/"+line);
 												CMN.Log(fI.getName(), "{重命名??}", finder, line);
 												if(finder!=null){
-													line=mFile.tryDeScion(new File(finder), a.opt.lastMdlibPath);
+													line=mFile.removeFolderPrefix(new File(finder), a.opt.lastMdlibPath);
 													if(prefix!=null){
 														line=prefix+line;
 													}
@@ -1036,11 +1066,11 @@ public class Drawer extends Fragment implements
 									}
 									app.set4kCharBuff(cb);
 									renameList.clear();
-									add_book_checker.clear();
+									lostFiles.clear();
 								}
 								if (countRename > 0) {
 									a.showT("新加入" + countAdd + "本词典, 重定位" + countRename + "次！");
-									a.loadManager.md_size = 0;
+									loadMain.md_size = 0;
 									a.populateDictionaryList();
 								} else {
 									a.showT("新加入" + countAdd + "本词典！");
@@ -1067,31 +1097,35 @@ public class Drawer extends Fragment implements
 							//CMN.debug(files);
 							CMN.sData = CMN.sDataTree = null;
 							for(PlaceHolder phI:a.lazyLoadManager().placeHolders) {
-								currentGroup.add(phI.getPath(a.opt).getPath());
+								currentGroup_HashSet.put(phI.getPath(a.opt).getPath(), phI);
 							}
 							filepickernow = now;
-							boolean hasSame=false;
+							boolean hasOnceOpened=false;
+							boolean hasHidden=false;
 							if(files.length>1) {
 								File ConfigFile = a.opt.fileToConfig();
 								File rec = a.opt.fileToDecords(ConfigFile);
 								a.ReadInMdlibs(rec);
 								for (int i = 0; i < files.length; i++) {
 									String fnI = files[i];
-									if (!currentGroup.contains(fnI)) { // 当前分组中不存在，应当添加之
-										fnI = mFile.tryDeScion(new File(fnI), a.opt.lastMdlibPath);
+									PlaceHolder tryGet = currentGroup_HashSet.get(fnI);
+									if (tryGet == null) { // 当前分组中不存在，应当添加之
+										fnI = mFile.removeFolderPrefix(new File(fnI), a.opt.lastMdlibPath);
 										if (a.mdlibsCon.contains(fnI)) {
-											hasSame=true;
+											hasOnceOpened = true;
 											break;
 										}
+									} else if(PDICMainAppOptions.getTmpIsHidden(tryGet.tmpIsFlag)){
+										hasHidden = true;
 									}
 								}
 							}
-							if (hasSame) {
+							if (hasOnceOpened) {
 								new AlertDialog.Builder(a).setTitle("是否跳过打开过的词典？")
 									.setPositiveButton("是", (dialog12, which) -> {
 										ArrayList<String> arr = new ArrayList<>(Arrays.asList(files));
 										for (int i = files.length - 1; i >= 0; i--) {
-											String fnI = mFile.tryDeScion(new File(files[i]), a.opt.lastMdlibPath);
+											String fnI = mFile.removeFolderPrefix(new File(files[i]), a.opt.lastMdlibPath);
 											if (a.mdlibsCon.contains(fnI))
 												arr.remove(i);
 										}
@@ -1254,6 +1288,16 @@ public class Drawer extends Fragment implements
 				((AgentApplication)a.getApplication()).opt=a.opt;
 				a.launchSettings(0, 1297);
 			} break;
+		}
+	}
+	
+	private void 莫忘添加默认(BufferedWriter output_currentGroup) throws IOException {
+		for (int j = 0; j < a.loadManager.md_size-1; j++) {
+			BookPresenter book = a.loadManager.md_get(j);
+			if (book!=a.EmptyBook) {
+				output_currentGroup.write(book.getPath());
+				output_currentGroup.write("\n");
+			}
 		}
 	}
 	

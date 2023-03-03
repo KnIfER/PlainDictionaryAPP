@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class mFile extends File{
-	public List<mFile> children = ViewUtils.EmptyArray;
+	public List<mFile> children = ViewUtils.EmptyArray; // the collpaed children folder holder
 	public String CSTR;//子系文件标识符
 	public boolean bInIntrestedDir=false;
 	protected boolean isDirectory=false;
@@ -139,7 +139,7 @@ public class mFile extends File{
 	public static boolean isScionOf(File fin,String parentFile) {
 		return isScionOf(fin,new File(parentFile));
 	}
-	public static String tryDeScion(File fin, File parentFile) {
+	public static String removeFolderPrefix(File fin, File parentFile) {
 		try {
 			String f1=fin.getCanonicalPath();
 			String f2=parentFile.getCanonicalPath();
@@ -152,8 +152,8 @@ public class mFile extends File{
 			return  f1.substring(f2.length()+1);
 		return f1;
 	}
-	public static String tryDeScion(File fin, String parentFile) {
-		return tryDeScion(fin,new File(parentFile));
+	public static String removeFolderPrefix(File fin, String parentFile) {
+		return removeFolderPrefix(fin,new File(parentFile));
 	}
 	
 	public static boolean isDirScionOf(File fin,File parentFile) {
