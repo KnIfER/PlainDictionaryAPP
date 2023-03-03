@@ -393,7 +393,9 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				vh.title.setMaxLines(1);
 				vh.title.trimStart = false;
 				vh.title.earHintAhead = "词典";
-				if (access) {
+				//if (access)
+				{
+					// todo check whether really turned on accessibility?
 					ViewUtils.removeView(vh.handle);
 					ViewUtils.addViewToParent(vh.handle, (ViewGroup) vh.itemView, 1);
 				}

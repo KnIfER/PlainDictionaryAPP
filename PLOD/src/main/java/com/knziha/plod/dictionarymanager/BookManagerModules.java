@@ -172,7 +172,8 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					ViewUtils.setVisible(vh.handle, false);
 					convertView.setBackground(null);
 				}
-				if (access) {
+				//if (access)
+				{
 					ViewUtils.removeView(vh.handle);
 					ViewUtils.addViewToParent(vh.handle, (ViewGroup) vh.itemView, 1);
 				}

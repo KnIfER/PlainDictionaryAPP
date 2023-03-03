@@ -1708,7 +1708,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			});
 			ViewUtils.setForegroundColor(pageSchBar, a.tintListFilter);
 		}
-		boolean b1=bar.getParent()==null||forceShow==1;
+		boolean b1=bar.getParent()==null||forceShow>=1;
 		if (b1) {
 			CMN.debug("添加到视图中去");
 			boolean bottom = PDICMainAppOptions.schpageAtBottom() && a.thisActType == MainActivityUIBase.ActType.PlainDict;
@@ -1719,7 +1719,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			if (bottom) {
 				a.setSoftInputMode(a.softModeStd=a.softModeResize);
 			}
-			if(forceShow==0 && PDICMainAppOptions.schpageAutoKeyboard()) {
+			if((forceShow==0||forceShow==2) && PDICMainAppOptions.schpageAutoKeyboard()) {
 				ViewUtils.setVisible(contentUIData.bottombar2, false); // todo 点击edit时总是提前隐藏，避免闪跳。
 				pageSchEdit.postDelayed(() -> {
 					pageSchEdit.requestFocus();

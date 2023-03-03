@@ -34,7 +34,9 @@ public class AppUIProject {
 				, 9
 				, 10
 				, 16
-				, 17, 106, 107, 108, 109, 110, 111, 112, 114, 118, 119
+				, 17, 106, 107, 108, 109, 110, 111, 112, 114, 118
+				, 119
+				, R.drawable.ic_baseline_find_in_page_24
 		));
 	}
 	/**  定制底栏一：<br/>
@@ -65,7 +67,10 @@ public class AppUIProject {
 			R.drawable.ic_keyboard_show_24,
 			R.drawable.ic_edit_booknotes_btn,
 			R.drawable.ic_baseline_mindmap,
+			R.drawable.ic_baseline_find_in_page_24,
 	};
+	
+	int resArrToModifyWithAboveChanges = R.array.customize_ctn;
 	
 	public int type=-1;
 	public final String key;
