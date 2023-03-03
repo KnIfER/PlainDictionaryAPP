@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.View.OVER_SCROLL_ALWAYS;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -5928,7 +5927,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showBookNotes(1);
 			} break;
 			case R.drawable.ic_baseline_mindmap: {
-				wordMap.show();
+				wordMap.show(null);
 			} break;
 			case R.drawable.ic_baseline_find_in_page_24: {
 				findWebList(v);
@@ -6244,27 +6243,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				intentSend.setType("text/plain");
 				activities.add(new AppIconsAdapter.PrefetchedApps(intentSend, pm.queryIntentActivities(intentSend, PackageManager.MATCH_ALL)));
 				
-				if (view!=null) {
-					if (view.getId()==R.id.webviewmy) {
-						wv = ((WebViewmy)view);
-					}
-					else if (view instanceof TextView) {
-						TextView tv = ((TextView) getCurrentFocus());
-						if (tv.hasSelection()) {
-							String text = tv.getText().toString();
-							int st = tv.getSelectionStart(), ed=tv.getSelectionEnd();
-							try {
-								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareLink, activities);
-								return;
-							} catch (Exception e) { }
-						}
-					}
-				}
-//				if (wv==null) {
-//					if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
-//						wv = wordPopup.mWebView;
+				//todo impl. more checker and swictcher
+//				if (view!=null) {
+//					if (view.getId()==R.id.webviewmy) {
+//						wv = ((WebViewmy)view);
+//					}
+//					else if (view instanceof TextView) {
+//						TextView tv = ((TextView) getCurrentFocus());
+//						if (tv.hasSelection()) {
+//							String text = tv.getText().toString();
+//							int st = tv.getSelectionStart(), ed=tv.getSelectionEnd();
+//							try {
+//								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareLink, activities);
+//								return;
+//							} catch (Exception e) { }
+//						}
 //					}
 //				}
+				
 				if (wv==null) {
 					wv = weblist.getWebContext();
 				}
@@ -9741,30 +9737,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewListHandler wlh = weblist;
 		mThenReadEntryCount--;
 		
+		//todo impl. more checker and swictcher
 		WebViewmy wv = weblist.getWebContext();
 		String target = wlh.displaying;
-		CMN.debug("performReadEntry PRE "+(wv==null?EmptyBook:wv.presenter)+"-"+wv+"-"+target);
-		if(wv!=null && target!=null) {
-			BookPresenter reader = wv.presenter;
-			if (reader.isMddResource() && target.length() > 1) {
-				int end = target.lastIndexOf(".");
-				if (end < target.length() - 6) end = -1;
-				target = target.substring(1, end > 0 ? end : target.length());
+		CMN.debug("performReadEntry PRE "+(wv==null?EmptyBook:wv.presenter)+"-"+target+"-"+wv);
+		if(wv!=null) {
+			if (wv.isSingleLayout()) {
+				target = wv.word();
 			}
-			String finalTarget = target;
-			if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
-				requestSoundPlayBack(finalTarget, reader, wv);
-			}
-			else if (AutoBrowsePaused /*自动读时绕过*/ && (wv.maybeHasSoundResourceOnPage() || reader.isMergedBook())) {
-				CMN.debug("倾向于已经制定发音按钮 !");
-				wv.evaluateJavascript(WebviewSoundJS, value -> {
-					//CMN.Log("WebviewSoundJS", value);
-					if (!"10".equals(value)) {
-						requestSoundPlayBack(finalTarget, reader, wv);
-					}
-				});
-			} else {
-				requestSoundPlayBack(finalTarget, reader, wv);
+			if (target!=null) {
+				BookPresenter reader = wv.presenter;
+				if (reader.isMddResource() && target.length() > 1) {
+					int end = target.lastIndexOf(".");
+					if (end < target.length() - 6) end = -1;
+					target = target.substring(1, end > 0 ? end : target.length());
+				}
+				String finalTarget = target;
+				if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
+					requestSoundPlayBack(finalTarget, reader, wv);
+				}
+				else if (AutoBrowsePaused /*自动读时绕过*/ && (wv.maybeHasSoundResourceOnPage() || reader.isMergedBook())) {
+					CMN.debug("倾向于已经制定发音按钮 !");
+					wv.evaluateJavascript(WebviewSoundJS, value -> {
+						//CMN.Log("WebviewSoundJS", value);
+						if (!"10".equals(value)) {
+							requestSoundPlayBack(finalTarget, reader, wv);
+						}
+					});
+				} else {
+					requestSoundPlayBack(finalTarget, reader, wv);
+				}
 			}
 		}
 	}

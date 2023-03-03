@@ -179,7 +179,8 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 //		}
 	}
 	
-	public void show() {
+	public void show(String text) {
+		if(!BuildConfig.DEBUG)
 		a.showT("功能测试中，数据不会保存！");
 		getPageHandler(true);
 		weblistHandler.viewContent();
@@ -188,11 +189,12 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 //		weblistHandler.getMergedFrame().setInitialScale((int) (100 * (1000 / BookPresenter.def_zoom) * opt.dm.density));
 //		weblistHandler.getMergedFrame().loadUrl("https://jv7pl7wn15.csb.app/");
 //		weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/3/MdbR/wordmap.html");
-		weblistHandler.getMergedFrame().loadUrl("http://mdbr.com/MdbR/wordmap.html");
-		//weblistHandler.getMergedFrame().loadUrl("file:///android_asset/MdbR/wordmap.html");
+		
+		String url = "http://mdbr.com/MdbR/wordmap.html";
 		if (BuildConfig.DEBUG && GlobalOptions.debug) {
-			weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/4/wordmap.html");
+			url = "http://192.168.0.102:8080/base/4/wordmap.html";
 		}
+		weblistHandler.getMergedFrame().loadUrl(url);
 		
 		if(!BuildConfig.DEBUG)
 		VU.setVisible(weblistHandler.contentUIData.bottombar2, false);
@@ -209,6 +211,9 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 //		weblistHandler.getMergedFrame().getSettings().setLoadWithOverviewMode(false);
 //		weblistHandler.getMergedFrame().getSettings().setUseWideViewPort(true);
 //		WebView.enableSlowWholeDocumentDraw();
+		if (text!=null) {
+			createNode(text, weblistHandler.getMergedFrame());
+		}
 	}
 	
 	@Override

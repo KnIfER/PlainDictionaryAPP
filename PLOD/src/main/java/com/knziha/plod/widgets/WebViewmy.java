@@ -1,6 +1,5 @@
 package com.knziha.plod.widgets;
 
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -13,7 +12,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.text.Html;
@@ -54,7 +52,6 @@ import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -66,6 +63,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.knziha.metaline.Metaline;
 
 import java.io.File;
@@ -746,6 +744,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			}
 		}
 	}
+	
+	public boolean isSingleLayout() {
+		return ViewUtils.getNthParentNonNull(rl, 1).getId() == R.id.webSingleholder;
+	}
 
 //	/**  reset overshot */
 //	public void calcScroll() {
@@ -862,6 +864,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			} return false;
 			case R.id.toolbar_action3:{//TTS
 				evaluateJavascript("if(window.app)app.ReadText(sid.get(), ''+window.getSelection())",null);
+			} return false;
+			case R.id.toolbar_action4: {
+				evaluateJavascript(CollectWord, word -> {
+					if (word.length() > 2) {
+						weblistHandler.a.wordMap.show(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+					}
+				});
 			} return false;
 		}
 		if (mode!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -1148,7 +1157,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
-		menu.add(0,R.id.toolbar_action4,++ToolsOrder,PDICMainAppOptions.swapeSchAndWordMap()?"搜索":"词链");
+		menu.add(0,R.id.toolbar_action4,++ToolsOrder,PDICMainAppOptions.swapeSchAndWordMap()?"搜索":"+词条图谱");
 		
 //		if (fanYi != null) {  // 只因翻译应用跳转慢、或无联网，故置末尾。
 //			MenuItem m = menu.add(0, fanYi.getItemId(), menu.size() - 1, "翻译");

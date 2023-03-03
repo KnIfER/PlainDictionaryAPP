@@ -1312,31 +1312,31 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (found && reflected) {
 				//CMN.debug("wp::bat::合并!!");
 				ArrayList<Long> firstPage = rec.getRecordAt(0);
-				int i = 0;
-				long bookId = firstPage.get(i);
+				int needle_idx = 0;
+				long bookId = firstPage.get(needle_idx);
 				long id;
 				while (bookId != -1) {
-					if (i >= firstPage.size()) id = -1;
+					if (needle_idx >= firstPage.size()) id = -1;
 					else {
-						id = firstPage.get(i);
-						sched.put(firstPage.get(i+1), this);
+						id = firstPage.get(needle_idx);
+						sched.put(firstPage.get(needle_idx+1), this);
 					}
-					if (bookId != id) {
+					if (bookId != id) { // reached new book items
 						ArrayList<Long> ref = refs.get(bookId);
 						if (ref != null) {
 							for (int j = 0; j < ref.size(); j++) {
 								long rp = ref.get(j);
 								if (sched.get(rp)==null) {
-									firstPage.add(i, bookId);
-									firstPage.add(i+1, rp);
-									i += 2;
+									firstPage.add(needle_idx, bookId);
+									firstPage.add(needle_idx+1, rp);
+									needle_idx += 2;
 								}
 							}
 						}
 						bookId = id;
 						sched.clear();
 					}
-					i += 2;
+					needle_idx += 2;
 				}
 			}
 			else if(reflected){
@@ -1348,9 +1348,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					ArrayList<Long> ref = refs.get(bookId);
 					if (ref != null) {
 						for (int j = 0; j < ref.size(); j++) {
-							firstPage.add(i, bookId);
-							firstPage.add(i+1, ref.get(j));
-							i += 2;
+							firstPage.add(bookId);
+							firstPage.add(ref.get(j));
 						}
 						realmCount++;
 					}
