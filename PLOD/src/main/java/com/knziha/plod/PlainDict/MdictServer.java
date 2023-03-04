@@ -78,7 +78,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	}
 	/** strip bad design urls.
 	  Should always use relative path while packaging mdx! */
-	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"])?((file://)|(file:/))?/");
+	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"]?)((file://)|(file:/))?/");
 	final String SepWindows = "\\";
 	final AppOptions opt;
 	
