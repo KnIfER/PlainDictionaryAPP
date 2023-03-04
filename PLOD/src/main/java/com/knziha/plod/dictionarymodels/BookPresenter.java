@@ -575,8 +575,17 @@ function debug(e){console.log(e)};
 	}
 	
 	public int getTitleBackground() {
-		CMN.debug("getTitleBackground="+getUseTitleBackground(), this, tbgColor);
-		return getUseTitleBackground()?tbgColor:0;
+		final boolean useInternal = getUseTitleBackground();
+		if(useInternal) return tbgColor;
+		return GlobalOptions.isDark?opt.getTitlebarBackgroundColor(Color.BLACK)
+				:opt.getTitlebarBackgroundColor(a.MainBackground);
+	}
+	
+	public int getTitleForeground() {
+		final boolean useInternal = getUseTitleBackground();
+		if(useInternal) return tfgColor;
+		return GlobalOptions.isDark?opt.getTitlebarForegroundColor(Color.WHITE)
+				: opt.getTitlebarForegroundColor(a.tintListFilter.sForeground);
 	}
 	
 	public void setTitleBackground(int value) {
@@ -588,10 +597,6 @@ function debug(e){console.log(e)};
 	
 	public int getInternalTitleForeground() {
 		return tfgColor;
-	}
-	
-	public int getTitleForeground() {
-		return getUseTitleBackground()?tfgColor:0;
 	}
 	
 	public void setTitleForeground(int value) {
@@ -1838,11 +1843,10 @@ function debug(e){console.log(e)};
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
 		if(toolbarBG!=null) {
 			useInternal = getUseTitleBackground();
-			myWebColor = isDark?Color.BLACK
-					:useInternal? tbgColor
-					:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground
-					:opt.getTitlebarBackgroundColor();
-			CMN.debug("使用内置标题栏颜色："+useInternal, this, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
+			myWebColor = useInternal? tbgColor
+					:isDark?opt.getTitlebarBackgroundColor(Color.BLACK)
+					:opt.getTitlebarBackgroundColor(a.MainBackground);
+			CMN.debug("使用内置标题栏颜色："+getUseTitleBackground(), this, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
 			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop)
@@ -1852,7 +1856,9 @@ function debug(e){console.log(e)};
 				toolbarBG.setColors(ColorShade);
 				//mWebView.toolbar_title.invalidate();
 			}
-			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor : a.tintListFilter.sForeground/*opt.getTitlebarForegroundColor()*/;
+			myWebColor = getUseTitleForeground()? tfgColor
+					: isDark?opt.getTitlebarForegroundColor(Color.WHITE)
+					: opt.getTitlebarForegroundColor(a.tintListFilter.sForeground);
 			mWebView.setTitlebarForegroundColor(myWebColor);
 		}
 		//CMN.pt("设置颜色：");
@@ -4221,13 +4227,13 @@ function debug(e){console.log(e)};
 		if(b1) {
 			/* initialise values */
 			IBC.tapZoomRatio =2.25f;
-			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
-			tfgColor = opt.getTitlebarForegroundColor();
+			tbgColor = opt.getTitlebarBackgroundColor(MainBackground);
+			tfgColor = ColorUtils.calculateLuminance(MainBackground)>0.5?Color.BLACK:Color.WHITE;
 		}
 		if ((firstVersionFlag&0x1)==0)
 		{
-			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
-			tfgColor = opt.getTitlebarForegroundColor();
+			tbgColor = opt.getTitlebarBackgroundColor(MainBackground);
+			tfgColor = ColorUtils.calculateLuminance(MainBackground)>0.5?Color.BLACK:Color.WHITE;
 			CMN.debug("初始化词典设置", this);
 			if (getIsWebx()) {
 				setShowToolsBtn(true);

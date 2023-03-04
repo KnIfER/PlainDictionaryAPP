@@ -96,6 +96,9 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 						case "f_size":
 							p.setDefaultValue(GlobalOptions.isLarge?150:125);
 							break;
+						case "browse_img":
+							init_switch_preference(this, "browse_img", PDICMainAppOptions.EnableImageBrowser(), null, null, p);
+							break;
 						case "dev":
 						case "sspec":
 						case "vspec":
@@ -147,7 +150,19 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 	//配置变化
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		switch (preference.getKey()){
+		final String key=preference.getKey();
+		int bUsing=0; // 1=get 2=set=false 3=set=true
+		if (newValue instanceof String) {
+			String str = (String) newValue;
+			if (str.equals("using")) {
+				bUsing = 1;
+			} else if (str.startsWith("use")) {
+				bUsing = str.length()==3?3
+						:str.endsWith("_not")?2
+						:0;
+			}
+		}
+		switch (key){
 			case "back_web":
 				PDICMainAppOptions.revisitOnBackPressed((Boolean) newValue);
 				break;
@@ -209,6 +224,17 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 			break;
 			case "stsch":
 				PDICMainAppOptions.restoreLastSch((Boolean) newValue);
+				break;
+			case "browse_img":
+				PDICMainAppOptions.EnableImageBrowser((Boolean) newValue);
+				break;
+			case "TB":
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarBkcolor();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolor(bUsing==3);
+				break;
+			case "TF":
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarForeground();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarForeground(bUsing==3);
 				break;
 //			case "paste_target":
 //				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);

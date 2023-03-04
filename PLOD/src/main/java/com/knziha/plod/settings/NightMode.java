@@ -102,6 +102,14 @@ public class NightMode extends PlainSettingsFragment implements Preference.OnPre
 				if(bUsing==1) return PDICMainAppOptions.nightUseFontColor();
 				else if(bUsing!=0) PDICMainAppOptions.nightUseFontColor(bUsing==3);
 				break;
+			case "TBY":
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarBkcolorDark();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolorDark(bUsing==3);
+				break;
+			case "TFY":
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarBkcolorDark();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolorDark(bUsing==3);
+				break;
 		}
 		return true;
 	}

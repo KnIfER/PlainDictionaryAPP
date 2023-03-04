@@ -1025,11 +1025,25 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public int getToastColor() {
 		return getInt("TTT",0xFF0D2F4B);
 	}
-	public int getTitlebarForegroundColor() {
-		return getInt("TIF",0xFFffffff);
+	
+	public int getTitlebarForegroundColor(int fallback) {
+		if (GlobalOptions.isDark && PDICMainAppOptions.TintTitlbarForegroundDark()) {
+			return getInt("TFY", 0xff000000);
+		}
+		if (PDICMainAppOptions.TintTitlbarForeground()) {
+			return getInt("TF", 0xffffffff);
+		}
+		return fallback;
 	}
-	public int getTitlebarBackgroundColor() {
-		return getInt("TIB",Constants.DefaultMainBG);
+	
+	public int getTitlebarBackgroundColor(int fallback) {
+		if (GlobalOptions.isDark && PDICMainAppOptions.TintTitlbarBkcolorDark()) {
+			return getInt("TBY", 0xFF03A9F4);
+		}
+		if (PDICMainAppOptions.TintTitlbarBkcolor()) {
+			return getInt("TB", 0xFF03A9F4);
+		}
+		return fallback;
 	}
 
 	public boolean UseTripleClick() {
@@ -2575,13 +2589,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	public static boolean getTitlebarUseGlobalUIColor() {
-		return (FourthFlag & 0x2000000000l) != 0x2000000000l;
-	}
-	public static boolean setTitlebarUseGlobalUIColor(boolean val) {
-		updateQFAt(0x2000000000l,!val);
-		return val;
-	}
+	//xxx
+//	public static boolean getTitlebarUseGlobalUIColor() {
+//		return (FourthFlag & 0x2000000000l) != 0x2000000000l;
+//	}
+//	public static boolean setTitlebarUseGlobalUIColor(boolean val) {
+//		updateQFAt(0x2000000000l,!val);
+//		return val;
+//	}
 	
 	public static boolean getTitlebarUseGradient() {
 		return (FourthFlag & 0x4000000000l) != 0x4000000000l;
@@ -3411,18 +3426,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=27, shift=1) public static boolean EnableImageBrowser() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=27, shift=1) public static void EnableImageBrowser(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=28, shift=1) public static boolean TintTitlbarBkcolor() { NinthFlag=NinthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=28, shift=1) public static void TintTitlbarBkcolor(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28) public static boolean TintTitlbarBkcolor() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28) public static void TintTitlbarBkcolor(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=29, shift=1) public static boolean TintTitlbarForeground() { NinthFlag=NinthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=29, shift=1) public static void TintTitlbarForeground(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=29) public static boolean TintTitlbarForeground() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=29) public static void TintTitlbarForeground(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=30) public static boolean TintTitlbarBkcolorDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=30) public static void TintTitlbarBkcolorDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=30, shift=1) public static boolean TintTitlbarBkcolorDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=30, shift=1) public static void TintTitlbarBkcolorDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
-	
-	@Metaline(flagPos=31, shift=1) public static boolean TintTitlbarForegroundDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=31, shift=1) public static void TintTitlbarForegroundDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31) public static boolean TintTitlbarForegroundDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31) public static void TintTitlbarForegroundDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
 	
 	

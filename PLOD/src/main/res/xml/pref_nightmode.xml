@@ -95,6 +95,25 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory
+		android:key="titlebar"
+		android:title="内容页标题栏"  >
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="TBY"
+			android:title="夜间标题栏背景色"
+			android:defaultValue="@color/colorPrimary"
+			android:persistent="true"
+			app:hasCheck="true"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="TFY"
+			android:title="夜间标题栏前景色"
+			android:defaultValue="0xffffffff"
+			android:persistent="true"
+			app:hasCheck="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="cat_2"
 		android:title="配置"  >
 		<Preference

@@ -152,11 +152,11 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
+		if (opt==null) opt = new PDICMainAppOptions(this);
 		super.onCreate(savedInstanceState);
 		if(shunt)
 			return;
 		accessMan = ((AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE));
-		if (opt==null) opt = new PDICMainAppOptions(this);
 	   opt.dm = dm = new DisplayMetrics();
 	   mResource = getResources();
 	   mConfiguration = new Configuration(mResource.getConfiguration());

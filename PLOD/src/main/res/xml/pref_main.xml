@@ -33,6 +33,31 @@
 			android:defaultValue="true"
 			android:title="下滑弹出键盘"
 			/>
+
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="TB"
+			android:title="全局标题栏背景色"
+			android:defaultValue="@color/colorPrimary"
+			android:persistent="true"
+			app:hasCheck="true"
+			app:wiki="此项为全局设置。\n\n不勾选的情况下，默认依循界面背景色。"
+			/>
+
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="TF"
+			android:title="全局标题栏前景色"
+			android:defaultValue="0xffffffff"
+			android:persistent="true"
+			app:hasCheck="true"
+			app:wiki="此项为全局设置。\n\n不勾选的情况下，默认依循界面背景色。"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="browse_img"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用图片查看器打开图片"
+			/>
 	</PreferenceCategory>
 
 
