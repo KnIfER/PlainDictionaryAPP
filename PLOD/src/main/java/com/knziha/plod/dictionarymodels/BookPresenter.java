@@ -3388,7 +3388,7 @@ function debug(e){console.log(e)};
 			if(book==null) return;
 			String url = img[0];
 			CMN.debug("openImage::", url, book);
-			if (book.getImageBrowsable()) {
+			if (book.getImageBrowsable() && PDICMainAppOptions.EnableImageBrowser()) {
 				MainActivityUIBase a = book.a;
 				AgentApplication app = ((AgentApplication) a.getApplication());
 				app.book = book;

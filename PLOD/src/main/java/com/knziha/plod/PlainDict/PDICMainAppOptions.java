@@ -3408,4 +3408,22 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=25) public static boolean topDialogTranslate() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=25) public static void topDialogTranslate(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=27, shift=1) public static boolean EnableImageBrowser() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=27, shift=1) public static void EnableImageBrowser(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=28, shift=1) public static boolean TintTitlbarBkcolor() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28, shift=1) public static void TintTitlbarBkcolor(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=29, shift=1) public static boolean TintTitlbarForeground() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=29, shift=1) public static void TintTitlbarForeground(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	
+	@Metaline(flagPos=30, shift=1) public static boolean TintTitlbarBkcolorDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=30, shift=1) public static void TintTitlbarBkcolorDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=31, shift=1) public static boolean TintTitlbarForegroundDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31, shift=1) public static void TintTitlbarForegroundDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	
+	
 }
