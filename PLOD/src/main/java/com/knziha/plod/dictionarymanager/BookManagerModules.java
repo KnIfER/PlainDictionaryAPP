@@ -137,7 +137,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 	}
 	
 	public void add(String filename) {
-		adapter.add(filename);
+		adapter.add(filename+".set");
 		isDirty=true;
 	}
 	

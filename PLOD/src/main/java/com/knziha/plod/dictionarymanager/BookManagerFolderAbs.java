@@ -229,7 +229,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			hiddenParents.add(folder);
 			for(int i=pos+1;i<dataTree.size();i++) {
 				mFile item = dataTree.get(i);
-				if(!mFile.isDirScionOf(item, folder))
+				if(!mFile.isDirectChildrenOf(item, folder))
 					break;
 				if(item.isDirectory())
 					break;
@@ -279,7 +279,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 						if(filelet.isDirectory()){
 							for(int i=pos+1;i<dataTree.size();i++) {
 								mFile item = dataTree.get(i);
-								if(!mFile.isDirScionOf(item, filelet))
+								if(!mFile.isDirectChildrenOf(item, filelet))
 									break;
 								if(item.isDirectory())
 									break;
@@ -303,7 +303,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 							} else {
 								for(int i=pos+1;i<dataTree.size();i++) {
 									mFile item = dataTree.get(i);
-									if(!mFile.isDirScionOf(item, filelet))
+									if(!mFile.isDirectChildrenOf(item, filelet))
 										break;
 									if(item.isDirectory())
 										break;
@@ -433,11 +433,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				} else {//文件
 					if (displayName != null) {
 						text = displayName;
-					} else if (mFile.isScionOf(lstFile, parentFile)) {
+					} else if (mFile.isChildrenOf(lstFile, parentFile)) {
 						leftPadding = (int) (9 * GlobalOptions.density);
 						text = a.isDebug ? lstFile.getPath() : BU.removeMdxSuffix(lstFile.getName());
 					} else {
-						vh.text.setPadding(0, 0, 0, 0);
 						text = lstFile.getAbsolutePath();
 					}
 					mFile p = getParentFolderInData(lstFile);
@@ -461,10 +460,15 @@ public abstract class BookManagerFolderAbs extends ListFragment
 					vh.folderIcon.setVisibility(View.GONE);
 				}
 				if (leftPadding != vh.text.getPaddingLeft()) {
-					vh.text.setPadding(leftPadding, 0, 0, 0);
+					int padTop = (int) (5 * GlobalOptions.density);
+					vh.text.setPadding(leftPadding, padTop, 0, padTop);
+				}
+				PDICMainAppOptions opt = getBookManager().opt;
+				if (text.startsWith(opt.lastMdlibPath.getPath())) {
+					text = text.substring(opt.lastMdlibPath.getPath().length()+1);
 				}
 				if (text.startsWith(GlobalOptions.extPath)) {
-					text = "/sdcard"+text.substring(GlobalOptions.extPath.length());
+					text = "/sdcard" + text.substring(GlobalOptions.extPath.length());
 				}
 				vh.text.setText( text );
 			} else { // if for searched list
@@ -530,8 +534,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		if (parent!=null && parent.children.size()>0) {
 			toggleFolder(parent, -1);
 		}
-		// todo use binary search
-		int lstPos = dataTree.indexOf(file);
+		int lstPos = data.indexOf(dataTree, file);
 		//int lstPos = realFilterPos(position);
 		int h;
 		if(listView.getChildAt(0)!=null) h = listView.getChildAt(0).getHeight() / 4;
@@ -542,9 +545,8 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	private int realFilterPos(int dataPos) {
 		mFile file = filteredFilesHelper.get(dataPos);
 		mFile parent = getParentFolderInData(file);
-		// todo use binary search
 		if (parent!=null && parent.children.size()>0) {
-			return dataTree.indexOf(parent);
+			return data.indexOf(dataTree, parent);
 		}
 		return dataTree.indexOf(file);
 	}
@@ -567,28 +569,28 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	
 	public void rebuildDataTree() {
 		ArrayList<mFile> rawData = data.getList();
-		mFile fileAt, childAt; List<mFile> hidden;
-		for (int i = 0; i < rawData.size(); i++) {
+		mFile fileAt, hidden_child; List<mFile> hidden;
+		dataTree = new ArrayList<>(rawData);
+		for (int i = rawData.size()-1; i >= 0; i--) {
 			fileAt = rawData.get(i);
 			hidden = fileAt.children;
 			if (hidden.size() > 0) {
 				final ArrayList<mFile> children = new ArrayList<>();
 				for (int j = 0; j < hidden.size(); j++) {
-					childAt = hidden.get(j);
-					//if (data.getList().remove(childAt)) children.add(childAt);
-					int idx = data.indexOf(childAt);
-					if (idx==-1) idx = rawData.indexOf(childAt);
+					hidden_child = hidden.get(j);
+					int idx = data.indexOf(dataTree, hidden_child);
 					if (idx >= 0) {
-						rawData.remove(idx);
-						children.add(childAt);
+						dataTree.remove(idx);
+						children.add(hidden_child);
 					}
 				}
 				fileAt.children = children;
 			}
 		}
-		dataTree = new ArrayList<>(rawData);
 		adapter = new MyAdapter(dataTree);
+		long savedPos = ViewUtils.saveListPos(listView);
 		super.setListAdapter(adapter);
+		ViewUtils.restoreListPos(listView, savedPos);
 	}
 	
 	public int schFilter(String query, boolean shouldInval) {
@@ -673,5 +675,38 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		file = file.getParentFile();
 		if(file==null) return file;
 		return data.get(file.init(a.opt)); //todo opt
+	}
+	
+	public boolean removeFileInData(mFile file) {
+		BookManager bm = getBookManager();
+		int idx = data.indexOf(file.init(bm.opt));
+		return removeFileInDataAt(idx, false);
+	}
+	
+	public boolean removeFileInDataAt(int i, boolean delOther) {
+		final ArrayList<mFile> lstViewFiles = data.getList();
+		boolean anotherChanged = false;
+		if (i<0 || i>=lstViewFiles.size()) {
+			return anotherChanged;
+		}
+		final mFile fn = lstViewFiles.get(i)/*.getRealPath()*/;
+		lstViewFiles.remove(i);
+		isDirty = true;
+		mFile p = fn.getParentFile(); // check for folder
+		BookManager bm = getBookManager();
+		BookManagerFolderAbs another_folderLike = delOther ? (this == bm.f3 ? bm.f4 : bm.f3) : null;
+		if(another_folderLike!=null)
+			anotherChanged |= another_folderLike.removeFileInData(fn);
+		else
+			anotherChanged = true;
+		if (p != null) {
+			mFile prev = i-1 >= 0 ? lstViewFiles.get(i-1) : null;
+			if (p.equals(prev) // found
+					&& prev.children.size()==0 // no other children
+					&& (  i>=lstViewFiles.size() || !mFile.isDirectChildrenOf(lstViewFiles.get(i), p))  ) {
+				lstViewFiles.remove(--i);
+			}
+		}
+		return anotherChanged;
 	}
 }

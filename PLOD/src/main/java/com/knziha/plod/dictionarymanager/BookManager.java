@@ -1,5 +1,7 @@
 package com.knziha.plod.dictionarymanager;
 
+import static com.knziha.plod.db.LexicalDBHelper.Hzh_filesize;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -80,7 +82,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -127,7 +131,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	private boolean bReturning;
 	private int f1_dirty;
 	
-	public BookManager() { }
+	public BookManager() {
+		mFile.bmRef = new WeakReference<>(this);
+	}
 	
 	public File fileToSet(String name) {
 		return opt.fileToSet(ConfigFile, name);
@@ -452,6 +458,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		mFile.bmRef.clear();
 		checkAll(); // 退出
 		if (viewPager!=null) {
 			viewPager.clearOnPageChangeListeners();
@@ -1478,7 +1485,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					if(mdTmp.isDirectory()) {
 						f3.hiddenParents.add(mdTmp);
 						for(i++;i<listTree.size();i++) {
-							if(!mFile.isDirScionOf(listTree.get(i), mdTmp)) {break;}
+							if(!mFile.isDirectChildrenOf(listTree.get(i), mdTmp)) {break;}
 							if(listTree.get(i).isDirectory()) {break;}
 							mdTmp.children.add(listTree.remove(i));
 							i--;
@@ -1790,8 +1797,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				AlertDialog.Builder builder = new AlertDialog.Builder(this).setView(dv1);
 				final AlertDialog dd = builder.create();
 				btn_Done.setOnClickListener(v -> {
-					File source  = new File(ConfigFile, SU.legacySetFileName(etNew.getText().toString()));
-					if(!mFile.isDirScionOf(source, ConfigFile)) {
+					String groupName = etNew.getText().toString();
+					File source  = new File(ConfigFile, SU.legacySetFileName(groupName));
+					if(!mFile.isDirectChildrenOf(source, ConfigFile)) {
 						showT("名称无效！");
 						return;
 					}
@@ -1801,11 +1809,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 					try {
 						source.createNewFile();
-						f2.add(etNew.getText().toString());
+						f2.add(groupName);
 						dd.dismiss();
 						return;
-					} catch (IOException e) {
-						e.printStackTrace();
+					} catch (Exception e) {
+						CMN.debug(e);
 					}
 					showT("未知错误");
 				});
@@ -2088,6 +2096,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		final mFile[] arr = folderMangager.Selection.toArray(new mFile[0]);
 		final HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
 	 	final ArrayList<mFile> lstViewFiles =  folderMangager.data.getList();
+		BookManagerFolderAbs another_folderLike = folderMangager == f3 ? f4 : f3;
+		boolean anotherChanged = false;
 		for (int i = lstViewFiles.size()-1; i >= 0; i--) {
 			mFile fn = lstViewFiles.get(i)/*.getRealPath()*/;
 			if (removePool.contains(fn) // selected
@@ -2095,23 +2105,17 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					&& !(fn instanceof mAssetFile) // not embedded asset
 					&& !fn.isDirectory() // not directory
 			) {
-				lstViewFiles.remove(i);
+				anotherChanged |= folderMangager.removeFileInDataAt(i, true);
 				mdlibsCon.remove(mFile.removeFolderPrefix(fn, opt.lastMdlibPath));
-				folderMangager.isDirty = true;
-				mFile p = fn.getParentFile(); // check for folder
-				if (p != null)
-				{
-					mFile prev = i-1 >= 0 ? lstViewFiles.get(i-1) : null;
-					if (p.equals(prev) // found
-							&& prev.children.size()==0 // no other children
-							&& (  i>=lstViewFiles.size() || !mFile.isDirScionOf(lstViewFiles.get(i), p))  ) {
-						lstViewFiles.remove(--i);
-					}
-				}
 			}
 		}
 		deleteRecordsHard(folderMangager, false, true);
-		if (!PDICMainAppOptions.getDebuggingRemoveRec())
+		if (another_folderLike!=null && anotherChanged) {
+			another_folderLike.selFolders.clear();
+			another_folderLike.Selection.clear();
+			another_folderLike.rebuildDataTree();
+		}
+		if (!PDICMainAppOptions.debuggingRemoveRecSkipWrite())
 		{
 			//PDICMainAppOptions.setDelRecApplyAll(deleteFromAllGroup);
 			ArrayList<File> moduleFilesArr = ScanInModlueFiles(deleteFromAllGroup, folderMangager.isDirty);
@@ -2367,6 +2371,22 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	public BookPresenter getMagentAt(int position) {
 		return getMagentAt(position, true);
+	}
+	
+	byte[] Hzh;
+	
+	/** 获取常规汉字的拼音首字母 */
+	public byte[] getHzh(){ // todo optimize...
+		if (Hzh==null) {
+			try {
+				InputStream input = getAssets().open("Hzh.dat");
+				Hzh = new byte[Hzh_filesize];
+				input.read(Hzh);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return Hzh;
 	}
 }
 

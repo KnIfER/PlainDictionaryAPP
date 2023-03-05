@@ -868,7 +868,7 @@ if(!VersionUtils.AnnotOff)
 	}
 	
 	@Metaline(file = "PLOD\\src\\main\\assets\\Hzh.dat", rootPath=BuildConfig.projectPath)
-	final static int Hzh_filesize = 0;
+	public final static int Hzh_filesize = 0;
 
 	/** 获取常规汉字的拼音首字母 */
 	public byte[] getHzh(){

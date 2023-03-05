@@ -115,6 +115,28 @@ public class ArrayListBookTree<T extends Comparable<? super T>> {
 		}
 		return -1;
 	}
+	
+	public int reduce_static(ArrayList<T> data, T val,int start,int end) {//via mdict-js
+		int len = end-start;
+		if (len > 1) {
+			len = len >> 1;
+			return val.compareTo(data.get(start + len - 1))>0
+					? reduce_static(data, val,start+len,end)
+					: reduce_static(data, val,start,start+len);
+		} else {
+			return start;
+		}
+	}
+	
+	public int indexOf(ArrayList<T> data, T val) {//默认 严格模式 GOOD
+		if(data.size()==0) return -1;
+		int idx = reduce_static(data, val,0,data.size());
+		if(idx==-1) return idx;
+		if(val.compareTo(data.get(idx))==0) {
+			return idx;
+		}
+		return -1;
+	}
 
 
 	public int remove(T val) {
