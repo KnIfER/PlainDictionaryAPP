@@ -1269,6 +1269,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		ArrayList<myCpr<String, Long>> tmpRangeReceiver = new ArrayList<>(loadManager.md_size/2);
 		LongSparseArray<ArrayList<Long>> refs = new LongSparseArray<>();
 		LongSparseArray<Object> schedPosInLastBook = new LongSparseArray<>();
+		CMN.rt("联合搜索开始");
 		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
 			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
 			if (phTmp != null) {
@@ -1389,6 +1390,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			this.rec = rec;
 			harvest(); // multiple!
 		}
+		CMN.rt("联合搜索::");
 	}
 	
 	@AnyThread

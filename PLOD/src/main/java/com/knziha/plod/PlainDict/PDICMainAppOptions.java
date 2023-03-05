@@ -210,7 +210,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=32) public static boolean getDelRecApplyAll() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=32) public static void setDelRecApplyAll(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33, debug=1) public static boolean debuggingRemoveRecSkipWrite() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static boolean debuggingRemoveRecSkipWrite() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=33, shift=1) public static boolean getWarnLoadModule() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=33, shift=1) public static void setWarnLoadModule(boolean val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
