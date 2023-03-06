@@ -11667,6 +11667,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			int idx = rizhi.indexOf(oldVerName);
 			if(idx!=-1) {
 				rizhi = rizhi.substring(0, idx);
+				rizhi += "\n\n\n\n\n&emsp;\n";
 			}
 			dd.setTitle("升级成功！");
 		}

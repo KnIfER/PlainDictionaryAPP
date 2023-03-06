@@ -2965,7 +2965,7 @@ function debug(e){console.log(e)};
 		}
 		
         @JavascriptInterface
-        public String remarkByUrl(int sid, String url) { // 网页版会调用
+        public String remarkByUrl(int sid, String url, long position) { // 网页版会调用，
 			CMN.debug("annot:::remarkByUrl::", url);
 			StringBuilder sb = null;
 			if (presenter!=null) {
@@ -2973,7 +2973,13 @@ function debug(e){console.log(e)};
 				if (mWebView != null) {
 					long bid = presenter.getId();
 					int schemaIdx = url.indexOf(":");
-					if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
+					if (url.regionMatches(schemaIdx + 12, "base", 0, 4)) {
+						// 包括词条弹出 ://mdbr.com/base/dMWDO3nW/entry/Heracleum
+						int slashIdx = url.indexOf("/", schemaIdx+17);
+						//bid = IU.TextToNumber_SIXTWO_LE(url.substring(schemaIdx+18, slashIdx));
+						sb = getMarksByPos(mWebView, sb, bid, position);
+					}
+					else if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
 						int idx = url.indexOf('_', schemaIdx + 20), ed = url.length();
 						boolean multi = url.indexOf('_', idx + 1) > 0;
 						CharSequenceKey key = new CharSequenceKey(url, idx + 1);
@@ -2985,7 +2991,7 @@ function debug(e){console.log(e)};
 								if (nxt == -1) nxt = ed;
 								if (nxt > idx) {
 									key.reset(idx, nxt);
-									long position = IU.TextToNumber_SIXTWO_LE(key);
+									position = IU.TextToNumber_SIXTWO_LE(key);
 									int len = sb == null ? 0 : sb.length();
 									sb = getMarksByPos(mWebView, sb, bid, position);
 									if (sb != null && sb.length() > len) {
@@ -2997,7 +3003,7 @@ function debug(e){console.log(e)};
 								idx = nxt + 1;
 							} while (idx < ed);
 						} else {
-							long position = IU.TextToNumber_SIXTWO_LE(key);
+							position = IU.TextToNumber_SIXTWO_LE(key);
 							sb = getMarksByPos(mWebView, sb, bid, position);
 						}
 					}

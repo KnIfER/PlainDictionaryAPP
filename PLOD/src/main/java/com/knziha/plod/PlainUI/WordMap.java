@@ -26,6 +26,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
@@ -192,7 +193,7 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 		
 		String url = "http://mdbr.com/MdbR/wordmap.html";
 		if (BuildConfig.DEBUG && GlobalOptions.debug) {
-			url = "http://192.168.0.102:8080/base/4/wordmap.html";
+			url = "http://"+MdictServerMobile.remoteDebugServer+":8080/base/4/wordmap.html";
 		}
 		weblistHandler.getMergedFrame().loadUrl(url);
 		

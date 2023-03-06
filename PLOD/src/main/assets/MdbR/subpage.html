@@ -147,7 +147,7 @@ function loadJs(url,callback){
 
 function restoreMarks(pw) {
 	var url = ''+location.href, idx = url.indexOf('_'), multi=url.indexOf('_', idx+1) > 0;
-	var t = _app.remarkByUrl(sid.get(), url);
+	var t = _app.remarkByUrl(sid.get(), url, w.pos||0);
 	debug('remarkByUrl???', url, t);
 	if(multi) {
 		var frames = document.getElementsByClassName('_PDict_body'), map=[];
