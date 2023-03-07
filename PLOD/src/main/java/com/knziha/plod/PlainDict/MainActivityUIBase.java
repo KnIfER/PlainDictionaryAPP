@@ -156,7 +156,7 @@ import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AnnotationDialog;
-import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.ButtonUIProject;
 import com.knziha.plod.PlainUI.BookNotes;
 import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
@@ -10072,8 +10072,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	//定制工具条
-	public AppUIProject contentbar_project;
-	public AppUIProject peruseview_project;
+	public ButtonUIProject contentbar_project;
+	public ButtonUIProject peruseview_project;
 	
 	public int ForegroundTint = 0xffffffff;
 	public ColorStateList ForegroundTintList;

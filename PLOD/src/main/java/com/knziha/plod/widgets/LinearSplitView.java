@@ -18,6 +18,7 @@ public class LinearSplitView extends LinearLayout {
 	
 	public LinearSplitView(Context context, @Nullable AttributeSet attrs) {
 		super(context, attrs);
+		if(isInEditMode()) return;
 		handle = new View(context);
 		handle.setBackgroundColor(Color.RED);
 		handle.setOnTouchListener(new OnTouchListener() {

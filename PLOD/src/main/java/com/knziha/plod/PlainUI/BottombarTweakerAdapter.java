@@ -28,9 +28,10 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortListView;
 import com.mobeta.android.dslv.SimpleFloatViewManager;
 
+import static com.knziha.plod.PlainUI.ButtonUIData.BottombarBtnIcons;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
-import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.PlainUI.ButtonUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.plaindict.暂未实现帮助类.没有实现的_工具栏_点击事件不完全列表;
 
 public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener{
@@ -41,7 +42,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	public final DragSortListView main_list;
 	private final ShelfLinearLayout sideBar;
 	
-	public AppUIProject projectContext;
+	public ButtonUIProject projectContext;
 	public boolean isDirty;
 	public Drawable switch_landscape;
 	PorterDuffColorFilter darkMask = new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
@@ -212,13 +213,13 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 					break;
 				}
 				int bottombar_from=0;
-				AppUIProject projectContext=null;
+				ButtonUIProject projectContext=null;
 				if(id == R.id.customise_main_bar){
 					if(a instanceof PDICMainActivity){
 						PDICMainActivity aa = (PDICMainActivity) a;
 						projectContext = aa.bottombar_project;
 						if(projectContext==null){
-							aa.bottombar_project = projectContext = new AppUIProject(a, "btmprj", aa.BottombarBtnIcons, R.array.customize_btm, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
+							aa.bottombar_project = projectContext = new ButtonUIProject(a, "btmprj", BottombarBtnIcons, R.array.customize_btm, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
 						}
 						if(projectContext.iconData==null){
 							projectContext.instantiate();
@@ -240,7 +241,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 									a.contentbar_project:null;
 					
 					if(projectContext==null) {
-						projectContext = new AppUIProject(a, bottombar_from, a.opt, ContentbarBtnIcons, R.array.customize_ctn, null, null);
+						projectContext = new ButtonUIProject(a, bottombar_from, a.opt, ContentbarBtnIcons, R.array.customize_ctn, null, null);
 						if(bottombar_from==1){
 							/* fyms */
 							a.peruseview_project = projectContext;
@@ -371,7 +372,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 
 	void clearCurrentProject() {
 		if(isDirty && projectContext!=null){
-			AppUIProject _projectContext = projectContext;
+			ButtonUIProject _projectContext = projectContext;
 			projectContext=null;
 			_projectContext.clear(null);
 		}
@@ -396,7 +397,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		}
 	}
 	
-	private void checkReferncedChange(AppUIProject checkNow, String newVal) {
+	private void checkReferncedChange(ButtonUIProject checkNow, String newVal) {
 		if(checkNow!=null && checkNow!=projectContext && opt.isAppContentBarProjectReferTo(checkNow.key, projectContext.type)){
 			CMN.debug(checkNow.key,  "refer to >> ", projectContext.key);
 			checkNow.currentValue=newVal;

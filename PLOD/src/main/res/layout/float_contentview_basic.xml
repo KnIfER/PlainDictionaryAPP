@@ -48,7 +48,18 @@
 			android:minWidth="45dp"
 			android:background="@drawable/listviewselector0"
 			/>
-		<ImageView
+		<com.knziha.plod.widgets.FlowTextView
+			android:id="@+id/popupText2"
+			android:layout_width="0dp"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:padding="1dp"
+			android:textColor="@color/OldHeaderBlue"
+			android:ellipsize="end"
+			android:maxLines="1"
+			tools:visibility="gone"
+			/>
+		<!--ImageView
 			android:id="@+id/tools1"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
@@ -58,9 +69,9 @@
 			android:padding="7dp"
 			android:layout_marginEnd="1px"
 			android:visibility="gone"
-			/>
+			/-->
 		<ImageView
-			android:id="@+id/voice"
+			android:id="@drawable/voice_ic"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/voice_ic"
@@ -78,11 +89,10 @@
 			android:background="?attr/actionBarItemBackground"
 			app:src0="@drawable/star_ic_solid_framed"
 			android:layout_marginEnd="1px"
-			tools:visibility="gone"
 			android:contentDescription="收藏"
 			/>
 		<ImageView
-			android:id="@+id/peruse"
+			android:id="@drawable/ic_peruse_pan"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/ic_peruse_pan"
@@ -90,11 +100,10 @@
 			android:tint="#8f8f8f"
 			android:padding="5dp"
 			android:layout_marginEnd="1px"
-			android:visibility="gone"
 			android:contentDescription="翻阅"
 			/>
 		<ImageView
-			android:id="@+id/gTrans"
+			android:id="@drawable/ic_g_translate_black_24dp"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/ic_g_translate_black_24dp"
@@ -112,19 +121,18 @@
 			android:layout_marginEnd="1px"
 			android:contentDescription="最大化"
 			/>
-		<android.widget.ImageView
-			android:id="@+id/popLstDict"
+		<ImageView
+			android:id="@drawable/chevron_top22"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/chevron_top22"
 			android:background="?attr/actionBarItemBackground"
 			android:layout_marginEnd="1px"
-			android:visibility="gone"
 			android:contentDescription="上一词典"
 
 			/>
-		<android.widget.ImageView
-			android:id="@+id/popNxtDict"
+		<ImageView
+			android:id="@drawable/chevron_bottom22"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/chevron_bottom22"
@@ -139,6 +147,7 @@
 		android:orientation="horizontal"
 		android:layout_marginTop="@dimen/_45_"
 		android:layout_marginBottom="@dimen/_35_"
+		tools:visibility="gone"
 		>
 		<com.knziha.plod.widgets.RLContainerSlider
 			android:id="@+id/PageSlider"
@@ -270,6 +279,24 @@
 				android:layout_marginStart="8dp"
 				android:contentDescription="更多操作"
 				/>
+			<androidx.appcompat.widget.AppCompatTextView
+				android:id="@+id/popupText1"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:gravity="center_vertical"
+				android:paddingTop="5dp"
+				android:paddingBottom="5dp"
+				tools:text="androidx.appcompat.widget.AppCompatTextViewandroidx.appcompat.widget.AppCompatTextView"
+				android:textSize="25sp"
+				android:autoSizeMinTextSize="10dp"
+				android:autoSizeTextType="uniform"
+				android:autoSizeMaxTextSize="25sp"
+				android:ellipsize="end"
+				android:maxLines="1"
+				android:minWidth="45dp"
+				android:background="@drawable/listviewselector0"
+				/>
 			<com.knziha.plod.widgets.FlowTextView
 				android:id="@+id/popupText2"
 				android:layout_width="0dp"
@@ -279,72 +306,64 @@
 				android:textColor="@color/OldHeaderBlue"
 				android:ellipsize="end"
 				android:maxLines="1"
-				tools:text="嘿你个小可爱"
+				tools:visibility="gone"
 				/>
-
-
-		<ImageView
-			android:id="@+id/mode"
-			android:layout_width="@dimen/popBtnWid"
-			android:layout_height="match_parent"
-			android:src="@drawable/ic_btn_multimode"
-			android:background="?attr/actionBarItemBackground"
-			android:contentDescription="切换搜索模式"
-			/>
-
-		<ImageView
-			android:id="@+id/popLstE"
-			android:layout_width="@dimen/popBtnWid"
-			android:layout_height="match_parent"
-			android:src="@drawable/chevron_bottom2"
-			android:tint="#666"
-			android:background="?attr/actionBarItemBackground"
-			android:contentDescription="上一词条"
-			/>
-		<ImageView
-			android:id="@+id/popNxtE"
-			android:layout_width="@dimen/popBtnWid"
-			android:layout_height="match_parent"
-			android:src="@drawable/chevron_top2"
-			android:tint="#666"
-			android:background="?attr/actionBarItemBackground"
-			android:contentDescription="下一词条"
-			/>
-
-		<ImageView
-			android:id="@+id/popIvSettings"
-			android:layout_width="@dimen/popBtnWid"
-			android:layout_height="match_parent"
-			android:padding="4dp"
-			android:src="@drawable/drawer_menu_icon_setting"
-			android:layout_marginRight="5dp"
-			android:background="?attr/actionBarItemBackground"
-			android:contentDescription="设置"
-			/>
-
-		<ImageView
-			android:id="@+id/popIvRecess"
-			android:layout_width="@dimen/popBtnWid"
-			android:layout_height="match_parent"
-			android:padding="5dp"
-			android:src="@drawable/recess"
-			android:tint="#666"
-			android:background="?attr/actionBarItemBackground"
-			android:contentDescription="倒退网页"
-			/>
-
-
-		<ImageView
-			android:id="@+id/popIvForward"
-			android:layout_width="@dimen/popBtnWid"
-			android:layout_height="match_parent"
-			android:padding="5dp"
-			android:src="@drawable/forward"
-			android:tint="#666"
-			android:background="?attr/actionBarItemBackground"
-			android:contentDescription="前进网页"
-			/>
-
+			<ImageView
+				android:id="@+id/mode"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
+				android:src="@drawable/ic_btn_multimode"
+				android:background="?attr/actionBarItemBackground"
+				android:contentDescription="切换搜索模式"
+				/>
+			<ImageView
+				android:id="@+id/popLstE"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
+				android:src="@drawable/chevron_bottom2"
+				android:tint="#666"
+				android:background="?attr/actionBarItemBackground"
+				android:contentDescription="上一词条"
+				/>
+			<ImageView
+				android:id="@+id/popNxtE"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
+				android:src="@drawable/chevron_top2"
+				android:tint="#666"
+				android:background="?attr/actionBarItemBackground"
+				android:contentDescription="下一词条"
+				/>
+			<ImageView
+				android:id="@+id/popIvSettings"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
+				android:padding="4dp"
+				android:src="@drawable/drawer_menu_icon_setting"
+				android:layout_marginRight="5dp"
+				android:background="?attr/actionBarItemBackground"
+				android:contentDescription="设置"
+				/>
+			<ImageView
+				android:id="@+id/popIvRecess"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
+				android:padding="5dp"
+				android:src="@drawable/recess"
+				android:tint="#666"
+				android:background="?attr/actionBarItemBackground"
+				android:contentDescription="倒退网页"
+				/>
+			<ImageView
+				android:id="@+id/popIvForward"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
+				android:padding="5dp"
+				android:src="@drawable/forward"
+				android:tint="#666"
+				android:background="?attr/actionBarItemBackground"
+				android:contentDescription="前进网页"
+				/>
 		</LinearLayout>
 
 	<FrameLayout

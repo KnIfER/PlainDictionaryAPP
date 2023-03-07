@@ -9,92 +9,44 @@ import android.widget.ImageView;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.ActivatableImageView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 
-public class AppUIProject {
-	public static HashSet<Integer> LongclickableMap = new HashSet<>(); // todo optimise
-	static{
-		LongclickableMap.addAll(Arrays.asList(
-				R.drawable.star_ic
-				, R.drawable.ic_prv_dict_chevron
-				, R.drawable.ic_nxt_dict_chevron
-				, R.drawable.ic_fulltext_reader
-				, R.drawable.book_bundle
-				, R.drawable.favoriteg
-				, 4
-				, 6
-				, 9
-				, 10
-				, 16
-				, 17, 106, 107, 108, 109, 110, 111, 112, 114, 118
-				, 119
-				, R.drawable.ic_baseline_find_in_page_24
-		));
-	}
-	/**  定制底栏一：<br/>
-	 * 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12 <br/>
-	 * 退离程序13 打开侧栏14 随机词条15 上一词典16 下一词典17  自动浏览18 全文朗读19 进入收藏20 进入历史21 调整亮度22 夜间模式23 切换横屏24 定制颜色25 定制底栏26 切换沉浸 切换全屏 多维分享 空格键 方向键⬅ 方向键➡ 方向键⬆ 方向键⬇ W键 A键 S键 D键 C键 Z键 CTRL键 SHIFT键 鼠标左击 鼠标右击 <br/>*/
-	public final static int[] ContentbarBtnIcons = new int[]{
-			R.drawable.back_ic,
-			R.drawable.star_ic,
-			R.drawable.list_ic,
-			R.drawable.chevron_left,
-			R.drawable.chevron_right,
-			R.drawable.voice_ic,
-			R.drawable.ic_menu_24dp,
-			R.drawable.ic_exit_app,//13
-			R.drawable.ic_menu_drawer_24dp,//14
-			R.drawable.ic_random_shuffle,//15
-			R.drawable.ic_prv_dict_chevron,//16
-			R.drawable.ic_nxt_dict_chevron,//17
-			R.drawable.ic_autoplay,//18
-			R.drawable.ic_fulltext_reader,//19
-			R.drawable.favoriteg,//20
-			R.drawable.historyg,//21
-			R.drawable.ic_brightness_low_black_bk,//22
-			R.drawable.ic_darkmode_small,//23
-			R.drawable.ic_swich_landscape_orientation,//24
-			R.drawable.ic_options_toolbox_small,//25
-			R.drawable.customize_bars,//26
-			R.drawable.ic_keyboard_show_24,
-			R.drawable.ic_edit_booknotes_btn,
-			R.drawable.ic_baseline_mindmap,
-			R.drawable.ic_baseline_find_in_page_24,
-	};
-	
-	int resArrToModifyWithAboveChanges = R.array.customize_ctn;
-	
+public class ButtonUIProject extends ButtonUIData{
 	public int type=-1;
 	public final String key;
 	public boolean bNeedCheckOrientation;
 	public String currentValue;
 	final ArrayList<ViewGroup> barStack = new ArrayList<>();
-	final ArrayList<ImageView[]> btnsStack = new ArrayList<>();
+	final ArrayList<View[]> btnsStack = new ArrayList<>();
 	public int version;
 	final int[] icons;
 	final String[] titles;
 
 	ArrayList<AppIconData> iconData;
-
-	public AppUIProject(Context context, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup bar, ImageView[] _btns) {
+	public View.OnClickListener onClickListener;
+	public View.OnLongClickListener onLongClickListener;
+	public View.OnTouchListener onTouchListener;
+	
+	public ButtonUIProject(Context context, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup bar, View[] _btns) {
 		key = _key;
 		icons = _icons;
 		currentValue = customize_str;
-		if (bar!=null) {
-			addBar(bar, _btns);
+		if (_btns==null) {
+			_btns = new View[_icons.length];
+			for (int i = 0; i < _btns.length; i++) {
+				_btns[i] = bar.getChildAt(i);
+			}
 		}
+		addBar(bar, _btns);
 		titles = context.getResources().getStringArray(titlesRes);
 	}
 	
-	public void addBar(ViewGroup bar, ImageView[] btns) {
+	public void addBar(ViewGroup bar, View[] btns) {
 		int idx = barStack.indexOf(bar);
 		if (idx != -1) {
 			barStack.remove(idx);
@@ -104,7 +56,7 @@ public class AppUIProject {
 		btnsStack.add(btns);
 	}
 	
-	public AppUIProject(Context context, int idx, PDICMainAppOptions opt, int[] _icons, int titlesRes, ViewGroup _bottombar, ImageView[] _btns) {
+	public ButtonUIProject(Context context, int idx, PDICMainAppOptions opt, int[] _icons, int titlesRes, ViewGroup _bottombar, View[] _btns) {
 		key = "ctnp#"+idx;
 		type = idx;
 		icons = _icons;
@@ -164,11 +116,19 @@ public class AppUIProject {
 	}
 	
 	/** Rebuild Bottom Icons<br/>
-	 * 定制底栏：一  见 {@link PDICMainActivity#BottombarBtnIcons}<br/>
+	 * 定制底栏：一  见 {@link #BottombarBtnIcons}<br/>
 	 * 定制底栏：二 见 {@link #ContentbarBtnIcons}<br/>
+	 * 定制底栏：三 见 {@link WordPopup}<br/>
 	 */
-	public static void RebuildBottombarIcons(MainActivityUIBase a, AppUIProject bottombar_project, Configuration config) {
+	public static void RebuildBottombarIcons(MainActivityUIBase a, ButtonUIProject bottombar_project, Configuration config) {
 		MainActivityUIBase this_ = a;
+		View.OnClickListener onClickListener = bottombar_project.onClickListener;
+		View.OnLongClickListener onLongClickListener = bottombar_project.onLongClickListener;
+		View.OnTouchListener onTouchListener = bottombar_project.onTouchListener;
+		if (onClickListener == null) {
+			onClickListener = a;
+			onLongClickListener = a;
+		}
 		ArrayList<ViewGroup> bars;
 		if(bottombar_project==null || (bars = bottombar_project.barStack).size()==0) {
 			return;
@@ -183,21 +143,12 @@ public class AppUIProject {
 		{
 			ViewGroup bottombar = bars.get(j);
 			if (bottombar == null) {
-				if(BuildConfig.DEBUG)
-				try {
-					throw new RuntimeException("watch stacktrace!");
-				} catch (RuntimeException e) {
-					CMN.debug(e);
-				}
 				continue;
 			}
-			int idStart=0;
 			bottombar.removeAllViews();
-			if(bottombar.getId()== R.id.bottombar2)
-				idStart=107;
 			boolean isHorizontal = config.orientation==Configuration.ORIENTATION_LANDSCAPE;
 			String[] arr = appproject.split("\\|");
-			ImageView[] presetBtns = bottombar_project.btnsStack.get(j);
+			View[] presetBtns = bottombar_project.btnsStack.get(j);
 			int[] btnIcons = bottombar_project.icons;
 			CMN.rt();
 	//		((RippleDrawable)a.getDrawable(rippleBG)).setColor(ColorStateList.valueOf(Color.WHITE));
@@ -205,31 +156,34 @@ public class AppUIProject {
 			boolean modRipple = PDICMainAppOptions.modRipple();
 			for (int i = 0; i < arr.length; i++) {
 				String val = arr[i];
-				int start = 0;
-				int end = val.length();
-				if(end>0) {
-					while (start<end && val.charAt(start)=='\\') {
-						++start;
+				int st = 0;
+				int ed = val.length();
+				if(ed>0) {
+					while (st<ed && val.charAt(st)=='\\') ++st;
+					if(st>0){
+						val = val.substring(st, ed);
+						if(st==2) bottombar_project.bNeedCheckOrientation=true;
 					}
-					if(start>0){
-						val = val.substring(start, end);
-						if(start==2) bottombar_project.bNeedCheckOrientation=true;
-					}
-					if(start==0||start==2&&isHorizontal){
+					if(st==0||st==2&&isHorizontal){
 						int id = IU.parsint(val, -1);
 						if (id >= 0 && id < presetBtns.length) {
-							ImageView iv = presetBtns[id];
-							if (iv == null) {
+							View btn = presetBtns[id];
+							if (btn == null) {
+								ImageView iv;
 								int bid = btnIcons[id];
-								if (bid==R.drawable.fuzzy_search || bid==R.drawable.full_search) {
+								if (bid==R.drawable.fuzzy_search || bid==R.drawable.full_search || bid==R.drawable.star_ic_grey) {
 									ActivatableImageView avt = new ActivatableImageView(this_);
 									avt.setImageResource(bid);
 									if (bid==R.drawable.fuzzy_search) {
 										avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.fuzzy_search_pressed), false);
 									}
-									else
+									else if(bid==R.drawable.full_search)
 									{
 										avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.full_search_pressed), false);
+									}
+									else
+									{
+										avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.star_ic_solid_framed), false);
 									}
 									iv = avt;
 								} else {
@@ -241,28 +195,36 @@ public class AppUIProject {
 								iv.setBackgroundResource(rippleBG);
 								iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
 								iv.setId(btnIcons[id]);
-								iv.setOnClickListener(this_);
+								iv.setOnClickListener(onClickListener);
 								if(tint) iv.setColorFilter(a.tintListFilter.sForegroundFilter);
-								if (LongclickableMap.contains(btnIcons[id])){
-									iv.setOnLongClickListener(this_);
+								if (LongclickableMap.contains(btnIcons[id])) {
+									iv.setOnLongClickListener(onLongClickListener);
 								} else {
 									iv.setLongClickable(false);
+								}
+								if (onTouchListener != null) {
+									iv.setOnTouchListener(onTouchListener);
 								}
 								presetBtns[id] = iv;
 								if (modRipple) {
 									a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
 								}
+								bottombar.addView(iv);
 							}
 							else {
-								ViewGroup svp = (ViewGroup) iv.getParent();
-								iv.setBackgroundResource(rippleBG);
-								if (svp != null) svp.removeView(iv);
-								iv.setContentDescription(bottombar_project.titles[i]);
+								ViewGroup svp = (ViewGroup) btn.getParent();
+								btn.setBackgroundResource(rippleBG);
+								if (svp != null) svp.removeView(btn);
+								btn.setContentDescription(bottombar_project.titles[i]);
 								if (modRipple) {
-									a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
+									a.tintListFilter.ModRippleColor(btn.getBackground(), a.tintListFilter.sRippleState);
 								}
+								btn.setOnClickListener(onClickListener);
+								if (onTouchListener != null) {
+									btn.setOnTouchListener(onTouchListener);
+								}
+								bottombar.addView(btn);
 							}
-							bottombar.addView(iv);
 						}
 					}
 				}

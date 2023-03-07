@@ -75,6 +75,7 @@ public class RLContainerSlider extends FrameLayout {
 	}
 	public RLContainerSlider(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		if(isInEditMode()) return;
 		detector = new GestureDetector(getContext(), gl);
 		try {
 			ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 1200));

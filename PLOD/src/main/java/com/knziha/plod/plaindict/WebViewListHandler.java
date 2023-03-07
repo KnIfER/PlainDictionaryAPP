@@ -1,7 +1,7 @@
 package com.knziha.plod.plaindict;
 
-import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.PlainUI.ButtonUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
@@ -55,7 +55,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
-import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.ButtonUIProject;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -1094,9 +1094,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return alloydPanel!=null && alloydPanel.isVisible();
 	}
 	
-	public AppUIProject contentbarProject;
+	public ButtonUIProject contentbarProject;
 	
-	public AppUIProject setUpContentView(int cbar_key, AppUIProject project) {
+	public ButtonUIProject setUpContentView(int cbar_key, ButtonUIProject project) {
 		if(!contentViewSetup) {
 			contentViewSetup = true;
 			MainActivityUIBase a = this.a;
@@ -1132,7 +1132,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				project = a.contentbar_project;
 			}
 			if(project==null) {
-				a.contentbar_project = project = new AppUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
+				a.contentbar_project = project = new ButtonUIProject(a, contentkey, ContentbarBtnIcons, R.array.customize_ctn, appproject, contentUIData.bottombar2, ContentbarBtns);
 				project.type = cbar_key;
 			}
 			project.addBar(contentUIData.bottombar2, ContentbarBtns);

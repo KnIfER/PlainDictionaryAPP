@@ -788,12 +788,12 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			if (init) {
 				v = layout.findViewById(makeInt(8, 44, true));
 				if (v != null) {
-					v.setId(R.id.voice);
+					v.setId(R.drawable.voice_ic);
 					v.setTag(ttsTweaker);
 				}
 			}
 			if (v == null) {
-				v = layout.findViewById(R.id.voice);
+				v = layout.findViewById(R.drawable.voice_ic);
 			}
 			v.setOnClickListener(this);
 			((RadioSwitchButton)v).setChecked(PDICMainAppOptions.sysTTS());
@@ -813,7 +813,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 				button.setPadding((int) (mItemPaddingLeft*density), (int) (mItemPaddingTop*density), 0, (int) (mItemPaddingBottom*density));
 				button.setOnClickListener(this);
 				button.setChecked(!PDICMainAppOptions.sysTTS() && engines.get(i).name.equals(engine));
-				button.setId(R.id.voice);
+				button.setId(R.drawable.voice_ic);
 				button.setTag(ttsTweaker);
 				vp.addView(button, idx+i+1, v.getLayoutParams());
 			}
@@ -958,7 +958,7 @@ public class TTSHub extends PlainAppPanel implements PopupMenuHelper.PopupMenuLi
 			case R.id.spdup: {
 				tiaoJie(v);
 			} break;
-			case R.id.voice: {
+			case R.drawable.voice_ic: {
 				if (ttsTweaker != null) {
 					mTtsChoiceVer = ++ttsChoiceVer;
 					ViewGroup layout = ttsTweaker.settingsLayout;

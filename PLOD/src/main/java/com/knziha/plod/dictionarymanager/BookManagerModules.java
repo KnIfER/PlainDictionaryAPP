@@ -536,7 +536,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			f1.markDataDirty(false);
 			((BookManager)getActivity()).scrollTo(0);
 			try {
-				String plan = a.loadMan.dictPicker.planSlot;
+				String plan = a.loadMan.dictPicker.planSaveSlot;
 				a.opt.putLastPlanName(plan, LastSelectedPlan = name);
 			} catch (Exception e) {
 				CMN.debug(e);

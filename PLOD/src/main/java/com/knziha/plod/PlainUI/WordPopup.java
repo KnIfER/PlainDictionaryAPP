@@ -1,5 +1,6 @@
 package com.knziha.plod.PlainUI;
 
+import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_FYE_SCH;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_LOAD_HISTORY;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV;
@@ -20,7 +21,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
-import android.util.SparseLongArray;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +54,6 @@ import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
-import com.knziha.plod.dictionarymodels.SimpleMorphs;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.SimpleQueryMorphs;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -173,12 +172,14 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
-					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(GlobalOptions.NEGATIVE);
+					//todo
+//					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(GlobalOptions.NEGATIVE);
 				} else /*if(popIvBack.getTag()!=null)*/{ //???
 					popupContentView.getBackground().setColorFilter(null);
 					pottombar.getBackground().setColorFilter(null);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
-					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(null);
+					//todo
+//					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(null);
 				}
 				if(indicator != null) {
 					entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
@@ -239,13 +240,17 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			case R.id.popupBackground: {
 				dismissImmediate();
 			} break;
-			case R.id.voice: {
+			case R.drawable.voice_ic: {
 				a.findWebList(v);
 				a.performReadEntry();
 			} break;
 			case R.id.popNxtE:
-			case R.id.popLstE: {
-				int delta = id==R.id.popNxtE?1:-1;
+			case R.drawable.chevron_top2:
+			case R.id.popLstE:
+			case R.drawable.chevron_bottom2:
+			{
+				boolean nxt = id==R.id.popNxtE || id==R.drawable.chevron_top2;
+				int delta = nxt?1:-1;
 				boolean slided = v.getTag()==v; /** see{@link #getPageListener} */
 				if (slided) v.setTag(null);
 				WebViewListHandler weblist = weblistHandler;
@@ -273,24 +278,28 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						setDisplaying(weblist.getMultiRecordKey());
 					}
 				} else {
-					loadEntry(id==R.id.popNxtE?1:-1, false);
+					loadEntry(nxt?1:-1, false);
 				}
 			} break;
-			case R.id.popNxtDict:
-			case R.id.popLstDict:{
+//			case R.id.popNxtDict:
+//			case R.id.popLstDict:
+			case R.drawable.chevron_bottom22:
+			case R.drawable.chevron_top22:
+			{
 				//SearchNxt(id==R.id.popNxtDict, task, taskVer, taskVersion);
 				String url = dictView(false).getUrl();
+				boolean nxt = id == R.drawable.chevron_bottom22;
 				if (url!=null) {
 					int schemaIdx = url.indexOf(":");
 					if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
 						try {
 							if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
-								startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
+								startTask(nxt ?TASK_POP_NAV_NXT:TASK_POP_NAV);
 								break;
 							}
 							else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
 								weblistHandler.bMergingFrames = 1;
-								weblistHandler.prvnxtFrame(id==R.id.popNxtDict);
+								weblistHandler.prvnxtFrame(nxt);
 								break;
 							}
 						} catch (Exception e) {
@@ -298,20 +307,26 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						}
 					}
 				}
-				startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
+				startTask(nxt ?TASK_POP_NAV_NXT:TASK_POP_NAV);
 			} break;
 			//返回
 			case R.id.popIvBack:{
 				dismissImmediate();
 			} break;
 			//返回
-			case R.id.popIvRecess:{
+			case R.id.popIvRecess:
+			case R.drawable.recess:
+			{
 				nav(true);
 			} break;
-			case R.id.popIvForward:{
+			case R.id.popIvForward:
+			case R.drawable.forward:
+			{
 				nav(false);
 			} break;
-			case R.id.popIvSettings:{
+			case R.id.popIvSettings:
+			case R.drawable.drawer_menu_icon_setting:
+			{
 				weblistHandler.btmV = SearchUI.btmV;
 				a.launchSettings(TapTranslator.id, TapTranslator.requestCode);
 			} break;
@@ -396,7 +411,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 								if (previewPageIdx == 0) {
 									if (position % 2 != 0) {
 										if (position == 3) { // 切换上一词典
-											onClick(a.anyView(R.id.popLstDict));
+											onClick(a.anyView(R.drawable.chevron_top22)); // popLstDict
 										} else if (position == 5) { // 工具…
 											MainActivityUIBase.VerseKit tk = a.getVtk();
 											tk.setInvoker(CCD, dictView(false), null, String.valueOf(entryTitle.getText()));
@@ -468,14 +483,15 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					ViewUtils.ensureTopmost(dictPicker.dialog, a, dictPicker.dialogDismissListener);
 				}
 			} break;
-			case R.id.gTrans:{
+			case R.drawable.ic_g_translate_black_24dp:{
 				a.onMenuItemClick(a.anyMenu(R.id.translate, weblistHandler));
 				weblistHandler.bMergingFrames=1;
 			} break;
 			case R.id.max:{
 				moveView.togMax();
 			} break;
-			case R.id.mode:{
+			case R.id.mode:
+			case R.drawable.ic_btn_multimode:{
 				showSchModeDialog(v, false);
 			} break;
 			case R.id.single_tapsch_opt_1:
@@ -797,6 +813,10 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		previewMidPos = currentPos>=0?currentPos:-currentPos-2;
 	}
 	
+	View[] toolbarBtns = new ImageView[9];
+	ButtonUIProject toolbarProject;
+	ButtonUIProject bottombarProject;
+	
 	public void init() {
 		if (mWebView == null) {
 			WebViewListHandler weblist = this.weblistHandler/*faked*/ = new WebViewListHandler(a, a.contentUIData/*faked*/, SearchUI.TapSch.MAIN);
@@ -804,14 +824,19 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					.inflate(R.layout.float_contentview_basic, a.root, false);
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			toolbar = (ViewGroup) popupContentView.getChildAt(0);
+			toolbarBtns = new View[toolbar.getChildCount()];
+			for (int i = 0; i < toolbarBtns.length; i++) {
+				toolbarBtns[i] = toolbar.getChildAt(i);
+			}
+			popIvBack = (ImageView) toolbar.getChildAt(0);
 			splitView = (LinearSplitView) popupContentView.getChildAt(1);
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, splitView, splitter, -1);
 			if (PDICMainAppOptions.wordPopupRemDifferenSet()) {
-				dictPicker.planSlot = "WordPlanName";
+				dictPicker.planSaveSlot = "WordPlanName";
 			} else {
-				dictPicker.planSlot = null;
+				dictPicker.planSaveSlot = null;
 			}
 			dictPicker.wordPopup = this;
 			dictPicker.loadManager = this.loadManager;
@@ -832,9 +857,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			webview.addJavascriptInterface(popuphandler, "app");
 			webview.setBackgroundColor(a.AppWhite);
 			((AdvancedNestScrollWebView)webview).setNestedScrollingEnabled(true);
-			popIvBack = toolbar.findViewById(R.id.popIvBack);
-			ViewUtils.setOnClickListenersOneDepth(toolbar, this, 999, null);
-			ViewUtils.setOnClickListenersOneDepth(pottombar, this, 999, null);
+			
 			toolbar.setTag(weblist);
 			pottombar.setTag(weblist);
 			popupChecker = pottombar.findViewById(R.id.popChecker);
@@ -877,12 +900,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			a.root.addView(popupGuarder, new FrameLayout.LayoutParams(-1, -1));
 			// 弹窗搜索移动逻辑， 类似于浮动搜索。
 			moveView = new PopupTouchMover(a, entryTitle, popupGuarder, this);
-			for (int i = 0; i < toolbar.getChildCount(); i++) {
-				toolbar.getChildAt(i).setOnTouchListener(moveView);
-			}
-			for (int i = 0; i < pottombar.getChildCount(); i++) {
-				pottombar.getChildAt(i).setOnTouchListener(moveView);
-			}
 			
 			if (false) {
 				weblist.toolsBtn = toolbar.findViewById(R.id.tools);
@@ -916,15 +933,28 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			pageSlider.setWebview(webview, null);
 			
 			weblist.bDataOnly = true;
+			
+			//opt.tmpEdit().remove("UIWP").remove("UIWP1").commit();
+			toolbarProject = new ButtonUIProject(a, "UIWP", ButtonUIProject.PopupToolbarIcons, ButtonUIProject.wp_toolbar, opt.getWordPopupToolbarProject(), toolbar, null);
+			configureBtnProject(toolbarProject);
+			bottombarProject = new ButtonUIProject(a, "UIWP1", ButtonUIProject.PopupBottombarIcons, ButtonUIProject.wp_bottombar, opt.getWordPopupBottombarProject(), pottombar, null);
+			configureBtnProject(bottombarProject);
 		}
+		
 		if (GlobalOptions.isDark) {
 			popupChecker.drawInnerForEmptyState = true;
 			popupChecker.circle_shrinkage = 0;
-		}
-		else {
+		} else {
 			popupChecker.drawInnerForEmptyState = false;
 			popupChecker.circle_shrinkage = 2;
 		}
+	}
+	
+	private void configureBtnProject(ButtonUIProject project) {
+		project.onClickListener = this;
+		project.onLongClickListener = this;
+		project.onTouchListener = moveView;
+		RebuildBottombarIcons(a, project, a.mConfiguration);
 	}
 	
 	boolean isInit;

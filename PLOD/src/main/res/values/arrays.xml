@@ -419,4 +419,49 @@
 		<item>页内查找</item>
 	</string-array>
 
+
+	<string-array name="customize_popup_ctn">
+		<item>关闭翻译窗口</item>
+		<item>词条标题</item>
+		<item>切换词典</item>
+		<item>发音</item>
+		<item>收藏</item>
+		<item>翻阅模式</item>
+		<item>翻译</item>
+		<item>最大化</item>
+		<item>上一词典</item>
+		<item>下一词典</item>
+		<item></item>
+		<item>切换搜索模式</item>
+		<item>上一词条</item>
+		<item>下一词条</item>
+		<item>设置</item>
+		<item>页面后退</item>
+		<item>页面前进</item>
+		<item></item>
+		<item>定制工具栏</item>
+	</string-array>
+
+	<string-array name="customize_popup_bottom">
+		<item>固定翻译窗口</item>
+		<item>词条标题</item>
+		<item>切换词典</item>
+		<item>切换搜索模式</item>
+		<item>上一词条</item>
+		<item>下一词条</item>
+		<item>设置</item>
+		<item>页面后退</item>
+		<item>页面前进</item>
+		<item></item>
+		<item>关闭翻译窗口</item>
+		<item>发音</item>
+		<item>收藏</item>
+		<item>翻阅模式</item>
+		<item>翻译</item>
+		<item>最大化</item>
+		<item>上一词典</item>
+		<item>下一词典</item>
+		<item></item>
+		<item>定制工具栏</item>
+	</string-array>
 </resources>

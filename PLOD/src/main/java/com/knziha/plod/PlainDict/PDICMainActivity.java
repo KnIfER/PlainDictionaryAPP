@@ -1,6 +1,7 @@
 package com.knziha.plod.plaindict;
 
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.PlainUI.ButtonUIData.BottombarBtnIcons;
+import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_PLAIN;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
@@ -93,7 +94,7 @@ import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
-import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.ButtonUIProject;
 import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
@@ -202,35 +203,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public ActivityMainBinding UIData;
 	KeyboardHeightPopupListener keyboardHeightPopupListener;
 	
-	/** 定制底栏一：<br/>
-	 * 1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
-	 * 退离程序7 打开侧栏8 随机词条9 上一词典10 下一词典11 调整亮度12 定制底栏13 定制颜色14 管理词典15 进入设置16<br/>*/
-	public final static int[] BottombarBtnIcons = new int[]{
-			R.drawable.book_list,
-			R.drawable.book_bundle,
-			R.drawable.fuzzy_search,
-			R.drawable.full_search,
-			R.drawable.favoriteg,
-			R.drawable.customize_bars,
-			R.drawable.ic_menu_24dp,
-			R.drawable.historyg,
-			R.drawable.ic_exit_app,
-			R.drawable.ic_menu_drawer_24dp,
-			R.drawable.ic_shuffle_black_24dp,
-			R.drawable.ic_prv_dict_chevron,
-			R.drawable.ic_nxt_dict_chevron,
-			R.drawable.ic_brightness_low_black_24dp,
-			R.drawable.ic_swich_landscape_orientation,
-			R.drawable.ic_options_toolbox_small,
-			R.drawable.book_bundle2,
-			R.drawable.ic_settings_black_24dp,
-			R.drawable.ic_keyboard_show_24,
-			R.drawable.ic_edit_booknotes_btn,
-			R.drawable.ic_baseline_mindmap,
-	};
 	public final ImageView[] BottombarBtns = new ImageView[BottombarBtnIcons.length];
 	
-	public AppUIProject bottombar_project;
+	public ButtonUIProject bottombar_project;
 	private static int LauncherInstanceCount;
 	private EnchanterReceiver locationReceiver;
 	private VirtualDisplay mDisplay;
@@ -1367,7 +1342,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(appproject==null) {
 			appproject = "0|1|2|3|4|5|6";
 		}
-		bottombar_project = new AppUIProject(this, "btmprj", BottombarBtnIcons, R.array.customize_btm, appproject, bottombar, BottombarBtns);
+		bottombar_project = new ButtonUIProject(this, "btmprj", BottombarBtnIcons, R.array.customize_btm, appproject, bottombar, BottombarBtns);
 		RebuildBottombarIcons(this, bottombar_project, mConfiguration);
 		
 		viewPager.setAdapter(pagerAdapter);

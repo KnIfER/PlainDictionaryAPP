@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.model.GlideCacheModule;
-import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.ButtonUIProject;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -930,6 +930,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return getString("btmprj",null);
 	}
 	
+	public String getWordPopupToolbarProject() {
+		return getString("UIWP", "0|1|3|4|6|7|9|18");
+	}
+	
+	public String getWordPopupBottombarProject() {
+		return getString("UIWP1", "0|2|3|4|5|6|7|8|19");
+	}
+	
 	public String getAppContentBarProject(int idx) {
 		return getAppContentBarProject("ctnp#"+idx);
 	}
@@ -976,7 +984,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		putString("ctnp#"+idx , getLinkContentBarProj()?("ref"+linkTo):getAppContentBarProject(linkTo));
 	}
 	
-	public void putAppProject(AppUIProject projectContext) {
+	public void putAppProject(ButtonUIProject projectContext) {
 		putString(projectContext.key, projectContext.currentValue);
 	}
 	
