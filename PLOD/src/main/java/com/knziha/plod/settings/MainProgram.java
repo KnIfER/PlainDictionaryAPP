@@ -269,7 +269,7 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 		super.onActivityCreated(savedInstanceState);
 		PDICMainAppOptions opt =((SettingsActivity)getActivity()).opt;
 		FilePickerPreference fpp = findPreference("fntlb");
-		fpp.setDefaultValue(opt.getFontLibPath());
+		fpp.setDefaultValue(opt.getFontPath());
 		fpp.properties.opt_dir=new File(opt.pathToDatabases().append("favorite_dirs/").toString());
 	}
 }

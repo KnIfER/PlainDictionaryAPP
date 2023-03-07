@@ -531,6 +531,16 @@ public abstract class MdictServer extends NanoHTTPD {
 				if(sid>0 && sid<uri.length()-2) {
 					String decoded = null;
 //					CMN.debug("同名CSS!", URLDecoder.decode(uri), presenter.getDictionaryName());
+					if(presenter.isHasExtStyle() && uri.endsWith(".css")) {
+						if (uri.contains("%")) {
+							decoded = URLDecoder.decode(uri);
+							sid = decoded.lastIndexOf(".");
+						}
+//						CMN.debug("isHasExtStyle::", decoded, presenter.getDictionaryName());
+						if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
+							return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(decoded));
+						}
+					}
 					if(PDICMainAppOptions.getAllowPlugRes()) {
 						if(PDICMainAppOptions.getAllowPlugResSame()) {
 							String p = presenter.getPath();
@@ -543,18 +553,11 @@ public abstract class MdictServer extends NanoHTTPD {
 								}
 							}
 							if(p!=null) {
-								if(presenter.isHasExtStyle() && uri.endsWith(".css") && PDICMainAppOptions.getAllowPlugCss())
-								{
-									decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
-									if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
-										return newChunkedResponse(Status.OK, "text/css", presenter.getDebuggingResource(decoded));
-									}
-								}
 								return null;
 							}
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-						CMN.debug("文件", uri, mid);
+//						CMN.debug("文件", uri, mid);
 						if(mid>=0 && !(mid>=5&&mid<=18)) {
 							if(decoded==null)
 								decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
@@ -850,6 +853,16 @@ public abstract class MdictServer extends NanoHTTPD {
 				MdPageBuilder.append(a.getCommonAsset("SUBPAGE.js"));  // todo check redu
 			}
 			MdPageBuilder.append("</script>");
+			if (a.fontFaces!=null) {
+				MdPageBuilder.append("<style class=\"_PDict\">");
+				MdPageBuilder.append(a.fontFaces);
+				MdPageBuilder.append("</style>");
+			}
+			if (a.plainCSS!=null) {
+				MdPageBuilder.append("<style class=\"_PDict\">");
+				MdPageBuilder.append(a.plainCSS);
+				MdPageBuilder.append("</style>");
+			}
 			if (presenter.padLeft() || presenter.padRight()) {
 				MdPageBuilder.append("<style>body{");
 				presenter.ApplyPadding(MdPageBuilder);

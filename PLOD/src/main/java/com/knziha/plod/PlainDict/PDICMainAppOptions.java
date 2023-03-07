@@ -919,10 +919,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		putString(key, lastMdPlanName=name);
 	}
 
-	public String getFontLibPath() {
+	public String getFontPath() {
 		return getString("fntlb",pathToMainFolder().append("Fonts").toString());
 	}
-	public void setFontLibPath(String name) {
+	public void setFontPath(String name) {
 		putString("fntlb", name);
 	}
 

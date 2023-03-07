@@ -449,6 +449,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BaseHandler hdl;
 	public int  CurrentViewPage = 1;
 	public String fontFaces;
+	public String plainCSS;
 	
 	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> AllMenusStamp;
@@ -2092,7 +2093,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		AgentApplication app = ((AgentApplication) getApplication());
 		CMN.rt();
-		File fontlibs = new File(opt.getFontLibPath());
+		File cssFile = new File(opt.pathToMainFolder().append("plaindict.css").toString());
+		if (cssFile.exists()) {
+			plainCSS = BU.fileToString(cssFile);
+		}
+		File fontlibs = new File(opt.getFontPath());
 		if(fontlibs.isDirectory()) {
 			HashMap<String, String> fontNames = app.fontNames;
 			fontlibs.listFiles(new FilenameFilter() {
@@ -2108,7 +2113,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								String name = BU.parseFontName(bin);
 								if (name != null)
 									fontNames.put(fName, name);
-								//CMN.Log("fontName:", name, System.currentTimeMillis());
+								CMN.debug("fontName:", name, CMN.now());
 							}
 						} catch (Exception e) {
 							CMN.debug(e);
@@ -8943,9 +8948,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				else if(url.startsWith("font:")){
 					if (fontlibs!=null) {
+						// todo check safety 文件夹安全性
 						url=url.substring(7);
 						try {
-							return new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, url)));
+							WebResourceResponse resp = new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, URLDecoder.decode(url))));
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+								resp.setResponseHeaders(CrossFireHeaders);
+							}
+							return resp;
 						} catch (Exception ignored) {  }
 					}
 					return null;

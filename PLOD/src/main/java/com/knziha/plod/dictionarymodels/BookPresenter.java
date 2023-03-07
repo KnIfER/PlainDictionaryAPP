@@ -391,6 +391,7 @@ function debug(e){console.log(e)};
 */ @Metaline(compile = false)
 	private final static String testVal="";
 	
+	/** set by {@link PDICMainAppOptions#getAllowPlugRes} */
 	public boolean isHasExtStyle() {
 		return hasExtStyle;
 	}
@@ -756,9 +757,9 @@ function debug(e){console.log(e)};
 				if(PDICMainAppOptions.getAllowPlugCss()) {
 					externalFile = new File(p, buffer.append(".css").toString());
 					if(externalFile.exists()) {
-						//todo 插入 同名 css 文件？
 						hasExtStyle = true;
 					}
+					//CMN.debug("插入 同名 css 文件::", hasExtStyle);
 				}
 				buffer.setLength(bL);
 				externalFile = new File(p, buffer.append(".png").toString());
@@ -2017,7 +2018,6 @@ function debug(e){console.log(e)};
 	
 	public void plugCssWithSameFileName(StringBuilder sb) {
 		if(isHasExtStyle()) {
-			CMN.debug("外挂同名 css");
 			String fullFileName = bookImpl.getDictionaryName();
 			int end = fullFileName.length();
 			if (unwrapSuffix) {
@@ -2026,7 +2026,7 @@ function debug(e){console.log(e)};
 			}
 			sb.append("<link rel='stylesheet' type='text/css' href='")
 					.append(fullFileName, 0, end)
-					.append(".css?f=auto'/>");
+					.append(".css?f=auto'/>"); //
 		}
 	}
 	
@@ -2279,6 +2279,10 @@ function debug(e){console.log(e)};
 		if (a.fontFaces!=null) {
 			if(!styleOpened) htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
 			htmlBuilder.append(a.fontFaces);
+		}
+		if (a.plainCSS!=null) {
+			if(!styleOpened) htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
+			htmlBuilder.append(a.plainCSS);
 		}
 		if(mIsolateImages) {
 			if(!styleOpened){ htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;}
