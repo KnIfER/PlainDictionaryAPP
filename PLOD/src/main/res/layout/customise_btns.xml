@@ -51,6 +51,26 @@
 				android:background="@drawable/float_search"
 				android:clickable="true"
 				/>
+			<ImageView
+				android:id="@+id/customise_wp_top"
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_35_"
+				android:clickable="true"
+				android:background="@drawable/float_blank"
+				android:src="@drawable/ic_tap_sch"
+				android:padding="5dp"
+				android:tint="#3333eb"
+				/>
+			<ImageView
+				android:id="@+id/customise_wp_bot"
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_35_"
+				android:src="@drawable/ic_tap_sch"
+				android:clickable="true"
+				android:background="@drawable/float_blank"
+				android:padding="5dp"
+				android:tint="#333388"
+				/>
 		</com.knziha.ankislicer.customviews.ShelfLinearLayout>
 	</ScrollView>
 

@@ -93,10 +93,10 @@ public class ButtonUIData {
 			R.drawable.back_ic                        // 0
 			, R.drawable.text_underline               // 1
 			, R.drawable.text_underline               // 2
-			, R.drawable.voice_ic                     // 3
-			, R.drawable.star_ic_grey                 // 4
-			, R.drawable.ic_peruse_pan                // 5
-			, R.drawable.ic_g_translate_black_24dp    // 6
+			, R.drawable.star_ic_grey                 // 3
+			, R.drawable.ic_peruse_pan_svg            // 4
+			, R.drawable.ic_g_translate_black_24dp    // 5
+			, R.drawable.voice_ic                     // 6
 			, R.drawable.ic_fullscreen_black_24dp     // 7
 			, R.drawable.chevron_top22                // 8
 			, R.drawable.chevron_bottom22             // 9
@@ -104,17 +104,14 @@ public class ButtonUIData {
 			, R.drawable.ic_btn_multimode             // 11
 			, R.drawable.chevron_bottom2              // 12
 			, R.drawable.chevron_top2                 // 13
-			, R.drawable.drawer_menu_icon_setting     // 14
-			, R.drawable.recess                       // 15
-			, R.drawable.forward                      // 16
+			, R.drawable.ic_outline_settings_24     // 14
+			, R.drawable.chevron_recess                       // 15
+			, R.drawable.chevron_forward                      // 16
 			, 0                                       // 17
 			, R.drawable.customize_bars               // 18
 	};
 	
 	public final static int wp_bottombar = R.array.customize_popup_bottom;
-	/**  定制底栏一：<br/>
-	 * 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12 <br/>
-	 * 退离程序13 打开侧栏14 随机词条15 上一词典16 下一词典17  自动浏览18 全文朗读19 进入收藏20 进入历史21 调整亮度22 夜间模式23 切换横屏24 定制颜色25 定制底栏26 切换沉浸 切换全屏 多维分享 空格键 方向键⬅ 方向键➡ 方向键⬆ 方向键⬇ W键 A键 S键 D键 C键 Z键 CTRL键 SHIFT键 鼠标左击 鼠标右击 <br/>*/
 	public final static int[] PopupBottombarIcons = new int[]{
 			R.drawable.clippin                         //0
 			, R.drawable.text_underline                //1
@@ -123,14 +120,14 @@ public class ButtonUIData {
 			, R.drawable.chevron_bottom2               //4
 			, R.drawable.chevron_top2                  //5
 			, R.drawable.drawer_menu_icon_setting      //6
-			, R.drawable.recess                        //7
-			, R.drawable.forward                       //8
+			, R.drawable.chevron_recess                        //7
+			, R.drawable.chevron_forward                       //8
 			, 0                                        //9
 			, R.drawable.back_ic                       //10
-			, R.drawable.voice_ic                      //11
-			, R.drawable.star_ic_grey                  //12
-			, R.drawable.ic_peruse_pan                 //13
-			, R.drawable.ic_g_translate_black_24dp     //14
+			, R.drawable.star_ic_grey                  //11
+			, R.drawable.ic_peruse_pan_svg             //12
+			, R.drawable.ic_g_translate_black_24dp     //13
+			, R.drawable.voice_ic                      //14
 			, R.drawable.ic_fullscreen_black_24dp      //15
 			, R.drawable.chevron_top22                 //16
 			, R.drawable.chevron_bottom22              //17

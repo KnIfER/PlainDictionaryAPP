@@ -1216,7 +1216,7 @@ public class Drawer extends Fragment implements
 			} break;
 			//选择发音库目录
 			case R.string.dingzhi_gongju:  {
-				a.showBottombarsTweaker();
+				a.showBottombarsTweaker(-2);
 			} break;
 			case R.string.open_accessibility:  {
 				Intent settingsIntent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);

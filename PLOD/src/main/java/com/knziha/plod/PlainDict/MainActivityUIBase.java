@@ -5883,7 +5883,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				moveTaskToBack(false);
 			} break;
 			case R.drawable.customize_bars: {
-				showBottombarsTweaker();
+				showBottombarsTweaker(-2);
 			} break;
 			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
 				shareUrlOrText(true);
@@ -6417,15 +6417,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dictPicker.toggle();
 	}
 	
-	public void toggleStar(String key, ImageView futton, boolean toast, WebViewListHandler webviewholder) {
+	public void toggleStar(String key, View ivStar, boolean toast, WebViewListHandler webviewholder) {
 		key = key.trim();
 		if(GetIsFavoriteTerm(key)) {
 			removeFavoriteTerm(key);
-			futton.setActivated(false);
+			ivStar.setActivated(false);
 			if(toast)show(R.string.removed);
 		} else {
 			if (favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist) >= 0) {
-				futton.setActivated(true);
+				ivStar.setActivated(true);
 				if (toast) show(R.string.added);
 			} else {
 				if(toast)showT("收藏失败");
@@ -6789,7 +6789,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.tapSch1: {
 				if(isLongClicked){ // 显示设置
 					wordPopup.init();
-					wordPopup.onClick(wordPopup.popupContentView.findViewById(R.id.mode));
+					wordPopup.onClick(anyView(R.id.mode));
 					closeMenu=ret=true;
 				} else {
 					if (!wlh.tapSch) {
@@ -10079,22 +10079,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ColorStateList ForegroundTintList;
 	public int[] ForegroundTintListArr;
 
-	void showBottombarsTweaker() {
-		int pos = defbarcustpos;
-		if(PeruseViewAttached()){
-			pos = 2;
-		} else if(thisActType==ActType.PlainDict && contentview.getParent()!=null){
-			pos = 1;
+	public void showBottombarsTweaker(int pos) {
+		if (pos<0) {
+			pos = defbarcustpos;
+			if(PeruseViewAttached()){
+				pos = 2;
+			} else if(thisActType==ActType.PlainDict && contentview.getParent()!=null){
+				pos = 1;
+			}
 		}
 		int jd = WeakReferenceHelper.app_bar_customize_dlg;
 		BottombarTweakerAdapter ada = (BottombarTweakerAdapter) getReferencedObject(jd);
-		if (ada==null) {
+		if (ada==null || ada.isDark!=GlobalOptions.isDark) {
 			ada = new BottombarTweakerAdapter(this, pos);
 			putReferencedObject(jd, ada);
 		} else {
-			ada.onClick(pos);
+			ada.editToolbar(pos);
 		}
-		ada.show();
+		ada.showDialog();
 		float pad = 4 * getResources().getDimension(R.dimen._50_);
 		int rH = isFloating() ? dm.heightPixels : root.getHeight();
 		ada.main_list.mMaxHeight = (rH>=2*pad)?(int) (rH - root.getPaddingTop() - pad):0;

@@ -2,6 +2,7 @@ package com.knziha.plod.PlainUI;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.ColorFilter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -26,7 +27,9 @@ public class ButtonUIProject extends ButtonUIData{
 	public int version;
 	final int[] icons;
 	final String[] titles;
-
+	public ViewGroup.LayoutParams btnLayout;
+	public ColorFilter mColorFilter;
+	
 	ArrayList<AppIconData> iconData;
 	public View.OnClickListener onClickListener;
 	public View.OnLongClickListener onLongClickListener;
@@ -120,21 +123,21 @@ public class ButtonUIProject extends ButtonUIData{
 	 * 定制底栏：二 见 {@link #ContentbarBtnIcons}<br/>
 	 * 定制底栏：三 见 {@link WordPopup}<br/>
 	 */
-	public static void RebuildBottombarIcons(MainActivityUIBase a, ButtonUIProject bottombar_project, Configuration config) {
+	public static void RebuildBottombarIcons(MainActivityUIBase a, ButtonUIProject project, Configuration config) {
 		MainActivityUIBase this_ = a;
-		View.OnClickListener onClickListener = bottombar_project.onClickListener;
-		View.OnLongClickListener onLongClickListener = bottombar_project.onLongClickListener;
-		View.OnTouchListener onTouchListener = bottombar_project.onTouchListener;
+		View.OnClickListener onClickListener = project.onClickListener;
+		View.OnLongClickListener onLongClickListener = project.onLongClickListener;
+		View.OnTouchListener onTouchListener = project.onTouchListener;
 		if (onClickListener == null) {
 			onClickListener = a;
 			onLongClickListener = a;
 		}
 		ArrayList<ViewGroup> bars;
-		if(bottombar_project==null || (bars = bottombar_project.barStack).size()==0) {
+		if(project==null || (bars = project.barStack).size()==0) {
 			return;
 		}
-		String appproject = bottombar_project.currentValue;
-		boolean tint = bottombar_project.getTint();
+		String appproject = project.currentValue;
+		boolean tint = project.getTint();
 		if(appproject==null) appproject="0|1|2|3|4|5|6";
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
@@ -148,12 +151,13 @@ public class ButtonUIProject extends ButtonUIData{
 			bottombar.removeAllViews();
 			boolean isHorizontal = config.orientation==Configuration.ORIENTATION_LANDSCAPE;
 			String[] arr = appproject.split("\\|");
-			View[] presetBtns = bottombar_project.btnsStack.get(j);
-			int[] btnIcons = bottombar_project.icons;
+			View[] presetBtns = project.btnsStack.get(j);
+			int[] btnIcons = project.icons;
 			CMN.rt();
 	//		((RippleDrawable)a.getDrawable(rippleBG)).setColor(ColorStateList.valueOf(Color.WHITE));
 			int rippleBG = R.drawable.abc_action_bar_item_background_material;
 			boolean modRipple = PDICMainAppOptions.modRipple();
+			final ViewGroup.LayoutParams lp = project.btnLayout!=null?project.btnLayout:this_.contentUIData.browserWidget10.getLayoutParams();
 			for (int i = 0; i < arr.length; i++) {
 				String val = arr[i];
 				int st = 0;
@@ -162,7 +166,7 @@ public class ButtonUIProject extends ButtonUIData{
 					while (st<ed && val.charAt(st)=='\\') ++st;
 					if(st>0){
 						val = val.substring(st, ed);
-						if(st==2) bottombar_project.bNeedCheckOrientation=true;
+						if(st==2) project.bNeedCheckOrientation=true;
 					}
 					if(st==0||st==2&&isHorizontal){
 						int id = IU.parsint(val, -1);
@@ -190,10 +194,10 @@ public class ButtonUIProject extends ButtonUIData{
 									iv = new ImageView(this_);
 									iv.setImageResource(bid);
 								}
-								iv.setContentDescription(bottombar_project.titles[i]);
+								iv.setContentDescription(project.titles[i]);
 								//iv.setBackgroundResource(R.drawable.surrtrip1);
 								iv.setBackgroundResource(rippleBG);
-								iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
+								iv.setLayoutParams(lp);
 								iv.setId(btnIcons[id]);
 								iv.setOnClickListener(onClickListener);
 								if(tint) iv.setColorFilter(a.tintListFilter.sForegroundFilter);
@@ -209,13 +213,16 @@ public class ButtonUIProject extends ButtonUIData{
 								if (modRipple) {
 									a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
 								}
+								if (project.mColorFilter!=null) {
+									iv.setColorFilter(project.mColorFilter);
+								}
 								bottombar.addView(iv);
 							}
 							else {
 								ViewGroup svp = (ViewGroup) btn.getParent();
 								btn.setBackgroundResource(rippleBG);
 								if (svp != null) svp.removeView(btn);
-								btn.setContentDescription(bottombar_project.titles[i]);
+								btn.setContentDescription(project.titles[i]);
 								if (modRipple) {
 									a.tintListFilter.ModRippleColor(btn.getBackground(), a.tintListFilter.sRippleState);
 								}

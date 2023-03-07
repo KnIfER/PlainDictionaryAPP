@@ -18,13 +18,14 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 	public final static int id=R.xml.pref_tapsch;
 	public final static int requestCode=id&0xFFFF;
 	private Preference tapsch_web;
+	private int tapSchMode;
 	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = id;
 		super.onCreate(savedInstanceState);
-		
+		tapSchMode = PDICMainAppOptions.tapSchMode();
 		
 		ArrayList<Preference> preferences = new ArrayList<>(64);
 		PreferenceScreen screen = mPreferenceManager.mPreferenceScreen;
@@ -39,6 +40,9 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 					switch (key) {
 						case "immersive":
 							init_switch_preference(this, "immersive", PDICMainAppOptions.getImmersiveClickSearch(), null, null, p);
+							break;
+						case "multi":
+							init_switch_preference(this, "multi", tapSchMode>=1, null, null, p);
 							break;
 						case "top_resize":
 							init_switch_preference(this, "top_resize", PDICMainAppOptions.getImmersiveClickSearch(), null, null, p);
@@ -151,6 +155,10 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
+			case "multi":
+				if(tapSchMode==0) tapSchMode = 2;
+				PDICMainAppOptions.tapSchMode((Boolean) newValue?tapSchMode:0);
+			break;
 			case "immersive":
 				PDICMainAppOptions.setImmersiveClickSearch((Boolean) newValue);
 			break;

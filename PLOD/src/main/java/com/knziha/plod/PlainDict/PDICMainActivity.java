@@ -3094,7 +3094,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				// nimp
 			} return false;
 			case R.id.drawer_layout:{
-				showBottombarsTweaker();
+				showBottombarsTweaker(-2);
 			}  return true;
 		}
 		return false;

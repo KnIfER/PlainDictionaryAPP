@@ -21,6 +21,11 @@
 <!--			android:title="多重点译"-->
 <!--			/>-->
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="multi"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="联合搜索"/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="skip_nom"
 			android:persistent="false"
 			android:defaultValue="false"
@@ -41,12 +46,12 @@
 			android:key="pin_upstream"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="固定轮询上游"/>
+			android:title="固定上游词典"/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="switch_nav"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="上下切换词典时更改询上游"
+			android:title="上下切换词典时更改上游词典"
 			/>
 	</PreferenceCategory>
 

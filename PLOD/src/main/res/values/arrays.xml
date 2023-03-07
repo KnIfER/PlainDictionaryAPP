@@ -27,6 +27,8 @@
 		<item>解释页面</item>
 		<item>翻阅模式</item>
 		<item>浮动搜索</item>
+		<item>点击翻译 - 顶栏</item>
+		<item>点击翻译 - 底栏</item>
 	</string-array>
 
 
@@ -324,9 +326,9 @@
 	</string-array>
 
 	<string-array name="click_search_mode_info">
-		<item>在当前分组中轮番查询</item>
-		<item>在当前指定的点译词库中轮番查询</item>
-		<item>只查询当前选中的词典</item>
+		<item>分组所有词典</item>
+		<item>分组中指定的点译词典</item>
+		<item>只查询当前词典</item>
 	</string-array>
 
 	<string-array name="conext">

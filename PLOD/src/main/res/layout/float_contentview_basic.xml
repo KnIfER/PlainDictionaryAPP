@@ -70,17 +70,6 @@
 			android:layout_marginEnd="1px"
 			android:visibility="gone"
 			/-->
-		<ImageView
-			android:id="@drawable/voice_ic"
-			android:layout_width="45dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/voice_ic"
-			android:background="?attr/actionBarItemBackground"
-			android:tint="#8f8f8f"
-			android:padding="-2dp"
-			android:layout_marginEnd="1px"
-			android:contentDescription="发音"
-			/>
 		<com.knziha.plod.widgets.ActivatableImageView
 			android:id="@+id/popIvStar"
 			android:layout_width="45dp"
@@ -110,6 +99,17 @@
 			android:background="?attr/actionBarItemBackground"
 			android:tint="#8f8f8f"
 			android:layout_marginEnd="1px"
+			/>
+		<ImageView
+			android:id="@drawable/voice_ic"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/voice_ic"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#8f8f8f"
+			android:padding="-2dp"
+			android:layout_marginEnd="1px"
+			android:contentDescription="发音"
 			/>
 		<ImageView
 			android:id="@+id/max"

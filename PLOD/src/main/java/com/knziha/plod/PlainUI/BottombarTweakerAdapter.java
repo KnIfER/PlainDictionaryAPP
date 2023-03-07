@@ -10,6 +10,7 @@ import android.text.SpannableStringBuilder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,13 +39,14 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	private final AlertDialog dialog;
 	private final MainActivityUIBase a;
 	private final PDICMainAppOptions opt;
-	private final String[] bottombar_types;
+	private final String[] toolbarNames;
 	public final DragSortListView main_list;
 	private final ShelfLinearLayout sideBar;
 	
 	public ButtonUIProject projectContext;
 	public boolean isDirty;
 	public Drawable switch_landscape;
+	public boolean isDark;
 	PorterDuffColorFilter darkMask = new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 	private View simView;
 	
@@ -52,7 +54,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		opt = _a.opt;
 		a = _a;
 		switch_landscape = _a.getResources().getDrawable(R.drawable.ic_screen_rotation_black_24dp);
-		bottombar_types = a.getResources().getStringArray(R.array.bottombar_types);
+		toolbarNames = a.getResources().getStringArray(R.array.bottombar_types);
 		
 		dialog = new AlertDialog.Builder(_a).setView(R.layout.customise_btns)
 				.setTitle("定制底栏")
@@ -71,10 +73,14 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		//ada.projectContext = bottombar_project;
 		main_list.setAdapter(this);
 		main_list.setDragListener(this);
-		setLongOnClickListener(sideBar, dialog.getButton(DialogInterface.BUTTON_POSITIVE), dialog.getButton(DialogInterface.BUTTON_NEGATIVE));
+		setBtnsListener(sideBar
+				, dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+				, dialog.getButton(DialogInterface.BUTTON_NEGATIVE));
 		
 		sideBar.getChildAt(desiredTab).performClick();
 		sideBar.postDelayed(() -> sideBar.selectToolIndex(desiredTab), 350);
+		
+		isDark = GlobalOptions.isDark;
 	}
 
 	public String MakeProject(){
@@ -114,12 +120,18 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		int id = item.number;
 		Resources res = parent.getResources();
 		vh.tv.setText(projectContext.titles[id]);
+		vh.tv.setTextColor(a.AppBlack);
 		int ID = projectContext.icons[id];
-		vh.iconBtn.setDrawable(0, res.getDrawable(ID));
+		if (ID == 0) {
+			vh.iconBtn.setImageDrawable(null);
+		} else {
+			vh.iconBtn.setImageDrawable(res.getDrawable(ID));
+			vh.iconBtn.setColorFilter(isDark?0xffffffff:0xff3185F7, PorterDuff.Mode.SRC_IN);
+		}
 		vh.togBtn.setChecked(item.tmpIsFlag,false);
 		ViewUtils.setVisibleV3(vh.option, hasOpt(ID));
 		vh.position = position;
-		vh.itemView.getBackground().setAlpha(GlobalOptions.isDark?15:255);
+		vh.itemView.getBackground().setAlpha(isDark?15:255);
 		if (没有实现的_工具栏_点击事件不完全列表.contains(ID)) {
 			vh.itemView.setAlpha(0.2f);
 		} else {
@@ -128,6 +140,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		return vh.itemView;
 	}
 
+	// long-click
 	@Override
 	public boolean onLongClick(View v) {
 		int id = v.getId();
@@ -143,8 +156,8 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						bottombar_copy_from=2;
 					}
 					if(bottombar_copy_from!=currentType){
-						String copy_from = bottombar_types[bottombar_copy_from+1];
-						String copy_to = bottombar_types[currentType+1];
+						String copy_from = toolbarNames[bottombar_copy_from+1];
+						String copy_to = toolbarNames[currentType+1];
 						int final_Bottombar_copy_from = bottombar_copy_from;
 						
 						String[] DictOpt = a.getResources().getStringArray(R.array.appbar_conf);
@@ -212,9 +225,9 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 					checkCurrentProject(v);
 					break;
 				}
-				int bottombar_from=0;
+				int toolbarIdx=0;
 				ButtonUIProject projectContext=null;
-				if(id == R.id.customise_main_bar){
+				if(id == R.id.customise_main_bar) {
 					if(a instanceof PDICMainActivity){
 						PDICMainActivity aa = (PDICMainActivity) a;
 						projectContext = aa.bottombar_project;
@@ -229,20 +242,36 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						//tofo 跳转至主界面？
 					}
 				}
+				else if(id == R.id.customise_wp_top){
+					a.wordPopup.init();
+					projectContext = a.wordPopup.toolbarProject;
+					if(projectContext.iconData==null){
+						projectContext.instantiate();
+					}
+					toolbarIdx=4;
+				}
+				else if(id == R.id.customise_wp_bot){
+					a.wordPopup.init();
+					projectContext = a.wordPopup.bottombarProject;
+					if(projectContext.iconData==null){
+						projectContext.instantiate();
+					}
+					toolbarIdx=5;
+				}
 				else {
 					if(id == R.id.customise_peruse_bar){
-						bottombar_from=1;
+						toolbarIdx=1;
 					} else if(id == R.id.customise_float_bar){
-						bottombar_from=2;
+						toolbarIdx=2;
 					}
 					boolean isProjHost = false;
-					projectContext = bottombar_from==1?a.peruseview_project:
-							(isProjHost = bottombar_from==0?a instanceof PDICMainActivity:a instanceof FloatSearchActivity)?
+					projectContext = toolbarIdx==1?a.peruseview_project:
+							(isProjHost = toolbarIdx==0?a instanceof PDICMainActivity:a instanceof FloatSearchActivity)?
 									a.contentbar_project:null;
 					
 					if(projectContext==null) {
-						projectContext = new ButtonUIProject(a, bottombar_from, a.opt, ContentbarBtnIcons, R.array.customize_ctn, null, null);
-						if(bottombar_from==1){
+						projectContext = new ButtonUIProject(a, toolbarIdx, a.opt, ContentbarBtnIcons, R.array.customize_ctn, null, null);
+						if(toolbarIdx==1){
 							/* fyms */
 							a.peruseview_project = projectContext;
 							if(a.peruseView != null/* && projectContext.btns==null*/){
@@ -257,12 +286,12 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 					if(projectContext.iconData==null){
 						projectContext.instantiate();
 					}
-					bottombar_from++;
+					toolbarIdx++;
 				}
 				if(projectContext!=null){
 					this.projectContext=projectContext;
 					((ShelfLinearLayout) v.getParent()).selectToolView(v);
-					dialog.setTitle("定制底栏 - "+bottombar_types[bottombar_from]);
+					dialog.setTitle("定制底栏 - "+ toolbarNames[toolbarIdx]);
 					notifyDataSetChanged();
 				}
 			} break;
@@ -275,18 +304,21 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				if(isDirty && projectContext!=null) {
 					DialogInterface.OnClickListener ocl = (dialog, which) -> {
 						if (which == DialogInterface.BUTTON_POSITIVE) {
-							checkCurrentProjectInternal(null);
-						} else if (which == DialogInterface.BUTTON_NEGATIVE) {
 							clearCurrentProject();
+						} else if (which == DialogInterface.BUTTON_NEUTRAL) {
+							checkCurrentProjectInternal(null);
+						} else {
+							dialog.dismiss();
+							return;
 						}
 						dialog.dismiss();
 						v.performClick();
 					};
 					AlertDialog dd = new AlertDialog.Builder(a)
 							.setTitle("是否应用已更改的配置？")
-							.setPositiveButton(R.string.confirm, ocl)
-							.setNegativeButton(R.string.no, ocl)
-							.setNeutralButton(R.string.cancel, ocl)
+							.setPositiveButton("忽略更改x", ocl)
+							.setNegativeButton("取消", ocl)
+							.setNeutralButton("应用√", ocl)
 							.create();
 					ViewUtils.ensureWindowType(dd, a, null);
 					dd.show();
@@ -350,18 +382,21 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		if(v!=null && projectContext!=null && !val.equals(projectContext.currentValue)){
 			DialogInterface.OnClickListener ocl = (dialog, which) -> {
 				if (which == DialogInterface.BUTTON_POSITIVE) {
-					checkCurrentProjectInternal(val);
-				} else if (which == DialogInterface.BUTTON_NEGATIVE) {
 					clearCurrentProject();
+				} else if (which == DialogInterface.BUTTON_NEUTRAL) {
+					checkCurrentProjectInternal(val);
+				} else {
+					dialog.dismiss();
+					return;
 				}
 				dialog.dismiss();
 				v.performClick();
 			};
 			AlertDialog dd = new AlertDialog.Builder(a)
 				.setTitle("是否应用已更改的配置？")
-				.setPositiveButton(R.string.confirm, ocl)
-				.setNegativeButton(R.string.no, ocl)
-				.setNeutralButton(R.string.cancel, ocl)
+				.setPositiveButton("忽略更改x", ocl)
+				.setNegativeButton("取消", ocl)
+				.setNeutralButton("应用√", ocl)
 				.create();
 			ViewUtils.ensureWindowType(dd, a, null);
 			dd.show();
@@ -424,18 +459,18 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	@Override
 	public void remove(int which) {  }
 	
-	public void setLongOnClickListener(View...views) {
+	public void setBtnsListener(View...views) {
 		for (int i = 0; i < views.length; i++) {
 			views[i].setOnClickListener(this);
 			views[i].setOnLongClickListener(this);
 		}
 	}
 	
-	public void onClick(int pos) {
+	public void editToolbar(int pos) {
 		onClick(sideBar.getChildAt(pos));
 	}
 	
-	public void show() {
+	public void showDialog() {
 		ViewUtils.ensureWindowType(dialog, a, null);
 		dialog.show();
 		dialog.setCanceledOnTouchOutside(true);
@@ -446,12 +481,8 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 			CircleCheckBox b;
 			itemView=(ViewGroup)a.getLayoutInflater().inflate(R.layout.circle_checkers_btn_config, v, false);
 			itemView.setTag(this);
-			iconBtn = b = (CircleCheckBox) itemView.getChildAt(1);
-			b.drawIconForEmptyState = true;
-			b.drawInnerForEmptyState=false;
-			b.noTint=true;
-			b.setProgress(1);
-			b.setOnClickListener(ta);
+			iconBtn =  (ImageView) itemView.getChildAt(1);
+			//b.setOnClickListener(ta);
 			togBtn = b = (CircleCheckBox) itemView.getChildAt(0);
 			b.drawIconForEmptyState=false;
 			b.circle_shrinkage=0.75f*GlobalOptions.density;
@@ -466,7 +497,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		private final ViewGroup itemView;
 		public int position;
 		/** 点击图标 */
-		CircleCheckBox iconBtn;
+		ImageView iconBtn;
 		/** 打勾 */
 		CircleCheckBox togBtn;
 		View option;

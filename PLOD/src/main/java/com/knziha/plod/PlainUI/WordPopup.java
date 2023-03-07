@@ -95,9 +95,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	int popupFrame;
 	BookPresenter popupForceId;
 	boolean bFromWebTap;
-	public TextView entryTitle;
 	protected PopupTouchMover moveView;
-	public FlowTextView indicator;
 	public WebViewmy mWebView;
 	public BookPresenter.AppHandler popuphandler;
 	public ImageView popIvBack;
@@ -124,7 +122,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private boolean isPreviewDirty;
 	private final Runnable harvestRn = this::SearchDone;
 	private final Runnable setAby = () -> setTranslator(sching, currentPos);
-	private final Runnable setAby1 = () -> entryTitle.setText(displaying);
+	private final Runnable setAby1 = () -> entryTitle_setText(displaying);
+	
 	private resultRecorderCombined rec;
 	/** 0=单本搜索; 1=联合搜索，合并页面; 2=联合搜索，屏风模式。 */
 	private int schMode;
@@ -172,18 +171,16 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
-					//todo
-//					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(GlobalOptions.NEGATIVE);
+					((ImageView)bottombarProject.btnsStack.get(0)[6]).setColorFilter(GlobalOptions.NEGATIVE);
 				} else /*if(popIvBack.getTag()!=null)*/{ //???
 					popupContentView.getBackground().setColorFilter(null);
 					pottombar.getBackground().setColorFilter(null);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
-					//todo
-//					((ImageView)pottombar.findViewById(R.id.popIvSettings)).setColorFilter(null);
+					((ImageView)bottombarProject.btnsStack.get(0)[6]).setColorFilter(null);
 				}
-				if(indicator != null) {
-					entryTitle.setTextColor(GlobalOptions.isDark?a.AppBlack:Color.GRAY);
-					indicator.setTextColor(GlobalOptions.isDark?a.AppBlack:0xff2b43c1);
+				if (toolbarProject != null) {
+					entryTitle_setTextColor(GlobalOptions.isDark ? a.AppBlack : Color.GRAY);
+					indicator_setTextColor(GlobalOptions.isDark ? a.AppBlack : 0xff2b43c1);
 				}
 				MainColorStamp = a.MainAppBackground;
 				int filteredColor = GlobalOptions.isDark ? ColorUtils.blendARGB(a.MainPageBackground, Color.BLACK, a.ColorMultiplier_Web) : GlobalPageBackground;
@@ -231,6 +228,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 		int id = v.getId();
 		switch (id) {
+			case R.drawable.customize_bars: {
+				a.showBottombarsTweaker(v.getParent()==pottombar?5:4);
+			} break;
 			case R.id.cover: {
 				if(v==weblistHandler.pageSlider.page){
 					a.getVtk().setInvoker(CCD, dictView(false), null, null);
@@ -310,17 +310,18 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				startTask(nxt ?TASK_POP_NAV_NXT:TASK_POP_NAV);
 			} break;
 			//返回
-			case R.id.popIvBack:{
+			case R.id.popIvBack:
+			case R.drawable.back_ic: {
 				dismissImmediate();
 			} break;
 			//返回
 			case R.id.popIvRecess:
-			case R.drawable.recess:
+			case R.drawable.chevron_recess:
 			{
 				nav(true);
 			} break;
 			case R.id.popIvForward:
-			case R.drawable.forward:
+			case R.drawable.chevron_forward:
 			{
 				nav(false);
 			} break;
@@ -338,12 +339,14 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				dismissImmediate();
 				show();
 			} break;
-			case R.id.popIvStar:{
+			case R.id.popIvStar:
+			case R.drawable.star_ic_grey: {
 				a.collectFavoriteView = popupContentView;
-				a.toggleStar(displaying, (ImageView) v, false, weblistHandler);
+				a.toggleStar(displaying, weblistHandler.browserWidget8, false, weblistHandler);
 				a.collectFavoriteView = null;
 			} break;
 			case R.id.popupText1:{ // showEntryContextDlg
+				View finalV = v = toolbarProject.btnsStack.get(0)[1];
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(v.getTag());
 				if(dd==null) {
 					RecyclerView rv = new RecyclerView(a);
@@ -377,7 +380,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 									if (flip != 0) {
 										int np = previewPageIdx + flip;
 										previewPageIdx = np;
-										refillPreviewEntries((AlertDialog) ViewUtils.getWeakRefObj(v.getTag()), false);
+										refillPreviewEntries((AlertDialog) ViewUtils.getWeakRefObj(finalV.getTag()), false);
 										flip = 0;
 									}
 								}
@@ -396,7 +399,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					ada.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 						@Override
 						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-							AlertDialog dialog = (AlertDialog)ViewUtils.getWeakRefObj(v.getTag());
+							AlertDialog dialog = (AlertDialog)ViewUtils.getWeakRefObj(finalV.getTag());
 							if(dialog!=null)
 								dialog.dismiss();
 							if (position==0) { // 收藏词条
@@ -414,7 +417,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 											onClick(a.anyView(R.drawable.chevron_top22)); // popLstDict
 										} else if (position == 5) { // 工具…
 											MainActivityUIBase.VerseKit tk = a.getVtk();
-											tk.setInvoker(CCD, dictView(false), null, String.valueOf(entryTitle.getText()));
+											tk.setInvoker(CCD, dictView(false), null, String.valueOf(entryTitle_getText()));
 											tk.onClick(a.anyView(0));
 										} else { // 编辑搜索词
 											a.showT("未实现");
@@ -487,12 +490,13 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				a.onMenuItemClick(a.anyMenu(R.id.translate, weblistHandler));
 				weblistHandler.bMergingFrames=1;
 			} break;
-			case R.id.max:{
+			case R.id.max:
+			case R.drawable.ic_fullscreen_black_24dp: {
 				moveView.togMax();
 			} break;
 			case R.id.mode:
 			case R.drawable.ic_btn_multimode:{
-				showSchModeDialog(v, false);
+				showSchModeDialog(bottombarProject.btnsStack.get(0)[3], false);
 			} break;
 			case R.id.single_tapsch_opt_1:
 			{
@@ -701,6 +705,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	private String previewEntryAt(int pos) {
 		if (rec == null) {
+			if(CCD == null)
+				return "";
 			CMN.debug("CCD.bookImpl::", CCD, CCD.bookImpl);
 			if(pos<0||pos>=CCD.bookImpl.getNumberEntries())
 				return "";
@@ -769,19 +775,20 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		try {
 			if (res.size()>0) {
 				displaying=res.getResAt(a, pos).toString();
-				entryTitle.setText(displaying);
-				indicator.setText(a.getBookNameByIdNoCreation(res.getOneDictAt(pos)));
+				entryTitle_setText(displaying);
+				indicator_setText(a.getBookNameByIdNoCreation(res.getOneDictAt(pos)));
 				texts[0] = 0;
 			} else {
 				displaying=res.schKey;
-				entryTitle.setText(displaying);
-				indicator.setText(null);
+				entryTitle_setText(displaying);
+				indicator_setText(null);
 				//texts[0] = 0;
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
 	}
+	
 	
 	public void setTranslator(@NonNull BookPresenter ccd, int pos) {
 		if (ccd != null) { // todo
@@ -792,9 +799,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				if(pos<0) pos=-1-pos;
 				displaying=ccd.getRowTextAt(pos);
 				if(displaying==null) displaying = popupKey;
-				entryTitle.setText(displaying);
+				entryTitle_setText(displaying);
 				//popupWebView.SelfIdx = CCD_ID = record.value[0];
-				indicator.setText(ccd.getDictionaryName());
+				indicator_setText(ccd.getDictionaryName());
 				popuphandler.setBook(ccd);
 				dictPicker.dataChanged();
 				dictPicker.scrollThis();
@@ -804,7 +811,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				if(pos<0) pos=-1-pos;
 				displaying=ccd.getRowTextAt(pos);
 				if(displaying==null) displaying = popupKey;
-				entryTitle.setText(displaying);
+				entryTitle_setText(displaying);
 			}
 		}
 	}
@@ -813,7 +820,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		previewMidPos = currentPos>=0?currentPos:-currentPos-2;
 	}
 	
-	View[] toolbarBtns = new ImageView[9];
 	ButtonUIProject toolbarProject;
 	ButtonUIProject bottombarProject;
 	
@@ -824,10 +830,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					.inflate(R.layout.float_contentview_basic, a.root, false);
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			toolbar = (ViewGroup) popupContentView.getChildAt(0);
-			toolbarBtns = new View[toolbar.getChildCount()];
-			for (int i = 0; i < toolbarBtns.length; i++) {
-				toolbarBtns[i] = toolbar.getChildAt(i);
-			}
 			popIvBack = (ImageView) toolbar.getChildAt(0);
 			splitView = (LinearSplitView) popupContentView.getChildAt(1);
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
@@ -858,31 +860,33 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			webview.setBackgroundColor(a.AppWhite);
 			((AdvancedNestScrollWebView)webview).setNestedScrollingEnabled(true);
 			
+			toolbarProject = new ButtonUIProject(a, "UIWP", ButtonUIProject.PopupToolbarIcons, ButtonUIProject.wp_toolbar, opt.getWordPopupToolbarProject(), toolbar, null);
+			bottombarProject = new ButtonUIProject(a, "UIWP1", ButtonUIProject.PopupBottombarIcons, ButtonUIProject.wp_bottombar, opt.getWordPopupBottombarProject(), pottombar, null);
+			
 			toolbar.setTag(weblist);
 			pottombar.setTag(weblist);
 			popupChecker = pottombar.findViewById(R.id.popChecker);
 			popupChecker.setChecked(PDICMainAppOptions.getPinTapTranslator());
-			weblist.etSearch = entryTitle = toolbar.findViewById(R.id.popupText1);
+			weblist.etSearch = toolbar.findViewById(R.id.popupText1);
 			if (Build.VERSION.SDK_INT < 27) {
-				entryTitle.setPadding(0, 0, 0, 0);
+				((TextView)toolbarProject.btnsStack.get(0)[1]).setPadding(0, 0, 0, 0);
+				((TextView)bottombarProject.btnsStack.get(0)[1]).setPadding(0, 0, 0, 0);
 			}
 			webview.pBc = new PhotoBrowsingContext();
 			//webview.pBc.setDoubleTapZoomPage(true);
 			//webview.pBc.setDoubleTapAlignment(4);
-			indicator = pottombar.findViewById(R.id.popupText2);
 			modeBtn = pottombar.findViewById(R.id.mode);
 			modeBtn.setColorFilter(0xff666666);
 			modeBtn.setOnLongClickListener(this);
 			schMode = opt.tapSchMode();
 			if(schMode==0) modeBtn.setImageResource(R.drawable.ic_btn_siglemode);
-			webview.toolbar_title = new FlowTextView(indicator.getContext());
+			webview.toolbar_title = new FlowTextView(toolbar.getContext());
 			webview.rl = popupContentView;
 			popupContentView.setTag(webview);
 			if(GlobalOptions.isDark) {
-				entryTitle.setTextColor(Color.WHITE);
-				indicator.setTextColor(Color.WHITE);
+				entryTitle_setTextColor(Color.WHITE);
+				indicator_setTextColor(Color.WHITE);
 			}
-			
 			webview.setWebChromeClient(a.myWebCClient);
 			webview.setWebViewClient(a.myWebClient);
 			webview.setOnScrollChangedListener(a.getWebScrollChanged());
@@ -899,7 +903,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			//popupGuarder.setBackgroundColor(Color.BLUE);
 			a.root.addView(popupGuarder, new FrameLayout.LayoutParams(-1, -1));
 			// 弹窗搜索移动逻辑， 类似于浮动搜索。
-			moveView = new PopupTouchMover(a, entryTitle, popupGuarder, this);
+			moveView = new PopupTouchMover(a, entryTitle(), popupGuarder, this);
 			
 			if (false) {
 				weblist.toolsBtn = toolbar.findViewById(R.id.tools);
@@ -908,7 +912,21 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			weblist.toolsBtn.setTag(webview);
 			weblist.toolsBtn.setOnClickListener(weblist);
 			weblist.toolsBtn.setOnLongClickListener(weblist);
-			weblist.browserWidget8 = toolbar.findViewById(R.id.popIvStar);
+			//weblist.browserWidget8 = toolbar.findViewById(R.id.popIvStar);
+			weblist.browserWidget8 = new View(toolbar.getContext()) {
+				public boolean isActivated() { return toolbarProject.btnsStack.get(0)[4].isActivated(); }
+				public void setActivated(boolean activated) {
+					toolbarProject.btnsStack.get(0)[4].setActivated(activated);
+					View view = bottombarProject.btnsStack.get(0)[12];
+					if(view!=null) view.setActivated(activated);
+				}
+//				public boolean isEnabled() { return toolbarProject.btnsStack.get(0)[4].isEnabled(); }
+//				public void setEnabled(boolean enabled) {
+//					toolbarProject.btnsStack.get(0)[4].setEnabled(enabled);
+//					View view = bottombarProject.btnsStack.get(0)[12];
+//					if(view!=null) view.setEnabled(enabled);
+//				}
+			};
 			weblist.browserWidget10 = pottombar.findViewById(R.id.popLstE);
 			weblist.browserWidget11 = pottombar.findViewById(R.id.popNxtE);
 			
@@ -935,9 +953,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			weblist.bDataOnly = true;
 			
 			//opt.tmpEdit().remove("UIWP").remove("UIWP1").commit();
-			toolbarProject = new ButtonUIProject(a, "UIWP", ButtonUIProject.PopupToolbarIcons, ButtonUIProject.wp_toolbar, opt.getWordPopupToolbarProject(), toolbar, null);
 			configureBtnProject(toolbarProject);
-			bottombarProject = new ButtonUIProject(a, "UIWP1", ButtonUIProject.PopupBottombarIcons, ButtonUIProject.wp_bottombar, opt.getWordPopupBottombarProject(), pottombar, null);
 			configureBtnProject(bottombarProject);
 		}
 		
@@ -954,6 +970,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		project.onClickListener = this;
 		project.onLongClickListener = this;
 		project.onTouchListener = moveView;
+		View[] btns = project.btnsStack.get(0);
+		project.btnLayout = btns[5].getLayoutParams();
+		project.mColorFilter = new PorterDuffColorFilter(0xff8f8f8f, PorterDuff.Mode.SRC_IN);
 		RebuildBottombarIcons(a, project, a.mConfiguration);
 	}
 	
@@ -1015,7 +1034,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		} else {
 			AttachViews();
 			show();
-			entryTitle.setText(popupKey);
+			entryTitle_setText(popupKey);
 		}
 		if (popupKey!=null && sch) {
 			//SearchOne(task, taskVer, taskVersion);
@@ -1210,7 +1229,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public void SearchNxt(boolean nxt, AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
 		resetPreviewIdx();
 		int idx=-1, cc=0;
-		String key = false?ViewUtils.getTextInView(entryTitle).trim():popupKey;
+		String key = false?ViewUtils.getTextInView(entryTitle()).trim():popupKey;
 		CMN.debug("SearchNxt::", key);
 		if(!TextUtils.isEmpty(key)) {
 			String keykey;
@@ -1623,7 +1642,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				wlh.setViewMode(null, 0, renderingWV);
 				if (isWebx) { //todo 合并逻辑
 					wlh.bMergingFrames = 1;
-					indicator.setText(loadManager.md_getName(CCD_ID, -1));
+					indicator_setText(loadManager.md_getName(CCD_ID, -1));
 					popuphandler.setBook(CCD);
 					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, renderingWV, currentPos);
 					wlh.pageSlider.setWebview(renderingWV, null);
@@ -1855,7 +1874,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public void valid(String text) {
 		if (!TextUtils.equals(text, displaying)) {
 			displaying = text;
-			indicator.setText(null);
+			indicator_setText(null);
 			texts[0] = 0;
 			a.hdl.post(setAby1);
 		}
@@ -1943,4 +1962,33 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 		}
 	}
+	
+	private void entryTitle_setText(String displaying) {
+		((TextView)toolbarProject.btnsStack.get(0)[1]).setText(displaying);
+		((TextView)bottombarProject.btnsStack.get(0)[1]).setText(displaying);
+	}
+	
+	private CharSequence entryTitle_getText() {
+		return ((TextView)toolbarProject.btnsStack.get(0)[1]).getText();
+	}
+	
+	private void indicator_setTextColor(int i) {
+		((FlowTextView)toolbarProject.btnsStack.get(0)[2]).setTextColor(i);
+		((FlowTextView)bottombarProject.btnsStack.get(0)[2]).setTextColor(i);
+	}
+	
+	private void entryTitle_setTextColor(int i) {
+		((TextView)toolbarProject.btnsStack.get(0)[1]).setTextColor(i);
+		((TextView)bottombarProject.btnsStack.get(0)[1]).setTextColor(i);
+	}
+	
+	private void indicator_setText(String text) {
+		((FlowTextView)toolbarProject.btnsStack.get(0)[2]).setText(text);
+		((FlowTextView)bottombarProject.btnsStack.get(0)[2]).setText(text);
+	}
+	
+	public View entryTitle() {
+		return toolbarProject.btnsStack.get(0)[1];
+	}
+	
 }

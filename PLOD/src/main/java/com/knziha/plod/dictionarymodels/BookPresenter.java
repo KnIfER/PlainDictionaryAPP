@@ -1829,7 +1829,8 @@ function debug(e){console.log(e)};
 			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
 			toolbar_title.setStarLevel(StarLevel);
 			if(StarLevel>0) {
-				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.wordPopup.indicator ?a.getRatingDrawable():null);
+				toolbar_title.setStarDrawables(a.getActiveStarDrawable()
+						, toolbar_title==a.wordPopup.entryTitle() ?a.getRatingDrawable():null);
 			}
 		}
 //		int defTH = 0;
