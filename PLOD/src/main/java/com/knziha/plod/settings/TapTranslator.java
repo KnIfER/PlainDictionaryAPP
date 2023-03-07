@@ -113,6 +113,7 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 							init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarTapSchFolding(), null, null, p);
 							break;
 						case "bar":
+						case "bar1":
 						case "tz1":
 							p.setOnPreferenceClickListener(this);
 							break;
@@ -141,6 +142,11 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 	public boolean onPreferenceClick(Preference preference) {
 		if (preference.getKey().equals("bar")) {
 			getActivity().setResult(requestCode);
+			getActivity().finish();
+			return true;
+		}
+		if (preference.getKey().equals("bar1")) {
+			getActivity().setResult(requestCode+1);
 			getActivity().finish();
 			return true;
 		}

@@ -86,6 +86,11 @@
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
+		<Preference
+			app:key="bar1"
+			app:persistent="false"
+			app:title="&lt; 定制工具栏 &gt;"
+			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="immersive"
 			android:persistent="false"
@@ -97,7 +102,6 @@
 			app:persistent="false"
 			app:title="| 滚动条样式 |"
 			/>
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="top_resize"
 			android:persistent="false"

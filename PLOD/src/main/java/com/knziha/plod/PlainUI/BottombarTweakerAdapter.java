@@ -41,7 +41,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	private final PDICMainAppOptions opt;
 	private final String[] toolbarNames;
 	public final DragSortListView main_list;
-	private final ShelfLinearLayout sideBar;
+	public final ShelfLinearLayout sideBar;
 	
 	public ButtonUIProject projectContext;
 	public boolean isDirty;

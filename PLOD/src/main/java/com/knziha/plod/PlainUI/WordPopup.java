@@ -286,9 +286,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			case R.drawable.chevron_bottom22:
 			case R.drawable.chevron_top22:
 			{
-				//SearchNxt(id==R.id.popNxtDict, task, taskVer, taskVersion);
-				String url = dictView(false).getUrl();
 				boolean nxt = id == R.drawable.chevron_bottom22;
+				//SearchNxt(nxt, task, taskVer, taskVersion);
+				String url = dictView(false).getUrl();
 				if (url!=null) {
 					int schemaIdx = url.indexOf(":");
 					if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
@@ -1232,11 +1232,13 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		String key = false?ViewUtils.getTextInView(entryTitle()).trim():popupKey;
 		CMN.debug("SearchNxt::", key);
 		if(!TextUtils.isEmpty(key)) {
-			String keykey;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 			int SearchMode = PDICMainAppOptions.singleTapSchMode();
 			boolean hasDedicatedSeachGroup = SearchMode==1&&a.bHasDedicatedSeachGroup;
-			boolean reject_morph = false;
+			if(use_morph ^ forms.contains(queryMorphs)) {
+				if(use_morph) forms.add(queryMorphs);
+				else forms.remove(queryMorphs);
+			}
 			//轮询开始
 			int CCD_ID = this.CCD_ID;
 			BookPresenter CCD = this.CCD;
@@ -1266,16 +1268,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						}
 						continue;
 					} else  {
-						idx=CCD.bookImpl.lookUp(key, true);
-						if(idx<0){
-							if(!reject_morph&&use_morph){
-								keykey=a.ReRouteKey(key, true);
-								if(keykey!=null)
-									idx=CCD.bookImpl.lookUp(keykey, true);
-								else
-									reject_morph=true;
-							}
-						}
+						idx=CCD.bookImpl.lookUp(key, true, forms);
 					}
 				}
 				

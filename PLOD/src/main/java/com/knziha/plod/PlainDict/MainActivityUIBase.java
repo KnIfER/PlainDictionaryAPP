@@ -9528,7 +9528,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			case TapTranslator.requestCode:{
-				wordPopup.set(resultCode==requestCode);
+				if (resultCode == TapTranslator.requestCode + 1) {
+					wordPopup.init();
+					showBottombarsTweaker(-100);
+				} else {
+					wordPopup.set(resultCode==requestCode);
+				}
 			} break;
 			case Multiview.requestCode:{
 				resetMerge(-1, false);
@@ -10080,16 +10085,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int[] ForegroundTintListArr;
 
 	public void showBottombarsTweaker(int pos) {
+		CMN.debug("showBottombarsTweaker", pos);
+		final int jd = WeakReferenceHelper.app_bar_customize_dlg;
+		BottombarTweakerAdapter ada = (BottombarTweakerAdapter) getReferencedObject(jd);
 		if (pos<0) {
-			pos = defbarcustpos;
-			if(PeruseViewAttached()){
-				pos = 2;
-			} else if(thisActType==ActType.PlainDict && contentview.getParent()!=null){
-				pos = 1;
+			if (pos == -100) {
+				pos = 4;
+				if (ada != null) {
+					int idx = ada.sideBar.indexOfChild(ada.sideBar.selectedTool);
+					if(idx==4 || idx==5) pos=idx;
+				}
+			} else {
+				pos = defbarcustpos;
+				if(PeruseViewAttached()){
+					pos = 2;
+				} else if(thisActType==ActType.PlainDict && contentview.getParent()!=null){
+					pos = 1;
+				}
 			}
 		}
-		int jd = WeakReferenceHelper.app_bar_customize_dlg;
-		BottombarTweakerAdapter ada = (BottombarTweakerAdapter) getReferencedObject(jd);
 		if (ada==null || ada.isDark!=GlobalOptions.isDark) {
 			ada = new BottombarTweakerAdapter(this, pos);
 			putReferencedObject(jd, ada);

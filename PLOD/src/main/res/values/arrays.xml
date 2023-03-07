@@ -421,15 +421,14 @@
 		<item>页内查找</item>
 	</string-array>
 
-
 	<string-array name="customize_popup_ctn">
 		<item>关闭翻译窗口</item>
 		<item>词条标题</item>
 		<item>切换词典</item>
-		<item>发音</item>
 		<item>收藏</item>
 		<item>翻阅模式</item>
 		<item>翻译</item>
+		<item>发音</item>
 		<item>最大化</item>
 		<item>上一词典</item>
 		<item>下一词典</item>
@@ -456,10 +455,10 @@
 		<item>页面前进</item>
 		<item></item>
 		<item>关闭翻译窗口</item>
-		<item>发音</item>
 		<item>收藏</item>
 		<item>翻阅模式</item>
 		<item>翻译</item>
+		<item>发音</item>
 		<item>最大化</item>
 		<item>上一词典</item>
 		<item>下一词典</item>

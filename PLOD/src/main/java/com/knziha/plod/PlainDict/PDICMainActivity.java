@@ -3375,7 +3375,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent duco) {
 		super.onActivityResult(requestCode, resultCode, duco);
-		//CMN.Log("onActivityResult", requestCode, resultCode, duco);
+		//CMN.debug("onActivityResult", requestCode, resultCode, duco);
 		switch (requestCode) {
 //			case VersionUtils.UpgradeCode:{
 //
