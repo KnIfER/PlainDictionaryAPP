@@ -860,6 +860,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			webview.setBackgroundColor(a.AppWhite);
 			((AdvancedNestScrollWebView)webview).setNestedScrollingEnabled(true);
 			
+			//opt.tmpEdit().remove("UIWP").remove("UIWP1").commit();
 			toolbarProject = new ButtonUIProject(a, "UIWP", ButtonUIProject.PopupToolbarIcons, ButtonUIProject.wp_toolbar, opt.getWordPopupToolbarProject(), toolbar, null);
 			bottombarProject = new ButtonUIProject(a, "UIWP1", ButtonUIProject.PopupBottombarIcons, ButtonUIProject.wp_bottombar, opt.getWordPopupBottombarProject(), pottombar, null);
 			
@@ -952,7 +953,6 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			
 			weblist.bDataOnly = true;
 			
-			//opt.tmpEdit().remove("UIWP").remove("UIWP1").commit();
 			configureBtnProject(toolbarProject);
 			configureBtnProject(bottombarProject);
 		}

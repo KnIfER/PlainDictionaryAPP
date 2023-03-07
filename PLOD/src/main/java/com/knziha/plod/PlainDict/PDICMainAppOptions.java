@@ -931,7 +931,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public String getWordPopupToolbarProject() {
-		return getString("UIWP", "0|1|\\2|3|\\4|5|6|7|9");
+		return getString("UIWP", "0|1|\\2|3|\\4|5|6|7|\\8|9");
 	}
 	
 	public String getWordPopupBottombarProject() {

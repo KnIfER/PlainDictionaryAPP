@@ -57,7 +57,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		toolbarNames = a.getResources().getStringArray(R.array.bottombar_types);
 		
 		dialog = new AlertDialog.Builder(_a).setView(R.layout.customise_btns)
-				.setTitle("定制底栏")
+				.setTitle("定制工具")
 				.setIcon(R.drawable.settings)
 				.setPositiveButton(R.string.confirm, null)
 				.setNegativeButton(R.string.cancel, null)
@@ -291,7 +291,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				if(projectContext!=null){
 					this.projectContext=projectContext;
 					((ShelfLinearLayout) v.getParent()).selectToolView(v);
-					dialog.setTitle("定制底栏 - "+ toolbarNames[toolbarIdx]);
+					dialog.setTitle("定制工具 - "+ toolbarNames[toolbarIdx]);
 					notifyDataSetChanged();
 				}
 			} break;
@@ -482,7 +482,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 			itemView=(ViewGroup)a.getLayoutInflater().inflate(R.layout.circle_checkers_btn_config, v, false);
 			itemView.setTag(this);
 			iconBtn =  (ImageView) itemView.getChildAt(1);
-			//b.setOnClickListener(ta);
+			iconBtn.setOnClickListener(ta);
 			togBtn = b = (CircleCheckBox) itemView.getChildAt(0);
 			b.drawIconForEmptyState=false;
 			b.circle_shrinkage=0.75f*GlobalOptions.density;

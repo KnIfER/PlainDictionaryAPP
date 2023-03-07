@@ -3910,8 +3910,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				// throw new IllegalStateException();
 				succRn.run();
 			}
-			if (!"无限词典".equals(downloadName) && !"平典搜索".equals(downloadName)) {
-				CMN.debug("invalid file name::", downloadName);
+			if (!"无限词典".startsWith(downloadName) && !"平典搜索".startsWith(downloadName)) {
+				CMN.debug("invalid file name::"+downloadName+"!!!");
 				throw new IllegalArgumentException();
 			}
 			if (target.exists() && !lock.exists()) {
