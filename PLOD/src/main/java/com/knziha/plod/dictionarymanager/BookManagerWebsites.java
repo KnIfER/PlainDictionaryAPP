@@ -74,8 +74,10 @@ public class BookManagerWebsites extends BookManagerFolderAbs {
 		data.insert(new mFile("新闻资讯/百度新闻", new WebAssetDesc("/ASSET2/百度新闻.web", "", "")));
 		
 		
-		data.insert(new mFile("其他", webp));
-		data.insert(new mFile("其他/应用社区", new WebAssetDesc("/ASSET2/应用社区.web", "", "")));
+		data.insert(new mFile("其他内置词典", webp));
+		data.insert(new mFile("其他内置词典/应用社区", new WebAssetDesc("/ASSET2/应用社区.web", "", "")));
+		data.insert(new mFile("其他内置词典/李白全集", new WebAssetDesc("/ASSET/李白全集.mdx", "", "")));
+		//data.insert(new mAssetFile("/ASSET/李白全集.mdx").init(a.opt));
 		
 		File rec = a.fRecord;
 		try {

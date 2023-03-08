@@ -4,7 +4,7 @@
 	,"style": ""
 	,"keyPattern": "*"
 	,"js": "
-		window._WORDCON=['-.mine-tabar', '-.container'];
+		window._WORDCON=['-.mine-tabar', '-.container', '-.textpanel-source-textarea'];
 	"
 	,"message":""
 	,"searchJs": "var succ = 0;

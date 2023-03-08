@@ -350,10 +350,10 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			mPopup  = new PopupMenuHelper(getActivity(), null, null);
 			mPopup.initLayout(new int[]{
 					R.string.rename
-					, R.string.load
+					, R.string.loadot
 					, R.string.qiehan_sel
 					, R.string.duplicate
-					, R.string.delete
+					, R.string.deletex
 			}, new PopupMenuHelper.PopupMenuListener() {
 				@Override
 				public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
@@ -376,7 +376,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 							dataSetChangedAt(position);
 						} break;
 						/* 加载分组 */
-						case R.string.load: {
+						case R.string.loadot: {
 							showLoadModuleDlg(false, position);
 						} break;
 						/* 重命名分组 */
@@ -424,7 +424,8 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 							});
 						} break;
 						/* 删除 */
-						case R.string.delete: {
+						case R.string.delete:
+						case R.string.deletex: {
 							AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
 									.setTitle(isOnSelected ? getResources().getString(R.string.warnDeleteMultiple, selector.size())
 											: getResources().getString(R.string.warnDelete, name)

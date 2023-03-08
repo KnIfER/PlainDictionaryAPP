@@ -5,6 +5,33 @@
 	android:title="设置"
 	context="com.knziha.plod.settings.MainProgram"
 	>
+<!--	<PreferenceCategory android:key="cat_prog" android:title="输入框 / 菜单栏"  >-->
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="auto_sel"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="true"-->
+<!--			android:title="输入框自动全选"-->
+<!--			/>-->
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="_clear"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="true"-->
+<!--			android:title="显示“清空输入框”按钮"-->
+<!--			/>-->
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="_sch"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="true"-->
+<!--			android:title="显示“搜索”按钮"-->
+<!--			/>-->
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="_fanyi"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="true"-->
+<!--			android:title="显示“翻译”按钮"-->
+<!--			/>-->
+<!--	</PreferenceCategory>-->
+
 	<PreferenceCategory android:key="cat_prog" android:title="内容页"  >
 		<com.knziha.filepicker.settings.IntPreference
 			android:defaultValue="100"

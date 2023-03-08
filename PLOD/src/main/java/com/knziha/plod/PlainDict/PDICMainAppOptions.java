@@ -1881,10 +1881,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=52) public static boolean pageSchSplitKeys(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=52) public static void pageSchSplitKeys(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
-	// yyy
-//	@Metaline(flagPos=53) public static boolean getRebuildToast(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=53) public static void setRebuildToast(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
-	
 	@Metaline(flagPos=53, shift=1) public static boolean swipeTopShowKeyboard() { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=53, shift=1) public static void swipeTopShowKeyboard(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
@@ -2053,8 +2049,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=18) public static boolean getSwichClickSearchDictOnNav(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=18) public static void setSwichClickSearchDictOnNav(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
-	@Metaline(flagPos=19, shift=1) public static boolean showPrvBtn() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=19, shift=1) public static void showPrvBtn(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=19) public static boolean showPrvBtn() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=19) public static void showPrvBtn(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	
 	public static boolean getAdvSearchUseWildcard() {
 		return (ThirdFlag & 0x100000l) != 0x100000l;
@@ -2598,13 +2594,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	//xxx
-//	public static boolean getTitlebarUseGlobalUIColor() {
-//		return (FourthFlag & 0x2000000000l) != 0x2000000000l;
-//	}
-//	public static boolean setTitlebarUseGlobalUIColor(boolean val) {
-//		updateQFAt(0x2000000000l,!val);
-//		return val;
-//	}
+	@Metaline(flagPos=37, shift=1) public static boolean checkVersionBefore_8_3() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=37, shift=1) public static void checkVersionBefore_8_3(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=37, shift=1) public static void checkVersionBefore_none(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	
+	
 	
 	public static boolean getTitlebarUseGradient() {
 		return (FourthFlag & 0x4000000000l) != 0x4000000000l;
@@ -2774,8 +2768,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=26) public static boolean getNotificationEnabled() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=26) public static void setNotificationEnabled(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=27, shift=1) public static boolean showDictName(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=27, shift=1) public static void showDictName(boolean val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=27) public static boolean showDictName(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=27) public static void showDictName(boolean val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 
 	@Metaline(flagPos=28, shift=1) public static boolean getShowNotificationExitBtn() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=28, shift=1) public static void setShowNotificationExitBtn(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2810,8 +2804,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=40, shift=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=40, shift=1) public static void setLv2JointOneAsSingle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=41, shift=1) public static boolean showEntrySeekbar(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=41, shift=1) public static void showEntrySeekbar(boolean val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=41) public static boolean showEntrySeekbar(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=41) public static void showEntrySeekbar(boolean val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	
 	/** webx是否不使用合并的单页面URL。see {@code #getUseMergedFrame()} */
 	@Metaline(flagPos=42, shift=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -3008,8 +3002,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=49, shift=1) public static boolean toolsBoost(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=49, shift=1) public static void toolsBoost(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
-	@Metaline(flagPos=50, shift=1) public static boolean showNxtBtn() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=50, shift=1) public static void showNxtBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50) public static boolean showNxtBtn() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50) public static void showNxtBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
 
 	@Metaline(flagPos=51) public static boolean showZoomBtn() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=51) public static void showZoomBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
@@ -3446,6 +3440,23 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=31) public static boolean TintTitlbarForegroundDark() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=31) public static void TintTitlbarForegroundDark(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=32) public static boolean switchBtmShown(){ NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=32) public boolean switchBtmTog() { NinthFlag=NinthFlag; throw new IllegalArgumentException(); }
+	
+	@Metaline(flagPos=33, shift=1) public static boolean jnFanTongSou() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static void jnFanTongSou(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=34) public static boolean autoFoldEtTool() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34) public static void autoFoldEtTool(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=35) public static boolean autoCollapseEtTool() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=35) public static void autoCollapseEtTool(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=36) public static boolean autoSelectAllEtTool() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36) public static void autoSelectAllEtTool(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=37) public static boolean debugCss() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=37) public static void debugCss(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
 	
 }

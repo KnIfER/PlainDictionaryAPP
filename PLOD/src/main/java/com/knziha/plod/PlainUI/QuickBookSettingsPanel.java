@@ -30,6 +30,7 @@ import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DrawOverlayCompat;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 /** 一些页面选项的快捷入口 */
 public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPanel.ActionListener {
@@ -139,6 +140,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			initBtmBars();
 		}
 		
+		if (opt.switchBtmShown())
+		{
+			UIData.btm1Arrow.setRotation(90);
+			initBtmSwitch();
+		}
+		
 		if(GlobalOptions.isDark) {
 			View v, tv, iv;
 			for (int i = 0; (v=UIData.root.getChildAt(i++))!=null; ) {
@@ -175,6 +182,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (_sHandle !=null) initScrollHandle();
 		if (_tTools !=null) initTextTools();
 		if (_btmBars !=null) initBtmBars();
+		if (_btmSwitch !=null) initBtmSwitch();
 		if (_fltBtn !=null) initFloatBtn();
 		if (webSiteInfoListener!=null) webSiteInfoListener.onClick(null);
 	}
@@ -208,6 +216,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				boolean show = opt.adjTBtmShownTog();
 				UIData.btmArrow.animate().rotation(show?90:0);
 				setPanelVis(initBtmBars(), show);
+			}  break;
+			case R.id.btm1: {
+				boolean show = opt.switchBtmTog();
+				UIData.btm1Arrow.animate().rotation(show?90:0);
+				setPanelVis(initBtmSwitch(), show);
 			}  break;
 			case R.id.info:{
 				//boolean show = opt.toggleAdjustWebsiteInfoShown();
@@ -262,9 +275,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (settingsPanel==_btmBars) {
 			SearchUI.btmV++;
 			weblist.setViewMode();
-			if (storageInt==makeInt(5, 27, true)) {
-				a.getMdictServer().strOpt = null;
-				a.strOpt = null;
+			a.getMdictServer().strOpt = null;
+			a.strOpt = null;
+			WebViewmy wv = weblist.getWebContext();
+			if (wv!=null && wv.merge) {
+				wv.evaluateJavascript("resetBottom("+a.getMdictServer().getSettings()+")", null);
 			}
 			return true;
 		}
@@ -430,6 +445,14 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				{
 					PDICMainAppOptions.listPreviewSize1(var.ordinal()-ActionGp_1.p1ViewSz1.ordinal());
 				} break;
+				case prv: {
+					weblist.prvnxtFrame(false);
+					dismiss();
+				} break;
+				case nxt: {
+					weblist.prvnxtFrame(true);
+					dismiss();
+				} break;
 			}
 			if (btn!=null && (var.ordinal()>=ActionGp_1.pFontClr1.ordinal() && var.ordinal()<=ActionGp_1.p1ViewSz3.ordinal())) {
 				ViewGroup vg = (ViewGroup) btn.getParent();
@@ -464,6 +487,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	SettingsPanel _fltBtn;
 	SettingsPanel _paste;
 	SettingsPanel _btmBars;
+	SettingsPanel _btmSwitch;
 	
 	int shType;
 	
@@ -514,6 +538,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,p1ViewSz1
 		,p1ViewSz2
 		,p1ViewSz3
+		,prv
+		,nxt
 	}
 	
 	private SettingsPanel initListPanel() {
@@ -797,11 +823,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					, "切换上一个（联合搜索）", "切换下一个（联合搜索）", "切换上一个（小）", "切换下一个（小）"
 					, "缩放按钮"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
-					, makeInt(6, 59, true) // showEntrySeek
-					, makeInt(5, 27, true) // showDictName
+					, makeInt(6, 59, false) // showEntrySeek
+					, makeInt(5, 27, false) // showDictName
 					//, makeInt(6, 47, true) // toolsQuickLong
-					, makeInt(3, 19, true) // showPrvBtn
-					, makeInt(6, 50, true) // showNxtBtn
+					, makeInt(3, 19, false) // showPrvBtn
+					, makeInt(6, 50, false) // showNxtBtn
 					, makeInt(2, 4, false) // showPrvBtnSmall
 					, makeInt(2, 5, false) // showNxtBtnSmall
 					, makeInt(6, 51, false) // showZoomBtn
@@ -816,6 +842,24 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			_btmBars.refresh();
 		}
 		return _btmBars;
+	}
+	
+	private SettingsPanel initBtmSwitch() {
+		if (_btmSwitch==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{null, "切换上一个（联合搜索）", "切换下一个（联合搜索）"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.prv.ordinal(), false)
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.nxt.ordinal(), false)
+			}}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			addPanelViewBelow(settings.settingsLayout, UIData.btm1Panel);
+			_btmSwitch = settings;
+		} else {
+			_btmSwitch.refresh();
+		}
+		return _btmSwitch;
 	}
 	
 	

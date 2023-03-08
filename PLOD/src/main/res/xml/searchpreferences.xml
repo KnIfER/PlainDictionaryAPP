@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:key="sch"
 	android:title="搜索设置"
+	tools:context="com.knziha.plod.settings.SchOpt"
 	>
+
+	<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		android:key="tong"
+		android:persistent="false"
+		android:defaultValue="false"
+		android:title="繁简通搜"
+		android:summary="作用于联合搜索，只处理一一对应，不处理一对多，且繁简结果没合并（需滑动列表）"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		/>
+
 	<PreferenceCategory
 		android:key="cat_prog"
 		android:title="搜索设置"

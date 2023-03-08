@@ -1706,10 +1706,11 @@
 					}
 					if(inf.isWeb) {
 						wbframes.push(inf);
-						if(webFirst<0) webFirst=frames.length;
+						debug('inf.isWeb', inf)
 						if(!inf.synth) {
 							continue;
 						} else {
+							if(webFirst<0) webFirst=frames.length;
 							wbframes.synth++;
 							if(!firstWeb) firstWeb=inf;
 							wbframes.l=inf;
@@ -1723,6 +1724,9 @@
 					inf.part = i;
 					frames.push(inf);
 				}
+				if(frames.length==0) webFirst=0;
+				else if(webFirst<0) webFirst=frames.length-1;
+				//webFirst=0;
 				if(webFirst>=0) {
 					wbframes.f=firstWeb||frames[webFirst];
 					insertWebx();
@@ -3016,10 +3020,7 @@
 				} else {
 					defP.style.background='unset';
 				}
-				if(!e.dName) {
-					var t=ge('dlab');
-					if(t)t.style.display=t.nextElementSibling.style.display='none';
-				}
+				resetBottom(e);
 				if(merge && e.bgr && !e.dark) {
 					var sty=craft('style', 0, document.body);
 					sty.id='setyle';
@@ -4184,6 +4185,22 @@
 				webpcW.push(fx);
 			} else {
 				fx.item.contentWindow.addEventListener('click',webpc);
+			}
+		}
+
+		function resetBottom(e){
+			if(e.dName!=undefined) {
+				var t=ge('dlab');
+				if(t && !e.dName)t.style.display=t.nextElementSibling.style.display='none';
+				if(t && e.dName)t.style.display=t.nextElementSibling.style.display='';
+			}
+			if(e.prv!=undefined) {
+				var t=ge('prev');
+				if(t)t.style.display=e.prv?'':'none';
+			}
+			if(e.nxt!=undefined) {
+				var t=ge('next');
+				if(t)t.style.display=e.nxt?'':'none';
 			}
 		}
 	</script>

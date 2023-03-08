@@ -50,7 +50,7 @@ public class WordCamera extends PlainAppPanel implements Manager.OnSetViewRect {
 		mManager = new Manager(opt);
 		wordPopup = a.wordPopup;
 		this.schTools = searchbarTools;
-		//wordPopup = new WordPopup(a);
+		//wordPopup = new WordPopup(a); // 分开时，记得更新 button ui
 	}
 	
 	public void show() {

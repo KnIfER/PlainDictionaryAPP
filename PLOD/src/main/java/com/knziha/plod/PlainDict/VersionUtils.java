@@ -21,16 +21,6 @@ public class VersionUtils {
 	public static final int UpgradeCode = 1024;
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
-		if(PDICMainAppOptions.checkVersionBefore_7_6()) {
-			PDICMainAppOptions.checkVersionBefore_7_6(false);
-			PDICMainAppOptions.setRebuildToast(false);
-			PDICMainAppOptions.singleTapSchMode(0);
-			PDICMainAppOptions.bottomNavWeb1(false);
-			PDICMainAppOptions.checkVersionBefore_7_6(false);
-			PDICMainAppOptions.revisitOnBackPressed(true);
-			PDICMainAppOptions.alwaysloadUrl(true);
-		}
-		//if(PDICMainAppOptions.checkVersionBefore_7_9()) {
 //		PDICMainAppOptions.storeTapsch(true);
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
@@ -44,7 +34,6 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 22);
 			opt.setInPeruseMode(false);
 			opt.menuOverlapAnchor(GlobalOptions.isSmall);
-			PDICMainAppOptions.revisitOnBackPressed(false);
 			opt.slidePage1D(true);
 			opt.slidePageMD(true);
 			opt.slidePageMd(true);
@@ -91,7 +80,16 @@ public class VersionUtils {
 				PDICMainAppOptions.nightUsePageColor(true);
 			}
 		}
-
+		
+		if(PDICMainAppOptions.checkVersionBefore_8_3())
+		{
+			PDICMainAppOptions.checkVersionBefore_8_3(true);
+			PDICMainAppOptions.checkVersionBefore_7_6(true);
+			PDICMainAppOptions.revisitOnBackPressed(true);
+			PDICMainAppOptions.showEntrySeekbar(false);
+			PDICMainAppOptions.showDictName(false);
+			PDICMainAppOptions.showPrvBtn(false);
+		}
 //		opt.setPageTurn1(true);
 //		opt.setPageTurn2(true);
 //		opt.setPageTurn3(true);
@@ -99,7 +97,7 @@ public class VersionUtils {
 	}
 	
 	@SuppressLint("ResourceType")
-	public static void openIntro(PDICMainActivity a) {
+	public static void playTutorial(PDICMainActivity a) {
 		ActivityMainBinding UIData = a.UIData;
 		a.root.postDelayed(new Runnable() {
 			@Override

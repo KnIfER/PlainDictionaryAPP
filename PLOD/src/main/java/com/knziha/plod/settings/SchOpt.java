@@ -22,6 +22,7 @@ public class SchOpt extends PlainSettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "joni_case", PDICMainAppOptions.getJoniCaseSensitive(), null, null, null);
 		init_switch_preference(this, "use_wildcard1", PDICMainAppOptions.getAdvSearchUseWildcard(), null, null, null);
 		init_switch_preference(this, "use_morph", PDICMainAppOptions.getSearchUseMorphology(), null, null, null);
+		init_switch_preference(this, "tong", PDICMainAppOptions.jnFanTongSou(), null, null, null);
 		findPreference("vspec").setOnPreferenceClickListener(this);
 	}
 
@@ -55,6 +56,9 @@ public class SchOpt extends PlainSettingsFragment implements Preference.OnPrefer
 			break;
 			case "use_morph":
 				PDICMainAppOptions.setSearchUseMorphology((Boolean) newValue);
+			break;
+			case "tong":
+				PDICMainAppOptions.jnFanTongSou((Boolean) newValue);
 			break;
 		}
 		return true;

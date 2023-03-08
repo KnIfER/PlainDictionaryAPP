@@ -75,17 +75,35 @@
 			/>
 
 	<PreferenceCategory
-		android:key="files"
-		android:title="从文件系统加载资源"
+		android:key="files0"
+		android:title="加载同名文件"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugCss"
-			android:title="允许加载同名css文件"
+			android:title="允许加载词典同名css文件"
 			android:summary="初始化词典时检测一次"
+			android:persistent="false"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plainCSS"
+			android:title="允许加载全局样式文件plainict.css"
+			android:persistent="false"
+			app:allowDividerAbove="true"
+			app:defaultValue="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="debugCss"
+			android:title="以调试模式加载同名css"
+			android:summary="总是从文件读取，不用缓存"
 			android:persistent="false"
 			app:allowDividerAbove="true"
 			/>
+	</PreferenceCategory>
 
+	<PreferenceCategory
+		android:key="files"
+		android:title="从文件系统加载资源"
+		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugRes"
 			android:title="允许检测同目录资源文件"
@@ -108,7 +126,7 @@
 			/>
 	</PreferenceCategory>
 
-<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+		<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="unpackRes"-->
 <!--			android:title="允许用 NAME.0.txt 指定资源文件目录"-->
 <!--			android:summary="用同目录同名称的文本文件，记录资源路径，无上述限制。"-->

@@ -1142,7 +1142,13 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public String getSearchUrl() {
-		return search!=null?host+search:(host+index);
+		String sch = getField("sch");
+		if(sch==null) sch = search;
+		if (sch != null) {
+			if(!sch.contains("%s")) sch=sch+"%s";
+			if(!sch.startsWith("http")) sch = host+sch;
+		}
+		return sch!=null?sch:(host+index);
 	}
 	
 	public String getRandx() { //todo opt

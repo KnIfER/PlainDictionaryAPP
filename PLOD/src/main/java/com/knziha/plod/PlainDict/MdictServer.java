@@ -598,6 +598,8 @@ public abstract class MdictServer extends NanoHTTPD {
 			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
 			json.put("bgr", SU.toHexRGB(CMN.AppBackground));
 			json.put("dName", PDICMainAppOptions.showDictName());
+			json.put("prv", PDICMainAppOptions.showPrvBtn());
+			json.put("nxt", PDICMainAppOptions.showNxtBtn());
 			ret = strOpt = json.toString();
 		}
 		return ret;
@@ -859,8 +861,13 @@ public abstract class MdictServer extends NanoHTTPD {
 				MdPageBuilder.append("</style>");
 			}
 			if (a.plainCSS!=null) {
+				String plainCSS = a.plainCSS;
+				if (PDICMainAppOptions.debugCss()) {
+					File cssFile = new File(a.opt.pathToMainFolder().append("plaindict.css").toString());
+					plainCSS = BU.fileToString(cssFile);
+				}
 				MdPageBuilder.append("<style class=\"_PDict\">");
-				MdPageBuilder.append(a.plainCSS);
+				MdPageBuilder.append(plainCSS);
 				MdPageBuilder.append("</style>");
 			}
 			if (presenter.padLeft() || presenter.padRight()) {

@@ -155,5 +155,23 @@
 	<View style="@style/quick_settings_sephor" />
 
 
+	<LinearLayout
+		android:id="@+id/btm1Panel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		>
+		<ImageView
+			android:id="@+id/btm1_arrow"
+			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+			style="@style/quick_settings_arrow"
+			/>
+		<TextView
+			android:id="@+id/btm1"
+			android:text="页面切换"
+			style="@style/quick_settings_menu" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
+
 </com.knziha.plod.widgets.XYLinearLayout>
 </layout>

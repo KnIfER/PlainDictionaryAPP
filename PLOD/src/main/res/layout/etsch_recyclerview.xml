@@ -77,7 +77,6 @@
 			android:foreground="@drawable/popup_background3__"
 			android:foregroundTint="#fff"
 			android:rotation="180"
-			android:alpha="0.45"
 			/>
 
 	</LinearLayout>

@@ -1341,7 +1341,6 @@ function debug(e){console.log(e)};
 			if(webx.hasField("synthesis") && PDICMainAppOptions.allowMergeSytheticalPage())
 				json.put("synth", 1);
 			String sch = webx.getSearchUrl();
-			if(!sch.contains("%s")) sch=sch+"%s";
 			json.put("sch", sch);
 		}
 		return json;
@@ -2019,14 +2018,22 @@ function debug(e){console.log(e)};
 	public void plugCssWithSameFileName(StringBuilder sb) {
 		if(isHasExtStyle()) {
 			String fullFileName = bookImpl.getDictionaryName();
-			int end = fullFileName.length();
-			if (unwrapSuffix) {
-				int idx = bookImpl.getDictionaryName().lastIndexOf(".");
-				if (idx > 0) end = idx;
+			if (PDICMainAppOptions.debugCss()) {
+				StringBuilder buffer = getCleanDictionaryNameBuilder();
+				File externalFile = new File(f().getParent(), buffer.append(".css").toString());
+				sb.append("<style>")
+						.append(BU.fileToString(externalFile))
+						.append("/style>");
+			} else {
+				int end = fullFileName.length();
+				if (unwrapSuffix) {
+					int idx = bookImpl.getDictionaryName().lastIndexOf(".");
+					if (idx > 0) end = idx;
+				}
+				sb.append("<link rel='stylesheet' type='text/css' href='")
+						.append(fullFileName, 0, end)
+						.append(".css?f=auto'/>"); //
 			}
-			sb.append("<link rel='stylesheet' type='text/css' href='")
-					.append(fullFileName, 0, end)
-					.append(".css?f=auto'/>"); //
 		}
 	}
 	
@@ -2281,6 +2288,11 @@ function debug(e){console.log(e)};
 			htmlBuilder.append(a.fontFaces);
 		}
 		if (a.plainCSS!=null) {
+			String plainCSS = a.plainCSS;
+			if (PDICMainAppOptions.debugCss()) {
+				File cssFile = new File(opt.pathToMainFolder().append("plaindict.css").toString());
+				plainCSS = BU.fileToString(cssFile);
+			}
 			if(!styleOpened) htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
 			htmlBuilder.append(a.plainCSS);
 		}

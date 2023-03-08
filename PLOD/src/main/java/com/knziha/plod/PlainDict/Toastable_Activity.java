@@ -8,6 +8,7 @@ import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -351,7 +352,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			if (checkSelfPermission(permissions[0]) != PackageManager.PERMISSION_GRANTED) {
 				setStatusBarColor(getWindow(), Constants.DefaultMainBG);
 				File trialPath = getExternalFilesDir("Trial");
-				if(trialPath!=null){
+				if(trialPath!=null) {
 					if(trialPath.isDirectory()) {
 						File[] fs = trialPath.listFiles();
 						for(File mf:fs) {
@@ -375,7 +376,7 @@ public class Toastable_Activity extends AppCompatActivity {
 					}
 				}
 				dialogRequestPermissionTips();
-			}else {pre_further_loading(savedInstanceState);}
+			} else {pre_further_loading(savedInstanceState);}
 		}else {pre_further_loading(savedInstanceState);}
 	}
 
@@ -384,12 +385,18 @@ public class Toastable_Activity extends AppCompatActivity {
 	// 动态获取权限
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	protected void dialogRequestPermissionTips() {
-		new AlertDialog.Builder(this)
+		d = new AlertDialog.Builder(this)
 				.setTitle(R.string.stg_require)
 				.setMessage(R.string.stg_statement)
 				.setPositiveButton(R.string.stg_grantnow, (dialog, which) -> requestPermissions(permissions, 321))
 				.setWikiText("", (dialog, which) -> dialogPermissionDetails(this))
-				.setNegativeButton(R.string.cancel, (dialog, which) -> EnterTrialMode()).setCancelable(false).show().getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+				.setNegativeButton(R.string.cancel, (dialog, which) -> EnterTrialMode())
+				.setOnDismissListener(dialog -> d = null)
+				.setCancelable(false)
+				.show();
+		if(!GlobalOptions.isDark)
+			d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+		requestPermissions(permissions, 321);
 	}
 	
 	public void dialogPermissionDetails(Activity context) {
@@ -485,8 +492,11 @@ public class Toastable_Activity extends AppCompatActivity {
 					PDICMainAppOptions.lastUsingInternalStorage(true);
 				} else { showT("未知错误：配置存储目录建立失败！");finish(); }
 			}).setCancelable(false).show();
-		} else {
-			/* Ideal Dwelling (/sdcard/PLOD) already exists. nothing to ask for. */
+		}
+		else {
+			/* Ideal directory (/sdcard/PLOD) already exist. */
+			// skip tutorial.
+			VersionUtils.firstInstall = false;
 			further_loading(savedInstanceState);
 		}
 	}

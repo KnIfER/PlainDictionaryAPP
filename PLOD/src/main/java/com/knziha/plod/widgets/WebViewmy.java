@@ -90,6 +90,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private String useragent;
 	private int titleBarH;
 	public boolean scrollLocked;
+	private boolean bNextEditOnly;
 	
 	//public boolean fromPeruseview;
 	public final boolean fromNet(){ return presenter.isWebx; };
@@ -764,6 +765,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			CMN.debug("onCreateActionMode::");
 			boolean craft = callback.onCreateActionMode(mode, menu);
 			if (craft) {
 				weblistHandler.textMenu(WebViewmy.this);
@@ -871,6 +873,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 						weblistHandler.a.wordMap.show(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
 					}
 				});
+			} return false;
+			case R.id.toolbar_action5: {
+				String word = CMN.searchTerm; // todo
+				if(word==null) word = presenter.a.getSearchTerm();
+				evaluateJavascript("document.activeElement.value += '"+StringEscapeUtils.escapeJava(word)+"';", null);
 			} return false;
 		}
 		if (mode!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -1104,7 +1111,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		int highlightColor=Color.YELLOW;
 		String ColorCurse = String.format("%06X", highlightColor&0xFFFFFF);
 		Spanned text = Html.fromHtml("<span style='background:#"+ColorCurse+"; color:#"+ColorCurse+";'>高亮</span>");
-
+		
 		if(true) {
 			MenuItem MyMenu = menu.add(0, R.id.toolbar_action0, 0, text);
 			
@@ -1120,10 +1127,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		String shareText=getShareText();
 		String SelectAllText=getSelectText();
+		String PasteText=getPasteText();
+		String CutText=getCutText();
 		//CMN.Log("SelectAllText", SelectAllText, System.identityHashCode(SelectAllText));
 		int findCount=2;
 		int ToolsOrder=0;
 		MenuItem fanYi = null;
+		boolean hasPaste = false, hasCut = false;
 		for(int i=0;i<menu.size();i++) {
 			MenuItem m = menu.getItem(i);
 			String title = m.getTitle().toString();
@@ -1138,6 +1148,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				menu.removeItem(id);//移除 全选
 				i--;
 				findCount--;
+			} else if(title.equals(CutText)) {
+				hasCut = true;
+			} else if(title.equals(PasteText)) {
+				hasPaste = true;
 			}
 			if(i<2 && title.equals("翻译")) {
 				fanYi = m;
@@ -1147,7 +1161,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			}
 			//if(findCount==0) break;
 		}
-		
+		CMN.debug("PasteText::", PasteText, CutText, hasCut, hasPaste);
+		bNextEditOnly = hasPaste && !hasCut;
 		menu.add(0,R.id.toolbar_action2,++ToolsOrder,"笔记");
 		
 		if (url.startsWith("https://wwtm.lanzoum.com/")) {
@@ -1157,7 +1172,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
-		menu.add(0,R.id.toolbar_action4,++ToolsOrder,PDICMainAppOptions.swapeSchAndWordMap()?"搜索":"+词条图谱");
+		if (bNextEditOnly) {
+			menu.add(0,R.id.toolbar_action5,++ToolsOrder, "+搜索词");
+			weblistHandler.textMenu(null);
+		} else {
+			menu.add(0,R.id.toolbar_action4,++ToolsOrder,PDICMainAppOptions.swapeSchAndWordMap()?"搜索":"+词条图谱");
+		}
 		
 //		if (fanYi != null) {  // 只因翻译应用跳转慢、或无联网，故置末尾。
 //			MenuItem m = menu.add(0, fanYi.getItemId(), menu.size() - 1, "翻译");
@@ -1168,6 +1188,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public String getSelectText() {
 		getSharedIds();
 		return getResources().getString(SelectString_Id!=0?SelectString_Id:android.R.string.selectAll);
+	}
+	
+	public String getPasteText() {
+		return getResources().getString(android.R.string.paste);
+	}
+	
+	public String getCutText() {
+		return getResources().getString(android.R.string.cut);
 	}
 	
 	public String getShareText() {

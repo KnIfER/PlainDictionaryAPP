@@ -1438,7 +1438,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		popupMenuRef.clear();
 	}
 	
-	public SimpleMorphs simpleMorphs = new SimpleMorphs();
+	public SimpleMorphs simpleMorphs = new SimpleMorphs(this);
 	public ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
 	
 	public WordPopup wordPopup = new WordPopup(this);
@@ -2463,6 +2463,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 //		opt.putString("ctnp#999", null);
 		weblistHandler.setUpContentView(cbar_key, null);
+		weblistHandler.pageSlider.onSwipeTopListener = this;
 		
 		setContentDetachType(1);
 		
@@ -5941,6 +5942,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
+				findWebList(v);
+				if (ViewUtils.getNthParentNonNull(v, 1).getId()==R.id.bottombar2) {
+					WebViewmy wv = weblist.getWebContextNonNull();
+					if (ViewUtils.isVisible(lv2) || wv.merge) {
+						weblist.prvnxtFrame(id==R.drawable.ic_nxt_dict_chevron);
+						break;
+					}
+				}
 				if(ViewUtils.isVisible(lv2)) {
 					ViewUtils.setVisibility(lv2, false);
 				}
@@ -6802,6 +6811,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						wlh.tapDef(true);
 					} else {
 						wlh.tapDef(!wlh.tapDef);
+						wlh.tapSch(wlh.tapDef);
 					}
 					wlh.updateContentMenu(mmi.mMenu.mItems);
 					if (accessMan.isEnabled()) {
@@ -7491,7 +7501,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							@NonNull @Override
 							public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 								final LazyLoadManager lazyMan = loadingMan.lazyMan;
-								if(bag.val) {
+								if(bag.val) { // 双列
 									ViewGroup ret;
 									if(convertView!=null){
 										ret = (ViewGroup) convertView;
@@ -7753,10 +7763,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				Message href = handler.obtainMessage();
 				view.requestFocusNodeHref(href);
 				String url = href.getData().getString("url");
-				CMN.debug("onCreateWindow::", url);
 				if (url == null) {
 					return true;
 				}
+				BookPresenter webx = webxford.get(SubStringKey.new_hostKey(url));
+				CMN.debug("onCreateWindow::", url, webx);
 				BookPresenter presenter = ((WebViewmy) view).presenter;
 				String urlKey = null;
 				if (!presenter.isWebx) {
@@ -7767,7 +7778,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (idx > 0) urlKey = URLDecoder.decode(url.substring(idx + 8));
 					}
 				}
-				//presenter = webxford.get(SubStringKey.new_hostKey(url));
+				if (webx!=null) {
+					presenter = webx;
+				}
 	//			if (presenter == null) {
 	//			} else {
 	//				try {
@@ -7913,6 +7926,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						wlh.tapDef(true);
 					} else {
 						wlh.tapDef(!wlh.tapDef);
+						wlh.tapSch(wlh.tapDef);
 					}
 				} else {
 					if (wlh.tapDef) {
@@ -7997,7 +8011,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//if(!mWebView.isloading && !mWebView.fromNet) return;
 			final WebViewListHandler wlh = mWebView.weblistHandler;
 			
-			BookPresenter invoker = mWebView.presenter, book=invoker;
+			BookPresenter invoker = mWebView.presenter;
 			
 			if (PDICMainAppOptions.quickTranslatorV1() && mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
@@ -11527,6 +11541,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
 			json.put("bgr", SU.toHexRGB(thisActType==MainActivityUIBase.ActType.FloatSearch?CMN.FloatAppBackground:CMN.AppBackground));
 			json.put("dName", PDICMainAppOptions.showDictName());
+			json.put("prv", PDICMainAppOptions.showPrvBtn());
+			json.put("nxt", PDICMainAppOptions.showNxtBtn());
 			json.put("fgr", SU.toHexRGB(calcForegroundColor()));
 			if(GlobalOptions.isDark)
 				json.put("dark", 1);

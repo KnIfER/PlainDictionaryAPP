@@ -28,6 +28,7 @@ import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.util.HashMap;
 
 /** Devoloper Options */
@@ -82,6 +83,7 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null, null);
 		init_switch_preference(this, "notify", PDICMainAppOptions.getNotificationEnabled(), null, null, null);
 		
+		init_switch_preference(this, "debugCss", PDICMainAppOptions.debugCss(), null, null, null);
 		init_switch_preference(this, "plugCss", PDICMainAppOptions.getAllowPlugCss(), null, null, null);
 		init_switch_preference(this, "plugRes", PDICMainAppOptions.getAllowPlugRes(), null, null, null);
 		init_switch_preference(this, "plugResNone", PDICMainAppOptions.getAllowPlugResNone(), null, null, null);
@@ -90,6 +92,13 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null, null);
 		findPreference("dbv2_up").setOnPreferenceClickListener(this);
 		findPreference("pm").setOnPreferenceClickListener(this);
+		findPreference("plainCSS").setOnPreferenceClickListener(this);
+		findPreference("plainCSS").setEnabled(false);
+		
+		File file = new File(getSettingActivity().opt.pathToMainFolder().append("plaindict.css").toString());
+		String sum = file.getPath();
+		if (!file.exists()) sum = "不存在：" + sum;
+		findPreference("plainCSS").setSummary(sum);
 	}
 	
 	private String getNameFlag(String andoid_country_code) {
@@ -202,6 +211,9 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 			}
 			return true;
 			
+			case "debugCss":
+				PDICMainAppOptions.debugCss((Boolean) newValue);
+			return true;
 			case "plugCss":
 				PDICMainAppOptions.setAllowPlugCss((Boolean) newValue);
 			return true;
@@ -287,6 +299,9 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 			case "battery":{
 				FcfrtAppBhUtils.requestIgnoreBatteryOptimizations(context);
 			} break;
+			case "plainCSS":{
+				return true;
+			}
 			case "system_dev":{
 				try {
 					Intent intent = new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS);

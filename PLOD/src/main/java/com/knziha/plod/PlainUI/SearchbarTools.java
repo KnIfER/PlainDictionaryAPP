@@ -85,6 +85,13 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	private FrameLayout.LayoutParams lpRvTools;
 	private FrameLayout.LayoutParams lpRv;
 	public WordCamera wordCamera;
+	private Runnable keyboardRunnable = new Runnable() {
+		@Override
+		public void run() {
+			etSearch.requestFocus();
+			a.imm.showSoftInput(etSearch, 0);
+		}
+	};
 	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {
@@ -362,10 +369,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				int[] vLocationOnScreen = new int[2];
 				popupMenu.initLayout(new int[]{
 						R.string.copy
+						, R.layout.page_lnk_fanyi1
 						,R.layout.page_lieshu
 						,R.string.page_del_this
 						,R.string.page_del_prev
-						, R.layout.page_lnk_fanyi1
 				}, new PopupMenuHelper.PopupMenuListener() {
 					long deleting;
 					@Override
@@ -430,13 +437,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				popupMenu.mPopupWindow.setOnDismissListener(a.keyboardShown?new PopupWindow.OnDismissListener() {
 					@Override
 					public void onDismiss() {
-						etSearch.postDelayed(new Runnable() {
-							@Override
-							public void run() {
-								etSearch.requestFocus();
-								a.imm.showSoftInput(etSearch, 0);
-							}
-						}, 64);
+						etSearch.postDelayed(keyboardRunnable, 64);
 					}
 				}:null);
 				return true;
@@ -525,6 +526,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	private boolean shouldOpenDrpDwn() {
 		final int bAutoDrpdn = PDICMainAppOptions.historyAutoShow();
+		if (PDICMainAppOptions.autoFoldEtTool()) {
+			ViewUtils.setVisibleV2(drpBtn, true);
+			return false;
+		}
 		return bAutoDrpdn==1 || bAutoDrpdn==2&&drpdn;
 	}
 	
@@ -644,6 +649,49 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				redrawExpandBtn();
 				mRecycler.requestLayout();
 			break;
+			case R.id.settings:
+				PopupMenuHelper popupMenu = a.getPopupMenu();
+				int[] vLocationOnScreen = new int[2];
+				popupMenu.initLayout(new int[]{
+						R.string.always_fold
+						, R.string.always_collapse
+						, R.string.auto_sel_all
+				}, new PopupMenuHelper.PopupMenuListener() {
+					long deleting;
+					@Override
+					public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View view, boolean isLongClick) {
+						final int id = view.getId();
+						boolean changed = true;
+						switch (id) {
+							case R.string.always_fold:
+								view.setActivated(!view.isActivated());
+								PDICMainAppOptions.autoFoldEtTool(view.isActivated());
+								break;
+							case R.string.always_collapse:
+								view.setActivated(!view.isActivated());
+								PDICMainAppOptions.autoCollapseEtTool(view.isActivated());
+								break;
+							case R.string.auto_sel_all:
+								view.setActivated(!view.isActivated());
+								PDICMainAppOptions.autoSelectAllEtTool(view.isActivated());
+								break;
+						}
+						popupMenuHelper.dismiss();
+						return true;
+					}
+				});
+				popupMenu.lv.findViewById(R.string.always_fold).setActivated(PDICMainAppOptions.autoFoldEtTool());
+				popupMenu.lv.findViewById(R.string.always_collapse).setActivated(PDICMainAppOptions.autoCollapseEtTool());
+				popupMenu.lv.findViewById(R.string.auto_sel_all).setActivated(PDICMainAppOptions.autoSelectAllEtTool());
+				v.getLocationOnScreen(vLocationOnScreen); //todo 校准弹出位置
+				popupMenu.showAt(v, vLocationOnScreen[0], vLocationOnScreen[1]+v.getHeight()/2, Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+				popupMenu.mPopupWindow.setOnDismissListener(a.keyboardShown?new PopupWindow.OnDismissListener() {
+					@Override
+					public void onDismiss() {
+						etSearch.postDelayed(keyboardRunnable, 64);
+					}
+				}:null);
+				break;
 			case R.id.foldBtn:
 				ViewUtils.setVisibleV2(lv, false);
 				ViewUtils.setVisible(drpBtn, true);
@@ -723,10 +771,12 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	private void drpdn(boolean b) {
 		drpdn = b;
-		if(initView!=null) {
-			PDICMainAppOptions.historyShow(b);
-		} else {
-			PDICMainAppOptions.historyShowFye(b);
+		if (!PDICMainAppOptions.autoFoldEtTool()) {
+			if(initView!=null) {
+				PDICMainAppOptions.historyShow(b);
+			} else {
+				PDICMainAppOptions.historyShowFye(b);
+			}
 		}
 	}
 	
@@ -734,6 +784,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if(!PDICMainAppOptions.hideSchTools()) {
 			//rootView = PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root;
 			if (!isVisible()) {
+				resetFold();
 				toggle(rootView, null, -1);
 				refresh();
 			}
@@ -742,10 +793,31 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			a.ivBack.setImageResource(R.drawable.ic_menu_material);
 			a.ivBack.setId(R.id.multiline);
 		}
+		if (PDICMainAppOptions.autoSelectAllEtTool()) {
+			etSearch.postDelayed(() -> {
+				try {
+					etSearch.setSelection(0, etSearch.getText().length());
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}, 100);
+		}
+	}
+	
+	private void resetFold() {
+		if (PDICMainAppOptions.autoFoldEtTool()) {
+			drpdn(false);
+		}
+		if (PDICMainAppOptions.autoCollapseEtTool()) {
+			etHistoryExpanded = false;
+			redrawExpandBtn();
+			drpdn(false);
+		}
 	}
 	
 	public void forceShow() {
 		if (!isVisible()) {
+			resetFold();
 			//rootView = PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root;
 			toggle(rootView, null, -1);
 			refresh();
@@ -859,7 +931,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	private void redrawExpandBtn() {
-		expandBtn.setImageResource(etHistoryExpanded?R.drawable.ic_baseline_unfold_less_24:R.drawable.ic_baseline_unfold_more_24);
-		lpRv.height = etHistoryExpanded?-1:(int) ((int) (GlobalOptions.density*48) * 3.5);
+		if (expandBtn!=null) {
+			expandBtn.setImageResource(etHistoryExpanded?R.drawable.ic_baseline_unfold_less_24:R.drawable.ic_baseline_unfold_more_24);
+		}
+		if (lpRv != null) {
+			lpRv.height = etHistoryExpanded?-1:(int) ((int) (GlobalOptions.density*48) * 3.5);
+		}
 	}
 }

@@ -63,7 +63,7 @@
 			&& (pY>y-pad && pY<y+h+pad && pX>x-10 && pX<x+w+10);
 		}
 		window.addEventListener('click',window.tpshc=function(e){
-			var tar=e.target, w=this, pw=parent, d=w.document, sz=pw.shzh, app=pw.app;
+			var tar=e.target, w=this, pw=parent, d=w.document, sz=pw.shzh, app=pw.app,excluded=false;
 			debug('popuping::click...设置=', sz, e, tar);
 			//debug(sz&7 , curr!=d.documentElement , curr.nodeName , !curr.noword, !w._touchtarget_lck);
 			if(sz&7 && tar!=d.documentElement && !tar.noword && !w._touchtarget_lck){
@@ -79,10 +79,11 @@
 					if(n==='A'&&(t.href||t.onclick)||n==='BUTTON') {tar=0;break;}
 					else if(n==='TEXTAREA'||n==='INPUT') if(!t.readOnly) {tar=0;break;}
 				}
+				if(p) excluded = !tar;
 				// merge _NWP & _YWPC
 				if(tar && w._WORDCON) { // 排除界面元素
 					var p=tar, stat=0, hasInc=0; 
-					while(p=p.parentElement) {
+					while(p) {
 						for(var i=0,q;q=_WORDCON[i++];) {
 							var exc = q[0]==='-';
 							if(exc) q = q.slice(1);
@@ -96,11 +97,13 @@
 								break;
 							}
 						}
+						p=p.parentElement;
 					}
 					if(stat<0)
 						tar=0;
 					if(hasInc && stat!=1)
 						tar=0;
+					excluded = !tar;
 				}
 				if(tar) {
 					var range = s.getRangeAt(0), rg, rc;
@@ -283,7 +286,7 @@
 				}
 				//点击空白关闭点译弹窗
 				//...
-				s.empty();
+				if(!excluded) s.empty();
 			}
 			if(w.popup){
 				app.popupClose(sid.get());

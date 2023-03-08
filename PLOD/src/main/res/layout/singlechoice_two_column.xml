@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.percentlayout.widget.PercentFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.percentlayout.widget.PercentFrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
+	android:gravity="right"
 	>
 	<View
 		android:layout_width="0dp"
@@ -11,7 +12,7 @@
 		android:background="?android:attr/listChoiceBackgroundIndicator"
 		android:clickable="true"
 		app:layout_widthPercent="50%"
-		android:layout_gravity="start"
+		android:layout_gravity="left"
 		/>
 	<View
 		android:layout_width="0dp"
@@ -19,7 +20,7 @@
 		android:background="?android:attr/listChoiceBackgroundIndicator"
 		android:clickable="true"
 		app:layout_widthPercent="50%"
-		android:layout_gravity="end"
+		android:layout_gravity="right"
 		/>
 	<com.knziha.plod.widgets.FlowCheckedTextView
 		android:layout_width="0dp"
@@ -36,7 +37,7 @@
 		android:maxLines="1"
 		app:ellipsis="true"
 		app:layout_widthPercent="50%"
-		android:layout_gravity="start"
+		android:layout_gravity="left"
 		/>
 	<com.knziha.plod.widgets.FlowCheckedTextView
 		android:layout_width="0dp"
@@ -53,6 +54,6 @@
 		android:maxLines="1"
 		app:ellipsis="true"
 		app:layout_widthPercent="50%"
-		android:layout_gravity="end"
+		android:layout_gravity="right"
 		/>
 </androidx.percentlayout.widget.PercentFrameLayout>

@@ -97,7 +97,7 @@
     <string name="bm">BookMarks</string>
     <string name="bmSub">Delete BookMark</string>
     
-    <string name="AAllow">Do you allow this app to create folders in /SDCARD/PLOD？</string>
+    <string name="AAllow">Do you allow this app to create folders in /SDCARD/PLOD (Recommended)？</string>
     
     <string name="applyall">Apply to All Sets</string>
     <string name="GL">Global</string>
@@ -273,6 +273,8 @@
 	<string name="page_del_conf">确认删除</string>
 	<string name="pick_audio_dir">选择发音库目录</string>
 	<string name="load">加载</string>
+	<string name="loadot">加载 …</string>
+	<string name="deletex">删除 x</string>
 	<string name="qiehan_sel">切换选中</string>
 	<string name="switch_pick">切换选中状态</string>
 	<string name="tianjia">添加</string>
@@ -305,4 +307,7 @@
 	<string name="expand_map_hor">横向扩展画布</string>
 	<string name="expand_map_ver">竖向扩展画布</string>
 	<string name="copyFileNamace">复制文件名</string>
+	<string name="always_fold">总是收起</string>
+	<string name="always_collapse">总是半折叠</string>
+	<string name="auto_sel_all">自动全选</string>
 </resources>

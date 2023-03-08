@@ -222,8 +222,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	boolean checkAllWebs(resultRecorderDiscrete result, View view, int pos) {
 		if(result instanceof resultRecorderCombined && pos==0 && view==null){
-			if(a.mergeFrames()!=2 && ((resultRecorderCombined)result).checkAllWebs(a)){
-				CMN.Log("驳回！！！");
+			if(a.mergeFrames()==0 && ((resultRecorderCombined)result).checkAllWebs(a)){
+				CMN.debug("驳回！！！");
 				return true;
 			}
 		}

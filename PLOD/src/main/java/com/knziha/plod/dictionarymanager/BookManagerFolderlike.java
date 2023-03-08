@@ -91,8 +91,6 @@ public class BookManagerFolderlike extends BookManagerFolderAbs {
 					//idx++;
 				}
 				in.close();
-				
-				data.insert(new mAssetFile("/ASSET/李白全集.mdx").init(a.opt));
 			}
 			catch (Exception e) {
 				CMN.debug(e);

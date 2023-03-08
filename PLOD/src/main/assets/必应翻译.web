@@ -2,6 +2,7 @@
 	,"host": "https://cn.bing.com"
 	,"index": "/translator/"
 	,"keyPattern": "*"
+	,"sch": "/search?q=%s"
 	,"searchJs": "var succ = 0;
 function debug(e){console.log('fatal youdao', e)};
 try {

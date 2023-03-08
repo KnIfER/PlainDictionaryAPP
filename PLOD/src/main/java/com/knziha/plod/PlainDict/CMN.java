@@ -81,6 +81,7 @@ public class CMN{
 	
 	public static Object sData;
 	public static Object sDataTree;
+	public static String searchTerm;
 	
 	public static String Log(Object... o) {
 //		if (true) {

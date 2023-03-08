@@ -1011,10 +1011,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		
 	// 															23/*随机词条*/
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 25, 24, 12);
-		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14, 1, 2/*, 15*/, 21/*记忆位置*/, 9, 25, 10, 24, 12);
-		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 26, 20/*搜索工具栏*//*, 17, 18*//*, 19*/);
-		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22/*, 19*/, 7, 26, 20, 5, 6);
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 27, 4, 13, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 25, 24, 12);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 27, 4, 13, 14, 1, 2/*, 15*/, 21/*记忆位置*/, 9, 25, 10, 24, 12);
+		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 27, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 26, 20/*搜索工具栏*//*, 17, 18*//*, 19*/);
+		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 27, 4, 0, 22/*, 19*/, 7, 26, 20, 5, 6);
 		
 		
 		boolean showVal = PDICMainAppOptions.getShowSearchTools();
@@ -1281,7 +1281,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		for (int i = 0; i < 3; i++) {
 			LinearLayout view = new LinearLayout(this);
 			view.setOrientation(LinearLayout.VERTICAL);
-			view.addView(viewList[i]);
+			ViewUtils.addViewToParent(viewList[i], view);
 			viewList[i] = view;
 		}
 		super.further_loading(savedInstanceState);
@@ -1877,8 +1877,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//showAppTweaker();
 		}
 		
-		if (firstInstall) {
-			VersionUtils.openIntro(this);
+		if (firstInstall && d==null) {
+			VersionUtils.playTutorial(this);
 			firstInstall = false;
 		}
 		if (!PDICMainAppOptions.audioLibDirCreated()) {
@@ -2636,9 +2636,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //					}
 				}
 			} break;
-			case R.id.multiline:
+			case R.id.multiline: // 切换开关
 				boolean show = !etTools.isVisible();
-				PDICMainAppOptions.hideSchTools(!show);
+				if (keyboardShown/* || etSearch.isFocused()*/) {
+					PDICMainAppOptions.hideSchTools(!show);
+				}
 				if (show) {
 					etTools.forceShow();
 				} else {
@@ -3495,9 +3497,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			.setTitle("仍无存储权限")
 			.setMessage("请前往应用设置-权限，手动打开存储权限")
 			.setPositiveButton("前往开启", (dialog, which) -> {
-				startActivityForResult(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-						.setData(Uri.fromParts("package", getPackageName(), null)),
-						123);
+				try {
+					startActivityForResult(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+									.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+									.setData(Uri.fromParts("package", getPackageName(), null)),
+							123);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			})
 			.setNegativeButton("取消", (dialog, which) -> EnterTrialMode()).setCancelable(false).show();
 	}
@@ -3514,6 +3521,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				} else {
 					Toast.makeText(this, "权限获取成功", Toast.LENGTH_SHORT).show();
 					pre_further_loading(null);
+					if (d != null) {
+						d.dismiss();
+						d = null;
+					}
 				}
 			}
 		}
