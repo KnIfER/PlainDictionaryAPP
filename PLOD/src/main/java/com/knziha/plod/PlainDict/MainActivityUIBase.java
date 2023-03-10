@@ -305,6 +305,8 @@ import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
+import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
+
 import io.noties.markwon.Markwon;
 import io.noties.markwon.core.spans.LinkSpan;
 
@@ -671,6 +673,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(adaptermy3!=null) adaptermy3.notifyDataSetChanged();
 		if(adaptermy4!=null) adaptermy4.notifyDataSetChanged();
 		if(adaptermy5!=null) adaptermy5.notifyDataSetChanged();
+	}
+	
+	public String handleWordMap() {
+		return wordMap.remap(0);
 	}
 	
 	public enum ActType{
@@ -8689,7 +8695,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(mdbr) {
 						CMN.debug("mdbr::", url);
 						try {
-							HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+							HTTPSession req = new HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 							Response ret = getMdictServer().handle(req);
 							if(ret!=null) {
 								CMN.debug("WebResourceResponse::", ret.getMimeType());
@@ -8873,7 +8879,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					if(url.startsWith("http://mdbr.com")) {
 						try {
-							HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+							HTTPSession req = new HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 							Response ret = getMdictServer().handle(req);
 							if(ret!=null) {
 								//CMN.debug("WebResourceResponse::", ret.getMimeType());
@@ -11903,6 +11909,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				attr.verticalMargin = 0;
 			}
 		}
-		
+	}
+	
+	
+	public Response decodeExp(HTTPSession session) {
+		//SU.Log("decodeExp.txt::", session.getParameters(), session.getMethod());
+		try {
+			String xp = null;
+			if (session.isProxy) { // maybe https://stackoverflow.com/questions/13954049/intercept-post-requests-in-a-webview/45655940#45655940
+				session.parseBody(null);
+				String ref = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? ((HTTPSessionProxy) session).request.getRequestHeaders().get("Referer") : null;
+				if (ref != null) {
+					int idx = ref.indexOf("&xp=");
+					if (idx >= 0) {
+						xp = ref.substring(idx + 4, IU.NonNegative(ref.indexOf("&", Math.max(idx, ref.length() - 100)), ref.length()));
+					}
+				}
+			} else {
+				session.parseBody(null);
+				xp = session.getParameters().get("xp").get(0);
+				xp = xp.replace(" ", "+");
+			}
+			if (xp != null) {
+				return newFixedLengthResponse(loadManager.EmptyBook.getWebBridge().decodeExp(xp));
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return MdictServer.emptyResponse;
 	}
 }

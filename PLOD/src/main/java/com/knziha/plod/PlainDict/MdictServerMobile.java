@@ -10,18 +10,14 @@ import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.ValueCallback;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.PlainUI.FloatBtn;
-import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.mdictRes_asset;
-import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
@@ -30,29 +26,22 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingConstants;
 import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
 import org.apache.commons.text.StringEscapeUtils;
-import org.knziha.metaline.StripMethods;
-import org.nanohttpd.protocols.http.HTTPSession;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
-
-import androidx.appcompat.app.GlobalOptions;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -67,19 +56,18 @@ public class MdictServerMobile extends MdictServer {
 	
 	private static HashMap<String, Object>  mTifConfig;
 	
-	public MdictServerMobile(int port, MainActivityUIBase _a, PDICMainAppOptions _opt, MainActivityUIBase.LoadManager loadManager) throws IOException {
-		super(port, _opt, loadManager);
-		a = _a;
-		a.serverHosts=new ConcurrentHashMap<>();
-		if(a.serverHostsHolder!=null) {
-			for (PlainWeb pw:a.serverHostsHolder) {
-				a.serverHosts.putAll(pw.jinkeSheaths);
+	public MdictServerMobile(int port, MainActivityUIBase app) throws IOException {
+		super(port, app);
+		app.serverHosts=new ConcurrentHashMap<>();
+		if(app.serverHostsHolder!=null) {
+			for (PlainWeb pw: app.serverHostsHolder) {
+				app.serverHosts.putAll(pw.jinkeSheaths);
 			}
 		}
-		webResHandler = new PlainWeb(new File("/ASSET2/plate.web"), _a);
-		webResHandler.jinkeSheaths = a.serverHosts;
+		webResHandler = new PlainWeb(new File("/ASSET2/plate.web"), app);
+		webResHandler.jinkeSheaths = app.serverHosts;
 		try {
-			MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, a);
+			MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, app);
 		} catch (IOException e) { SU.Log(e); }
 		setOnMirrorRequestListener((uri, mirror) -> {
 			if(uri==null)uri="";
@@ -91,9 +79,9 @@ public class MdictServerMobile extends MdictServer {
 					args.put(lst[0], lst[1]);
 				} catch (Exception ignored) { }
 			}
-			int pos=IU.parsint(args.get("POS"), a.adaptermy.lastClickedPos);
-			int dx=IU.parsint(args.get("DX"), a.dictPicker.adapter_idx);
-			String key=a.etSearch.getText().toString();
+			int pos=IU.parsint(args.get("POS"), app.adaptermy.lastClickedPos);
+			int dx=IU.parsint(args.get("DX"), app.dictPicker.adapter_idx);
+			String key= app.etSearch.getText().toString();
 			try {
 				key= URLDecoder.decode(args.get("KEY"),"UTF-8");
 			}catch(Exception ignored) {}
@@ -143,30 +131,30 @@ public class MdictServerMobile extends MdictServer {
 		if (target != null && target.size() > 0) {
 			int sharetype = IU.parsint(target.get(0));
 			//CMN.Log("sharetype", sharetype);
-			a.root.post(() -> {
+			app.root.post(() -> {
 				if (sharetype == 2) {
-					a.execVersatileShare(text, opt.getSendToShareTarget());
+					//app.execVersatileShare(text, opt.getSendToShareTarget()); todo impl
 				} else {
 					switch (PDICMainAppOptions.getSendToAppTarget()) {
 						case 0:
-							a.execVersatileShare(text, 0);
+							app.execVersatileShare(text, 0);
 							break;
 						case 1: {
-							a.etSearch.setText(text);
-							a.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
-							if (!a.focused) {
-								ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
+							app.etSearch.setText(text);
+							app.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
+							if (!app.focused) {
+								ActivityManager manager = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
 								if (manager != null)
-									manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+									manager.moveTaskToFront(app.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
 							}
 						}
 						break;
 						case 2: {
-							a.JumpToFloatSearch(text);
+							app.JumpToFloatSearch(text);
 						}
 						break;
 						case 3:
-							a.execVersatileShare(text, 1);
+							app.execVersatileShare(text, 1);
 						break;
 					}
 				}
@@ -174,7 +162,7 @@ public class MdictServerMobile extends MdictServer {
 			CMN.Log("启动搜索 : ", text);
 		}
 		else if (parameters.get("textClip")!=null) {
-			a.onReceivedText(text);
+			app.onReceivedText(text);
 		}
 	}
 	
@@ -250,7 +238,7 @@ public class MdictServerMobile extends MdictServer {
 		if (BuildConfig.DEBUG || !BuildConfig.isDevBuild)
 		{
 			try {
-				return a.getAssets().open(key.substring(1).replace("\\", "/"));
+				return app.getAssets().open(key.substring(1).replace("\\", "/"));
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
@@ -260,7 +248,7 @@ public class MdictServerMobile extends MdictServer {
 	
 	public String getClipboard() {
 		// todo 处理悬浮状态
-		if (a.isFloatingApp()) {
+		if (app.isFloatingApp()) {
 		
 		}
 		int fg = MainActivityUIBase.foreground;
@@ -334,19 +322,19 @@ public class MdictServerMobile extends MdictServer {
 				cc++;
 			}
 		}
-		CharSequence tmp = a.getFloatBtn().getPrimaryClip();
+		CharSequence tmp = app.getFloatBtn().getPrimaryClip();
 		String ret = tmp==null?null:tmp.toString();
 		CMN.debug("getClipboard", ret, TextUtils.isEmpty(ret));
-		if (TextUtils.isEmpty(ret) && (a.isFloating()||a.getFloatBtn().isFloating())) {
+		if (TextUtils.isEmpty(ret) && (app.isFloating()|| app.getFloatBtn().isFloating())) {
 			Intent newTask = new Intent(Intent.ACTION_MAIN);
 			newTask.setType(Intent.CATEGORY_DEFAULT);
 			newTask.putExtra(FloatBtn.EXTRA_FROMPASTE, true);
 			newTask.putExtra(FloatBtn.EXTRA_GETTEXT, true);
 			newTask.putExtra(FloatBtn.EXTRA_FETCHTEXT, true);
 			newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			newTask.setClass(a.getApplicationContext(), PasteActivity.class);
+			newTask.setClass(app.getApplicationContext(), PasteActivity.class);
 			FloatBtn.sClipboard = null;
-			a.getApplicationContext().startActivity(newTask);
+			app.getApplicationContext().startActivity(newTask);
 			int tWait = 0;
 			while(FloatBtn.sClipboard==null && tWait<1000) {
 				try {
@@ -359,5 +347,25 @@ public class MdictServerMobile extends MdictServer {
 			ret = FloatBtn.sClipboard;
 		}
 		return ret;
+	}
+	
+	public void start(Context context) throws IOException {
+		super.start();
+		isServerRunning = true;
+		if(PDICMainAppOptions.getNotificationEnabled() || PDICMainAppOptions.getAutoEnableNotification()) {
+			ServiceEnhancer.SendSetUpDaemon(context);
+		}
+	}
+	
+	public void stop(Context context) {
+		super.stop();
+		isServerRunning = false;
+		if(PDICMainAppOptions.getNotificationEnabled() || PDICMainAppOptions.getAutoEnableNotification()) {
+			if(!PDICMainAppOptions.getNotificationEnabled()) {
+				AU.stopService(context, ServiceEnhancer.class);
+			} else {
+				ServiceEnhancer.SendSetUpDaemon(context);
+			}
+		}
 	}
 }

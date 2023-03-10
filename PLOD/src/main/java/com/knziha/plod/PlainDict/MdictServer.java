@@ -1,4 +1,4 @@
-/*  Copyright 2018 KnIfER Zenjio-Kang
+/*  Copyright 2018 PlainDict author
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ package com.knziha.plod.plaindict;
 import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 import static org.nanohttpd.protocols.http.response.Response.newRecyclableResponse;
-
-import android.content.Context;
-import android.webkit.WebResourceRequest;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -71,16 +68,11 @@ import java.util.regex.Pattern;
  */
 
 public abstract class MdictServer extends NanoHTTPD {
-	protected MainActivityUIBase a;
-	interface AppOptions {
-		boolean isCombinedSearching();
-		int getSendToShareTarget();
-	}
+	protected MainActivityUIBase app;
 	/** strip bad design urls.
 	  Should always use relative path while packaging mdx! */
 	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"]?)((file://)|(file:/))?/");
 	final String SepWindows = "\\";
-	final AppOptions opt;
 	
 	public static boolean hasRemoteDebugServer = BuildConfig.isDebug;
 	
@@ -93,10 +85,10 @@ public abstract class MdictServer extends NanoHTTPD {
 	
 	MainActivityUIBase.LoadManager loadManager;
 	
-	public MdictServer(int port, AppOptions _opt, MainActivityUIBase.LoadManager _loadManager) {
+	public MdictServer(int port, MainActivityUIBase app) {
 		super(port);
-		opt=_opt;
-		loadManager = _loadManager;
+		this.app = app;
+		loadManager = app.loadManager;
 	}
 	
 	@Override
@@ -260,32 +252,9 @@ public abstract class MdictServer extends NanoHTTPD {
 			}
 		}
 		
-		if(key.equals("\\decodeExp.txt")) {
-			//SU.Log("decodeExp.txt::", session.getParameters(), session.getMethod());
-			try {
-				String xp = null;
-				if (session.isProxy) { // maybe https://stackoverflow.com/questions/13954049/intercept-post-requests-in-a-webview/45655940#45655940
-					session.parseBody(null);
-					String ref = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP?((HTTPSessionProxy) session).request.getRequestHeaders().get("Referer"):null;
-					if (ref!=null) {
-						int idx = ref.indexOf("&xp=");
-						if (idx>=0) {
-							xp = ref.substring(idx+4, IU.NonNegative(ref.indexOf("&", Math.max(idx, ref.length()-100)), ref.length()));
-						}
-					}
-				} else {
-					session.parseBody(null);
-					xp = session.getParameters().get("xp").get(0);
-					xp = xp.replace(" ", "+");
-				}
-				if (xp!=null) {
-					xp = loadManager.EmptyBook.getWebBridge().decodeExp(xp);
-					return newFixedLengthResponse(xp) ;
-				}
-			} catch (Exception e) {
-				CMN.debug(e);
-			}
-			return emptyResponse;
+		if(key.equals("\\decodeExp.txt"))
+		{
+			return app.decodeExp(session);
 		}
 		
 		if(key.equals("\\wordmap.json")) {
@@ -295,7 +264,7 @@ public abstract class MdictServer extends NanoHTTPD {
 //					session.parseBody(null);
 //					List<String> ids = Arrays.asList(session.getParameters().get("ids").get(0).split(","));
 					//SU.Log("dicts.json::", ids);
-					return newFixedLengthResponse(a.wordMap.remap(0)) ;
+					return newFixedLengthResponse(app.handleWordMap()) ;
 				} catch (Exception e) {
 					return emptyResponse;
 				}
@@ -852,18 +821,18 @@ public abstract class MdictServer extends NanoHTTPD {
 					//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
 					.append("window.pos=").append(pos).append(";");
 			if (session.isProxy) {
-				MdPageBuilder.append(a.getCommonAsset("SUBPAGE.js"));  // todo check redu
+				MdPageBuilder.append(app.getCommonAsset("SUBPAGE.js"));  // todo check redu
 			}
 			MdPageBuilder.append("</script>");
-			if (a.fontFaces!=null) {
+			if (app.fontFaces!=null) {
 				MdPageBuilder.append("<style class=\"_PDict\">");
-				MdPageBuilder.append(a.fontFaces);
+				MdPageBuilder.append(app.fontFaces);
 				MdPageBuilder.append("</style>");
 			}
-			if (a.plainCSS!=null) {
-				String plainCSS = a.plainCSS;
+			if (app.plainCSS!=null) {
+				String plainCSS = app.plainCSS;
 				if (PDICMainAppOptions.debugCss()) {
-					File cssFile = new File(a.opt.pathToMainFolder().append("plaindict.css").toString());
+					File cssFile = new File(app.opt.GetPathToMainFolder()+"plaindict.css");
 					plainCSS = BU.fileToString(cssFile);
 				}
 				MdPageBuilder.append("<style class=\"_PDict\">");
@@ -915,7 +884,7 @@ public abstract class MdictServer extends NanoHTTPD {
 							//.append("window.entryKey='").append(presenter.getBookEntryAt(pos)).append("';")
 							.append("window.pos=").append(pos).append(";");
 				if (session.isProxy) {
-					MdPageBuilder.append(a.getCommonAsset("SUBPAGE.js"));
+					MdPageBuilder.append(app.getCommonAsset("SUBPAGE.js"));
 				}
 				MdPageBuilder.append("</script>")
 						.append(idx==-1?"</head>":"")
@@ -925,7 +894,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return record;
 		}
 	}
-	Response emptyResponse = newFixedLengthResponse(Status.NO_CONTENT,"*/*", "");
+	public static Response emptyResponse = newFixedLengthResponse(Status.NO_CONTENT,"*/*", "");
 	
 	interface OnMirrorRequestListener{
 		public Response onMirror(String uri, boolean mirror);
@@ -957,9 +926,10 @@ public abstract class MdictServer extends NanoHTTPD {
 			derBaseLen = f1.length();
 		}
 		derivedHtmlBase.setLength(derBaseLen);
-		if(opt.isCombinedSearching()){
-			derivedHtmlBase.append("document.getElementById('fileBtn').onclick();");
-		}
+		//if(opt.isCombinedSearching())
+		//{
+		//	derivedHtmlBase.append("document.getElementById('fileBtn').onclick();");
+		//}
 		/** win10 ie 去掉\t会发生量子波动Bug */
 		derivedHtmlBase.append("\teditText.value=\"").append(key.replace("\"", "\\\"")).append("\";");
 		derivedHtmlBase.append("loookup();");
@@ -1013,48 +983,5 @@ public abstract class MdictServer extends NanoHTTPD {
 		return ret;
 	}
 	
-	public static class HTTPSessionProxy extends HTTPSession {
-		final static HashMap<String, String> hdr =  new HashMap<>();
-		static {
-			hdr.put("user-agent", "");
-		}
-		
-		public final WebResourceRequest request;
-		
-		public HTTPSessionProxy(String uri, WebResourceRequest request) {
-			int parmsIdx = uri.indexOf("?");
-			if(parmsIdx>0) {
-				this.uri = uri.substring(0, parmsIdx);
-				this.parms = new HashMap<>();
-				decodeParms(uri.substring(parmsIdx), parms);
-			} else {
-				this.uri = uri;
-			}
-			this.request = request;
-			this.headers = hdr;
-			this.isProxy = true;
-		}
-	}
-	
 	public static boolean isServerRunning = false;
-	
-	public void start(Context context) throws IOException {
-		super.start();
-		isServerRunning = true;
-		if(PDICMainAppOptions.getNotificationEnabled() || PDICMainAppOptions.getAutoEnableNotification()) {
-			ServiceEnhancer.SendSetUpDaemon(context);
-		}
-	}
-	
-	public void stop(Context context) {
-		super.stop();
-		isServerRunning = false;
-		if(PDICMainAppOptions.getNotificationEnabled() || PDICMainAppOptions.getAutoEnableNotification()) {
-			if(!PDICMainAppOptions.getNotificationEnabled()) {
-				AU.stopService(context, ServiceEnhancer.class);
-			} else {
-				ServiceEnhancer.SendSetUpDaemon(context);
-			}
-		}
-	}
 }

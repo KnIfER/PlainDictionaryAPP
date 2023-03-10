@@ -96,7 +96,7 @@ import okhttp3.Response;
 
 
 /*
- Mdict point to online website.
+ Browse online website.
  date:2019.11.28
  author:KnIfER
 */

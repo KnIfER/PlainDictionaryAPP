@@ -310,6 +310,19 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return pathTo;
 	}
 	
+	String _rootPath;
+	public String GetPathToMainFolder() {
+		if(rootPath!=null){
+			_rootPath = rootPath + "/" + CMN.BrandName + "/";
+			pathToL = _rootPath.length();
+			rootPath=null;
+		} else if(pathToL==-1) {
+			rootPath=Environment.getExternalStorageDirectory();
+			return GetPathToMainFolder();
+		}
+		return _rootPath;
+	}
+	
 	
 	public File fileToConfig() {
 		return new File(pathToMainFolder().append("CONFIG").toString());
