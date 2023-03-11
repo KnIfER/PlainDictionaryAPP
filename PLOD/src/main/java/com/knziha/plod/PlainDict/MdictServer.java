@@ -83,7 +83,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	
 	PlainWeb webResHandler;
 	
-	MainActivityUIBase.LoadManager loadManager;
+	public MainActivityUIBase.LoadManager loadManager;
 	
 	public MdictServer(int port, MainActivityUIBase app) {
 		super(port);
@@ -244,18 +244,14 @@ public abstract class MdictServer extends NanoHTTPD {
 			return emptyResponse;
 		}
 		
-		if(key.equals("\\settings.json")) {
-			try {
-				return newFixedLengthResponse(getSettings()) ;
-			} catch (Exception e) {
-				return emptyResponse;
-			}
-		}
+		if(key.equals("\\DB.jsp"))
+			return app.handleFFDB(session);
+		
+		if(key.equals("\\settings.json")) // todo deprecate, use jsBridge?
+			return newFixedLengthResponse(app.getWebSettings()) ;
 		
 		if(key.equals("\\decodeExp.txt"))
-		{
 			return app.decodeExp(session);
-		}
 		
 		if(key.equals("\\wordmap.json")) {
 //			if (Method.POST.equals(session.getMethod()))
@@ -555,23 +551,6 @@ public abstract class MdictServer extends NanoHTTPD {
 			SU.Log(e);
 		}
 		return null;
-	}
-	
-	
-	public String strOpt;
-	public String getSettings() {
-		String ret = strOpt;
-		//strOpt = null;
-		if (ret==null) {
-			JSONObject json = new JSONObject();
-			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
-			json.put("bgr", SU.toHexRGB(CMN.AppBackground));
-			json.put("dName", PDICMainAppOptions.showDictName());
-			json.put("prv", PDICMainAppOptions.showPrvBtn());
-			json.put("nxt", PDICMainAppOptions.showNxtBtn());
-			ret = strOpt = json.toString();
-		}
-		return ret;
 	}
 	
 	protected abstract InputStream convert_tiff_img(InputStream restmp) throws Exception;

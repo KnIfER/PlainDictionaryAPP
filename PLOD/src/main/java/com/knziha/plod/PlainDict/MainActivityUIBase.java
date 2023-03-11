@@ -675,10 +675,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(adaptermy5!=null) adaptermy5.notifyDataSetChanged();
 	}
 	
-	public String handleWordMap() {
-		return wordMap.remap(0);
-	}
-	
 	public enum ActType{
 		PlainDict
 		, FloatSearch
@@ -11911,7 +11907,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	
 	public Response decodeExp(HTTPSession session) {
 		//SU.Log("decodeExp.txt::", session.getParameters(), session.getMethod());
 		try {
@@ -11937,5 +11932,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.debug(e);
 		}
 		return MdictServer.emptyResponse;
+	}
+	
+	public String handleWordMap() {
+		return wordMap.remap(0);
+	}
+	
+	public Response handleFFDB(HTTPSession session) {
+		return null;
 	}
 }
