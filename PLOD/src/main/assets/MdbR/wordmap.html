@@ -291,6 +291,7 @@
 			return (parseInt(loca.style.left)||0)+","+(parseInt(loca.style.top)||0);
 		}
 		
+		
 		function add(text, nid){
 			debug('add', text, nid);
 			var node = craft("WORDNODE", map);
@@ -298,11 +299,44 @@
 				craft("DIV", node).innerHTML = text;
 			else
 				node.innerHTML = text;
+			craft("IMG", node).src = 'http://rqm1nmwwk.hn-bkt.clouddn.com/5.jpg';
 			node.style.left = loca.style.left;
 			node.style.top = loca.style.top;
 			node.id = nid;
 			node.lnks = [];
 			selectNode(node);
+		}
+		
+		var imgs = [
+			'http://rqm1nmwwk.hn-bkt.clouddn.com/71.jpg'
+			, 'http://rqm1nmwwk.hn-bkt.clouddn.com/62.jpg'
+			, 'http://rqm1nmwwk.hn-bkt.clouddn.com/35.jpg'
+			, 'http://rqm1nmwwk.hn-bkt.clouddn.com/26.jpg'
+			, 'http://rqm1nmwwk.hn-bkt.clouddn.com/5.jpg'
+		]
+		// 测试性能
+		function do_benchmark(){
+			var rand = Math.random();
+			var text = '123' + rand;
+			var node = craft("WORDNODE", map);
+			craft("DIV", node).innerHTML = text;
+			var img = craft("IMG", node);
+			img.src = imgs[Math.ceil(Math.random()*1024)%5];
+			img.style.width = '100%';
+			img.style.height = '100%';
+			node.style.width =  500 + "px";
+			var spread = 3000;
+			node.style.left = (parseInt(loca.style.left) + parseInt((spread * rand)/500)*500 + 100) + "px";
+			node.style.top =  (parseInt(loca.style.top) + parseInt((spread * Math.random())/500)*500 + 100) + "px";
+			node.lnks = [];
+			//selectNode(node);
+		}
+		//setTimeout(()=>{expandMap(10000, 10000)}, 800);
+		function benchmark(num){
+			for(var i=0;i<num;i++) {
+				// setTimeout(do_benchmark, i*10);
+				requestAnimationFrame(do_benchmark);
+			}
 		}
 		
 		// https://blog.csdn.net/yiyueqinghui/article/details/108004272
@@ -499,8 +533,6 @@
 			,ed:mobile?'touchend':'mouseup'
 			,mv:mobile?'touchmove':'mousemove'
 		}, tmPress;
-		function dragMove(e){
-		}
 		function releaseLck(){
 			if(tmPress) clearTimeout(tmPress);
 			doc.removeEventListener(dragResizer.ed, dragAbort, true);
@@ -517,6 +549,13 @@
 				}
 			}
 			moving = 0;
+		}
+		
+		var fakeTouch = mobile;
+		
+		function dragMove(e){
+			xy(e);
+			fakeScroll(e.clientX-orgX, e.clientY-orgY);
 		}
 		function fakeScroll(x, y){
 			//debug('fakeScroll', x, y);
@@ -540,7 +579,7 @@
 			}
 		}
 		function dragAbort(){
-			//doc.removeEventListener(modragResizer.mv, dragMove, true);
+			if(!fakeTouch) doc.removeEventListener(dragResizer.mv, dragMove, true);
 			doc.removeEventListener(dragResizer.ed, dragAbort, true);
 			checkMoved();
 			if(mobile)
@@ -551,6 +590,7 @@
 		
 		doc.addEventListener(dragResizer.ed, function(e){
 			if(tmPress) clearTimeout(tmPress);
+			if(!fakeTouch) dragAbort();
 		});
 		
 		function touchStart(e){
@@ -560,7 +600,7 @@
 			moving = focaNode;
 			doc.removeEventListener(dragResizer.ed, dragAbort, true);
 			doc.addEventListener(dragResizer.ed, dragAbort, true);
-			//doc.addEventListener(dragResizer.mv, dragMove, true);
+			if(!fakeTouch) doc.addEventListener(dragResizer.mv, dragMove, true);
 			if(moving) {
 				nodeXYs[0] = parseInt(moving.style.left)||0;
 				nodeXYs[1] = parseInt(moving.style.top)||0;
@@ -578,6 +618,7 @@
 				touchStart(e);
 			}
 		}
+		if(fakeTouch)
 		edit.addEventListener(dragResizer.st, function(e){
 			var x = xy(e).clientX, y=e.clientY;
 			orgX = x;
@@ -585,6 +626,7 @@
 			tmPress = setTimeout(function(){longPress(e)},380);
 			if(word) word.lockScroll(sid.get());
 		});
+		if(fakeTouch)
 		edit.addEventListener(dragResizer.mv, function(e){
 			debug('edit touchstart',e);
 			var x = xy(e).clientX, y=e.clientY;
