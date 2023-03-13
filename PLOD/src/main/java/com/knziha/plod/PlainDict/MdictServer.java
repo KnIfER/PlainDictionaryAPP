@@ -247,6 +247,12 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(key.equals("\\DB.jsp"))
 			return app.handleFFDB(session);
 		
+		if(key.equals("\\GC.jsp")) {
+			System.gc();
+			CMN.Log("gc……");
+			return emptyResponse;
+		}
+		
 		if(key.equals("\\settings.json")) // todo deprecate, use jsBridge?
 			return newFixedLengthResponse(app.getWebSettings()) ;
 		

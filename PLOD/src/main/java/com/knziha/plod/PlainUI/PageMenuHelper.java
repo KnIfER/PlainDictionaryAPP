@@ -1,10 +1,14 @@
 package com.knziha.plod.PlainUI;
 
+import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.Nav_main;
+
 import android.os.Looper;
 import android.util.SparseArray;
 import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -38,8 +42,9 @@ public class PageMenuHelper {
 		, LNK_WEB
 	}
 	
-	int[] getPageUtils(PageMenuType type) {
-		int[] ret = utils.get(type.ordinal());
+	int[] getPageUtils(PageMenuType type, WebViewmy mWebView) {
+		int intType = type.ordinal();
+		int[] ret = utils.get(intType);
 		if (ret == null) {
 			switch (type) {
 				case Nav_main:
@@ -49,6 +54,7 @@ public class PageMenuHelper {
 						,R.string.page_fuzhi
 						,R.string.page_dakai
 						,R.layout.page_dopt_refresh
+						,0
 						,R.string.page_ucc
 					};
 				break;
@@ -94,14 +100,17 @@ public class PageMenuHelper {
 			}
 			utils.put(type.ordinal(), ret);
 		}
+		if(type==Nav_main) {
+			ret[5] = mWebView.merge?R.string.pageOpt:0;
+		}
 		return ret;
 	}
 	
-	public PopupMenuHelper showPageMenu(PageMenuType type, WebViewmy mWebView, View v, int ox, int oy) {
+	public PopupMenuHelper showPageMenu(PageMenuType type, @NonNull WebViewmy mWebView, View v, int ox, int oy) {
 		this.mType = type;
 		this.mWebView = mWebView;
 		PopupMenuHelper popupMenu = a.getPopupMenu();
-		popupMenu.initLayout(getPageUtils(type), a);
+		popupMenu.initLayout(getPageUtils(type, mWebView), a);
 		int[] vLocationOnScreen = new int[2];
 		v.getLocationOnScreen(vLocationOnScreen);
 		int x,y;

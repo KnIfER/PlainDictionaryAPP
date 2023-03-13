@@ -47,7 +47,7 @@ import java.util.Map;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.SessionFlag;
 
-public class PDICMainAppOptions implements MdictServer.AppOptions
+public class PDICMainAppOptions //implements MdictServer.AppOptions
 {
 	public static boolean systemDark;
 	public boolean isAudioPlaying;

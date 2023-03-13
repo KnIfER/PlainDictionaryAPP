@@ -1043,6 +1043,7 @@ function debug(e){console.log(e)};
 				initViewsHolder(a);
 				mWebView = this.mWebView;
 			}
+			a.weblist = mWebView.weblistHandler;
 			return a.pageMenuHelper.showPageMenu(type, mWebView, v, x, y);
 		} catch (Exception e) {
 			CMN.debug(e);
@@ -2818,7 +2819,7 @@ function debug(e){console.log(e)};
 				if (wv != null && wv.weblistHandler.isMergingFrames()) {
 					//CMN.Log("saveOpt::", val, JSON.parse(val));
 					presenter.a.opt.putString("opt", val);
-					presenter.a.getMdictServer().strOpt = null;
+					//presenter.a.getMdictServer().strOpt = null;
 					presenter.a.strOpt = null;
 				}
 			}

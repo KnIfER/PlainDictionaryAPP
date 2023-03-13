@@ -3447,7 +3447,7 @@
 					gn('focusThis', menu).innerText = inf.name;
 				} else { // ('dt'===className||'dc'===className
 					//menu=makeMenu(name, ['foldAll', 'unfoldAll', 'unFoldCurrent', '', 'saveCurrent', '', 'showAbout', null]);
-					menu=makeMenu('dt', ['foldThis', 'foldAll', 'unfoldAll', 'unFoldCurrent', '', 'this', '', 'openTab', null]);
+					menu=makeMenu('dt', ['foldThis', 'foldAll', 'unfoldAll', 'showPageOpt', 'unFoldCurrent', '', 'this', '', 'openTab', null]);
 					gn('this', menu).innerText = inf.name;
 				}
 			}
@@ -3539,6 +3539,7 @@
 				case 'focusMode2':
 					setFocusMode(2);
 				break
+				case 'showPageOpt':
 				case 'settings':
 					showSettings();
 				break

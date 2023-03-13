@@ -6957,6 +6957,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.string.bmAdd:
 				mWebView.presenter.toggleBookMark(mWebView, null, true);
 				break;
+			case R.string.pageOpt:
+				if(weblist==null) weblist = weblistHandler;
+				weblist.getMergedFrame().evaluateJavascript("showSettings()", null);
+				break;
 			case R.string.page_fuzhi:
 				copyText(mWebView.word(), true);
 				break;
@@ -11007,10 +11011,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(Thread.currentThread().getId()!=CMN.mid) {
 					CMN.debug("在异常建立MdictServer！");
 				}
-				server = new MdictServerMobile(8080, this, opt, this.loadManager);
+				server = new MdictServerMobile(8080, this);
 				((AgentApplication)getApplication()).mServer = server;
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			CMN.debug(e);
 		}
 		server.loadManager = this.loadManager;
