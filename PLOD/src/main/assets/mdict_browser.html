@@ -784,9 +784,10 @@
 		var initStates=[];
 
 		var onmousewheelDown = function(e) {
-			//debug(["onmousewheelDown: ", e, e.wheelDelta]);
+			//debug(["onmousewheelDown: ", e, e.wheelDelta, e.detail]);
 			var d=e.detail?-e.detail /3: -e.wheelDelta /120;
 			d = Math[d >= 1 ? 'floor' : 'ceil' ](d);
+			if(d>10||d<-10) d=-Math.sign(e.wheelDelta);
 			//debug("onmousewheelDown: ", d);
 			e.preventDefault();
 			lastPosAdd(d);
@@ -1084,7 +1085,11 @@
 			/**/
 			
 			var useagent=navigator.userAgent;
-			debug(useagent);
+			var javafx = useagent.indexOf('JavaFX')>0;
+			if(javafx) {
+				window.debug = debug=function(){var e=arguments,s='fatal web ::';for(var i=0;i<e.length;i++)s+=", "+(e[i]);console.log(s)};
+			}
+			debug('ua='+useagent);
 			type_bold = 1;//useagent.match(/Chrome/)||useagent.match(/JavaFX\/8.0/);
 			// 扫描设置
 			setup();
@@ -2966,9 +2971,11 @@
 		}
 
 		function loadJson(url,cb,parm,fNet){
-			debug('loadJson!!!', url,parm)
+			debug('loadJson!!!', url,parm, "app="+app)
 			if(!fNet && app) {
-				var e = parseJson(app.loadJson(parm?(url+'?'+parm):url));
+				var ret = app.loadJson(parm?(url+'?'+parm):url);
+				var e = parseJson(ret);
+				debug('loadJson ret=', ret, e)
 				if(cb)cb(e);
 			} else {
 				var x = new XMLHttpRequest();
@@ -3006,13 +3013,15 @@
 				delete defOpt.focusOne;
 			}
 			loadJson("/settings.json", function(e) {
-				if(!window.app) {
-					e = {};
-					var str = localStorage.getItem('opt');
-					if(str) str=JSON.parse(str);
-					if(str) Object.assign(opt, e=str);
-				}
 				debug('settings=', e);
+				if(!window.app || !e) {
+					e = {};
+					try{
+						var str = localStorage.getItem('opt');
+						if(str) str=JSON.parse(str);
+						if(str) Object.assign(opt, e=str);
+					} catch(err){debug(err)}
+				}
 				Object.assign(opt, e);
 				opt.init();
 				if(e.bg) {
@@ -4070,6 +4079,9 @@
 			const temp = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 			var negative=num<0;
 			if(negative) num=-num;
+			if(!num) {
+				return "0";
+			}
 			if(num<0) {
 				// todo INCONGRUENT
 				return "8m85Y0n8LzA~";

@@ -3199,9 +3199,7 @@ function debug(e){console.log(e)};
 								//jsonArray.add(book.getDictInfo());
 							}
 						}
-						sb.append("]");
 						CMN.Log("dicts::", url, sb.toString());
-						return sb.toString();
 					} else {
 						for (int i = 0; i < a.loadManager.md_size; i++) {
 							BookPresenter book = a.loadManager.md_get(i);
@@ -3215,6 +3213,8 @@ function debug(e){console.log(e)};
 							}
 						}
 					}
+					sb.append("]");
+					return sb.toString();
 				}
 				else if(url.startsWith("/settings.json")) {
 					return a.getWebSettings();
