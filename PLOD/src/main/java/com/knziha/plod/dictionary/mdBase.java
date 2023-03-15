@@ -1138,8 +1138,8 @@ public abstract class mdBase {
 			int key_start_index=0,
 					key_end_index,
 					keyCounter = 0;
-			infoI_cache.raw_keys = Arrays.copyOf(key_block, BlockLen);
-			while(key_start_index < BlockLen && keyCounter<infoI.num_entries){// 莫须有小于
+			infoI_cache.raw_keys = Arrays.copyOf(key_block, BlockLen); // todo 节省内存
+			while(key_start_index < BlockLen && keyCounter<infoI.num_entries){// 莫有小于
 				long key_id = _version<2 ?BU.toInt(key_block, BlockOff+key_start_index)
 							:BU.toLong(key_block, BlockOff+key_start_index);
 				
