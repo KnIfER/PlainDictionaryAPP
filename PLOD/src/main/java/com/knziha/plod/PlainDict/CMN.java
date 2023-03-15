@@ -28,8 +28,10 @@ import static com.knziha.plod.plaindict.TestHelper.RotateEncrypt;
 
 
 //common
-public class CMN{
+public class CMN extends GlobalOptions{
 	public static /*volatile*/ int instanceCount;
+	public static Object hotTracingObject;
+	public static String hotDebugMessage;
 	public static final HashMap<String, Long> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
 	public static final String Assets = "/ASSET";

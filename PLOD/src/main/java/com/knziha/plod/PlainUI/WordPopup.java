@@ -1317,7 +1317,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				BookPresenter book = loadManager.md_get(i);
 				try {
 					if(book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
-						CrashHandler.hotTracingObject = book;
+						CMN.hotTracingObject = book;
 						_treeBuilder.resetRealmer(book.getId());
 						UniversalDictionaryInterface bookImpl = book.bookImpl;
 						int res = bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task, false);

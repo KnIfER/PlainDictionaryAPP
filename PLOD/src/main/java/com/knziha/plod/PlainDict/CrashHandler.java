@@ -1,5 +1,8 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.plaindict.CMN.hotDebugMessage;
+import static com.knziha.plod.plaindict.CMN.hotTracingObject;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,8 +42,6 @@ import java.util.Locale;
 @SuppressLint({"WrongConstant"})
 public class CrashHandler implements UncaughtExceptionHandler {
 	public static final String TAG = "FatalHandler";
-	public static Object hotTracingObject;
-	public static String hotDebugMessage;
 	/** System default handler */
 	private UncaughtExceptionHandler mDefaultHandler;
 	private static CrashHandler instance;

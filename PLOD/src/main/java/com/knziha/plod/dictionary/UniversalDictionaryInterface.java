@@ -3,7 +3,6 @@ package com.knziha.plod.dictionary;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
 import java.io.File;
@@ -28,7 +27,7 @@ public interface UniversalDictionaryInterface {
 	File getFile();
 	String getDictionaryName();
 	boolean hasVirtualIndex();
-	void onPageFinished(BookPresenter invoker, WebViewmy mWebView, String url, boolean b);
+	void onPageFinished(BookPresenter invoker, Object mWebView, String url, boolean b);
 	
 	
 	StringBuilder AcquireStringBuffer(int capacity);
@@ -67,7 +66,7 @@ public interface UniversalDictionaryInterface {
 	
 	String getVirtualRecordsAt(Object presenter, long[] positions) throws IOException;
 	
-	String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position);
+	String getVirtualTextValidateJs(Object presenter, Object mWebView, long position);
 	
 	String getVirtualTextEffectJs(Object presenter, long[] positions);
 	

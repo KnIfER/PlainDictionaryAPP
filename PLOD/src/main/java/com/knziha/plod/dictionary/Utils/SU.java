@@ -90,7 +90,14 @@ public class  SU{
 			}
 		System.out.println(msg);
 	}
-	
+	public static String alter_file_suffix(String path, String h) {
+		int idx = path.indexOf(".");
+		if (idx > 0) {
+			path = path.substring(0, idx);
+		}
+		path += h;
+		return path;
+	}
 	public static long stst;
 	public static long ststrt;
 	public static long stst_add;
@@ -129,20 +136,6 @@ public class  SU{
 		return len>0;
 	}
 	
-	//static net.jpountz.lz4.LZ4Factory factory;
-	
-	public static void Lz4_decompress(byte[] compressed, int offset, byte[] output, int out_offset, int decompressedLen) {
-//		if (factory==null) {
-//			factory = net.jpountz.lz4.LZ4Factory.fastestInstance();
-//		}
-//		factory.fastDecompressor().decompress(compressed, offset, output, out_offset, decompressedLen);
-	}
-	
-	public static void Zstd_decompress(byte[] compressed, int offset, int length, byte[] output, int out_offset, int decompressedLen) {
-		////new ZstdDecompressor().decompress(compressed, offset, length, output, out_offset, decompressedLen);
-		//Zstd.decompressByteArray(output, out_offset, decompressedLen, compressed, offset, length);
-	}
-	
 	public static void pt_mins(String...args) {
 		SU.Log(args,((System.currentTimeMillis()-stst)/1000.f/60)+"m");
 	}
@@ -179,7 +172,19 @@ public class  SU{
 	public static String valueOf(CharSequence text) {
 		return text == null ? null : text.toString();
 	}
-	
+	//static net.jpountz.lz4.LZ4Factory factory;
+
+	public static void Lz4_decompress(byte[] compressed, int offset, byte[] output, int out_offset, int decompressedLen) {
+//		if (factory==null) {
+//			factory = net.jpountz.lz4.LZ4Factory.fastestInstance();
+//		}
+//		factory.fastDecompressor().decompress(compressed, offset, output, out_offset, decompressedLen);
+	}
+	public static void Zstd_decompress(byte[] compressed, int offset, int length, byte[] output, int out_offset, int decompressedLen) {
+		////new ZstdDecompressor().decompress(compressed, offset, length, output, out_offset, decompressedLen);
+		//Zstd.decompressByteArray(output, out_offset, decompressedLen, compressed, offset, length);
+	}
+
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();

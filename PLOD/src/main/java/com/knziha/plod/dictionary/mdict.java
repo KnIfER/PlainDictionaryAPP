@@ -17,8 +17,6 @@
 
 package com.knziha.plod.dictionary;
 
-import androidx.preference.CMN;
-
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.F1ag;
@@ -30,8 +28,7 @@ import com.knziha.plod.dictionary.Utils.key_info_struct;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.plaindict.CrashHandler;
-import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.lang3.StringUtils;
@@ -287,7 +284,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				}
 			}
 		} catch (Exception e) {
-			CrashHandler.hotTracingObject = getPath();
+			CMN.hotTracingObject = getPath();
 			throw e;
 		}
 		return null;
@@ -322,14 +319,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		else
 			mflag.data = null;
 		//TODO null pointer error
-		CrashHandler.hotTracingObject = getPath();
+		CMN.hotTracingObject = getPath();
 		try {
 			cached_key_block keyInfo = prepareItemByKeyInfo(infoI, blockId, null);
 			String ret = keyInfo.getString((int) (position - infoI.num_entries_accumulator));
-			CrashHandler.hotTracingObject = null;
+			CMN.hotTracingObject = null;
 			return ret;
 		} catch (Exception e) {
-			CrashHandler.hotTracingObject = getPath() + e;
+			CMN.hotTracingObject = getPath() + e;
 			CMN.debug(e);
 			return "!!!";
 		}
@@ -729,7 +726,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
+	public String getVirtualTextValidateJs(Object presenter, Object mWebView, long position) {
 		return "";
 	}
 	
@@ -3442,7 +3439,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	@Override
-	public void onPageFinished(BookPresenter invoker, WebViewmy mWebView, String url, boolean b) {
+	public void onPageFinished(BookPresenter invoker, Object mWebView, String url, boolean b) {
 	
 	}
 }

@@ -17,8 +17,6 @@
 
 package com.knziha.plod.dictionary.Utils;
 
-import androidx.appcompat.app.GlobalOptions;
-
 import com.knziha.plod.plaindict.CMN;
 
 import java.io.*;
@@ -302,7 +300,21 @@ public class  BU{//byteUtils
 			e.printStackTrace();
 		}
     }
-
+	
+	public static void printStream(InputStream b,  File path) throws IOException {
+		File p = path.getParentFile();
+		if(!p.exists()) p.mkdirs();
+		FileOutputStream fo = new FileOutputStream(path);
+		byte[] data = new byte[4096];
+		int len;
+		while ((len=b.read(data))>0){
+			fo.write(data, 0, len);
+		}
+		fo.flush();
+		fo.close();
+		b.close();
+	}
+	
     public static String byteTo16(byte bt){
         String[] strHex={"0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"};
         String resStr="";
@@ -560,7 +572,7 @@ public class  BU{//byteUtils
 			}
 			return sb.toString();
 		} catch (Exception e){
-			if(GlobalOptions.debug)SU.Log(e);
+			if(CMN.debug)SU.Log(e);
 		}
 		return "";
 	}

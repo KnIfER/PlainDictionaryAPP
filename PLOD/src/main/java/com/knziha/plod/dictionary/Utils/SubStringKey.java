@@ -1,7 +1,5 @@
 package com.knziha.plod.dictionary.Utils;
 
-import androidx.annotation.NonNull;
-
 public class SubStringKey {
 	public final static SubStringKey EmptyDomain = new SubStringKey("",0,0);
 	final int st;
@@ -58,7 +56,6 @@ public class SubStringKey {
 		return hash;
 	}
 	
-	@NonNull
 	@Override
 	public String toString() {
 		if (st==0 && ed==text.length()) {
