@@ -115,7 +115,8 @@ public class RLContainerSlider extends FrameLayout {
 	int dragged;
 	/** Slide to turn page enabled  */
 	public boolean slideTurn = false;
-	public boolean slideImmersiveAllow = false;
+	//public boolean slideImmersiveAllow = false;
+	public AppBarLayout appbar;
 	/** Slide to show/hide toolbar and bottombar  */
 	public boolean slideImmersive = true;
 	/** Tap twice and quick zoom enabled  */
@@ -675,7 +676,7 @@ public class RLContainerSlider extends FrameLayout {
 							}
 							//CMN.debug("theta", theta, dx);
 							
-							if(swipeRefreshAllow && dragged==0 && aborted!=1)
+							if(swipeRefreshAllow && dragged==0 && aborted!=1 && (appbar==null || appbar.getTop()==0))
 							{
 								float dy = lastY - OrgY;
 								dx = lastX - OrgX;
@@ -792,7 +793,7 @@ public class RLContainerSlider extends FrameLayout {
 			swipeRefresh = !swipeRefresh;
 			swipeRefreshAllow = false;
 		}
-		slideImmersive = slideImmersiveAllow && PDICMainAppOptions.slideImmersive();
+		slideImmersive = appbar!=null && PDICMainAppOptions.slideImmersive();
 		//CMN.debug("quoTapZoom", swipeRefresh, slideTurn, tapZoom);
 		nothing = !swipeRefresh && !slideTurn && !tapZoom && !slideImmersive;
 	}

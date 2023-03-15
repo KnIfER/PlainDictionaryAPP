@@ -32,7 +32,6 @@ import com.mobeta.android.dslv.SimpleFloatViewManager;
 import static com.knziha.plod.PlainUI.ButtonUIData.BottombarBtnIcons;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.PlainUI.ButtonUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.plaindict.暂未实现帮助类.没有实现的_工具栏_点击事件不完全列表;
 
 public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener{
@@ -421,7 +420,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 			if(bNeedSave){
 				CMN.debug("保存配置……", projectContext.key);
 				projectContext.currentValue=newVal;
-				RebuildBottombarIcons(a, projectContext, a.mConfiguration);
+				projectContext.RebuildBottombarIcons();
 				opt.putAppProject(projectContext);
 				if(projectContext.type>=0){
 					checkReferncedChange(a.contentbar_project, newVal);
@@ -437,7 +436,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 			CMN.debug(checkNow.key,  "refer to >> ", projectContext.key);
 			checkNow.currentValue=newVal;
 			checkNow.clear(null);
-			RebuildBottombarIcons(a, checkNow, a.mConfiguration);
+			checkNow.RebuildBottombarIcons();
 		}
 	}
 	

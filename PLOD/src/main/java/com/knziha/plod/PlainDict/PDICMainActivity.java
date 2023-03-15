@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.PlainUI.ButtonUIData.BottombarBtnIcons;
-import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_PLAIN;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
@@ -268,7 +267,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 
 			if(bottombar_project!=null&&bottombar_project.bNeedCheckOrientation){
-				RebuildBottombarIcons(this, bottombar_project, newConfig);
+				bottombar_project.RebuildBottombarIcons();
 			}
 			if(dictPicker !=null) {
 				if(dictPicker.isVisible()) {
@@ -1116,6 +1115,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		schuiList = SearchUI.MainApp.表;
 		super.findFurtherViews();
 		
+		weblistHandler.pageSlider.appbar = UIData.appbar;
 		ivBack.setAccessibilityDelegate(new View.AccessibilityDelegate(){
 			@Override
 			public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
@@ -1343,7 +1343,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			appproject = "0|1|2|3|4|5|6";
 		}
 		bottombar_project = new ButtonUIProject(this, "btmprj", BottombarBtnIcons, R.array.customize_btm, appproject, bottombar, BottombarBtns);
-		RebuildBottombarIcons(this, bottombar_project, mConfiguration);
+		bottombar_project.RebuildBottombarIcons();
 		
 		viewPager.setAdapter(pagerAdapter);
 		viewPager.setCurrentItem(CurrentViewPage = 1);
@@ -1691,7 +1691,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//CMN.debug("onLayoutChange::", bottom, oldBottom);
 				int keyBoardHeight = ViewUtils.keyboardHeight(root);
 				//CMN.debug("onLayoutChange::keyBoardHeight=", keyBoardHeight);
-				if(keyboardShown ^ keyBoardHeight>100) {
+				if(keyboardShown ^ (keyBoardHeight>100)) {
 					keyboardShown = !keyboardShown;
 					//softMode==softModeResize
 					CMN.debug("键盘::onLayoutChange::keyboardShown", keyboardShown, settingsPanel);
@@ -1700,7 +1700,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						VU.setVisible(bottombar, false);
 						VU.setVisible(contentUIData.bottombar2, false);
 					} else {
-						VU.setVisible(bottombar, true);
+						VU.setVisible(bottombar, !isContentViewAttached());
 						VU.setVisible(contentUIData.bottombar2, true);
 					}
 					if (bImmersive) {

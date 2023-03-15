@@ -1,6 +1,5 @@
 package com.knziha.plod.PlainUI;
 
-import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_FYE_SCH;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_LOAD_HISTORY;
 import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV;
@@ -973,7 +972,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		View[] btns = project.btnsStack.get(0);
 		project.btnLayout = btns[5].getLayoutParams();
 		project.mColorFilter = new PorterDuffColorFilter(0xff8f8f8f, PorterDuff.Mode.SRC_IN);
-		RebuildBottombarIcons(a, project, a.mConfiguration);
+		project.RebuildBottombarIcons();
 	}
 	
 	boolean isInit;

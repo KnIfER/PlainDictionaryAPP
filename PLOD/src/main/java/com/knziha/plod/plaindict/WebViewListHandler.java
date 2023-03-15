@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.PlainUI.ButtonUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.ButtonUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
@@ -1033,7 +1032,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void checkUI() {
 		if(contentbarProject!=null && ViewUtils.checkSetVersion(versions, 0, contentbarProject.version)) {
 			contentbarProject.addBar(contentUIData.bottombar2, ContentbarBtns);
-			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
+			a.contentbar_project.RebuildBottombarIcons();
 		}
 		boolean b1 = ViewUtils.checkSetVersion(versions, 3, GlobalOptions.isDark?1:0);
 		if(ViewUtils.checkSetVersion(versions, 1, a.MainAppBackground) || b1) {
@@ -1136,7 +1135,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				project.type = cbar_key;
 			}
 			project.addBar(contentUIData.bottombar2, ContentbarBtns);
-			RebuildBottombarIcons(a, project, a.mConfiguration);
+			project.RebuildBottombarIcons();
 			return contentbarProject = project;
 		}
 		return contentbarProject;

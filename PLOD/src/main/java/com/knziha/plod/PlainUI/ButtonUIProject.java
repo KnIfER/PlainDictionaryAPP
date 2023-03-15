@@ -16,6 +16,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.ActivatableImageView;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 
@@ -36,8 +37,9 @@ public class ButtonUIProject extends ButtonUIData{
 	public View.OnClickListener onClickListener;
 	public View.OnLongClickListener onLongClickListener;
 	public View.OnTouchListener onTouchListener;
+	MainActivityUIBase a;
 	
-	public ButtonUIProject(Context context, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup bar, View[] _btns) {
+	public ButtonUIProject(MainActivityUIBase a, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup bar, View[] _btns) {
 		key = _key;
 		icons = _icons;
 		currentValue = customize_str;
@@ -48,7 +50,8 @@ public class ButtonUIProject extends ButtonUIData{
 			}
 		}
 		addBar(bar, _btns);
-		titles = context.getResources().getStringArray(titlesRes);
+		titles = a.mResource.getStringArray(titlesRes);
+		this.a = a;
 	}
 	
 	public void addBar(ViewGroup bar, View[] btns) {
@@ -115,7 +118,7 @@ public class ButtonUIProject extends ButtonUIData{
 			iconData=null;
 			if(a!=null){
 				currentValue=null;
-				RebuildBottombarIcons(a, this, a.mConfiguration);
+				RebuildBottombarIcons();
 			}
 		}
 	}
@@ -125,21 +128,22 @@ public class ButtonUIProject extends ButtonUIData{
 	 * 定制底栏：二 见 {@link #ContentbarBtnIcons}<br/>
 	 * 定制底栏：三 见 {@link WordPopup}<br/>
 	 */
-	public static void RebuildBottombarIcons(MainActivityUIBase a, ButtonUIProject project, Configuration config) {
+	public void RebuildBottombarIcons() {
 		MainActivityUIBase this_ = a;
-		View.OnClickListener onClickListener = project.onClickListener;
-		View.OnLongClickListener onLongClickListener = project.onLongClickListener;
-		View.OnTouchListener onTouchListener = project.onTouchListener;
+		Configuration config = this_.mConfiguration;
+		View.OnClickListener onClickListener = this.onClickListener;
+		View.OnLongClickListener onLongClickListener = this.onLongClickListener;
+		View.OnTouchListener onTouchListener = this.onTouchListener;
 		if (onClickListener == null) {
 			onClickListener = a;
 			onLongClickListener = a;
 		}
-		ArrayList<ViewGroup> bars;
-		if(project==null || (bars = project.barStack).size()==0) {
+		ArrayList<ViewGroup> bars = barStack;
+		if(bars.size()==0) {
 			return;
 		}
-		String appproject = project.currentValue;
-		boolean tint = project.getTint();
+		String appproject = this.currentValue;
+		boolean tint = this.getTint();
 		if(appproject==null) appproject="0|1|2|3|4|5|6";
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
@@ -153,13 +157,13 @@ public class ButtonUIProject extends ButtonUIData{
 			bottombar.removeAllViews();
 			boolean isHorizontal = config.orientation==Configuration.ORIENTATION_LANDSCAPE;
 			String[] arr = appproject.split("\\|");
-			View[] presetBtns = project.btnsStack.get(j);
-			int[] btnIcons = project.icons;
+			View[] presetBtns = this.btnsStack.get(j);
+			int[] btnIcons = this.icons;
 			CMN.rt();
 	//		((RippleDrawable)a.getDrawable(rippleBG)).setColor(ColorStateList.valueOf(Color.WHITE));
 			int rippleBG = R.drawable.abc_action_bar_item_background_material;
 			boolean modRipple = PDICMainAppOptions.modRipple();
-			final ViewGroup.LayoutParams lp = project.btnLayout!=null?project.btnLayout:this_.contentUIData.browserWidget10.getLayoutParams();
+			final ViewGroup.LayoutParams lp = this.btnLayout!=null?this.btnLayout:this_.contentUIData.browserWidget10.getLayoutParams();
 			for (int i = 0; i < arr.length; i++) {
 				String val = arr[i];
 				int st = 0;
@@ -168,7 +172,7 @@ public class ButtonUIProject extends ButtonUIData{
 					while (st<ed && val.charAt(st)=='\\') ++st;
 					if(st>0){
 						val = val.substring(st, ed);
-						if(st==2) project.bNeedCheckOrientation=true;
+						if(st==2) this.bNeedCheckOrientation=true;
 					}
 					if(st==0||st==2&&isHorizontal){
 						int id = IU.parsint(val, -1);
@@ -196,7 +200,7 @@ public class ButtonUIProject extends ButtonUIData{
 									iv = new ImageView(this_);
 									iv.setImageResource(bid);
 								}
-								iv.setContentDescription(project.titles[i]);
+								iv.setContentDescription(this.titles[i]);
 								//iv.setBackgroundResource(R.drawable.surrtrip1);
 								iv.setBackgroundResource(rippleBG);
 								iv.setLayoutParams(lp);
@@ -215,8 +219,8 @@ public class ButtonUIProject extends ButtonUIData{
 								if (modRipple) {
 									a.tintListFilter.ModRippleColor(iv.getBackground(), a.tintListFilter.sRippleState);
 								}
-								if (project.mColorFilter!=null) {
-									iv.setColorFilter(project.mColorFilter);
+								if (this.mColorFilter!=null) {
+									iv.setColorFilter(this.mColorFilter);
 								}
 								bottombar.addView(btn=iv);
 							}
@@ -224,7 +228,7 @@ public class ButtonUIProject extends ButtonUIData{
 								ViewGroup svp = (ViewGroup) btn.getParent();
 								btn.setBackgroundResource(rippleBG);
 								if (svp != null) svp.removeView(btn);
-								btn.setContentDescription(project.titles[i]);
+								btn.setContentDescription(this.titles[i]);
 								if (modRipple) {
 									a.tintListFilter.ModRippleColor(btn.getBackground(), a.tintListFilter.sRippleState);
 								}
@@ -242,6 +246,7 @@ public class ButtonUIProject extends ButtonUIData{
 					}
 				}
 			}
+			ViewUtils.setForegroundColor(bottombar, a.tintListFilter);
 		}
 		//CMN.pt("重排耗时", bottombar_project);
 	}
