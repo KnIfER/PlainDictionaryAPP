@@ -262,13 +262,13 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					}
 				}
 			}
-			if(isResourceFile){
+			if(isResourceFile) {
 				int idx = lookUp(key);
 				if(idx>=0) {
 					try {
 						return getResourseAt(idx);
-					} catch (IOException e) {
-						e.printStackTrace();
+					} catch (Exception e) {
+						CMN.debug(e);
 					}
 				}
 			}
@@ -279,8 +279,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						//CMN.debug("got resource @", idx, key+"=?"+mddTmp.getEntryAt(idx));
 						try {
 							return mddTmp.getResourseAt(idx);
-						} catch (IOException e) {
-							e.printStackTrace();
+						} catch (Exception e) {
+							CMN.debug(e);
 						}
 					}
 					//else SU.Log("chrochro inter_ key is not find:",_Dictionary_fName,key, idx);
