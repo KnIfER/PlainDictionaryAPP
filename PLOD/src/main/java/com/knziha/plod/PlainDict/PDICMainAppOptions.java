@@ -1593,7 +1593,7 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	}
 	
 	
-	@Metaline(flagPos=3, debug=1) public static boolean getAdjSHShwn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=3) public static boolean getAdjSHShwn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=3) public boolean togAdjSHShwn() { SecondFlag=SecondFlag; throw new IllegalArgumentException(); }
 
 	
@@ -3476,6 +3476,13 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=39, shift=1) public static boolean slideImmersive() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=39, shift=1) public static void slideImmersive(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=40) public static boolean getAdjImmersiveShwn(){ NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=40) public boolean togAdjImmersiveShwn() { NinthFlag=NinthFlag; throw new IllegalArgumentException(); }
+	
+	@Metaline(flagPos=41) public static boolean shrinkIcons() { NinthFlag=NinthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=41) public static void shrinkIcons(boolean value){ NinthFlag=NinthFlag; throw new RuntimeException(); }
+	
 	
 	
 }

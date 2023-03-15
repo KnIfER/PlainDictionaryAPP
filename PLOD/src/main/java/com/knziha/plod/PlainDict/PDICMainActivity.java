@@ -2986,7 +2986,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return currentDictionary !=null && currentDictionary.getType()==PLAIN_TYPE_WEB;
 	}
 	
-	void ResetIMOffset() {
+	public void ResetIMOffset() {
 		AppBarLayout barappla = (AppBarLayout) UIData.appbar;
 		if(barappla.getTop()<0) {
 			CMN.debug("重置了");
@@ -3009,10 +3009,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if (isContentViewAttached()) {
 					weblistHandler.showMoreToolsPopup(v);
 				} else {
-					viewContent(weblistHandler);
-					if(ActivedAdapter==null)
-						ActivedAdapter = getActiveAdapter();
-					AllMenus.setItems(getActiveAdapter()==adaptermy2?Multi_ContentMenu:SingleContentMenu);
+					retachContentView();
 				}
 			} return true;
 			case R.drawable.ic_prv_dict_chevron:
@@ -3102,6 +3099,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}  return true;
 		}
 		return false;
+	}
+	
+	public void retachContentView() {
+		viewContent(weblistHandler);
+		if(ActivedAdapter==null)
+			ActivedAdapter = getActiveAdapter();
+		AllMenus.setItems(getActiveAdapter()==adaptermy2?Multi_ContentMenu:SingleContentMenu);
 	}
 	
 	public void showPickFavorFolder() {

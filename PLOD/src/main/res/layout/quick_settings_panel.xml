@@ -32,6 +32,25 @@
 	<View style="@style/quick_settings_sephor" />
 
 	<LinearLayout
+		android:id="@+id/immersivePanel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		>
+		<ImageView
+			android:id="@+id/immersive_arrow"
+			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+			style="@style/quick_settings_arrow"
+			/>
+		<TextView
+			android:id="@+id/immersive"
+			android:text="工具栏显示和隐藏"
+			style="@style/quick_settings_menu" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
+
+
+	<LinearLayout
 		android:id="@+id/lstPanel"
 		android:orientation="horizontal"
 		android:layout_width="match_parent"

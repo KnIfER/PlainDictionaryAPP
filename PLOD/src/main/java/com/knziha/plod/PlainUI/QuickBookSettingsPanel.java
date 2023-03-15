@@ -15,7 +15,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.VU;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.HorizontalNumberPicker;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.plaindict.CMN;
@@ -93,6 +95,16 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		{
 			UIData.scnArrow.setRotation(90);
 			initScreenPanel();
+		}
+		
+		if (a.thisActType==MainActivityUIBase.ActType.PlainDict) {
+			if (opt.getAdjImmersiveShwn())
+			{
+				UIData.immersiveArrow.setRotation(90);
+				initImmersivePanel();
+			}
+		} else {
+			VU.setVisible(UIData.immersivePanel, false);
 		}
 		
 		if (opt.getAdjustLstPreviewShown())
@@ -178,6 +190,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		CMN.debug("刷新全部数据...");
 		this.weblist = a.weblist;
 		if (_screen !=null) _screen.refresh();
+		if (_immersive !=null) initImmersivePanel();
 		if (_lstPrv !=null) _lstPrv.refresh();
 		if (_sHandle !=null) initScrollHandle();
 		if (_tTools !=null) initTextTools();
@@ -196,6 +209,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				boolean show = opt.togAdjScnShwn();
 				UIData.scnArrow.animate().rotation(show?90:0);
 				setPanelVis(initScreenPanel(), show);
+			}  break;
+			case R.id.immersive: {
+				boolean show = opt.togAdjImmersiveShwn();
+				UIData.immersiveArrow.animate().rotation(show?90:0);
+				setPanelVis(initImmersivePanel(), show);
 			}  break;
 			case R.id.lst: {
 				boolean show = opt.togAdjustLstPreviewShown();
@@ -315,6 +333,21 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					int action =  PDICMainAppOptions.toolsQuickAction();
 					//todo 110
 					//a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);
+				}
+			}
+			if (storageInt==makeInt(4, 27, false)) {
+				((PDICMainActivity)a).setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
+				((PDICMainActivity)a).DetachContentView(false);
+				((PDICMainActivity)a).retachContentView();
+				((PDICMainActivity)a).ResetIMOffset();
+				AppBarLayout barappla = (AppBarLayout) ((PDICMainActivity)a).UIData.appbar;
+				barappla.setExpanded(true, true);
+			}
+			if (storageInt==makeInt(9, 41, false)) {
+				PDICMainAppOptions.shrinkIcons(val);
+				a.contentbar_project.RebuildBottombarIcons();
+				if (a instanceof PDICMainActivity) {
+					((PDICMainActivity)a).bottombar_project.RebuildBottombarIcons();
 				}
 			}
 			if (v!=null && _lstPrv !=null && v.getParent()==_lstPrv.linearLayout) {
@@ -481,6 +514,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	SettingsPanel _screen;
+	SettingsPanel _immersive;
 	SettingsPanel _lstPrv;
 	SettingsPanel _sHandle;
 	SettingsPanel _tTools;
@@ -540,6 +574,31 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,p1ViewSz3
 		,prv
 		,nxt
+	}
+	
+	
+	private SettingsPanel initImmersivePanel() {
+		shType = weblist.getScrollHandType();
+		if (_immersive ==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{
+							new String[]{"沉浸滚动", "内容页面启用沉浸滚动模式"}
+							, new String[]{"图标大小", "缩小图标尺寸"}
+					}
+					, new int[][]{
+						new int[]{Integer.MAX_VALUE
+							, makeInt(4, 27, false) // PDICMainAppOptions.getEnableSuperImmersiveScrollMode()
+						}
+						, new int[]{Integer.MAX_VALUE
+							, makeInt(9, 41, false) // PDICMainAppOptions.shrinkIcons()
+						}
+			}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			addPanelViewBelow(settings.settingsLayout, UIData.immersivePanel);
+			_immersive = settings;
+		}
+		return _immersive;
 	}
 	
 	private SettingsPanel initListPanel() {

@@ -38,6 +38,7 @@ public class ButtonUIProject extends ButtonUIData{
 	public View.OnLongClickListener onLongClickListener;
 	public View.OnTouchListener onTouchListener;
 	MainActivityUIBase a;
+	private boolean smallIcon;
 	
 	public ButtonUIProject(MainActivityUIBase a, String _key, int[] _icons, int titlesRes, String customize_str, ViewGroup bar, View[] _btns) {
 		key = _key;
@@ -148,6 +149,10 @@ public class ButtonUIProject extends ButtonUIData{
 		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
 		//appproject="0|1|2|3|4|5|6";
 		//appproject="9|10|11|13|14|15";
+		final boolean smallIcon = PDICMainAppOptions.shrinkIcons();
+		final boolean smallIconSet = true; // smallIcon != this.smallIcon;
+		final int smallIconPad = smallIcon? (int) (5 * GlobalOptions.density) :0;
+		this.smallIcon = smallIcon;
 		for (int j = 0; j < bars.size(); j++)
 		{
 			ViewGroup bottombar = bars.get(j);
@@ -238,10 +243,13 @@ public class ButtonUIProject extends ButtonUIData{
 								}
 								bottombar.addView(btn);
 							}
-							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).bottomMargin = (int) (5 * GlobalOptions.density);
-							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).leftMargin =   (int) (5 * GlobalOptions.density);
-							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).rightMargin =  (int) (5 * GlobalOptions.density);
-							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).topMargin =    (int) (5 * GlobalOptions.density);
+							if(smallIconSet) {
+								ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) btn.getLayoutParams();
+								layoutParams.bottomMargin = smallIconPad;
+								layoutParams.leftMargin =   smallIconPad;
+								layoutParams.rightMargin =  smallIconPad;
+								layoutParams.topMargin =    smallIconPad;
+							}
 						}
 					}
 				}
