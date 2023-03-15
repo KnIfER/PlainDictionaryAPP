@@ -1341,7 +1341,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						}
 					}
 				} catch (Exception e) {
-					CMN.Log(CrashHandler.hotTracingObject, e);
+					CMN.Log(CMN.hotTracingObject, e);
 				}
 			}
 		}

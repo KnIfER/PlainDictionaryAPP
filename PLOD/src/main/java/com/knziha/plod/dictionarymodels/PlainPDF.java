@@ -1,7 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
-import android.os.Build;
-import android.webkit.ValueCallback;
+import static com.knziha.plod.plaindict.CMN.AssetTag;
+
 import android.webkit.WebView;
 
 import com.alibaba.fastjson.JSONObject;
@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-
-import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 public class PlainPDF extends DictionaryAdapter {
 	mdictRes_asset INTERNAL_RES;
@@ -231,7 +229,7 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
+	public String getVirtualTextValidateJs(Object presenter, Object mWebView, long position) {
 		return "PDFViewerApplication?1:0";
 	}
 	
@@ -240,8 +238,9 @@ public class PlainPDF extends DictionaryAdapter {
 		return null;
 	}
 	
-	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
+	public void onPageFinished(BookPresenter bookPresenter, Object wv, String url, boolean updateTitle) {
 		CMN.debug("PDF", "web  - onPageFini_NWPshed", url, getDictionaryName());
+		WebViewmy mWebView = (WebViewmy) wv;
 		mWebView.evaluateJavascript(PDICMainAppOptions.debugPDFFont()?debugFontOn:debugFontOff, null);
 	}
 }

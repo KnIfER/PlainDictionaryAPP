@@ -1471,8 +1471,9 @@ public class PlainWeb extends DictionaryAdapter {
 	/** WEB模型直接在此处实现快速搜索（避免重新加载），返回的JS（基于searchJs）亦检验亦效应。 */
 	@StripMethods()
 	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
+	public String getVirtualTextValidateJs(Object presenter, Object wv, long position) {
 		//mWebView.fromNet=true;
+		WebViewmy mWebView = (WebViewmy) wv;
 		BookPresenter bookPresenter = (BookPresenter) presenter;
 		if (searchJs!=null && position==0)
 		try {
@@ -1919,7 +1920,8 @@ public class PlainWeb extends DictionaryAdapter {
 //	}
 	
 	@Override
-	public boolean handlePageUtils(BookPresenter presenter, WebViewmy mWebView, int pos) {
+	public boolean handlePageUtils(BookPresenter presenter, Object wv, int pos) {
+		WebViewmy mWebView = (WebViewmy) wv;
 		switch (pos) {
 			case R.string.page_yuan:
 				mWebView.setTag(R.id.save, false);

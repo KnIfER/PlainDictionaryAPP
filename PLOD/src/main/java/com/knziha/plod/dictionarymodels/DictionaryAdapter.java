@@ -234,7 +234,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
+	public String getVirtualTextValidateJs(Object presenter, Object mWebView, long position) {
 		return "";
 	}
 	
@@ -311,7 +311,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		dor.onThreadEd(parm);
 	}
 	
-	public boolean handlePageUtils(BookPresenter presenter, WebViewmy mWebView, int pos) {
+	public boolean handlePageUtils(BookPresenter presenter, Object mWebView, int pos) {
 		return false;
 	}
 	
@@ -682,7 +682,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public void onPageFinished(BookPresenter invoker, WebViewmy mWebView, String url, boolean b) {
+	public void onPageFinished(BookPresenter invoker, Object mWebView, String url, boolean b) {
 	
 	}
 }
