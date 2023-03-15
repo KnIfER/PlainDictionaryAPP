@@ -1347,6 +1347,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		viewPager.setAdapter(pagerAdapter);
 		viewPager.setCurrentItem(CurrentViewPage = 1);
+		viewPager.setNoScroll(PDICMainAppOptions.lockViewPageScroll());
 		
 		//mDrawerLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 		UIData.drawerLayout.addDrawerListener(mDrawerToggle);// 按钮动画特效
@@ -2770,10 +2771,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public void setNestedScrollingEnabled(boolean bImmersive) {
 		this.bImmersive = bImmersive;
 		boolean v1 = bImmersive;// && !PDICMainAppOptions.ImmersiveForContentsOnly();
-		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(v1);
-		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(v1);
-		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(v1);
-		((AdvancedNestScrollListview)mlv2).setNestedScrollingEnabled(v1);
+//		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(v1);
+//		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(v1);
+//		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(v1);
+//		((AdvancedNestScrollListview)mlv2).setNestedScrollingEnabled(v1);
 		weblistHandler.setNestedScrollingEnabled(bImmersive);
 		UIData.appbar.resetStretchViews();
 		if(!bImmersive) {
@@ -2800,6 +2801,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				((CoordinatorLayout.LayoutParams)UIData.drawerLayout.getLayoutParams()).setBehavior(getScrollBehaviour(true));
 			}
 		}
+//		UIData.appbar.strechOnlyOnce = true;
 		if(bImmersive) {
 			UIData.appbar.addStretchView(UIData.main, bottomBarSz, 1);
 			UIData.appbar.addStretchView(bottombar, bottomBarSz, 2);
@@ -2885,7 +2887,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)contentview.getLayoutParams());
 					lp.gravity=Gravity.BOTTOM;
 					lp.setBehavior(getScrollBehaviour(true));
-					UIData.appbar.addStretchView(contentview, bottomBarSz, 1);
+					//UIData.appbar.addStretchView(contentview, bottomBarSz, 1);
 					UIData.appbar.addStretchView(weblistHandler.contentUIData.bottombar2, bottomBarSz, 2);
 					contentHolder.addView(contentview, 2);
 				}
@@ -2984,7 +2986,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return currentDictionary !=null && currentDictionary.getType()==PLAIN_TYPE_WEB;
 	}
 	
-	private void ResetIMOffset() {
+	void ResetIMOffset() {
 		AppBarLayout barappla = (AppBarLayout) UIData.appbar;
 		if(barappla.getTop()<0) {
 			CMN.debug("重置了");

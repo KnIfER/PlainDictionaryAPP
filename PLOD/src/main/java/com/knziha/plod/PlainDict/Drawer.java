@@ -44,6 +44,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
@@ -1367,6 +1368,9 @@ public class Drawer extends Fragment implements
 				PDICMainAppOptions.setEnableSuperImmersiveScrollMode(isChecked);
 				a.setNestedScrollingEnabled(isChecked);
 				adjustBottomPadding();
+				a.ResetIMOffset();
+				AppBarLayout barappla = (AppBarLayout) a.UIData.appbar;
+				barappla.setExpanded(true, true);
 			} break;
 			case R.id.sw3:{
 				a.opt.setServerStarted(isChecked);

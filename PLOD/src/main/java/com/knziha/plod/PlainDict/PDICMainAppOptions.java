@@ -3471,5 +3471,11 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=37) public static boolean debugCss() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=37) public static void debugCss(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=38) public static boolean lockViewPageScroll() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=38) public static void lockViewPageScroll(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=39, shift=1) public static boolean slideImmersive() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=39, shift=1) public static void slideImmersive(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
 	
 }

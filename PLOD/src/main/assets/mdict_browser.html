@@ -3453,7 +3453,8 @@
 			}
 			else if(className.startsWith('arr')){
 				//menu=makeMenu(name, ['专注模式1（折叠）', '专注模式2（限高）', ['滚动快', '滚动慢', '滚动停'], '回到顶部', null]);
-				menu=makeMenu('arr', [[[30,70],'toTop','autoScroll'], ['autoScroll1', 'autoScroll2', 'autoScroll3'], 'settings', 'focusMode1', 'focusMode2', null]);
+				menu=makeMenu('arr', [[[30,70],'toTop','autoScroll'], ['autoScroll1', 'autoScroll2', 'autoScroll3']
+					, ge('prev').style.display=='none'?'previous':'', 'settings', 'focusMode1', 'focusMode2', null]);
 				menu.revert=true;
 			}
 			else if(target.id==="fileName"){
@@ -3542,6 +3543,9 @@
 				case 'showPageOpt':
 				case 'settings':
 					showSettings();
+				break
+				case 'previous':
+					prvnxtFrame();
 				break
 				case 'foldThis':
 					var inf=getMenuDictInfo();

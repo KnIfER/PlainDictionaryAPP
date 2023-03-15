@@ -24,6 +24,7 @@ public class VersionUtils {
 //		PDICMainAppOptions.storeTapsch(true);
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
+			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 			CMN.debug("初始化版本!!!");
 			firstInstall = true;
 			opt.setTypeFlag_11_AtQF(0, 0);
@@ -45,7 +46,6 @@ public class VersionUtils {
 			opt.tapSchPageAutoReadEntry(false);
 
 			PDICMainAppOptions.pageSchWild(true);
-			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 
 			PDICMainAppOptions.showPrvBtn(true);
 			PDICMainAppOptions.showNxtBtn(true);
@@ -83,12 +83,11 @@ public class VersionUtils {
 		
 		if(PDICMainAppOptions.checkVersionBefore_8_3())
 		{
-			PDICMainAppOptions.checkVersionBefore_8_3(true);
+			PDICMainAppOptions.checkVersionBefore_8_3(false);
 			PDICMainAppOptions.checkVersionBefore_7_6(true);
 			PDICMainAppOptions.revisitOnBackPressed(true);
 			PDICMainAppOptions.showEntrySeekbar(false);
 			PDICMainAppOptions.showDictName(false);
-			PDICMainAppOptions.showPrvBtn(false);
 		}
 //		opt.setPageTurn1(true);
 //		opt.setPageTurn2(true);

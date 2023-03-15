@@ -22,11 +22,13 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
@@ -113,6 +115,9 @@ public class RLContainerSlider extends FrameLayout {
 	int dragged;
 	/** Slide to turn page enabled  */
 	public boolean slideTurn = false;
+	public boolean slideImmersiveAllow = false;
+	/** Slide to show/hide toolbar and bottombar  */
+	public boolean slideImmersive = true;
 	/** Tap twice and quick zoom enabled  */
 	public boolean tapZoom;
 	/** 下拉刷新  */
@@ -121,6 +126,7 @@ public class RLContainerSlider extends FrameLayout {
 	public boolean swipeRefreshed = false;
 
 	boolean flingDeteced;
+	boolean flingDetecedY;
 	/** Tap Twice Deteced */
 	public boolean twiceDetected;
 	public static long lastZoomTime;
@@ -203,6 +209,30 @@ public class RLContainerSlider extends FrameLayout {
 		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
 			//if(System.currentTimeMillis()-lastDownTime<=200) //事件老死
 			//((MainActivityUIBase)getContext()).showT("onfling!!!");
+			if(slideImmersive && (dragged==0 && aborted==0))
+			{
+				float vy = velocityY / 8;
+				CMN.Log("onFling Y ??? ", vy);
+				if (Math.abs(vy) < 15*density) {
+					//return true;
+				}
+				else if(Math.abs(velocityY/(velocityX==0?0.000001:velocityX))>0.57) {
+					CMN.Log("onFling Y !!! ");
+					flingDeteced = flingDetecedY = true;
+					PDICMainActivity a = ((PDICMainActivity)getContext());
+					AppBarLayout barappla = (AppBarLayout) a.UIData.appbar;
+					if (barappla.getExpanded() ^ velocityY>0 ) {
+						barappla.postOnAnimation(new Runnable() {
+							@Override
+							public void run() {
+								barappla.setExpanded(!barappla.getExpanded(), true);
+							}
+						}/*, 10*/);
+					}
+					
+					return true;
+				}
+			}
 			if(slideTurn && bZoomOutCompletely)
 			{
 				if(e2.getPointerCount()>1
@@ -225,6 +255,7 @@ public class RLContainerSlider extends FrameLayout {
 				if(Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.699) {
 					//CMN.Log("onFling");
 					flingDeteced =true;
+					flingDetecedY = false;
 					//IMSlider.startdrag(ev);
 					//xxx
 					/////if(IMSlider.inf!=null)
@@ -566,6 +597,7 @@ public class RLContainerSlider extends FrameLayout {
 			if(flingDeteced) {
 				flingDeteced=false;
 				dragged=page.decided=0;
+				if(flingDetecedY) return false;
 				return true;
 			}
 		}
@@ -760,8 +792,9 @@ public class RLContainerSlider extends FrameLayout {
 			swipeRefresh = !swipeRefresh;
 			swipeRefreshAllow = false;
 		}
+		slideImmersive = slideImmersiveAllow && PDICMainAppOptions.slideImmersive();
 		//CMN.debug("quoTapZoom", swipeRefresh, slideTurn, tapZoom);
-		nothing = !swipeRefresh && !slideTurn && !tapZoom;
+		nothing = !swipeRefresh && !slideTurn && !tapZoom && !slideImmersive;
 	}
 	
 	public void setWebview(WebViewmy webview, ViewGroup scrollView) {

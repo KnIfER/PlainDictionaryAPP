@@ -3,6 +3,7 @@ var trans={
     ,"foldThis" : "展开 / 折叠"
     ,"foldAll" : "折叠全部"
     ,"unfoldAll" : "展开全部"
+    ,"previous" : "切换上一个"
     ,"showPageOpt" : "页面设置"
     ,"unFoldCurrent" : "只展开当前页面"
     ,"saveCurrent" : "保存当前页面"

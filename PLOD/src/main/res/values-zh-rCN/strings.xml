@@ -271,5 +271,6 @@
 	<string name="always_fold">总是收起</string>
 	<string name="auto_sel_all">自动全选</string>
 	<string name="pageOpt">页面设置</string>
+	<string name="lock_viewpage_lst">锁定左右列表切换</string>
 	>
 </resources>

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import androidx.appcompat.app.GlobalOptions;
+
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -216,7 +218,7 @@ public class ButtonUIProject extends ButtonUIData{
 								if (project.mColorFilter!=null) {
 									iv.setColorFilter(project.mColorFilter);
 								}
-								bottombar.addView(iv);
+								bottombar.addView(btn=iv);
 							}
 							else {
 								ViewGroup svp = (ViewGroup) btn.getParent();
@@ -232,6 +234,10 @@ public class ButtonUIProject extends ButtonUIData{
 								}
 								bottombar.addView(btn);
 							}
+							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).bottomMargin = (int) (5 * GlobalOptions.density);
+							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).leftMargin =   (int) (5 * GlobalOptions.density);
+							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).rightMargin =  (int) (5 * GlobalOptions.density);
+							((ViewGroup.MarginLayoutParams) btn.getLayoutParams()).topMargin =    (int) (5 * GlobalOptions.density);
 						}
 					}
 				}

@@ -2466,6 +2466,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		opt.putString("ctnp#999", null);
 		weblistHandler.setUpContentView(cbar_key, null);
 		weblistHandler.pageSlider.onSwipeTopListener = this;
+		weblistHandler.pageSlider.slideImmersiveAllow = thisActType==ActType.PlainDict;
 		
 		setContentDetachType(1);
 		

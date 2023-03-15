@@ -188,15 +188,16 @@ public abstract class MdictServer extends NanoHTTPD {
 			String[] list = uri.split("/");
 			String dn=list[0];
 			presenter = md_getByURL(dn);
-			//SU.Log("requesting_frame::presenter::", dn, presenter);
+			SU.Log("requesting_frame::presenter::", presenter);
+			SU.Log(list);
 			uri = uri.substring(dn.length());
 			key = uri.replace("/", SepWindows);
 			if(list.length==1){
 				try {
-					int index = presenter.bookImpl.lookUp("index");
+					int index = presenter.bookImpl.lookUp("index", true);
 					return newFixedLengthResponse(presenter.bookImpl.getRecordsAt(null, index>=0?index:0));
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (Exception e) {
+					CMN.debug(e);
 				}
 			}
 			else if(list[1].equals("@@@")) {//  /base/0/@@@/name
@@ -218,6 +219,13 @@ public abstract class MdictServer extends NanoHTTPD {
 					e.printStackTrace();
 				}
 			}
+//			else if(list.length==2){
+//				try {
+//					return newFixedLengthResponse(presenter.bookImpl.getRecordsAt(null, Integer.parseInt(list[1], 0)));
+//				} catch (Exception e) {
+//					CMN.debug(e);
+//				}
+//			}
 		}
 		//else SU.Log("!!! !!! !!!", uri);
 		
@@ -436,6 +444,9 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		key = mdict.requestPattern.matcher(key).replaceAll("");
 		//BookPresenter mdTmp = md_get(adapter_idx_);
+		if (presenter.bookImpl == null) {
+			return null; // todo /favico
+		}
 		InputStream restmp = presenter.bookImpl.getResourceByKey(key);
 		//SU.Log("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
 		
@@ -481,16 +492,14 @@ public abstract class MdictServer extends NanoHTTPD {
 				//CMN.pt("再编码耗时 : ");
 			} catch (Exception e) { e.printStackTrace(); }
 		
-		if(Acc.contains("image/svg")||uri.endsWith(".svg")) {
-			//BU.printFileStream(restmp, new File("/sdcard/"+new File(uri).getName()));
-				return newFixedLengthResponse(Status.OK, "image/svg+xml", restmp, restmp.available());
-		}
-		
 		if(Acc.contains("image/")||uri.endsWith(".png")||uri.endsWith(".jpg")||uri.endsWith(".jpeg")||uri.endsWith(".webp")) {
+			if(Acc.startsWith("image/svg")||uri.contains(".svg")) { // todo check commtis 
+				//BU.printFileStream(restmp, new File("/sdcard/"+new File(uri).getName()));
+				return newFixedLengthResponse(Status.OK, "image/svg+xml", restmp, restmp.available());
+			}
 			//SU.Log("Image request : ",Acc,key,presenter.bookImpl.getDictionaryName(), restmp.available());
 			return newFixedLengthResponse(Status.OK,(IsCustomer&&ReceiveText)?"text/plain":"image/png", restmp, restmp.available());
 		}
-		
 		return newFixedLengthResponse(Status.OK,"*/*", restmp, restmp.available());
 	}
 	
