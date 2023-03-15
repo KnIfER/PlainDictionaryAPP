@@ -1381,4 +1381,8 @@ public abstract class mdBase {
 		
 		return new ByteArrayInputStream(data, record_start, recordLen);
 	}
+
+	public boolean getKeyCaseSensitive() {
+		return isKeyCaseSensitive;
+	}
 }

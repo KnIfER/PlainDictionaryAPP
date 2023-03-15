@@ -1,9 +1,5 @@
 package com.knziha.plod.dictionary.Utils;
 
-import android.text.TextUtils;
-
-import com.knziha.plod.plaindict.CMN;
-
 import java.util.regex.Pattern;
 
 public class IU {
