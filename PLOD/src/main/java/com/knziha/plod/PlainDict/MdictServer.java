@@ -95,7 +95,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	public Response handle(HTTPSession session) throws IOException {
 		BookPresenter presenter = null;
 		String uri = session.getUri();
-		//SU.Log("serving with honor : ", uri);
+		//CMN.debug("serving with honor : ", uri);
 		Map<String, String> headerTags = session.getHeaders();
 		String Acc = headerTags.get("accept");
 		if(Acc==null) Acc= StringUtils.EMPTY;
@@ -144,7 +144,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		else if(uri.startsWith("/MdbRJointQuery/")) {
 			uri = Reroute(uri.substring("/MdbRJointQuery/".length()));
-			//SU.Log("MdbRJointQuery: "+uri);
+			//CMN.debug("MdbRJointQuery: "+uri);
 			RBTree_additive treeBuilder = new RBTree_additive();
 			StringBuilder sb_ = new StringBuilder();
 			UniversalDictionaryInterface book;
@@ -153,7 +153,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					book = loadManager.md_get(i).bookImpl;
 					book.lookUpRange(uri, null, treeBuilder, book.getBooKID(), 30, null, false);
 				} catch (Exception e) {
-					SU.Log(loadManager.md_getName(i, -1), e);
+					CMN.debug(loadManager.md_getName(i, -1), e);
 				}
 			}
 			ArrayList<additiveMyCpr1> resultList = treeBuilder.flatten();
@@ -176,20 +176,20 @@ public abstract class MdictServer extends NanoHTTPD {
 				if(i!=resultList.size()-1)
 					sb_.append("\n");
 			}
-			//SU.Log(sb_.toString());
+			//CMN.debug(sb_.toString());
 			return newFixedLengthResponse(sb_.toString());
 		}
 		////////////////////////////////////////////////////////
 		boolean ReceiveText=Acc.contains("text/html");
 		boolean IsCustomer=!usr.contains("Java");
 		if(uri.startsWith("/base/")) {
-			//SU.Log("requesting_frame::", uri);
+			//CMN.debug("requesting_frame::", uri);
 			uri = uri.substring("/base/".length());
 			String[] list = uri.split("/");
 			String dn=list[0];
 			presenter = md_getByURL(dn);
-			SU.Log("requesting_frame::presenter::", presenter);
-			SU.Log(list);
+			CMN.debug("requesting_frame::presenter::", presenter);
+			CMN.debug(list);
 			uri = uri.substring(dn.length());
 			key = uri.replace("/", SepWindows);
 			if(list.length==1){
@@ -202,7 +202,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			}
 			else if(list[1].equals("@@@")) {//  /base/0/@@@/name
 				key = uri.substring(dn.length()+1+3);
-				SU.Log("rerouting..."+key);
+				CMN.debug("rerouting..."+key);
 				try {
 					return newFixedLengthResponse(presenter.bookImpl.getRecordsAt(null, presenter.bookImpl.lookUp(key)));
 				} catch (IOException e) {
@@ -213,7 +213,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			else if(list[1].equals("VI") && presenter.bookImpl.hasVirtualIndex()) {//  /base/0/VI/0
 				try {
 					int VI = IU.parsint(list[2],-1);
-					//SU.Log("virtual content..."+VI, mdTmp.getVirtualRecordAt(VI));
+					//CMN.debug("virtual content..."+VI, mdTmp.getVirtualRecordAt(VI));
 					return newFixedLengthResponse(presenter.bookImpl.getVirtualRecordAt(this, VI));
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -227,7 +227,7 @@ public abstract class MdictServer extends NanoHTTPD {
 //				}
 //			}
 		}
-		//else SU.Log("!!! !!! !!!", uri);
+		//else CMN.debug("!!! !!! !!!", uri);
 		
 		final String entry="/entry/";
 		final String raw="/raw/";
@@ -242,12 +242,12 @@ public abstract class MdictServer extends NanoHTTPD {
 					key=key.substring(0, key.length()-1);
 				if(key.contains("%"))
 					key = URLDecoder.decode(key);
-				SU.Log("jumping...", key);
+				CMN.debug("jumping...", key);
 				int pos = presenter.bookImpl.lookUp(key);
 				String res = presenter.bookImpl.getRecordsAt(null, pos);
 				return newFixedLengthResponse(constructMdPage(presenter, res, b1, pos, session));
 			} catch (Exception e) {
-				SU.Log(e);
+				CMN.debug(e);
 			}
 			return emptyResponse;
 		}
@@ -273,7 +273,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				try {
 //					session.parseBody(null);
 //					List<String> ids = Arrays.asList(session.getParameters().get("ids").get(0).split(","));
-					//SU.Log("dicts.json::", ids);
+					//CMN.debug("dicts.json::", ids);
 					return newFixedLengthResponse(app.handleWordMap()) ;
 				} catch (Exception e) {
 					return emptyResponse;
@@ -282,12 +282,12 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(key.equals("\\dicts.json")) {
-			SU.Log("dicts.json::", session.getParameters(), session.getMethod());
+			CMN.debug("dicts.json::", session.getParameters(), session.getMethod());
 			if (Method.POST.equals(session.getMethod())) {
 				try {
 					session.parseBody(null);
 					List<String> ids = Arrays.asList(session.getParameters().get("ids").get(0).split(","));
-					//SU.Log("dicts.json::", ids);
+					//CMN.debug("dicts.json::", ids);
 					JSONArray dictsInfo = new JSONArray();
 					for (int i = 0; i < ids.size(); i++) {
 						BookPresenter book = md_getByURL(ids.get(i));
@@ -333,7 +333,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					if(mdx!=null && mdx.getDictionaryName().equals(key))
 						ret=mdx.bookImpl.getNumberEntries();
 				}
-				//SU.Log("MdbRSize ret: "+ret+key);
+				//CMN.debug("MdbRSize ret: "+ret+key);
 				return newFixedLengthResponse(ret+"") ;
 			}
 			return emptyResponse;
@@ -341,14 +341,14 @@ public abstract class MdictServer extends NanoHTTPD {
 		else if(key.startsWith("\\MdbRGetEntries\\")) {
 			if(loadManager.md_size>0) {
 				key = key.substring(16);
-				//SU.Log(key);
+				//CMN.debug(key);
 				String[] l = key.split("\\\\");
 				StringBuilder ret= new StringBuilder();
 				// to optimise
 				try {
 					presenter = md_getByURL(l[0]);
 					if(presenter!=null) {
-						//SU.Log("capacity "+l[2]);
+						//CMN.debug("capacity "+l[2]);
 						int capacity=Math.min(Integer.parseInt(l[2]), 50);
 						int base = Integer.parseInt(l[1]);
 						for(int j=0;j<capacity;j++) {
@@ -377,7 +377,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(uri.startsWith("/PLOD/")) {
-			SU.Log("PLOD received : ", uri);
+			CMN.debug("PLOD received : ", uri);
 			if (session.getParameters().get("copy")!=null) {
 				return newFixedLengthResponse(getClipboard());
 			} else {
@@ -387,7 +387,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(uri.startsWith("/about/")) {
-			//SU.Log("about received : ", uri);
+			//CMN.debug("about received : ", uri);
 			uri = uri.substring(7);
 			try {
 				BookPresenter mdTmp = md_getByURL(uri);
@@ -396,7 +396,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(uri.startsWith("/content/")) {
-			//SU.Log("content_received::", uri); //  /content/d5_JPA-d5_JPA
+			//CMN.debug("content_received::", uri); //  /content/d5_JPA-d5_JPA
 			//  //  /content/0_1
 			int ed = uri.lastIndexOf("#");
 			if (ed<=9) ed = uri.length(); // strip hash
@@ -416,13 +416,13 @@ public abstract class MdictServer extends NanoHTTPD {
 					if(presenter.getIsWebx()) {
 						return newFixedLengthResponse(constructMdPage(presenter,presenter.getWebx().getSyntheticWebPage(), true, 0, session));
 					}
-					//SU.Log("content_received::presenter::", list[0], presenter, presenter.getId()); //  /content/d5_JPA
+					//CMN.debug("content_received::presenter::", list[0], presenter, presenter.getId()); //  /content/d5_JPA
 					long[] list2 = new long[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=encoded?IU.TextToNumber_SIXTWO_LE(list[i+1]):IU.parsint(list[i+1]);
 					return newFixedLengthResponse(constructMdPage(presenter,lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2), true, (int)list2[0], session));
 				} catch (Exception e) {
-					SU.Log(e);
+					CMN.debug(e);
 				}
 			}
 			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true, 0, session));
@@ -448,7 +448,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return null; // todo /favico
 		}
 		InputStream restmp = presenter.bookImpl.getResourceByKey(key);
-		//SU.Log("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
+		//CMN.debug("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
 		
 		if(restmp==null){
 			if(shouldLoadFiles) {
@@ -467,7 +467,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(Acc.contains("/mp3") || uri.endsWith(".mp3")) {
-			//SU.Log("mp3 : "+uri);
+			//CMN.debug("mp3 : "+uri);
 			return newFixedLengthResponse(Status.OK,"audio/mpeg", restmp, restmp.available());
 		}
 		
@@ -476,7 +476,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(uri.endsWith(".spx")) {
-			//SU.Log("spx : "+uri);
+			//CMN.debug("spx : "+uri);
 			ByteArrayRandomOutputStream bos = new ByteArrayRandomOutputStream();
 			JSpeexDec decoder = new JSpeexDec();
 			try {
@@ -497,7 +497,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				//BU.printFileStream(restmp, new File("/sdcard/"+new File(uri).getName()));
 				return newFixedLengthResponse(Status.OK, "image/svg+xml", restmp, restmp.available());
 			}
-			//SU.Log("Image request : ",Acc,key,presenter.bookImpl.getDictionaryName(), restmp.available());
+			//CMN.debug("Image request : ",Acc,key,presenter.bookImpl.getDictionaryName(), restmp.available());
 			return newFixedLengthResponse(Status.OK,(IsCustomer&&ReceiveText)?"text/plain":"image/png", restmp, restmp.available());
 		}
 		return newFixedLengthResponse(Status.OK,"*/*", restmp, restmp.available());
@@ -563,7 +563,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				}
 			}
 		} catch (Exception e) {
-			SU.Log(e);
+			CMN.debug(e);
 		}
 		return null;
 	}
@@ -623,7 +623,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				ret = ((com.knziha.plod.dictionary.mdict)MdbResource).getResourceByKey(key);
 			} else {
 				int id = MdbResource.lookUp(key);
-				//SU.Log("lookUp::", key, id);
+				//CMN.debug("lookUp::", key, id);
 				if(id>=0) {
 					ret = MdbResource.getResourseAt(id);
 				}
@@ -633,13 +633,13 @@ public abstract class MdictServer extends NanoHTTPD {
 	}
 	
 	private String Reroute(String currentText) {
-		SU.Log(currentFilter.size(), "Reroute", currentText);
+		CMN.debug(currentFilter.size(), "Reroute", currentText);
 		try {
 			for (BookPresenter mdTmp:currentFilter) {
 				Object rerouteTarget = mdTmp.bookImpl.ReRoute(currentText);
 				if(rerouteTarget instanceof String){
 					String text = (String) rerouteTarget;
-					SU.Log("Reroute",mdTmp.bookImpl.getDictionaryName(), text);
+					CMN.debug("Reroute",mdTmp.bookImpl.getDictionaryName(), text);
 					if(text.trim().length()>0){
 						currentText=text;
 						break;
@@ -794,7 +794,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					SubPage = BU.StreamToString(OpenMdbResourceByName("\\MdbR\\subpage.html"));
 					SubPageLen = SubPage.length();
 				} catch (IOException e) {
-					SU.Log(e);
+					CMN.debug(e);
 				}
 			}
 			
@@ -851,7 +851,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					.append(record)
 					.append(MdPage_fragment3)
 			;
-			SU.Log("new_id::", presenter.getId(), IU.NumberToText_SIXTWO_LE(presenter.getId(), null));
+			CMN.debug("new_id::", presenter.getId(), IU.NumberToText_SIXTWO_LE(presenter.getId(), null));
 			MdPageBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
 			if(presenter.bookImpl.hasMdd()) MdPageBuilder.append("<p class='MddExist' id='MddExist'/>");
 			MdPageBuilder.append("</div>");
@@ -916,7 +916,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			//String f3 = baseHtml.substring(baseHtml.indexOf("</div>",idx2));
 			restFragments = baseHtml.substring(baseHtml.indexOf("/**/}",idx1+insertsionPoint.length()));
 			derivedHtmlBase = new StringBuilder(f1);
-			//SU.Log("f1"+f1);
+			//CMN.debug("f1"+f1);
 			derBaseLen = f1.length();
 		}
 		derivedHtmlBase.setLength(derBaseLen);
@@ -930,9 +930,9 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(iframes!=null){
 			derivedHtmlBase.append("handleMirror('"+iframes.replace("\r","\\r")+"');");
 		}
-		//SU.Log("pengDingPos"+pos);
+		//CMN.debug("pengDingPos"+pos);
 		derivedHtmlBase.append(restFragments);
-		//SU.Log(derivedHtmlBase.toString());
+		//CMN.debug(derivedHtmlBase.toString());
 		return derivedHtmlBase.toString();
 	}
 	

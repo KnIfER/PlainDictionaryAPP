@@ -220,17 +220,14 @@ public class RLContainerSlider extends FrameLayout {
 				else if(Math.abs(velocityY/(velocityX==0?0.000001:velocityX))>0.57) {
 					CMN.Log("onFling Y !!! ");
 					flingDeteced = flingDetecedY = true;
-					PDICMainActivity a = ((PDICMainActivity)getContext());
-					AppBarLayout barappla = (AppBarLayout) a.UIData.appbar;
-					if (barappla.getExpanded() ^ velocityY>0 ) {
-						barappla.postOnAnimation(new Runnable() {
+					if (appbar.getExpanded() ^ velocityY>0 ) {
+						appbar.postOnAnimation(new Runnable() {
 							@Override
 							public void run() {
-								barappla.setExpanded(!barappla.getExpanded(), true);
+								appbar.setExpanded(!appbar.getExpanded(), true);
 							}
 						}/*, 10*/);
 					}
-					
 					return true;
 				}
 			}
@@ -571,6 +568,16 @@ public class RLContainerSlider extends FrameLayout {
 		}
 		if (masked==ACTION_UP/*||masked==ACTION_CANCEL*/) {
 			checkBar();
+			if (appbar!=null && PDICMainAppOptions.immersiveWhen()==1
+					&& PDICMainAppOptions.getEnableSuperImmersiveScrollMode()
+			)
+			{
+				int delta = (int) (ev.getY() - OrgY);
+				int theta = (int) GlobalOptions.density;
+				if (delta <= -theta || delta >= theta) {
+					appbar.postOnAnimation(() -> appbar.setExpanded(delta>0, true)/*, 10*/);
+				}
+			}
 		}
 		if (scrollLocked) {
 			return true;
@@ -793,7 +800,7 @@ public class RLContainerSlider extends FrameLayout {
 			swipeRefresh = !swipeRefresh;
 			swipeRefreshAllow = false;
 		}
-		slideImmersive = appbar!=null && PDICMainAppOptions.slideImmersive();
+		slideImmersive = appbar!=null && PDICMainAppOptions.immersiveWhen()==0 && PDICMainAppOptions.getEnableSuperImmersiveScrollMode() ;
 		//CMN.debug("quoTapZoom", swipeRefresh, slideTurn, tapZoom);
 		nothing = !swipeRefresh && !slideTurn && !tapZoom && !slideImmersive;
 	}

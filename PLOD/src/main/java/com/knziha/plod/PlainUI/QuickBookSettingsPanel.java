@@ -30,6 +30,7 @@ import com.knziha.plod.plaindict.databinding.QuickSettingsPanelBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DrawOverlayCompat;
+import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -486,13 +487,21 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					weblist.prvnxtFrame(true);
 					dismiss();
 				} break;
+				case immersiveWhen1:
+				case immersiveWhen2:
+				case immersiveWhen3:
+				{
+					int when = var.ordinal() - ActionGp_1.immersiveWhen1.ordinal();
+					PDICMainAppOptions.immersiveWhen(when);
+					SettingsPanel.checkBox(btn);
+					SearchUI.tapZoomV++;
+					if (!a.weblistHandler.isViewSingle()) {
+						a.showT("注：此项设置只对单内容页面、网页版多页面生效，\n旧版多页面视图列表只能在拖动时触发！");
+					}
+				} break;
 			}
 			if (btn!=null && (var.ordinal()>=ActionGp_1.pFontClr1.ordinal() && var.ordinal()<=ActionGp_1.p1ViewSz3.ordinal())) {
-				ViewGroup vg = (ViewGroup) btn.getParent();
-				for (int i = 1; i < vg.getChildCount(); i++) {
-					v = vg.getChildAt(i);
-					((RadioSwitchButton)v).setChecked(v==btn);
-				}
+				SettingsPanel.checkBox(btn);
 				lstPreviewChanged = true;
 			}
 		}
@@ -574,6 +583,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,p1ViewSz3
 		,prv
 		,nxt
+		,immersiveWhen1
+		,immersiveWhen2
+		,immersiveWhen3
 	}
 	
 	
@@ -582,8 +594,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (_immersive ==null) {
 			final SettingsPanel settings = new SettingsPanel(a, opt
 					, new String[][]{
-							new String[]{"沉浸滚动", "内容页面启用沉浸滚动模式"}
-							, new String[]{"图标大小", "缩小图标尺寸"}
+							new String[]{"<font color='#3185F7'>沉浸滚动</font>", "启用（在内容页面隐藏工具栏）"}
+							, new String[]{"<font color='#3185F7'>图标大小</font>", "缩小图标尺寸"}
 					}
 					, new int[][]{
 						new int[]{Integer.MAX_VALUE
@@ -595,6 +607,21 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			}, null);
 			settings.setEmbedded(this);
 			settings.init(a, root);
+			
+			int when = PDICMainAppOptions.immersiveWhen();
+			final SettingsPanel chufa = new SettingsPanel(a, opt
+					, new String[][]{new String[]{"触发方式：", "速滑", "松手", "拖动"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen1.ordinal(), when==0)
+					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen2.ordinal(), when==1)
+					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen3.ordinal(), when==2)
+			}}, null);
+			chufa.setHorizontalItems(true);
+			chufa.setEmbedded(this);
+			chufa.init(a, root);
+			ViewUtils.setPadding(chufa.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+			ViewUtils.addViewToParent(chufa.settingsLayout, settings.settingsLayout, 2);
+			
 			addPanelViewBelow(settings.settingsLayout, UIData.immersivePanel);
 			_immersive = settings;
 		}

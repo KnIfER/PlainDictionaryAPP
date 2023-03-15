@@ -310,7 +310,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				groupTitle.setPadding((int) (2*density), (int) (8*density), 0, (int) (8*density));
 				lv.addView(groupTitle, lp);
 			}
-			for (int j = 1; j < group.length; j++) { // 建立子项
+			for (int j = 1, len=Math.min(group.length, tags_group.length); j < len; j++) { // 建立子项
 				RadioSwitchButton button = new RadioSwitchButton(context);
 				if(GlobalOptions.isDark) button.setTextColor(Color.WHITE);
 				button.setText(group[j]);
@@ -598,6 +598,15 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	
 	public void setShowInDialog() {
 		showType = PANEL_SHOW_TYPE_DIALOG;
+	}
+	
+	protected static void checkBox(RadioSwitchButton btn) {
+		ViewGroup vg = (ViewGroup) btn.getParent();
+		View v;
+		for (int i = 1; i < vg.getChildCount(); i++) {
+			v = vg.getChildAt(i);
+			((RadioSwitchButton)v).setChecked(v==btn);
+		}
 	}
 }
 	

@@ -3474,8 +3474,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=38) public static boolean lockViewPageScroll() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=38) public static void lockViewPageScroll(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=39, shift=1) public static boolean slideImmersive() { NinthFlag=NinthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=39, shift=1) public static void slideImmersive(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=39, shift=1) public static boolean slideImmive(bersive() { NinthFlag=NinthFlag; throw new RuntimeException();}
+////	@Metaline(flagPos=39, shift=1) public static void slideImmersoolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=40) public static boolean getAdjImmersiveShwn(){ NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=40) public boolean togAdjImmersiveShwn() { NinthFlag=NinthFlag; throw new IllegalArgumentException(); }
@@ -3483,6 +3483,9 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=41) public static boolean shrinkIcons() { NinthFlag=NinthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=41) public static void shrinkIcons(boolean value){ NinthFlag=NinthFlag; throw new RuntimeException(); }
 	
+	
+	@Metaline(flagPos=42, flagSize=2) public static int immersiveWhen() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=42, flagSize=2) public static void immersiveWhen(int v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
 	
 }
