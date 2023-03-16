@@ -1035,8 +1035,8 @@
 					//console.log("word isFocused:",$("#word").is(':focus'));
 					if($(':focus').length==0){
 						if(!ctrlKey &&((keyCode<=90&&keyCode>=65))){//abc keyboard
-							$("#word").val("");
-							$("#word").focus();
+							etSearch.value = "";
+							etSearch.focus();
 							return true;
 						}
 						//if(keyCode==32){//space
@@ -1047,7 +1047,7 @@
 						//    return true;
 						//}
 						if(keyCode==8 ||keyCode==37||keyCode==39 ) {//left right
-							$("#word").focus();
+							etSearch.focus();
 							return true;
 						}
 					}
@@ -1067,7 +1067,7 @@
 						}
 						var data = clipboardData.getData('Text');
 						//console.log("bindp: ",data);
-						$("#word").val(data);
+						etSearch.value = data;
 						loookup();
 					}
 				}
@@ -2276,13 +2276,32 @@
 				e.safe=false;
 			}
 		}
-
+		
 		function checkUrl(e) {
 			var fx=e.item,u=e.src;
 			//toast(u+' 已加载123',0,2000)
 			if(fx && (e.load!=u || e.isWeb && e.entry!=args.q)) {
 				debug('加载...', e.load, u, tmp.pushStates);
 				var uri="\\content\\"+u, safe=false;
+				if(e.vi)
+				try{
+					var loaded = fx.contentWindow.location.href||'';
+					if(loaded.indexOf( u.slice(0, u.lastIndexOf('_') )>0)) // 加载过了
+					{
+						fx.contentWindow.hashValid = false;
+						debug('loadText', "\\vi\\"+u);
+						loadText("\\vi\\"+u, function(e){ // 请求一段更新用的脚本
+							debug(e);
+							fx.contentWindow.location.hash=e;
+						}, false)
+						debug('hashValid=', fx.contentWindow.hashValid);
+						if(fx.contentWindow.hashValid) {
+							//fx.contentWindow.history.replaceState(null,null,uri);
+							e.load = u;
+							return;
+						}
+					}
+				}catch(e){debug(e);}
 				if(opt.safeFrame || opt.frameSafe&&tmp.pushStates){
 					debug('阻止...'); // 阻止iframe修改前后导航状态
 					try{
@@ -2990,9 +3009,9 @@
 			}
 		}
 
-		function loadText(url,cb){
+		function loadText(url,cb, async){
 			var x = new XMLHttpRequest();
-			x.open('GET', url, true);
+			x.open('GET', url, async===undefined?true:async);
 			//x.responseType = 'json';
 			if(cb)x.onload = function() {
 				cb(x.response);
@@ -3097,6 +3116,7 @@
 		
 		function ScanInDicts() {
 			args=parseArgs();
+			debug('args=', args)
 			restoreStates();
 			/**/if(merge) {/**/
 				restorePages();
@@ -3109,7 +3129,7 @@
 			} else if(!args.mode) {
 				// todo...
 			}
-			ge('word').value=args.s || args.q;
+			etSearch.value = args.s || args.q || '';
 			if(args.q)  {
 				ge("entryName").innerText = args.q;
 			}
@@ -4223,7 +4243,7 @@
 	</script>
 	
 	
-	<title>无限词典 · MDict Browser</title>
+	<title>无限词典 · PlainDict Browser</title>
 
 </head>
 <body id="body_" onload="Initialize()" scroll="no">

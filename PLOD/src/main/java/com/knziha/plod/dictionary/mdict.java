@@ -17,6 +17,7 @@
 
 package com.knziha.plod.dictionary;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -805,7 +806,27 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				return ret;
 			}
 		}
-		if(ftd!=null && ftd.size()>0 && ReadOffset==0){
+		if (virtualIndex!=null) {
+			String vk = virtualIndex.getRecordAt(position, null, true);
+			CMN.debug("vk::", vk);
+			if (vk.startsWith("{")) {
+				JSONObject json = JSON.parseObject(vk);
+				int place = json.getInteger("I");
+				String script = json.getString("JS");
+				mdict tmp = virtualIndex;
+				virtualIndex = null;
+				String record = null;
+				try {
+					record = getRecordAt(place, getRecordAtInterceptor, allowJump);
+					record += "<script>" + script + "</script>";
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+				virtualIndex = tmp;
+				return record;
+			}
+		}
+		if(ftd!=null && ftd.size()>0 && ReadOffset==0) {
 			File ft;
 			for(File f:ftd){
 				String key=getDebugPageResourceKey(position);
@@ -2195,7 +2216,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	
 	@Override
 	public int getType() {
-		return 0;
+		return 2;
 	}
 	
 	protected ExecutorService OpenThreadPool(int thread_number) {

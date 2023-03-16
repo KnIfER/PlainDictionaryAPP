@@ -29,6 +29,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PlainMdict;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
@@ -255,6 +256,15 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(key.equals("\\DB.jsp"))
 			return app.handleFFDB(session);
 		
+		if(key.startsWith("\\vi\\")) {
+			CMN.debug("handleVirtual::", key);
+			key = key.substring(4);
+			String[] arr = key.split("_");
+			PlainMdict md = (PlainMdict) md_getByURL(arr[0]).bookImpl;
+			
+			return newFixedLengthResponse(md.getVirtualRecordAt(null, IU.TextToNumber_SIXTWO_LE(arr[1])));
+		}
+		
 		if(key.equals("\\GC.jsp")) {
 			System.gc();
 			CMN.Log("gc……");
@@ -396,7 +406,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		if(uri.startsWith("/content/")) {
-			//CMN.debug("content_received::", uri); //  /content/d5_JPA-d5_JPA
+			CMN.debug("content_received::", uri); //  /content/d5_JPA-d5_JPA
 			//  //  /content/0_1
 			int ed = uri.lastIndexOf("#");
 			if (ed<=9) ed = uri.length(); // strip hash
@@ -420,7 +430,9 @@ public abstract class MdictServer extends NanoHTTPD {
 					long[] list2 = new long[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=encoded?IU.TextToNumber_SIXTWO_LE(list[i+1]):IU.parsint(list[i+1]);
-					return newFixedLengthResponse(constructMdPage(presenter,lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2), true, (int)list2[0], session));
+					return newFixedLengthResponse(constructMdPage(presenter,
+							lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2)
+							, true, (int)list2[0], session));
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
