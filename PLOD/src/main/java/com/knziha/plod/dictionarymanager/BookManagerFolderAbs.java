@@ -61,14 +61,25 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		public int size() {
 			return _realSelection.size();
 		}
-		public mFile[] toArray() {
-			mFile[] ret = new mFile[_realSelection.size()];
+		@NonNull
+		@Override
+		public <T> T[] toArray(@NonNull T[] a) {
+			try {
+				return (T[]) toArray();
+			} catch (Exception e) {
+				return super.toArray(a);
+			}
+		}
+		@NonNull
+		@Override
+		public Object[] toArray() {mFile[] ret = new mFile[_realSelection.size()];
 			Iterator<String> iter = _realSelection.iterator();
 			for (int i = 0; i < ret.length && iter.hasNext(); i++) {
 				ret[i] = new mFile(iter.next());
 			}
 			return ret;
 		}
+		
 		public boolean contains(@Nullable Object o) {
 			if (o instanceof mFile) {
 				mFile mFile = (mFile) o;
