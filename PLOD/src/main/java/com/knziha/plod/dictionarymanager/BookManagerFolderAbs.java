@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
 
@@ -32,7 +33,6 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,19 +44,48 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	String parentFile;
 	public boolean SelectionMode=true;
 	HashSet<mFile> selFolders = new HashSet<>();
-	public HashSet<mFile> Selection = new HashSet<mFile>(){
-		@Override
+	private final HashSet<String> _realSelection = new HashSet<>();
+	public final HashSet<mFile> Selection = new HashSet<mFile>(){
 		public boolean add(mFile mFile) {
-			boolean ret = super.add(mFile);
+			boolean ret = _realSelection.add(mFile.getPath());
 			if (ret && mFile.getIsDirectory()) {
 				selFolders.add(mFile);
 			}
 			return ret;
 		}
-		
-		@Override
-		public boolean removeAll(@NonNull Collection<?> c) {
-			return super.removeAll(c);
+		public void clear() {
+			_realSelection.clear();
+			selFolders.clear();
+			super.clear();
+		}
+		public int size() {
+			return _realSelection.size();
+		}
+		public mFile[] toArray() {
+			mFile[] ret = new mFile[_realSelection.size()];
+			Iterator<String> iter = _realSelection.iterator();
+			for (int i = 0; i < ret.length && iter.hasNext(); i++) {
+				ret[i] = new mFile(iter.next());
+			}
+			return ret;
+		}
+		public boolean contains(@Nullable Object o) {
+			if (o instanceof mFile) {
+				mFile mFile = (mFile) o;
+				return _realSelection.contains(mFile.getPath());
+			}
+			return false;
+		}
+		public boolean remove(@Nullable Object o) {
+			if (o instanceof mFile) {
+				mFile mFile = (mFile) o;
+				boolean ret = _realSelection.remove(mFile.getPath());
+				if (ret && mFile.getIsDirectory()) {
+					selFolders.add(mFile);
+				}
+				return ret;
+			}
+			return false;
 		}
 	};
 	
@@ -162,6 +191,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	
 	public String getName() {
 		return mName;
+	}
+	
+	public HashSet<String> getSelectedPaths() {
+		return new HashSet<>(_realSelection);
 	}
 	
 	public interface OnEnterSelectionListener{

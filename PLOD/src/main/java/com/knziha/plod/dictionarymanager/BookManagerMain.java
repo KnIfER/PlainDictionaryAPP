@@ -1006,7 +1006,6 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 						for (File fI : moduleFullScannerArr) {
 							StringBuilder sb = new StringBuilder();
 							String line;
-							
 							try {
 								ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
 								boolean bNeedReWrite = false;
@@ -1020,7 +1019,8 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												bNeedReWrite = true;
 											}
 										}
-									} catch (Exception ignored) {
+									} catch (Exception e) {
+										CMN.debug(e);
 									}
 									sb.append(line).append("\n");
 								}

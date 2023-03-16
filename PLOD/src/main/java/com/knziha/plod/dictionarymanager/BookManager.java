@@ -1537,7 +1537,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 					for (int i = start; i <= end; i++) {
 						if (!list.get(i).getIsDirectory()) {
-							if (!isLongClicked) {
+							if (isLongClicked) {
 								f3.Selection.add(list.get(i).getRealPath());
 							} else {
 								f3.Selection.remove(list.get(i).getRealPath());
@@ -2093,14 +2093,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			final BookManagerFolderAbs folderMangager
 			, final boolean deleteFromAllGroup
 	) {
-		final mFile[] arr = folderMangager.Selection.toArray(new mFile[0]);
-		final HashSet<mFile> removePool = new HashSet<>(Arrays.asList(arr));
+		final HashSet<String> removePool = folderMangager.getSelectedPaths();
 	 	final ArrayList<mFile> lstViewFiles =  folderMangager.data.getList();
 		BookManagerFolderAbs another_folderLike = folderMangager == f3 ? f4 : f3;
 		boolean anotherChanged = false;
 		for (int i = lstViewFiles.size()-1; i >= 0; i--) {
 			mFile fn = lstViewFiles.get(i)/*.getRealPath()*/;
-			if (removePool.contains(fn) // selected
+			if (removePool.contains(fn.getPath()) // selected
 					&& fn.webAsset==null // not embedded webx
 					&& !(fn instanceof mAssetFile) // not embedded asset
 					&& !fn.isDirectory() // not directory
@@ -2115,31 +2114,36 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			another_folderLike.Selection.clear();
 			another_folderLike.rebuildDataTree();
 		}
-		if (!PDICMainAppOptions.debuggingRemoveRecSkipWrite())
+		int cc=0;
+		//if (!PDICMainAppOptions.debuggingRemoveRecSkipWrite())
 		{
 			//PDICMainAppOptions.setDelRecApplyAll(deleteFromAllGroup);
-			ArrayList<File> moduleFilesArr = ScanInModlueFiles(deleteFromAllGroup, folderMangager.isDirty);
+			ArrayList<File> moduleFilesArr = ScanInModlueFiles(deleteFromAllGroup, true); // folderMangager.isDirty
 			AgentApplication app = ((AgentApplication) getApplication());
 			char[] cb = app.get4kCharBuff();
 			boolean bNeedRewrite;
 			for (File fI : moduleFilesArr) {
+				CMN.debug("removePool::", removePool);
+				CMN.debug("removePool::", fI);
 				StringBuilder sb = new StringBuilder();
 				String line;
 				try {
 					ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
 					bNeedRewrite = false;
 					while ((line = br.readLine()) != null) {
+						CMN.debug("line::", line);
 						try {
 							String key = line;
-							if(key.startsWith("[:")){
+							if(key.startsWith("[:")) {
 								int idx = key.indexOf("]",2);
 								if(idx>=2) key = key.substring(idx+1);
 							}
-							key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
-							//CMN.debug("rewrite::", key, removePool.contains(new mFile(key)));
-							if (removePool.contains(new mFile(key))
-									|| removePool.contains(  new mFile(new File(key).getCanonicalPath()))  ) {
+							key = key.startsWith("/") ? key : (opt.lastMdlibPath + "/" + key);
+							CMN.debug("rewrite::", key, removePool.contains(key));
+							if (removePool.contains(key)
+									|| removePool.contains(  new File(key).getCanonicalPath() )  ) {
 								bNeedRewrite = true;
+								cc++;
 								continue;
 							}
 						} catch (Exception e) {
@@ -2163,7 +2167,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			}
 			app.set4kCharBuff(cb);
 		}
-		showT("移除完毕!");
+		showT("移除完毕! " +cc);
 	}
 	
 	public void deleteFromF3SelHardInAll(final BookManagerFolderAbs f3) {
@@ -2247,7 +2251,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	}
 	
 	public ArrayList<File> ScanInModlueFiles(boolean all, boolean addAllLibs) {
-		CMN.debug("ScanInModlueFiles::", all, "addAllLibs="+addAllLibs);
 		ArrayList<File> ret = new ArrayList<>();
 		if (all) {
 			String[] names = ConfigFile.list();
@@ -2264,6 +2267,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		if (addAllLibs) {
 			ret.add(fRecord);
 		}
+		CMN.debug("ScanInModlueFiles::", all, "addAllLibs="+addAllLibs, ret);
 		return ret;
 	}
 	
