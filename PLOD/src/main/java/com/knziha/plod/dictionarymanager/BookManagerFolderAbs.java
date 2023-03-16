@@ -33,6 +33,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -72,11 +73,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 		}
 		@NonNull
 		@Override
-		public Object[] toArray() {mFile[] ret = new mFile[_realSelection.size()];
+		public Object[] toArray() {
+			mFile[] ret = new mFile[_realSelection.size()];
 			Iterator<String> iter = _realSelection.iterator();
 			for (int i = 0; i < ret.length && iter.hasNext(); i++) {
 				ret[i] = new mFile(iter.next());
 			}
+			CMN.debug("toArray::",  Arrays.toString(ret));
 			return ret;
 		}
 		
