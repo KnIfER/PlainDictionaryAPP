@@ -48,9 +48,11 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	private final HashSet<String> _realSelection = new HashSet<>();
 	public final HashSet<mFile> Selection = new HashSet<mFile>(){
 		public boolean add(mFile mFile) {
-			boolean ret = _realSelection.add(mFile.getPath());
-			if (ret && mFile.getIsDirectory()) {
-				selFolders.add(mFile);
+			boolean ret;
+			if (mFile.getIsDirectory()) {
+				ret = selFolders.add(mFile);
+			} else {
+				ret = _realSelection.add(mFile.getPath());
 			}
 			return ret;
 		}
@@ -71,8 +73,6 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				return super.toArray(a);
 			}
 		}
-		@NonNull
-		@Override
 		public Object[] toArray() {
 			mFile[] ret = new mFile[_realSelection.size()];
 			Iterator<String> iter = _realSelection.iterator();
@@ -82,11 +82,11 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			CMN.debug("toArray::",  Arrays.toString(ret));
 			return ret;
 		}
-		
 		public boolean contains(@Nullable Object o) {
 			if (o instanceof mFile) {
 				mFile mFile = (mFile) o;
-				return _realSelection.contains(mFile.getPath());
+				return _realSelection.contains(mFile.getPath())
+						 || selFolders.contains(mFile);
 			}
 			return false;
 		}
@@ -168,22 +168,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	}
 	
 	public int calcSelectionSz() {
-		int ret = Selection.size(), sfz=selFolders.size();
-		if (sfz>0) {
-			if (ret > 0) {
-				for (Iterator<mFile> i = selFolders.iterator(); i.hasNext(); ){
-					mFile fn = i.next();
-					if (Selection.contains(fn)) {
-						ret--;
-					} else {
-						i.remove();
-					}
-				}
-			} else {
-				selFolders.clear();
-			}
-		}
-		return ret;
+		return Selection.size();
 	}
 	
 	HashSet<mFile> hiddenParents=new HashSet<>();

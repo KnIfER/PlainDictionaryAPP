@@ -2173,7 +2173,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	public void deleteFromF3SelHardInAll(final BookManagerFolderAbs f3) {
 		final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
 		final CheckBox ck = dv.findViewById(R.id.ck);
-		final int sz = f3.Selection.size();
+		final int sz = f3.calcSelectionSz();
 		ck.setChecked(PDICMainAppOptions.getDelRecApplyAll());
 		dv.findViewById(R.id.title).setOnClickListener(v -> ck.toggle());
 		d = new AlertDialog.Builder(BookManager.this)
