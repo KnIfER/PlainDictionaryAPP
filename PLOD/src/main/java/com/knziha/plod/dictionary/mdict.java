@@ -18,15 +18,7 @@
 package com.knziha.plod.dictionary;
 
 import com.alibaba.fastjson.JSONObject;
-import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.plod.dictionary.Utils.F1ag;
-import com.knziha.plod.dictionary.Utils.Flag;
-import com.knziha.plod.dictionary.Utils.GetIndexedString;
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionary.Utils.key_info_struct;
-import com.knziha.plod.dictionary.Utils.myCpr;
-import com.knziha.plod.dictionary.Utils.record_info_struct;
+import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.RBTree_additive;
@@ -42,13 +34,7 @@ import org.joni.Option;
 import org.joni.Regex;
 import org.joni.exception.SyntaxException;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -252,9 +238,9 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					//SU.Log("getResourceByKey", _Dictionary_fName, ft.getAbsolutePath(), ft.exists());
 					if(ft.exists()) {
 						try {
-							return new FileInputStream(ft);
+							return new AutoCloseInputStream(new FileInputStream(ft));
 						} catch (Exception e) {
-							e.printStackTrace();
+							CMN.debug(e);
 						}
 					}
 				}
@@ -284,6 +270,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				}
 			}
 		} catch (Exception e) {
+			CMN.debug(e);
 			CMN.hotTracingObject = getPath();
 			throw e;
 		}

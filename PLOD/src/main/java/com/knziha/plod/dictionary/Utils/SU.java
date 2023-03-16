@@ -77,18 +77,19 @@ public class  SU{
 
 
 	public static void Log(Object... o) {
-		StringBuilder msg= new StringBuilder("fatal_log_mdict : ");
-		if(o!=null)
-			for (Object value : o) {
-				if (value instanceof Exception) {
-					ByteArrayOutputStream s = new ByteArrayOutputStream();
-					PrintStream p = new PrintStream(s);
-					((Exception) value).printStackTrace(p);
-					msg.append(s.toString());
-				}
-				msg.append(value).append(" ");
-			}
-		System.out.println(msg);
+		CMN.Log(o);
+//		StringBuilder msg= new StringBuilder("fatal_log_mdict : ");
+//		if(o!=null)
+//			for (Object value : o) {
+//				if (value instanceof Exception) {
+//					ByteArrayOutputStream s = new ByteArrayOutputStream();
+//					PrintStream p = new PrintStream(s);
+//					((Exception) value).printStackTrace(p);
+//					msg.append(s.toString());
+//				}
+//				msg.append(value).append(" ");
+//			}
+//		System.out.println(msg);
 	}
 	public static String alter_file_suffix(String path, String h) {
 		int idx = path.indexOf(".");

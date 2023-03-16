@@ -188,7 +188,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			String[] list = uri.split("/");
 			String dn=list[0];
 			presenter = md_getByURL(dn);
-			CMN.debug("requesting_frame::presenter::", presenter);
+			CMN.debug("requesting_frame::presenter::", presenter, uri);
 			CMN.debug(list);
 			uri = uri.substring(dn.length());
 			key = uri.replace("/", SepWindows);
@@ -445,10 +445,10 @@ public abstract class MdictServer extends NanoHTTPD {
 		key = mdict.requestPattern.matcher(key).replaceAll("");
 		//BookPresenter mdTmp = md_get(adapter_idx_);
 		if (presenter.bookImpl == null) {
-			return null; // todo /favico
+			return emptyResponse; // todo /favico
 		}
 		InputStream restmp = presenter.bookImpl.getResourceByKey(key);
-		//CMN.debug("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
+		CMN.debug("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
 		
 		if(restmp==null){
 			if(shouldLoadFiles) {
