@@ -185,6 +185,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			entrySeek = contentUIData.entrySeek;
 			entrySeek.setOnSeekBarChangeListener(entrySeekLis);
 			pageSlider = contentUIData.PageSlider;
+			pageSlider.barSz = a.bottomBarSz;
 //			if (src==SearchUI.MainApp.MAIN || src== SearchUI.FloatSch.MAIN) {
 //				pageSlider.onSwipeTopListener = a;
 //			}
@@ -1255,9 +1256,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			initQuickTranslatorsBar(mWebView!=null && true, false);
 			if (pageSlider.appbar != null) {
 				if (pageSlider.getImmersiveScrollingEnabled()) {
-					pageSlider.appbar.addStretchView(toolsBtn, a.bottomBarSz, 3);
+					pageSlider.appbar.addStretchView(toolsBtn, pageSlider.barSz, 3);
 					if (txtMenuGrid != null)
-						pageSlider.appbar.addStretchView(txtMenuGrid, a.bottomBarSz, 3);
+						pageSlider.appbar.addStretchView(txtMenuGrid, pageSlider.barSz, 3);
 					try {
 						a.getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) pageSlider.appbar.getParent(), null, pageSlider.appbar);
 					} catch (Exception e) {

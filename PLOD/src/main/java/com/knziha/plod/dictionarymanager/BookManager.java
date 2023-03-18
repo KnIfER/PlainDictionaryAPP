@@ -2094,11 +2094,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			, final boolean deleteFromAllGroup
 	) {
 		final HashSet<String> removePool = folderMangager.getSelectedPaths();
-	 	final ArrayList<mFile> lstViewFiles =  folderMangager.data.getList();
+	 	final ArrayList<mFile> folderAllFiles =  folderMangager.data.getList();
 		BookManagerFolderAbs another_folderLike = folderMangager == f3 ? f4 : f3;
 		boolean anotherChanged = false;
-		for (int i = lstViewFiles.size()-1; i >= 0; i--) {
-			mFile fn = lstViewFiles.get(i)/*.getRealPath()*/;
+		for (int i = folderAllFiles.size()-1; i >= 0; i--) {
+			mFile fn = folderAllFiles.get(i)/*.getRealPath()*/;
 			if (removePool.contains(fn.getPath()) // selected
 					&& fn.webAsset==null // not embedded webx
 					&& !(fn instanceof mAssetFile) // not embedded asset

@@ -111,11 +111,11 @@ public abstract class BasicAdapter extends BaseAdapter
 			PopupMenuHelper popupMenu = a.getPopupMenu();
 			popupMenu.initLayout(new int[]{
 					R.layout.poplist_fanyi_sch
+					, R.string.copy
 					, R.string.tapSch
 					, R.string.peruse_mode
 					, b1 ? R.string.lock_viewpage_lst : 0
 					, R.string.page_ucc
-					, R.string.copy
 			}, this);
 			if (b1) {
 				popupMenu.lv.findViewById(R.string.lock_viewpage_lst).setActivated(PDICMainAppOptions.lockViewPageScroll());

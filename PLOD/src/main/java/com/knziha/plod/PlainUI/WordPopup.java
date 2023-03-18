@@ -835,6 +835,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			splitView = (LinearSplitView) popupContentView.getChildAt(1);
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
 			pageSlider.wordPopup = this;
+			pageSlider.barSz = barSz;
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, splitView, splitter, -1);
 			if (PDICMainAppOptions.wordPopupRemDifferenSet()) {

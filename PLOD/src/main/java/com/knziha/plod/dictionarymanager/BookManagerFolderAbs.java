@@ -212,7 +212,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public boolean exitSelectionMode() {
 		if(SelectionMode) {
 			//SelectionMode = false;
-			if (Selection.size() > 0) {
+			if ((Selection.size()+selFolders.size()) > 0) {
 				Selection.clear();
 				lastClickedPos[0] = -1;
 				lastClickedPos[1] = -1;
@@ -733,7 +733,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			anotherChanged = true;
 		if (p != null) {
 			mFile prev = i-1 >= 0 ? lstViewFiles.get(i-1) : null;
-			if (p.equals(prev) // found
+			if (prev!=null && p.getPath().equals(prev.getPath()) // found
 					&& prev.children.size()==0 // no other children
 					&& (  i>=lstViewFiles.size() || !mFile.isDirectChildrenOf(lstViewFiles.get(i), p))  ) {
 				lstViewFiles.remove(--i);

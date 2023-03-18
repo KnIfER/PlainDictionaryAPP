@@ -33,6 +33,7 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 public class RLContainerSlider extends FrameLayout {
 	public PageSlide page;
 	public WebViewListHandler weblist;
+	public AppBarLayout.BarSz barSz;
 	private WebViewmy WebContext;
 	private PhotoBrowsingContext pBc;
 	private PhotoBrowsingContext tapCtx = SearchUI.pBc;
