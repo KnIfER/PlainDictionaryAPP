@@ -57,7 +57,6 @@ import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.SimpleQueryMorphs;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.DictPicker;
 import com.knziha.plod.plaindict.FloatSearchActivity;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -93,6 +92,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public WordCamera wordCamera;
 	int popupFrame;
 	BookPresenter popupForceId;
+	/** 来自普通内容页面点击 */
 	boolean bFromWebTap;
 	protected PopupTouchMover moveView;
 	public WebViewmy mWebView;
@@ -142,6 +142,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	AppBarLayout.BarSz barSz = new AppBarLayout.BarSz();
 	public ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
 	public SimpleQueryMorphs queryMorphs = new SimpleQueryMorphs();
+	private WebViewmy lastRenderingWV;
+	public boolean immersiveScroll;
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -197,7 +199,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	@Override
 	protected void onShow() {
 		super.onShow();
-		if (PDICMainAppOptions.getImmersiveClickSearch()) {
+		if (PDICMainAppOptions.getImmersiveTapSch()) {
 			try {
 				a.getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) appbar.getParent(), splitView, appbar);
 			} catch (Exception e) {
@@ -832,6 +834,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			popIvBack = (ImageView) toolbar.getChildAt(0);
 			splitView = (LinearSplitView) popupContentView.getChildAt(1);
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) splitView.getChildAt(0);
+			pageSlider.wordPopup = this;
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, splitView, splitter, -1);
 			if (PDICMainAppOptions.wordPopupRemDifferenSet()) {
@@ -1068,7 +1071,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		// 初始化核心组件
 		isInit = isNewHolder = mWebView == null || mWebView.fromCombined!=2;
 		init();
-		WeakReference<ViewGroup> holder = (PDICMainAppOptions.getImmersiveClickSearch() ? popupCrdCloth : popupCmnCloth);
+		WeakReference<ViewGroup> holder = (PDICMainAppOptions.getImmersiveTapSch() ? popupCrdCloth : popupCmnCloth);
 		ViewGroup mPopupContentView = popupContentView;
 		popupContentView = holder == null ? null : holder.get();
 		boolean b1 = popupContentView == null;
@@ -1083,7 +1086,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			ViewUtils.removeView(toolbar);
 			ViewUtils.removeView(cv);
 			ViewUtils.removeView(pottombar);
-			if (PDICMainAppOptions.getImmersiveClickSearch()) {
+			if (immersiveScroll = PDICMainAppOptions.getImmersiveTapSch()) {
 				popupContentView = (popupCrdCloth != null && popupCrdCloth.get() != null) ? popupCrdCloth.get()
 						: (popupCrdCloth = new WeakReference<>((ViewGroup) a.getLayoutInflater()
 						.inflate(R.layout.float_contentview_coord, a.root, false))).get();
@@ -1105,7 +1108,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					//appbar.addStretchView(pottombar, barSz, false);
 					appbar.addStretchView(splitView, barSz, 1);
 				}
-			} else {
+			}
+			else {
 				popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
 						: (popupCmnCloth = new WeakReference<>((ViewGroup) a.getLayoutInflater()
 						.inflate(R.layout.float_contentview_basic_outer, a.root, false))).get();
@@ -1122,6 +1126,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			mWebView.rl = popupContentView;
 			popupContentView.setTag(mWebView);
+			weblistHandler.pageSlider.appbar = PDICMainAppOptions.getImmersiveTapSch()?appbar:null;
+			weblistHandler.pageSlider.quoTapZoom();
 		}
 		popupGuarder.popupToGuard = popupContentView;
 		popupGuarder.isPinned = pin();
@@ -1676,11 +1682,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				standalone.weblistHandler = weblistHandler;
 			}
 		}
-		if (nowView != standalone) {
-			ViewUtils.removeView(nowView);
+		if (lastRenderingWV!=null && lastRenderingWV != standalone) {
+			ViewUtils.removeView(lastRenderingWV);
 		}
+		lastRenderingWV = standalone;
 		if (ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1)) {
-			((AdvancedNestScrollWebView)standalone).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveClickSearch());
+			((AdvancedNestScrollWebView)standalone).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveTapSch());
 		}
 		return standalone;
 	}
@@ -1694,7 +1701,17 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		WebViewListHandler wlh = multiView.weblistHandler;
 		if(bFromWebTap) {wlh.bDataOnly = true; wlh.bShowInPopup=wlh.bShowingInPopup;}
 		wlh.setViewMode(rec, bFromWebTap?1:isMergingFramesNum(), multiView);
-		if(bFromWebTap) wlh.bDataOnly = false;
+		if (bFromWebTap) {
+			wlh.bDataOnly = false;
+		} else {
+			if (lastRenderingWV!=null && lastRenderingWV != mWebView) {
+				ViewUtils.removeView(lastRenderingWV);
+			}
+			lastRenderingWV = mWebView;
+			if (ViewUtils.addViewToParent(mWebView, weblistHandler.pageSlider, 1)) {
+				((AdvancedNestScrollWebView)mWebView).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveTapSch());
+			}
+		}
 		multiView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 		if (multiView.wvclient != a.myWebClient) {
 			multiView.setWebChromeClient(a.myWebCClient);
@@ -1893,7 +1910,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public void set(boolean setSH) {
-		if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(a.flags[2]))
+		if(PDICMainAppOptions.getImmersiveTapSch()!=PDICMainAppOptions.getImmersiveTapSch(a.flags[2]))
 			a.popupWord(null,null, 0, null, false);
 		if (mWebView!=null) {
 			if(weblistHandler.btmV!=SearchUI.btmV) {

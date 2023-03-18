@@ -50,6 +50,7 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
@@ -1371,6 +1372,7 @@ public class Drawer extends Fragment implements
 				a.ResetIMOffset();
 				AppBarLayout barappla = (AppBarLayout) a.UIData.appbar;
 				barappla.setExpanded(true, true);
+				SearchUI.tapZoomV++;
 			} break;
 			case R.id.sw3:{
 				a.opt.setServerStarted(isChecked);

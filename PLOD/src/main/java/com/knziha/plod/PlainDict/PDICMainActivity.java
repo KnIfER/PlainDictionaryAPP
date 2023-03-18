@@ -2802,9 +2802,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 //		UIData.appbar.strechOnlyOnce = true;
-		if(bImmersive) {
+		if (bImmersive) {
 			UIData.appbar.addStretchView(UIData.main, bottomBarSz, 1);
 			UIData.appbar.addStretchView(bottombar, bottomBarSz, 2);
+			UIData.appbar.addStretchView(contentUIData.tools, bottomBarSz, 3);
+		} else {
+			contentUIData.tools.setTranslationY(0);
+			if (weblistHandler.txtMenuGrid!=null)
+				weblistHandler.txtMenuGrid.setTranslationY(0);
 		}
 
 		contentHolder = bImmersive ? UIData.webcoord : UIData.main;

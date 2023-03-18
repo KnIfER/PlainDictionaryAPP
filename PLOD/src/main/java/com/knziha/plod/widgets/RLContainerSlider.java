@@ -1,8 +1,6 @@
 package com.knziha.plod.widgets;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -13,22 +11,19 @@ import static android.view.MotionEvent.*;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
@@ -71,6 +66,7 @@ public class RLContainerSlider extends FrameLayout {
 	float swipeRefreshDy;
 	int swipeRefreshTheta;
 	public View.OnClickListener onSwipeTopListener;
+	public WordPopup wordPopup;
 	
 	public RLContainerSlider(Context context) {
 		this(context, null);
@@ -569,7 +565,7 @@ public class RLContainerSlider extends FrameLayout {
 		if (masked==ACTION_UP/*||masked==ACTION_CANCEL*/) {
 			checkBar();
 			if (appbar!=null && PDICMainAppOptions.immersiveWhen()==1
-					&& PDICMainAppOptions.getEnableSuperImmersiveScrollMode()
+					&& getImmersiveScrollingEnabled()
 			)
 			{
 				int delta = (int) (ev.getY() - OrgY);
@@ -728,6 +724,10 @@ public class RLContainerSlider extends FrameLayout {
 		return dragged!=0 || aborted!=0;
 	}
 	
+	public boolean getImmersiveScrollingEnabled() {
+		return wordPopup==null?PDICMainAppOptions.getEnableSuperImmersiveScrollMode():wordPopup.immersiveScroll;
+	}
+	
 	public DragScrollBar bar;
 	private void checkBar() {
 		if(bar !=null && !bar.isHidden()){
@@ -800,7 +800,7 @@ public class RLContainerSlider extends FrameLayout {
 			swipeRefresh = !swipeRefresh;
 			swipeRefreshAllow = false;
 		}
-		slideImmersive = appbar!=null && PDICMainAppOptions.immersiveWhen()==0 && PDICMainAppOptions.getEnableSuperImmersiveScrollMode() ;
+		slideImmersive = appbar!=null && PDICMainAppOptions.immersiveWhen()==0 && getImmersiveScrollingEnabled() ;
 		//CMN.debug("quoTapZoom", swipeRefresh, slideTurn, tapZoom);
 		nothing = !swipeRefresh && !slideTurn && !tapZoom && !slideImmersive;
 	}

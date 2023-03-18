@@ -50,6 +50,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.VU;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
 
 import com.jess.ui.TwoWayGridView;
@@ -1252,6 +1253,22 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			toolsBtn.setTag(mWebView);
 			ViewUtils.setVisible(toolsBtn, mWebView!=null);
 			initQuickTranslatorsBar(mWebView!=null && true, false);
+			if (pageSlider.appbar != null) {
+				if (pageSlider.getImmersiveScrollingEnabled()) {
+					pageSlider.appbar.addStretchView(toolsBtn, a.bottomBarSz, 3);
+					if (txtMenuGrid != null)
+						pageSlider.appbar.addStretchView(txtMenuGrid, a.bottomBarSz, 3);
+					try {
+						a.getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) pageSlider.appbar.getParent(), null, pageSlider.appbar);
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				} else {
+					toolsBtn.setY(0);
+					if (txtMenuGrid != null)
+						txtMenuGrid.setY(0);
+				}
+			}
 		}
 	}
 	
@@ -2548,7 +2565,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					}
 				});
 				//txtMenuGrid.setTag();
-				
+				if (a.thisActType == MainActivityUIBase.ActType.PlainDict) {
+					((PDICMainActivity)a).UIData.appbar.addStretchView(txtMenuGrid, a.bottomBarSz, 3);
+				}
 			}
 			VU.setVisible(txtMenuGrid, show);
 		}

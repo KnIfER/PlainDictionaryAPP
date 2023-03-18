@@ -1961,10 +1961,10 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 		return val;
 	}
 
-	public static boolean getImmersiveClickSearch() {
+	public static boolean getImmersiveTapSch() {
 		return (ThirdFlag & 0x10l) != 0x10l;
 	}
-	public static boolean getImmersiveClickSearch(Long ThirdFlag) {
+	public static boolean getImmersiveTapSch(Long ThirdFlag) {
 		return (ThirdFlag & 0x10l) != 0x10l;
 	}
 	public static boolean setImmersiveClickSearch(boolean val) {

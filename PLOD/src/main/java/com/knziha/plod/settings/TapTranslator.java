@@ -39,13 +39,13 @@ public class TapTranslator extends PlainSettingsFragment implements Preference.O
 					String key = p.getKey();
 					switch (key) {
 						case "immersive":
-							init_switch_preference(this, "immersive", PDICMainAppOptions.getImmersiveClickSearch(), null, null, p);
+							init_switch_preference(this, "immersive", PDICMainAppOptions.getImmersiveTapSch(), null, null, p);
 							break;
 						case "multi":
 							init_switch_preference(this, "multi", tapSchMode>=1, null, null, p);
 							break;
 						case "top_resize":
-							init_switch_preference(this, "top_resize", PDICMainAppOptions.getImmersiveClickSearch(), null, null, p);
+							init_switch_preference(this, "top_resize", PDICMainAppOptions.getImmersiveTapSch(), null, null, p);
 							break;
 						case "double_resize":
 							init_switch_preference(this, "double_resize", PDICMainAppOptions.getDoubleClickMaximizeClickSearch(), null, null, p);
