@@ -117,7 +117,14 @@ public class DBroswer extends DialogFragment implements
 	{
 		@Override
 		public boolean onBackPressed() {
-			return try_goBack()!=0;
+			boolean running = try_goBack()!=0;
+			CMN.debug("onBackPressed::", running);
+			if (!running) {
+				detach();
+				MainActivityUIBase a = getMainActivity();
+				if(a!=null && a.DBrowser==DBroswer.this) a.DBrowser = null;
+			}
+			return running;
 		}
 		@Override
 		protected void onDismiss() {
@@ -175,6 +182,7 @@ public class DBroswer extends DialogFragment implements
 	
 	/** see {@link #toggleFavor}*/
 	public int try_goBack(){
+		CMN.debug("try_goBack::");
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null || !initialized) return 0;
 //		if(a.isContentViewAttachedForDB()) { //111
@@ -341,7 +349,7 @@ public class DBroswer extends DialogFragment implements
 	@Override
 	public void onDetach(){
 		super.onDetach();
-		//CMN.Log("on browser detach", cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0);
+		CMN.debug("on browser detach::");
 		saveListPosition(); // onDetach
 	}
 	
@@ -599,7 +607,7 @@ public class DBroswer extends DialogFragment implements
 			
 			MenuBuilder menu = (MenuBuilder) UIData.toolbar.getMenu();
 			MenuItem searchItem = menu.getItem(0);
-			menu.checkActDrawable = a.mResource.getDrawable(R.drawable.frame_checked_whiter);
+			menu.checkActDrawable = a.mResource.getDrawable(PDICMainAppOptions.useOldColorsMode()?R.drawable.frame_checked_whiter:R.drawable.check_frame_transparent);
 			menu.checkDrawable = a.AllMenus.checkDrawable;
 			menu.mOverlapAnchor = false;
 			menu.contentDescriptor = new MenuBuilder.ContentDescriptor(){
@@ -2051,11 +2059,15 @@ public class DBroswer extends DialogFragment implements
 			dummyPanel.dialog = mDialog;
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
-				public void onBackPressed() {
-					//NavList(-1);
-					if (getMainActivity().DBrowser==DBroswer.this) {
-						getMainActivity().DBrowser=null;
+				public boolean onBackPressed() {
+					boolean running = try_goBack()!=0;
+					CMN.debug("onBackPressed::", running);
+					if (!running) {
+						detach();
+						MainActivityUIBase a = getMainActivity();
+						if(a!=null && a.DBrowser==DBroswer.this) a.DBrowser = null;
 					}
+					return true;
 				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {
@@ -2238,6 +2250,7 @@ public class DBroswer extends DialogFragment implements
 	}
 	
 	public void detach() {
+		//CMN.debug("detach::", mDialog != null, mDialog != null && mDialog.isShowing(), dummyPanel.isVisible());
 		if (mDialog != null && mDialog.isShowing()) {
 			mDialog.dismiss();
 		} else {
@@ -2252,7 +2265,7 @@ public class DBroswer extends DialogFragment implements
 		}
 		ViewUtils.removeView(getView());
 		if (dummyPanel.isVisible()) {
-			dummyPanel.toggleDummy(null);
+			dummyPanel.toggleDummy(getMainActivity());
 		}
 	}
 	
@@ -2290,7 +2303,7 @@ public class DBroswer extends DialogFragment implements
 	public void onDismiss(@NonNull DialogInterface dialog) {
 		super.onDismiss(dialog);
 		if (dummyPanel.isVisible()) {
-			dummyPanel.toggleDummy(null);
+			dummyPanel.toggleDummy(getMainActivity());
 		}
 	}
 }

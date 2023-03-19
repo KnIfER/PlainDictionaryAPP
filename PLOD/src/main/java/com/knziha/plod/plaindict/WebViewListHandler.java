@@ -56,6 +56,7 @@ import androidx.core.graphics.ColorUtils;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.ButtonUIProject;
+import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -1030,7 +1031,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		setViewMode(multiRecord, isMergingFramesNum(), dictView);
 	}
 	
-	int[] versions=new int[8];
+	public int[] versions=new int[8];
 	public void checkUI() {
 		if(contentbarProject!=null && ViewUtils.checkSetVersion(versions, 0, contentbarProject.version)) {
 			contentbarProject.addBar(contentUIData.bottombar2, ContentbarBtns);
@@ -1043,9 +1044,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				pageSchBar.setBackgroundColor(a.MainAppBackground);
 			}
 		}
-		if (ViewUtils.checkSetVersion(versions, 4, a.tintListFilter.sForeground))
+		if (ViewUtils.checkSetVersion(versions, 4, a.tintListFilter.sForeground) && pageSlider.wordPopup==null)
 		{
-			ViewUtils.setForegroundColor(contentUIData.bottombar2, a.tintListFilter);
+			if (pageSlider.wordPopup != null) {
+				ViewUtils.setForegroundColor(pageSlider.wordPopup.pottombar, a.tintListFilter);
+				ViewUtils.setForegroundColor(pageSlider.wordPopup.toolbar, a.tintListFilter);
+			} else {
+				ViewUtils.setForegroundColor(contentUIData.bottombar2, a.tintListFilter);
+			}
 			if(pageSchBar!=null) ViewUtils.setForegroundColor(pageSchBar, a.tintListFilter);
 		}
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground) || b1) {
@@ -1254,7 +1260,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			toolsBtn.setTag(mWebView);
 			ViewUtils.setVisible(toolsBtn, mWebView!=null);
 			initQuickTranslatorsBar(mWebView!=null && true, false);
-			if (pageSlider.appbar != null) {
+			if (pageSlider.appbar != null/* && pageSlider.wordPopup==null*/) { // todo
 				if (pageSlider.getImmersiveScrollingEnabled()) {
 					pageSlider.appbar.addStretchView(toolsBtn, pageSlider.barSz, 3);
 					if (txtMenuGrid != null)
@@ -1746,6 +1752,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			bar.setTag(pageSchEdit.getText());
 			SearchOnPage(null);
 			bar.getLayoutParams().height = a.actionBarSize;
+			if (pageSlider.appbar!=null) {
+				pageSlider.appbar.addStretchView(pageSchBar, pageSlider.barSz, 3);
+				if (pageSlider.getImmersiveScrollingEnabled()) {
+					try {
+						a.getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) pageSlider.appbar.getParent(), null, pageSlider.appbar);
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				} else {
+					pageSlider.setTranslationY(0);
+				}
+			}
 		}
 		else {
 			if (ViewUtils.removeView(bar)) {

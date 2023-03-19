@@ -94,10 +94,8 @@ public abstract class BookManagerFolderAbs extends ListFragment
 			if (o instanceof mFile) {
 				mFile mFile = (mFile) o;
 				boolean ret = _realSelection.remove(mFile.getPath());
-				if (ret && mFile.getIsDirectory()) {
-					selFolders.add(mFile);
-				}
-				return ret;
+				boolean ret1 = selFolders.remove(mFile);
+				return ret || ret1;
 			}
 			return false;
 		}
@@ -303,8 +301,10 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				//mFile p = data.getList().get(position);
 				ViewHolder vh = (ViewHolder)view.getTag();
 				mFile filelet = vh.dataLet;
+				// vh.selecting -- from checkbox click
 				if(SelectionMode && (!filelet.isDirectory() || vh.selecting)
-					/* && (!PDICMainAppOptions.dictManagerClickPopup() || vh.selecting)*/) {
+					/* && (!PDICMainAppOptions.dictManagerClickPopup() || vh.selecting)*/)
+				{
 					int pos = vh.position;
 					//CMN.Log(pos+" ?= "+position);
 					if(Selection.remove(filelet.getRealPath())) {

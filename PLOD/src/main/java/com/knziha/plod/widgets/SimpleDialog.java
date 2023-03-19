@@ -19,7 +19,7 @@ public class SimpleDialog extends Dialog {
 	}
 
 	public interface BCL{
-		void onBackPressed();
+		boolean onBackPressed();
 		void onActionModeStarted(ActionMode mode);
 		public boolean onKeyDown(int keyCode, @NonNull KeyEvent event);
 	}
@@ -36,9 +36,10 @@ public class SimpleDialog extends Dialog {
 
 	@Override
 	public void onBackPressed() {
-		super.onBackPressed();
-		if(mBCL!=null){
-			mBCL.onBackPressed();
+		if (mBCL != null && mBCL.onBackPressed()) {
+			// intentional
+		} else {
+			super.onBackPressed();
 		}
 	}
 

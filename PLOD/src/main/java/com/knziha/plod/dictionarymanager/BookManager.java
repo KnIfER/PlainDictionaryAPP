@@ -629,13 +629,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		};
 		MenuCompat.setGroupDividerEnabled(AllMenus, true);
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
-		AllMenus.checkActDrawable = mResource.getDrawable(R.drawable.frame_checked_whiter);
+		AllMenus.checkActDrawable = mResource.getDrawable(PDICMainAppOptions.useOldColorsMode()?R.drawable.frame_checked_whiter:R.drawable.check_frame_transparent);
+		AllMenus.checkActDrawable.setAlpha(10);
 		AllMenus.multiColumn = 1;
 		AllMenus.twoColumnFlipped = true;
 		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 22, 24, 23, 0, 2, 1, 19, 18, 5, 20, 27, 3, 6, 21);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 24, 23, 0, 3, 15);
-		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 24, 26, 13, 14, 7, 8);
-		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 24, 26, 13, 14, 7, 17, 8, 9, 10, 11, 12);
+		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 28, 24, 26, 13, 14, 7, 8);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 28, 24, 26, 13, 14, 7, 17, 8, 9, 10, 11, 12);
 		AllMenus.setItems(Menu1);
 		
 		if (PDICMainAppOptions.dictManagerClickPopup()) {
@@ -742,7 +743,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			@Override public void onTabReselected(TabLayout.Tab tab) {}
         });
 		
-	    mTabLayout.setSelectedTabIndicatorColor(0xe0000000|ViewUtils.getComplementaryColor(opt.getMainBackground())&0x00ffffff);
+		int indicatorColor = 0xe0000000|ViewUtils.getComplementaryColor(opt.getMainBackground())&0x00ffffff;
+	    double lumen1 = ColorUtils.calculateLuminance(indicatorColor);
+		double lumen2 = ColorUtils.calculateLuminance(opt.getMainBackground());
+		if (Math.abs(lumen1-lumen2)<0.4) {
+			indicatorColor = ColorUtils.blendARGB(indicatorColor, lumen2>0.5?Color.BLACK:Color.WHITE, 0.2f);
+		}
+	    mTabLayout.setSelectedTabIndicatorColor(indicatorColor);
 //	    mTabLayout.setSelectedTabIndicatorColor(ViewUtils.getComplementaryColor(Color.BLUE));
 	    //mTabLayout.setSelectedTabIndicatorColor(ColorUtils.blendARGB(bg, Color.BLACK, 0.28f));
 	    mTabLayout.setSelectedTabIndicatorHeight((int) (0.7*mResource.getDimension(R.dimen._14_)));
@@ -2115,7 +2122,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			another_folderLike.rebuildDataTree();
 		}
 		int cc=0;
-		//if (!PDICMainAppOptions.debuggingRemoveRecSkipWrite())
+		if (!PDICMainAppOptions.debuggingRemoveRecSkipWrite())
 		{
 			//PDICMainAppOptions.setDelRecApplyAll(deleteFromAllGroup);
 			ArrayList<File> moduleFilesArr = ScanInModlueFiles(deleteFromAllGroup, true); // folderMangager.isDirty

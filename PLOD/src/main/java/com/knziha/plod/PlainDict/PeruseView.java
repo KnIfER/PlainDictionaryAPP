@@ -576,8 +576,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			dummyPanel.dialog = mDialog;
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
-				public void onBackPressed() {
+				public boolean onBackPressed() {
 					goBack();
+					return true;
 				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {

@@ -101,7 +101,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public ViewGroup popupContentView;
 	private AppBarLayout appbar;
 	public ViewGroup toolbar;
-	protected ViewGroup pottombar;
+	public ViewGroup pottombar;
 	protected CircleCheckBox popupChecker;
 	public WeakReference<ViewGroup> popupCrdCloth;
 	public WeakReference<ViewGroup> popupCmnCloth;
@@ -189,6 +189,26 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			if (dictPicker.pinned()) {
 				dictPicker.refresh();
+			}
+			int fore = a.tintListFilter.sForeground;
+			if (Math.abs(ColorUtils.calculateLuminance(fore)-ColorUtils.calculateLuminance(a.AppWhite)) < 0.5) {
+				if (GlobalOptions.isDark) {
+					fore = a.AppBlack;
+				} else {
+					fore = a.MainBackground;
+					if (Math.abs(ColorUtils.calculateLuminance(fore)-ColorUtils.calculateLuminance(a.AppWhite)) < 0.5) {
+						fore = a.AppBlack;
+					}
+				}
+			}
+			if (ViewUtils.checkSetVersion(weblistHandler.versions, 4, fore))
+			{
+				VU.TintListFilter filter = a.tintListFilter;
+				if (fore!=filter.sForeground) {
+					filter = VU.TintListFilter.valueOf(fore);
+				}
+				ViewUtils.setForegroundColor(pottombar, filter);
+				ViewUtils.setForegroundColor(toolbar, filter);
 			}
 		}
 		if (wordCamera != null) {
@@ -1107,7 +1127,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				barSz.sz = pottombar.getLayoutParams().height;
 				if (beh.strech) {
 					//appbar.addStretchView(pottombar, barSz, false);
-					appbar.addStretchView(splitView, barSz, 1);
+					//appbar.addStretchView(splitView, barSz, 1);
 				}
 			}
 			else {
