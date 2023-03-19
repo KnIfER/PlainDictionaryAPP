@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressLint({"ResourceType", "NonConstantResourceId"})
 public abstract class BookManagerFolderAbs extends ListFragment
@@ -46,6 +48,7 @@ public abstract class BookManagerFolderAbs extends ListFragment
 	public boolean SelectionMode=true;
 	HashSet<mFile> selFolders = new HashSet<>();
 	private final HashSet<String> _realSelection = new HashSet<>();
+	private final static Pattern extStoratePattern = Pattern.compile("[0-9A-Z]{4}-[0-9A-Z]{2}([0-9A-Z]{2})/");
 	public final HashSet<mFile> Selection = new HashSet<mFile>(){
 		public boolean add(mFile mFile) {
 			boolean ret;
@@ -501,6 +504,13 @@ public abstract class BookManagerFolderAbs extends ListFragment
 				}
 				if (text.startsWith(GlobalOptions.extPath)) {
 					text = "/sdcard" + text.substring(GlobalOptions.extPath.length());
+				}
+				else if (text.startsWith("/storage/")) {
+					Matcher m = extStoratePattern.matcher(text);
+					if (m.find(9)) {
+						int idx = text.indexOf("/", 10);
+						text = "存储卡" + m.group(1) + text.substring(idx);
+					}
 				}
 				vh.text.setText( text );
 			} else { // if for searched list
