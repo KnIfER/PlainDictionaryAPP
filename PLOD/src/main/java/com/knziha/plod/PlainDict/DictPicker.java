@@ -1099,4 +1099,12 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 		}
 		super.showDialog();
 	}
+	
+	@Override
+	protected void onDismiss() {
+		super.onDismiss();
+		if (etSearchDict!=null && etSearchDict.isFocused()) {
+			etSearchDict.clearFocus();
+		}
+	}
 }
