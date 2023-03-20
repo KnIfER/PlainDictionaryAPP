@@ -192,8 +192,9 @@ public class WordMap extends AlloydPanel implements Toolbar.OnMenuItemClickListe
 //		weblistHandler.getMergedFrame().loadUrl("http://192.168.0.102:8080/base/3/MdbR/wordmap.html");
 		
 		String url = "http://mdbr.com/MdbR/wordmap.html";
-		if (BuildConfig.DEBUG && GlobalOptions.debug) {
-			url = "http://"+MdictServerMobile.remoteDebugServer+":8080/base/4/wordmap.html";
+		if (BuildConfig.DEBUG && GlobalOptions.debug && PDICMainAppOptions.debug()) {
+			//url = "http://"+MdictServerMobile.remoteDebugServer+":8080/base/李白全集/MdbR/wordmap.html";
+			url = "http://"+MdictServerMobile.remoteDebugServer+":8080/MdbR/wordmap.html";
 		}
 		weblistHandler.getMergedFrame().loadUrl(url);
 		

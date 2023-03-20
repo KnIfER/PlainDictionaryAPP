@@ -189,10 +189,10 @@ public abstract class MdictServer extends NanoHTTPD {
 			String[] list = uri.split("/");
 			String dn=list[0];
 			presenter = md_getByURL(dn);
-			CMN.debug("requesting_frame::presenter::", presenter, uri);
-			CMN.debug(list);
 			uri = uri.substring(dn.length());
 			key = uri.replace("/", SepWindows);
+			CMN.debug("requesting_frame::presenter::", presenter, uri);
+			CMN.debug(list);
 			if(list.length==1){
 				try {
 					int index = presenter.bookImpl.lookUp("index", true);
@@ -217,7 +217,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					//CMN.debug("virtual content..."+VI, mdTmp.getVirtualRecordAt(VI));
 					return newFixedLengthResponse(presenter.bookImpl.getVirtualRecordAt(this, VI));
 				} catch (IOException e) {
-					e.printStackTrace();
+					CMN.debug(e);
 				}
 			}
 //			else if(list.length==2){
@@ -474,6 +474,10 @@ public abstract class MdictServer extends NanoHTTPD {
 			return newFixedLengthResponse(Status.OK,"application/x-javascript",restmp,restmp.available());
 		}
 		
+		if(Acc.contains("text/html")) {
+			return newFixedLengthResponse(Status.OK,"text/html", restmp, restmp.available());
+		}
+		
 		if(Acc.contains("/css") || uri.endsWith(".css")) {
 			return newFixedLengthResponse(Status.OK,"text/css", restmp, restmp.available());
 		}
@@ -625,7 +629,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(pos>=0) {
 			return loadManager.md_get(pos);
 		}
-		return loadManager.md_getByName(url);
+		return loadManager.md_getByName(URLDecoder.decode(url));
 	}
 	
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {

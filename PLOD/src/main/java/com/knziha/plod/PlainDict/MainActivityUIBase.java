@@ -118,6 +118,7 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
@@ -701,6 +702,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						doCheck = opt.getUseBackKeyClearWebViewFocus();
 				}
 				else if (view instanceof TextView) {
+					if (view==etSearch && !etTools.isVisible()) {
+						return false;
+					}
 					TextView tv = ((TextView) view);
 					if (tv.hasSelection()) {
 						tv.clearFocus();
@@ -3545,6 +3549,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(bottom==0) {
 					bottom = (int) mResource.getDimension(R.dimen.barSzBot);
 				}
+			}
+		}
+		if (contentUIData!=null && contentUIData.PageSlider.appbar != null) {
+			if (parentView == contentUIData.PageSlider && contentUIData.PageSlider.getImmersiveScrollingEnabled()) {
+				bottom = (int) (bottombar.getHeight() - bottombar.getTranslationY()) + contentUIData.PageSlider.appbar.getHeight();
 			}
 		}
 		topsnack.setBottomMargin(keyboardShown?0:bottom);
@@ -6889,6 +6898,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ViewGroup vp = (ViewGroup)row.getParent();
 					vp.removeView(row);
 					vp.addView(row, 0);
+					row = (ViewGroup) vp.getChildAt(2);
+					vp.removeView(row);
+					vp.addView(row, 1);
+					View col = row.getChildAt(1);
+					row.removeView(col);
+					row.addView(col, 0);
 				} else {
 					topDlg(dd.getWindow(), PDICMainAppOptions.topDialogTranslate());
 				}
@@ -11944,5 +11959,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public Response handleFFDB(HTTPSession session) {
 		return null;
+	}
+	
+	public void refreshImmersiveBars(RLContainerSlider pageSlider) {
+		try {
+			getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) pageSlider.appbar.getParent(), null, pageSlider.appbar);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 }

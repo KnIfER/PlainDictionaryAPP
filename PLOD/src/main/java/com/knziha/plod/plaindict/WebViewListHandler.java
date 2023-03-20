@@ -1752,18 +1752,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			bar.setTag(pageSchEdit.getText());
 			SearchOnPage(null);
 			bar.getLayoutParams().height = a.actionBarSize;
-			if (pageSlider.appbar!=null) {
-				pageSlider.appbar.addStretchView(pageSchBar, pageSlider.barSz, 3);
-				if (pageSlider.getImmersiveScrollingEnabled()) {
-					try {
-						a.getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) pageSlider.appbar.getParent(), null, pageSlider.appbar);
-					} catch (Exception e) {
-						CMN.debug(e);
-					}
-				} else {
-					pageSlider.setTranslationY(0);
-				}
-			}
+			resetImmersivePageSchBar();
 		}
 		else {
 			if (ViewUtils.removeView(bar)) {
@@ -1784,6 +1773,20 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			//PDICMainAppOptions.schPageFlt(b1);
 		} else if (src==SearchUI.Fye.MAIN) {
 			opt.schPageFye(b1);
+		}
+	}
+	
+	public void resetImmersivePageSchBar() {
+		Toolbar bar = pageSchBar;
+		if (pageSlider.appbar!=null && bar!=null) {
+			ViewGroup vp = (ViewGroup) bar.getParent();
+			if (pageSlider.getImmersiveScrollingEnabled() && vp!=null && vp.indexOfChild(pageSchBar) > 0 ) {
+				pageSlider.appbar.addStretchView(pageSchBar, pageSlider.barSz, 3);
+				a.refreshImmersiveBars(pageSlider);
+			} else {
+				pageSlider.appbar.removeStretchView(pageSchBar);
+				pageSchBar.setTranslationY(0);
+			}
 		}
 	}
 	
@@ -2563,7 +2566,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					}
 				});
 				txtMenuGrid.setOnItemLongClickListener((parent, view, position, id) -> {
-					a.popupWord(null, null, 0, null, false);
+					a.popupWord(null, null, -100, null, false);
 					return true;
 				});
 			}

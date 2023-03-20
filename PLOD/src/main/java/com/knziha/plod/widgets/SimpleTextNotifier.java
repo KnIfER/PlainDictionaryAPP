@@ -16,6 +16,7 @@ import com.knziha.plod.plaindict.CMN;
 
 public class SimpleTextNotifier extends TextView{
 	public int msg;
+	public int nextOffsetStart;
 	int offset;
 	float mOffsetScale = 1;
 	boolean snacking;
@@ -111,9 +112,13 @@ public class SimpleTextNotifier extends TextView{
 			} else {
 				offset=Math.max(height/3, (int)(offset*mOffsetScale));
 			}
+//			if (nextOffsetStart!=0) {
+//				offset += nextOffsetStart;
+//				nextOffsetStart = 0;
+//			}
 			if(mOffsetScale!=1) mOffsetScale = 1;
 			setTranslationY(offset);
-			//CMN.Log("setTranslationY::", offset);
+			//CMN.debug("setTranslationY::", offset, height);
 			setVisibility(View.VISIBLE);
 			snacking = visible = true;
 			ViewPropertyAnimator animation = animate()

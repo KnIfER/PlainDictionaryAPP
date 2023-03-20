@@ -2811,6 +2811,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (weblistHandler.txtMenuGrid!=null)
 				weblistHandler.txtMenuGrid.setTranslationY(0);
 		}
+		weblistHandler.resetImmersivePageSchBar();
 
 		contentHolder = bImmersive ? UIData.webcoord : UIData.main;
 		sp = (ViewGroup) bottombar.getParent();

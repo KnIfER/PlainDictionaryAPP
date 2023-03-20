@@ -292,14 +292,13 @@
 		}
 		
 		
-		function add(text, nid){
+		function add(text, nid) {
 			debug('add', text, nid);
 			var node = craft("WORDNODE", map);
 			if(!text.startsWith('<div>'))
 				craft("DIV", node).innerHTML = text;
 			else
 				node.innerHTML = text;
-			craft("IMG", node).src = 'http://rqm1nmwwk.hn-bkt.clouddn.com/5.jpg';
 			node.style.left = loca.style.left;
 			node.style.top = loca.style.top;
 			node.id = nid;

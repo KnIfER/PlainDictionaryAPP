@@ -201,8 +201,8 @@ public class MdictServerMobile extends MdictServer {
 			StrictMode.setThreadPolicy(policy);
 		}
 		if(check)
-			CMN.Log("OpenMdbResourceByName   http://"+ipAddress+"/base/3" + key.replace("\\", "/"));
-		String uri = "http://"+ipAddress+":8080/base/3" + URLEncoder.encode(key.replace("\\", "/"));
+			CMN.Log("OpenMdbResourceByName   http://"+ipAddress+"/base/李白全集" + key.replace("\\", "/"));
+		String uri = "http://"+ipAddress+":8080/base/李白全集" + URLEncoder.encode(key.replace("\\", "/"));
 		HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
 		if (urlConnection instanceof HttpsURLConnection) {
 			((HttpsURLConnection) urlConnection).setHostnameVerifier(DO_NOT_VERIFY);

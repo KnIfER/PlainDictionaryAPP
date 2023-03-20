@@ -143,6 +143,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	public ArrayList<UniversalDictionaryInterface> forms = new ArrayList<>();
 	public SimpleQueryMorphs queryMorphs = new SimpleQueryMorphs();
 	private WebViewmy lastRenderingWV;
+	private WebViewmy lastHeteroRenderingWV;
 	public boolean immersiveScroll;
 	
 	public WordPopup(MainActivityUIBase a) {
@@ -339,12 +340,16 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			case R.id.popIvRecess:
 			case R.drawable.chevron_recess:
 			{
-				nav(true);
+				if (!nav(true) && lastRenderingWV!=mWebView) {
+					viewContent(mWebView);
+				}
 			} break;
 			case R.id.popIvForward:
 			case R.drawable.chevron_forward:
 			{
-				nav(false);
+				if (!nav(false) && lastHeteroRenderingWV!=null) {
+					viewContent(lastHeteroRenderingWV);
+				}
 			} break;
 			case R.id.popIvSettings:
 			case R.drawable.drawer_menu_icon_setting:
@@ -955,7 +960,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			weblist.browserWidget11 = pottombar.findViewById(R.id.popNxtE);
 			
 			weblist.mBar = pageSlider.findViewById(R.id.dragScrollBar);
-			this.mWebView = weblist.dictView = weblist.mMergedFrame = webview;
+			this.mWebView = weblist.dictView = weblist.mMergedFrame = lastRenderingWV = webview;
 			BookPresenter.setWebLongClickListener(mWebView, a);
 			pageSlider.bar = weblist.mBar;
 			
@@ -1703,14 +1708,23 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				standalone.weblistHandler = weblistHandler;
 			}
 		}
-		if (lastRenderingWV!=null && lastRenderingWV != standalone) {
-			ViewUtils.removeView(lastRenderingWV);
-		}
-		lastRenderingWV = standalone;
-		if (ViewUtils.addViewToParent(standalone, weblistHandler.pageSlider, 1)) {
-			((AdvancedNestScrollWebView)standalone).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveTapSch());
-		}
+		viewContent(standalone);
 		return standalone;
+	}
+	
+	private void viewContent(WebViewmy wv) {
+		if (lastRenderingWV != wv) {
+			if(lastRenderingWV!=null) {
+				if (lastRenderingWV!=mWebView) {
+					lastHeteroRenderingWV = lastRenderingWV;
+				}
+				ViewUtils.removeView(lastRenderingWV);
+			}
+			lastRenderingWV = wv;
+		}
+		if (ViewUtils.addViewToParent(wv, weblistHandler.pageSlider, 1)) {
+			((AdvancedNestScrollWebView)wv).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveTapSch());
+		}
 	}
 	
 	private void renderMultiRecordAt(int pos) {
@@ -1725,13 +1739,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (bFromWebTap) {
 			wlh.bDataOnly = false;
 		} else {
-			if (lastRenderingWV!=null && lastRenderingWV != mWebView) {
-				ViewUtils.removeView(lastRenderingWV);
-			}
-			lastRenderingWV = mWebView;
-			if (ViewUtils.addViewToParent(mWebView, weblistHandler.pageSlider, 1)) {
-				((AdvancedNestScrollWebView)mWebView).setNestedScrollingEnabled(PDICMainAppOptions.getImmersiveTapSch());
-			}
+			viewContent(mWebView);
 		}
 		multiView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 		if (multiView.wvclient != a.myWebClient) {
