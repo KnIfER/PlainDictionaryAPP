@@ -82,8 +82,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	private PlainBottomDialog dialogBtm;
 	private FrameLayout bottomDlgLayout;
 	private FrameLayout dialogLayout;
-	private LinearLayout dialogContent;
-	private ViewGroup pdictBtm;
+	LinearLayout dialogContent;
+	public ViewGroup pdictBtm;
 	private Drawable pdictBtmBG;
 	private LinearSplitView splitView;
 	private ViewGroup splitter;
@@ -286,6 +286,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					int pad = (int) (5*GlobalOptions.density);
 					//layoutParams.leftMargin=pad;
 					//layoutParams.rightMargin=pad;
+					//settingsLayout = this.root;
 				}
 				else {
 					ViewGroup layout =  bottomDlg && bottomDlgLayout != null ? bottomDlgLayout : dialogLayout;
@@ -302,6 +303,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					pad = (int) (25*GlobalOptions.density);
 					//layoutParams.leftMargin=pad;
 					//layoutParams.rightMargin=pad;
+					//settingsLayout = this.dialogContent;
 				}
 				dataChanged();
 				pinBtn_setChecked(pin);

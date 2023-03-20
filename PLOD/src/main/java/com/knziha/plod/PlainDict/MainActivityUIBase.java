@@ -3521,12 +3521,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(findHolder) parentView = contentUIData.PageSlider;
 			bottom = 0;
 		}
-		if(settingsPanel!=null) {
+		CMN.debug("onShowSnack::", settingsPanel, parentView);
+		if(settingsPanel!=null && settingsPanel.settingsLayout!=null) {
 			if(settingsPanel instanceof AlloydPanel) {
 				if(findHolder) parentView = ((AlloydPanel)settingsPanel).weblistHandler.contentUIData.PageSlider;
 				bottom = 0;//(AlloydPanel)settingsPanel).contentUIData.bottombar2.getHeight();
 			} else {
 				if(findHolder) parentView = (ViewGroup)settingsPanel.settingsLayout.getParent();
+				CMN.debug("onShowSnack::", settingsPanel.settingsLayout, parentView);
 				if(settingsPanel.getLastShowType()==0) {
 					bottom = settingsPanel.bottomPadding;
 				} else {
@@ -3550,6 +3552,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					bottom = (int) mResource.getDimension(R.dimen.barSzBot);
 				}
 			}
+		}
+		if (settingsPanel == dictPicker && !dictPicker.pinned()) {
+			if(findHolder) parentView = (ViewGroup)dictPicker.dialogContent.getParent();
+			bottom = dictPicker.pdictBtm.getHeight();
 		}
 		if (contentUIData!=null && contentUIData.PageSlider.appbar != null) {
 			if (parentView == contentUIData.PageSlider && contentUIData.PageSlider.getImmersiveScrollingEnabled()) {
@@ -9584,6 +9590,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				resetMerge(-1, false);
 				if (true) {
 					weblistHandler.checkTitlebarHeight();
+				}
+				if (PDICMainAppOptions.showMoreOpt_intentForMultiView()) {
+					PDICMainAppOptions.showMoreOpt_intentForMultiView(false);
+					weblistHandler.getMergedFrame().evaluateJavascript("showSettings()", null);
 				}
 			} break;
 			case NightMode.requestCode:{

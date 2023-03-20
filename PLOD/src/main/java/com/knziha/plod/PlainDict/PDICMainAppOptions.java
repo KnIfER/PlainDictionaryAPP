@@ -246,6 +246,9 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=42, shift=1) public static boolean dictManagerFlipMenuCloumn() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=42, shift=1) public static void dictManagerFlipMenuCloumn(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=43) public static boolean showMoreOpt_intentForMultiView() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=43) public static void showMoreOpt_intentForMultiView(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
 	
 	public int getPseudoInitCode(int pseudoInit) {
 		return (getPseudoInitCode()&~3)|pseudoInit;

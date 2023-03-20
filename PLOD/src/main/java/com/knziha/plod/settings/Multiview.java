@@ -166,6 +166,9 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 						case "ttH":
 							((IntPreference)p).setText(""+PreferenceManager.getDefaultSharedPreferences(getContext()).getInt("ttH", (int)(getContext().getResources().getDimension(R.dimen.dictitle)/Math.max(2, GlobalOptions.density))));
 							break;
+						case "moreOpt":
+							p.setOnPreferenceClickListener(this);
+							break;
 					}
 					p.setOnPreferenceChangeListener(this);
 				}
@@ -182,6 +185,11 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
+		if ("moreOpt".equals(preference.getKey())) {
+			PDICMainAppOptions.showMoreOpt_intentForMultiView(true);
+			getSettingActivity().showT("将显示多页面设置……");
+			return true;
+		}
 		return false;
 	}
 

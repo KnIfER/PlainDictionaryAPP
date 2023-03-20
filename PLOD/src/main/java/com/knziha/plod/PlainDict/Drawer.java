@@ -109,7 +109,11 @@ public class Drawer extends Fragment implements
 
 	public EditText etAdditional;
 
-	SwitchCompat sw1,sw2,sw3,sw4,sw5;
+	SwitchCompat sw1;
+	public SwitchCompat sw2;
+	SwitchCompat sw3;
+	SwitchCompat sw4;
+	SwitchCompat sw5;
 
 	View HeaderView;
 	View HeaderView2;

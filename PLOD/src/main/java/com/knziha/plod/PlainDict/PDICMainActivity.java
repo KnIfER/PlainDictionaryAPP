@@ -2914,7 +2914,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(PDICMainAppOptions.resetImmersiveScrollOnEnter())
 				ResetIMOffset();
 			else if (b1)
-				getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, anyView(0), UIData.appbar);
+				getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, null, UIData.appbar);
 		}
 		
 		weblistHandler.announceContent();
@@ -2967,8 +2967,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				ViewUtils.removeView(contentview);
 			}
 			if(bImmersive) {
-				ViewUtils.removeView(contentUIData.bottombar2);
-				getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, anyView(0), UIData.appbar);
+				try {
+					ViewUtils.removeView(contentUIData.bottombar2);
+					getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, null, UIData.appbar);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
 			}
 			ViewUtils.removeView(PhotoPagerHolder);
 			contentUIData.webcontentlister.canClickThrough=false;

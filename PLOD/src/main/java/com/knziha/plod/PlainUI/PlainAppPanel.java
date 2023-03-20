@@ -35,7 +35,7 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 	protected boolean bPopIsFocusable;
 	protected boolean resizeDlg = false;
 	protected ViewGroup settingsLayoutHolder;
-	public View bottombar;
+	public View 	bottombar;
 	protected int MainAppBackground;
 	protected boolean tweakDlgScreen = true;
 	public int ForegroundColor = Color.WHITE;

@@ -336,13 +336,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					//a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);
 				}
 			}
-			if (storageInt==makeInt(4, 27, false)) {
-				((PDICMainActivity)a).setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
+			if (storageInt==makeInt(4, 27, false) && a instanceof PDICMainActivity) {
+				((PDICMainActivity)a).drawerFragment.sw2.setChecked(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 				((PDICMainActivity)a).DetachContentView(false);
 				((PDICMainActivity)a).retachContentView();
-				((PDICMainActivity)a).ResetIMOffset();
-				AppBarLayout barappla = (AppBarLayout) ((PDICMainActivity)a).UIData.appbar;
-				barappla.setExpanded(true, true);
+				//((PDICMainActivity)a).ResetIMOffset();
 			}
 			if (storageInt==makeInt(9, 41, false)) {
 				PDICMainAppOptions.shrinkIcons(val);
@@ -591,19 +589,19 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	
 	private SettingsPanel initImmersivePanel() {
 		shType = weblist.getScrollHandType();
-		if (_immersive ==null) {
+		if (_immersive == null) {
 			final SettingsPanel settings = new SettingsPanel(a, opt
 					, new String[][]{
-							new String[]{"<font color='#3185F7'>沉浸滚动</font>", "启用（在内容页面隐藏工具栏）"}
-							, new String[]{"<font color='#3185F7'>图标大小</font>", "缩小图标尺寸"}
-					}
+					new String[]{"<font color='#3185F7'>沉浸滚动</font>", "启用（在内容页面隐藏工具栏）"}
+					, new String[]{"<font color='#3185F7'>图标大小</font>", "缩小图标尺寸"}
+			}
 					, new int[][]{
-						new int[]{Integer.MAX_VALUE
+					new int[]{Integer.MAX_VALUE
 							, makeInt(4, 27, false) // PDICMainAppOptions.getEnableSuperImmersiveScrollMode()
-						}
-						, new int[]{Integer.MAX_VALUE
-							, makeInt(9, 41, false) // PDICMainAppOptions.shrinkIcons()
-						}
+					}
+					, new int[]{Integer.MAX_VALUE
+					, makeInt(9, 41, false) // PDICMainAppOptions.shrinkIcons()
+			}
 			}, null);
 			settings.setEmbedded(this);
 			settings.init(a, root);
@@ -612,18 +610,20 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			final SettingsPanel chufa = new SettingsPanel(a, opt
 					, new String[][]{new String[]{"触发方式：", "速滑", "松手", "拖动"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
-					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen1.ordinal(), when==0)
-					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen2.ordinal(), when==1)
-					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen3.ordinal(), when==2)
+					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen1.ordinal(), when == 0)
+					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen2.ordinal(), when == 1)
+					, makeDynInt(NONE_SETTINGS_GROUP2, ActionGp_1.immersiveWhen3.ordinal(), when == 2)
 			}}, null);
 			chufa.setHorizontalItems(true);
 			chufa.setEmbedded(this);
 			chufa.init(a, root);
-			ViewUtils.setPadding(chufa.settingsLayout, (int) (GlobalOptions.density*4), 0, 0, 0);
+			ViewUtils.setPadding(chufa.settingsLayout, (int) (GlobalOptions.density * 4), 0, 0, 0);
 			ViewUtils.addViewToParent(chufa.settingsLayout, settings.settingsLayout, 2);
 			
 			addPanelViewBelow(settings.settingsLayout, UIData.immersivePanel);
 			_immersive = settings;
+		} else {
+			_immersive.refresh();
 		}
 		return _immersive;
 	}

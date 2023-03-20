@@ -175,10 +175,10 @@
 			app:hasCheck="true"
 			/>
 		<Preference
-			android:key=""
+			android:key="moreOpt"
 			android:persistent="false"
-			android:title="注 : 合并多页面与局域网页版相同，可详细设置，定制内容展开模式"
-			android:summary="需前往内容页面，长按右下角的^v切换按钮打开详细设置，或用宫格菜单打开。"
+			android:title="注 : 合并多页面与局域网页版相同，可详细设置，定制默认的折叠、展开方式等等"
+			android:summary="需前往内容页面，长按右下角的^v切换按钮打开，或用底栏宫格菜单打开，或长按词典标题栏或点击“…”按钮。"
 			app:allowDividerBelow="true"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
