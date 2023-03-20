@@ -8247,12 +8247,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.cleanPage = false;
 			}
 		}
-
+		
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
 			//CMN.Log(oldScale, "-", newScale, " newScale");
 			WebViewmy mWebView = ((WebViewmy)view);
 			BookPresenter invoker = mWebView.presenter;
-			super.onScaleChanged(view, oldScale,newScale);
+			//super.onScaleChanged(view, oldScale,newScale);
 			mWebView.webScale=newScale;
 			if(view==invoker.mWebView) {
 				invoker.webScale = newScale; //sync

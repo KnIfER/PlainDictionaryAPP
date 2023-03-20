@@ -57,7 +57,7 @@ public class RLContainerSlider extends FrameLayout {
 	private float minZoom;
 	private float fastTapScrollX;
 	private float fastTapScrollY;
-	private boolean fastTapMoved;
+	public boolean fastTapMoved;
 	private float quickScaleThreshold;
 	public int tapZoomV;
 	private boolean nothing = true;
@@ -75,12 +75,7 @@ public class RLContainerSlider extends FrameLayout {
 	public RLContainerSlider(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		if(isInEditMode()) return;
-		detector = new GestureDetector(getContext(), gl);
-		try {
-			ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 1200));
-		} catch (Exception e) {
-			CMN.debug(e);
-		}
+		newDetector();
 		density = GlobalOptions.density;
 		quickScaleThreshold = 20*density;
 		
@@ -133,7 +128,8 @@ public class RLContainerSlider extends FrameLayout {
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
-			if(swipeRefreshIcon.getAlpha()!=0) return false;
+			//CMN.debug("onDoubleTap::", swipeRefreshIcon.getAlpha());
+			if(swipeRefreshIcon.getAlpha()>0) return false;
 			if(tapZoom){
 				if (bSuppressNxtTapZoom!=0) {
 					if (CMN.now()-bSuppressNxtTapZoom<500) {
@@ -143,7 +139,7 @@ public class RLContainerSlider extends FrameLayout {
 				}
 				PhotoBrowsingContext ctx = tapCtx;
 				float targetZoom = ctx.tapZoomRatio;
-				//CMN.Log("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);
+				//CMN.debug("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);
 				int zoomInMode = ctx.tapAlignment();
 				//zoomInType = 4;
 				if(zoomInMode<3) {
@@ -205,8 +201,9 @@ public class RLContainerSlider extends FrameLayout {
 		}
 
 		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
-			//if(System.currentTimeMillis()-lastDownTime<=200) //事件老死
 			//((MainActivityUIBase)getContext()).showT("onfling!!!");
+			CMN.debug("onFling::", e1, e2);
+			if(e1==null || e2==null) return false;
 			if(slideImmersive && (dragged==0 && aborted==0))
 			{
 				float vy = velocityY / 8;
@@ -228,44 +225,55 @@ public class RLContainerSlider extends FrameLayout {
 					return true;
 				}
 			}
-			if(slideTurn && bZoomOutCompletely)
+			if(slideTurn /*&& bZoomOutCompletely*/)
 			{
+				float vx = velocityX / 8;
+				CMN.debug("x轴速度/8=", vx);
 				if(e2.getPointerCount()>1
-					|| Math.signum(velocityX)!=Math.signum(page.getTranslationX())) {
+					|| page.getTranslationX()!=0 && Math.signum(velocityX)!=Math.signum(page.getTranslationX())) {
 					return false;
 				}
-
-				float vx = velocityX / 8;
-
-				// Y轴幅度
-				if (Math.abs(e2.getRawY() - e1.getRawY()) > 35*density) {
-					return true;
-				}
-
-				//x轴速度
-				if (Math.abs(vx) < 3.25*50*density) {
-					return true;
-				}
-				//CMN.Log("SimpleOnGestureListener", velocityX, vx, 3*50*density);
-				if(Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.699) {
-					//CMN.Log("onFling");
-					flingDeteced =true;
-					flingDetecedY = false;
-					//IMSlider.startdrag(ev);
-					//xxx
-					/////if(IMSlider.inf!=null)
-					/////	IMSlider.inf.onPreparePage(IMSlider);
-					page.startDrag(e2);
-					page.setAlpha(1.f);
-					if(velocityX<0) {
-						page.decided=-1;
-					} else {
-						page.decided=1;
+				
+				float dx = vx;
+				if (WebContext == null
+						|| bZoomOutCompletely
+						|| ((WebContext.scrollLck == 0 || (WebContext.scrollLck & 1) == 0 && dx > 0 || (WebContext.scrollLck & 2) == 0 && dx < 0) && (
+						WebContext.AlwaysCheckRange == 0
+								|| (WebContext.AlwaysCheckRange == -1 && bZoomOut
+								|| (WebContext.AlwaysCheckRange == 1 || !bZoomOut)
+								&& (dx > 0 && WebContext.getScrollX() == 0
+								|| dx < 0 && WebContext.getScrollX() + WebContext.getWidth() == WebContextWidth)
+				))))
+				{
+					// Y轴幅度
+					if (Math.abs(e2.getRawY() - e1.getRawY()) > 35*density) {
+						//return true;
 					}
-					dragged=0; //???
-					if(dragged==2) resetSwipeIcon();
-					page.RePosition();
+					if (Math.abs(vx) < 3.25*50*density) {
+						return true;
+					}
+					//CMN.Log("SimpleOnGestureListener", velocityX, vx, 3*50*density);
+					if(Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.699) {
+						//CMN.Log("onFling");
+						flingDeteced =true;
+						flingDetecedY = false;
+						//IMSlider.startdrag(ev);
+						//xxx
+						/////if(IMSlider.inf!=null)
+						/////	IMSlider.inf.onPreparePage(IMSlider);
+						page.startDrag(e2);
+						page.setAlpha(1.f);
+						if(velocityX<0) {
+							page.decided=-1;
+						} else {
+							page.decided=1;
+						}
+						dragged=0; //???
+						if(dragged==2) resetSwipeIcon();
+						page.RePosition();
+					}
 				}
+
 			}
 			return false;
 		}
@@ -278,6 +286,7 @@ public class RLContainerSlider extends FrameLayout {
 		if(MainActivityUIBase.layoutScrollDisabled)
 			MainActivityUIBase.layoutScrollDisabled=false;
 		if(fastTapZoom) {
+			//CMN.debug("handleFastZoom::", ev.getActionMasked());
 			handleFastZoom(ev);
 			return fastTapZoom;
 		}
@@ -306,12 +315,7 @@ public class RLContainerSlider extends FrameLayout {
 		
 		if(flingDeteced) {
 			if(tapZoom) {
-				detector = new GestureDetector(getContext(), gl);
-				try {
-					ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 1200));
-				} catch (Exception e) {
-					CMN.debug(e);
-				}
+				newDetector();
 			}
 			flingDeteced =false;
 			if(dragged==2) resetSwipeIcon();
@@ -456,7 +460,8 @@ public class RLContainerSlider extends FrameLayout {
 					WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*factor - fastTapStX)
 							, (int) ((fastTapScrollY +fastTapStY)*factor - fastTapStY));
 					//CMN.Log("fastZoom::", WebContext.webScale, WebContext.getScrollX(), WebContext.getScrollY());
-				} else {
+				}
+				else {
 					// 虚拟双指缩放。
 					MotionEvent evt;
 					PointerProperties[] props = fastTapZoomProps;
@@ -489,26 +494,45 @@ public class RLContainerSlider extends FrameLayout {
 						WebContext.dispatchTouchEvent(evt); evt.recycle();
 					}
 					final float newPos = fastTapZoomInit + dist * (rawDist < 0 ? 1 : -1) * 3.5f;
-					coords[1].y = newPos;
-					evt = obtain(0, 0,ACTION_MOVE, 2, props, coords, 0, 0, 1, 1, 0, 0, 0, 0);
-					WebContext.dispatchTouchEvent(evt); evt.recycle();
+					if (newPos >= fastTapStY)
+					{
+						if (WebContext.webScale <= BookPresenter.def_zoom
+								&& rawDist > 0
+								&& WebContext.getContentWidth()<=WebContext.getWidth()) {
+							return;
+						}
+						coords[1].y = newPos;
+						evt = obtain(0, 0,ACTION_MOVE, 2, props, coords, 0, 0, 1, 1, 0, 0, 0, 0);
+						WebContext.dispatchTouchEvent(evt); evt.recycle();
+					}
 				}
 			}
 		}
 		else if (masked==ACTION_UP) {
 			fastTapZoom = false;
-			fastTapMoved = false;
+			if (fastTapMoved) {
+				fastTapMoved = false;
+			}
+			newDetector();
 			//float multiplier = WebContext.webScale/fastTapZoomSt;
 			//WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
 			//		, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
 		}
 	}
 	
+	private void newDetector() {
+		detector = new GestureDetector(getContext(), gl);
+		try {
+			ViewUtils.execSimple("$.mDoubleTapSlopSquare=$1", ViewUtils.reflectionPool, detector, (int) (GlobalOptions.density * 1200));
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
 	private void onActionUp() {
-		//CMN.Log("ACTION_UP", touch_id);
+		CMN.debug("ACTION_UP");
 		first_touch_id=-1;
 		if(dragged!=0) {
-			//detector = new GestureDetector(getContext(), gl);
 			if(dragged==2) {
 				if (swipeRefreshed && onSwipeTopListener!=null) {
 					onSwipeTopListener.onClick(this);
@@ -589,7 +613,7 @@ public class RLContainerSlider extends FrameLayout {
 		if(weblist.mBar.isDragging) {
 			return false;
 		}
-		
+		CMN.debug("onInterceptTouchEvent", masked, touch_id==first_touch_id);
 		if(!slideTurn || touch_id==first_touch_id) {
 			detector.onTouchEvent(ev);
 			if (masked==ACTION_DOWN
@@ -650,7 +674,7 @@ public class RLContainerSlider extends FrameLayout {
 							//}
 							//todo touch slope when WebContext==null
 							int theta = 50;
-							if (slideTurn && aborted!=2) {
+							if (slideTurn && PDICMainAppOptions.slowDragTurnPage() && aborted!=2) {
 								if (WebContext == null
 										|| ((WebContext.scrollLck == 0 || (WebContext.scrollLck & 1) == 0 && dx > 0 || (WebContext.scrollLck & 2) == 0 && dx < 0) && (
 										WebContext.AlwaysCheckRange == 0
@@ -834,4 +858,11 @@ public class RLContainerSlider extends FrameLayout {
 		return WebContext;
 	}
 	
+	public boolean fastTapZoomIn() {
+		return fastTapZoomCoords[1].y > fastTapStY;
+	}
+	
+	public boolean fastTapZoomInStopped(float newScale) {
+		return fastTapZoomCoords[1].y > fastTapStY ^ newScale > fastTapZoomSt;
+	}
 }

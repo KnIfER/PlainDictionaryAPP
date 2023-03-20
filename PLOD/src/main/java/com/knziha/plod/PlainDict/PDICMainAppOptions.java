@@ -3487,5 +3487,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=42, flagSize=2) public static int immersiveWhen() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=42, flagSize=2) public static void immersiveWhen(int v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=44) public static boolean slowDragTurnPage() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=44) public static void slowDragTurnPage(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
 	
 }
