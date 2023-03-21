@@ -55,6 +55,23 @@ public class ButtonUIProject extends ButtonUIData{
 		this.a = a;
 	}
 	
+	public ButtonUIProject(MainActivityUIBase a, int idx, PDICMainAppOptions opt, int[] _icons, int titlesRes, ViewGroup bar, View[] _btns) {
+		key = "ctnp#"+idx;
+		type = idx;
+		icons = _icons;
+		currentValue = opt.getAppContentBarProject(key);
+		//CMN.Log("重新读取", key);
+		if (_btns==null && bar!=null) {
+			_btns = new View[_icons.length];
+			for (int i = 0; i < _btns.length; i++) {
+				_btns[i] = bar.getChildAt(i);
+			}
+		}
+		addBar(bar, _btns);
+		titles = a.mResource.getStringArray(titlesRes);
+		this.a = a;
+	}
+	
 	public void addBar(ViewGroup bar, View[] btns) {
 		int idx = barStack.indexOf(bar);
 		if (idx != -1) {
@@ -63,16 +80,6 @@ public class ButtonUIProject extends ButtonUIData{
 		}
 		barStack.add(bar);
 		btnsStack.add(btns);
-	}
-	
-	public ButtonUIProject(Context context, int idx, PDICMainAppOptions opt, int[] _icons, int titlesRes, ViewGroup _bottombar, View[] _btns) {
-		key = "ctnp#"+idx;
-		type = idx;
-		icons = _icons;
-		currentValue = opt.getAppContentBarProject(key);
-		//CMN.Log("重新读取", key);
-		addBar(_bottombar, _btns);
-		titles = context.getResources().getStringArray(titlesRes);
 	}
 	
 	public void instantiate() {

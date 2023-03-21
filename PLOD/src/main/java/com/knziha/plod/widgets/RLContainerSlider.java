@@ -765,7 +765,7 @@ public class RLContainerSlider extends FrameLayout {
 		bZoomOut = WebContext.webScale <= BookPresenter.def_zoom;
 		WebContext.CheckAlwaysCheckRange();
 		bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
-				||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
+				||WebContext.getScrollX()==0  && WebContext.getWidth()>=WebContextWidth);
 	}
 	
 	public void quoTapZoom() {
