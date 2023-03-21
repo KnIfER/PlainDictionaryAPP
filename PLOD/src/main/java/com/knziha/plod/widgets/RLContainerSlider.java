@@ -228,7 +228,7 @@ public class RLContainerSlider extends FrameLayout {
 			if(slideTurn /*&& bZoomOutCompletely*/)
 			{
 				float vx = velocityX / 8;
-				CMN.debug("x轴速度/8=", vx);
+				CMN.debug("x轴速度/8=", vx, e2.getPointerCount());
 				if(e2.getPointerCount()>1
 					|| page.getTranslationX()!=0 && Math.signum(velocityX)!=Math.signum(page.getTranslationX())) {
 					return false;
@@ -236,9 +236,8 @@ public class RLContainerSlider extends FrameLayout {
 				
 				float dx = vx;
 				if (WebContext == null
-						|| bZoomOutCompletely
 						|| ((WebContext.scrollLck == 0 || (WebContext.scrollLck & 1) == 0 && dx > 0 || (WebContext.scrollLck & 2) == 0 && dx < 0) && (
-						WebContext.AlwaysCheckRange == 0
+					bZoomOutCompletely || WebContext.AlwaysCheckRange == 0
 								|| (WebContext.AlwaysCheckRange == -1 && bZoomOut
 								|| (WebContext.AlwaysCheckRange == 1 || !bZoomOut)
 								&& (dx > 0 && WebContext.getScrollX() == 0
