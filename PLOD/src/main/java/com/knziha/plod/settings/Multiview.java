@@ -364,6 +364,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 			break;
 			case "switchBtn":
 				PDICMainAppOptions.swapeMultiViewBtnFn((Boolean) newValue);
+				PDICMainAppOptions.swapBtnFn_intentForMultiView(true);
 				switchMultiViewBtnFn(preference);
 				break;
 		}

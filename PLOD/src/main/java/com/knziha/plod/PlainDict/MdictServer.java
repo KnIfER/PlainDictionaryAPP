@@ -191,8 +191,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			presenter = md_getByURL(dn);
 			uri = uri.substring(dn.length());
 			key = uri.replace("/", SepWindows);
-			CMN.debug("requesting_frame::presenter::", presenter, uri);
-			CMN.debug(list);
+			CMN.debug("requesting_frame::presenter::", presenter, uri, Arrays.toString(list));
 			if(list.length==1){
 				try {
 					int index = presenter.bookImpl.lookUp("index", true);

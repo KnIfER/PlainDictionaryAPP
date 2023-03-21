@@ -2419,6 +2419,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(isCombinedSearching) {
 			AllMenus.findItem(R.id.toolbar_action1).setIcon(R.drawable.ic_btn_multimode);
 		}
+		resetViewModeMenuIcon(true);
 		String debugMsg = "";
 		if (PDICMainAppOptions.debug()) {
 			MdictServerMobile.getRemoteServerRes("/李白全集.0.txt", true);
@@ -7169,6 +7170,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private void resetMerge(int which, boolean dlg) {
 		try {
 			WebViewListHandler weblist = weblistHandler;
+			resetViewModeMenuIcon(false);
 			if (/*weblist.isMultiRecord()
 					|| PDICMainAppOptions.getLv2JointOneAsSingle()
 					&& */getActiveAdapter() == adaptermy2 && true/*...*/) {
@@ -7208,6 +7210,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
+		}
+	}
+	
+	private void resetViewModeMenuIcon(boolean init) {
+		MenuItem menu=null;
+		if (init) {
+			if (PDICMainAppOptions.swapeMultiViewBtnFn()) {
+				if (AllMenusStamp!=null)
+					menu = ViewUtils.findInMenu(AllMenusStamp, R.id.viewMode);
+				else
+					menu = AllMenus.findItem(R.id.viewMode);
+			}
+		} else if (PDICMainAppOptions.swapBtnFn_intentForMultiView()) {
+			PDICMainAppOptions.swapBtnFn_intentForMultiView(false);
+			menu = AllMenus.findItem(R.id.viewMode);
+		}
+		if (menu!=null) {
+			menu.setIcon(PDICMainAppOptions.swapeMultiViewBtnFn()?R.drawable.icn_viewmode_pref:R.drawable.ic_viewpager_carousel_vertical);
 		}
 	}
 	
