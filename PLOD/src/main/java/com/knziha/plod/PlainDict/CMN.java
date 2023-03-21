@@ -288,6 +288,7 @@ public class CMN extends GlobalOptions{
 	}
 	
 	public static String debug(Object...o) {
+		if (true) return Log(o);
 		if (BuildConfig.DEBUG) return Log(o);
 		return null;
 	}

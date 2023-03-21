@@ -7946,15 +7946,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	void doTranslation(WebViewListHandler wlh, int id, AlertDialog dialog) {
 		WebViewmy mWebView = wlh.getWebContext();
-		CMN.debug("doTranslation::", wlh.bMergingFrames, wlh, mWebView);
+		CMN.debug("doTranslation::", wlh.bMergingFrames, wlh, mWebView, id);
 		if(mWebView!=null) {
 			boolean off;
 			if (id==R.string.close) {
 				off = true;
-				mWebView.translating = -1;
+				wlh.translatingIdx = -1;
 			} else if(id==R.id.gTrans) {
 				off = false;
-				mWebView.translating = 1;
+				wlh.translatingIdx = 1;
+				if(dialog!=null) wlh.putTranslate(1, false);
 			} else if(id==R.string.makeTradition) {
 				wlh.togZhTrans(1, null);
 				if(dialog!=null) dialog.dismiss();
@@ -8060,8 +8061,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			BookPresenter invoker = mWebView.presenter;
 			
-			if (PDICMainAppOptions.quickTranslatorV1() && mWebView.translating>=0) {
-				doTranslation(wlh, mWebView.translating, null);
+			if (PDICMainAppOptions.quickTranslatorV1() && wlh.translatingIdx>=0) {
+				doTranslation(wlh, R.id.gTrans, null);
 			}
 			if (wlh.zhTrans>0) {
 				wlh.togZhTrans(wlh.zhTrans, mWebView);
@@ -9605,6 +9606,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					wordPopup.set(resultCode==requestCode);
 				}
+				checkFlags();
 			} break;
 			case Multiview.requestCode:{
 				resetMerge(-1, false);
@@ -10278,7 +10280,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					Objects.requireNonNull(pkgWebx);
 				}
 				mdict asset = pkgWebx;
-				final String key = path.substring(8, 11);
+				final String key = path.substring(8, path.endsWith(".web")?11:10);
 				int idx = asset.lookUp(key, true);
 				if (idx >= 0) {
 					return asset.getRecordStream(idx);

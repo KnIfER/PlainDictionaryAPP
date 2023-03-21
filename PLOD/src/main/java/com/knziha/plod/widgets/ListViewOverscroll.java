@@ -33,12 +33,12 @@ public class ListViewOverscroll extends ListView {// for mute it's scroll
 	
 	public boolean dispatchTouchEvent(MotionEvent ev) {
 		if (ev.getActionMasked()==MotionEvent.ACTION_DOWN) {
-			CMN.Log("ACTION_DOWN");
+			//CMN.Log("ACTION_DOWN");
 			orgX = ev.getX();
 			orgY = ev.getY();
 		}
 		if (ev.getActionMasked()==MotionEvent.ACTION_UP || ev.getActionMasked()==MotionEvent.ACTION_CANCEL) {
-			CMN.Log("ACTION_UP", getOverScrollMode());
+			//CMN.Log("ACTION_UP", getOverScrollMode());
 			if (!ds) {
 				if(dir==0) {
 					dir = (int) (orgY - ev.getY());

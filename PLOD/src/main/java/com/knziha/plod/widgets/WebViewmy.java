@@ -130,7 +130,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean bPageStarted;
 	public boolean bShouldOverridePageResource;
 	public additiveMyCpr1 jointResult;
-	public int translating = -1;
 	public WebViewListHandler weblistHandler;
 	public WebViewListHandler.HighlightVagranter hDataPage = new WebViewListHandler.HighlightVagranter();
 	public boolean hasFilesTag;

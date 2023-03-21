@@ -1271,9 +1271,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						CMN.debug(e);
 					}
 				} else {
-					toolsBtn.setY(0);
+					toolsBtn.setTranslationY(0);
 					if (txtMenuGrid != null)
-						txtMenuGrid.setY(0);
+						txtMenuGrid.setTranslationY(0);
 				}
 			}
 		}
@@ -2304,6 +2304,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	String[] transVals = new String[2];
 	boolean[] translating = new boolean[2];
+	int translatingIdx = -1;
 	
 	public void putTransval(int index, String value) {
 		if(index>=0 && index<2 && !TextUtils.isEmpty(value))
@@ -2322,8 +2323,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void putTranslate(int index, boolean value) {
-		if(index>=0 && index<2)
-			translating[index] =  value;
+		if (index >= 0 && index < 2) {
+			translating[0] =  value;
+			translating[1] =  value;
+		}
 	}
 	
 	public boolean getTranslate(int index) {

@@ -363,10 +363,11 @@ succ"
 				app.pushAjax(sid.get(), this.requestID, body);
 				this.reallySend(body);
 			};
+			var h0 = document.documentElement.style.height;
 			(function(){
 				var cc=0;
 				clearTimeout(window.gTransTime);
-				var combo,yw=0;
+				var combo,yw=0,ywInitObz;
 				var bh = window.getComputedStyle(document.body).overflow=='hidden';
 				function tryInit(off) {
 					combo = document.getElementsByClassName('goog-te-combo')[0];
@@ -416,17 +417,24 @@ succ"
 								combo.obz=1;
 							}
 						}
+						document.documentElement.style.height = h0;
+						if(!ywInitObz){
+							ywInitObz = new MutationObserver(function() {
+								InitYW();
+							});
+							ywInitObz.observe(document.body , {childList: true});
+						}
 					}
 					else if(!off && cc++<5) window.gTransTime=setTimeout(tryInit, 200);
 				}
 				function tryInitYW(){
 					yw = document.getElementsByClassName('goog-te-menu-frame')[0];
-					//debug('yw::', yw);
+					debug('yw::');
 					if(yw && !yw.obz) {
 						yw.obz=1;
 						var ywdis = yw.style.display;
 						new MutationObserver(function(mutationsList, observer) {
-							var dis = mutationsList[0].target.style.display;
+							var dis = yw.style.display;
 							if(ywdis!=dis) {
 								ywdis=dis;
 								// window.scrollY is unreliable in this case, so...
@@ -445,7 +453,7 @@ succ"
 								}
 							}
 						}).observe(yw , { attributes: true, attributeFilter: ['style']});
-
+						
 						var tt = document.getElementById('goog-gt-tt');
 						//debug('tt::', tt);
 						if(!tt.obz) {
@@ -503,9 +511,12 @@ succ"
 				}
 				function InitYW(){
 					if(!yw) tryInitYW();
-					else document.removeEventListener('touchstart', InitYW);
+					if(yw) {
+						document.removeEventListener('touchstart', InitYW, true);
+						if(ywInitObz) ywInitObz.disconnect();
+					}
 				}
-				document.addEventListener('touchstart', InitYW);
+				document.addEventListener('touchstart', InitYW, true);
 				window.gTrans=tryInit;
 				// document.body.id='body';
 				function loadJs(url,callback){
@@ -522,7 +533,7 @@ succ"
 					return e;
 				}
 				//.goog-te-menu-frame{position:absolute}
-				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
+				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}.goog-te-gadget span,.goog-te-gadget a,.goog-te-gadget img{display:inline-block}';
 				document.body.id='body';
 				loadJs('https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit')
 			})();
@@ -532,6 +543,7 @@ succ"
 					//{pageLanguage:'auto',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,multilanguagePage:true}
 					, 'body');
 				console.log('ret', e);
+				document.documentElement.style.height = h0;
 				window.gTransTime=setTimeout(window.gTrans, 200);
 			}
 		} else {

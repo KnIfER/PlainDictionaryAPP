@@ -3239,8 +3239,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=10, shift=1) public static boolean resetImmersiveScrollOnExit() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=10, shift=1) public static void resetImmersiveScrollOnExit(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=11) public static boolean quickTranslatorV1() { EightFlag=EightFlag; throw new RuntimeException();}
-	@Metaline(flagPos=11) public static void quickTranslatorV1(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=11, shift=1) public static boolean quickTranslatorV1() { EightFlag=EightFlag; throw new RuntimeException();}
+	@Metaline(flagPos=11, shift=1) public static void quickTranslatorV1(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=12, shift=1) public static boolean nightUseInvertFilter() { EightFlag=EightFlag; throw new RuntimeException();}
 	@Metaline(flagPos=12, shift=1) public static void nightUseInvertFilter(boolean v) { EightFlag=EightFlag; throw new RuntimeException();}

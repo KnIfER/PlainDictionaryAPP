@@ -39,7 +39,7 @@ public class DrawerLayoutmy extends androidx.drawerlayout.widget.DrawerLayout {
     
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev){
-		CMN.Log("onInterceptTouchEvent");
+		//CMN.Log("onInterceptTouchEvent");
     	if(popupToGuard!=null)
     		return true;
 

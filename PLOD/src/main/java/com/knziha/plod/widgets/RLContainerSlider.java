@@ -529,7 +529,7 @@ public class RLContainerSlider extends FrameLayout {
 	}
 	
 	private void onActionUp() {
-		CMN.debug("ACTION_UP");
+		//CMN.debug("ACTION_UP");
 		first_touch_id=-1;
 		if(dragged!=0) {
 			if(dragged==2) {
@@ -612,7 +612,7 @@ public class RLContainerSlider extends FrameLayout {
 		if(weblist.mBar.isDragging) {
 			return false;
 		}
-		CMN.debug("onInterceptTouchEvent", masked, touch_id==first_touch_id);
+		//CMN.debug("onInterceptTouchEvent", masked, touch_id==first_touch_id);
 		if(!slideTurn || touch_id==first_touch_id) {
 			detector.onTouchEvent(ev);
 			if (masked==ACTION_DOWN

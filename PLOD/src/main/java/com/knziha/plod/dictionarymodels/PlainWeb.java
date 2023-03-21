@@ -1262,12 +1262,14 @@ public class PlainWeb extends DictionaryAdapter {
 						File file = new File(f.getParent(), new File(url).getName());
 						//CMN.Log("modifyRes::???:::", file.getName());
 						InputStream ret = a.fileToStream(file);
-						//CMN.Log("modifyRes::", file.getPath());
+						//CMN.Log("modifyRes::", file.getPath(), ret);
 						String meimei = "*/*";
 						if (url.contains("js")) {
 							meimei = "text/js";
 						}
-						return new WebResourceResponse(meimei, "utf8", ret);
+						if (ret != null) {
+							return new WebResourceResponse(meimei, "utf8", ret);
+						}
 					} catch (Exception e) {
 						CMN.debug(url,"\n",e);
 						return null;
