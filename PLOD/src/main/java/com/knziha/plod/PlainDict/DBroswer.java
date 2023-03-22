@@ -46,6 +46,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -524,6 +525,14 @@ public class DBroswer extends DialogFragment implements
 							if(!drawBackground) {
 								fontColor = GlobalOptions.isDark ? 0xFFc17d33 : Color.RED;
 								bg = 0;
+							}
+							if (fontColor==Color.WHITE && ColorUtils.calculateLuminance(bg)>0.75 ) {
+								float[] hsl = new float[3];
+								ColorUtils.colorToHSL(bg, hsl);
+								//bg = ColorUtils.blendARGB(bg, Color.BLUE, 0.3f);
+								//hsl[2] /= 3; hsl[2] *= 2;
+								hsl[2] /= 2;
+								bg = ColorUtils.HSLToColor(hsl);
 							}
 							x = mDecorator.drawLabel(canvas, label, x+padY*3, y, top, bottom, fontColor, bg);
 							

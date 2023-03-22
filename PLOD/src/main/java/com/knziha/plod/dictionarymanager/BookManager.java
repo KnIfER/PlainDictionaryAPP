@@ -747,7 +747,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	    double lumen1 = ColorUtils.calculateLuminance(indicatorColor);
 		double lumen2 = ColorUtils.calculateLuminance(opt.getMainBackground());
 		if (Math.abs(lumen1-lumen2)<0.4) {
-			indicatorColor = ColorUtils.blendARGB(indicatorColor, lumen2>0.5?Color.BLACK:Color.WHITE, 0.2f);
+			float[] hsl = new float[3];
+			ColorUtils.colorToHSL(indicatorColor, hsl);
+			if(lumen2>0.5) hsl[2] /= 1.75f; else hsl[2] *= 1.75f;
+			indicatorColor = ColorUtils.HSLToColor(hsl);
+			//indicatorColor = ColorUtils.blendARGB(indicatorColor, lumen2>0.5?Color.BLACK:Color.WHITE, 0.2f);
 		}
 	    mTabLayout.setSelectedTabIndicatorColor(indicatorColor);
 //	    mTabLayout.setSelectedTabIndicatorColor(ViewUtils.getComplementaryColor(Color.BLUE));
