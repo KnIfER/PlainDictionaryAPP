@@ -187,7 +187,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 
 	protected boolean handleDebugLines(String line) {
-		//SU.Log("handleDebugLines", line);
+		CMN.Log("handleDebugLines", line);
 		if(line.length()>0) {
 			line = line.replace("\\", File.separator);
 			if(line.startsWith(":")) {
@@ -201,15 +201,24 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				}
 			}
 			else if(!line.startsWith("`")) {
+				File p = f.getParentFile();
 				File f = new File(line);
-				boolean b1 = line.contains(File.separator) && f.isDirectory();
+				boolean b1 = line.contains(File.separator) && line.length()>3 && f.isDirectory();
 				if(!b1) {
-					f = new File(f.getParentFile(), line);
+					f = new File(p, line);
 					b1 = f.isDirectory();
 				}
+				//CMN.debug("ftd.add(f);::", f);
 				if(b1) {
-					ftd.add(f);
-					return true;
+					try {
+						f = f.getCanonicalFile();
+						if (f.getPath().startsWith(p.getPath())) {
+							ftd.add(f);
+							return true;
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
 				}
 			}
 			if(line.startsWith("`")&&line.length()>1){
@@ -233,8 +242,19 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				String keykey = key.replace("\\",File.separator);
 				for(File froot: ftd){
 					File ft= new File(froot, keykey);
+					if (keykey.contains(".")) {
+						try {
+							ft = ft.getCanonicalFile();
+							if (!ft.getPath().startsWith(this.f.getPath())) {
+								ft = null;
+							}
+						} catch (Exception e) {
+							CMN.debug(e);
+							ft = null;
+						}
+					}
 					//SU.Log("getResourceByKey", _Dictionary_fName, ft.getAbsolutePath(), ft.exists());
-					if(ft.exists()) {
+					if(ft!=null && ft.exists()) {
 						try {
 							return new AutoCloseInputStream(new FileInputStream(ft));
 						} catch (Exception e) {
