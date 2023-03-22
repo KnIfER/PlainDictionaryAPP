@@ -145,6 +145,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private WebViewmy lastRenderingWV;
 	private WebViewmy lastHeteroRenderingWV;
 	public boolean immersiveScroll;
+	private boolean cleanPage;
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -220,6 +221,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	@Override
 	protected void onShow() {
 		super.onShow();
+		CMN.debug("onShow::");
 		if (PDICMainAppOptions.getImmersiveTapSch()) {
 			try {
 				a.getScrollBehaviour(false).onDependentViewChanged((CoordinatorLayout) appbar.getParent(), splitView, appbar);
@@ -228,9 +230,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 		}
 		refresh();
-		if (PDICMainAppOptions.revisitOnBackPressed() && mWebView!=null && !bFromWebTap) {
-			mWebView.cleanPage = true;
-		}
+		cleanPage = true;
 	}
 	
 	@SuppressLint("ResourceType")
@@ -992,6 +992,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			popupChecker.drawInnerForEmptyState = false;
 			popupChecker.circle_shrinkage = 2;
 		}
+		
 	}
 	
 	private void configureBtnProject(ButtonUIProject project) {
@@ -1064,6 +1065,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			show();
 			entryTitle_setText(popupKey);
 		}
+		if(cleanPage) cleanPage = sch;
 		if (popupKey!=null && sch) {
 			//SearchOne(task, taskVer, taskVersion);
 			boolean singleThread = false;
@@ -1641,7 +1643,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			return;
 		}
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
-		//CMN.Log("SearchDone::", rec, currentPos, CCD);
+		CMN.debug("SearchDone::", rec, currentPos, CCD, cleanPage);
 		if (rec != null) {
 			if(b1 && isMaximized()){
 				wordCamera.onPause();
@@ -1683,6 +1685,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					});
 			} else if(b1 && isMaximized()){
 				dismiss();
+			}
+		}
+		if (cleanPage) {
+			cleanPage = false;
+			if (PDICMainAppOptions.revisitOnBackPressed() && lastRenderingWV!=null && !bFromWebTap) {
+				lastRenderingWV.cleanPage = true;
 			}
 		}
 		if (popupKey!=null && !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeTapsch()) {

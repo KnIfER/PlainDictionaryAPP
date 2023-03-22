@@ -132,6 +132,7 @@ public class PopupTouchMover implements View.OnTouchListener {
 					moveTriggered=Math.abs(OrgY-e.getRawY())>ssp;
 				}
 				boolean bProceed=moveTriggered;
+				if(bProceed) ViewUtils.preventDefaultTouchEvent(v, 0, 0);
 				boolean MOT=false;
 				wantsMaximize=false;
 				if (FVDOCKED) {//解Dock
@@ -201,8 +202,6 @@ public class PopupTouchMover implements View.OnTouchListener {
 //					ev.setLocation(-100, -100);
 //					v.onTouchEvent(ev);
 //					v.setOnTouchListener(this);
-
-
 				}
 			} break;
 			default: break;
