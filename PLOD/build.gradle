@@ -171,6 +171,27 @@ task delog {
     }
 }
 
+task bingo {
+    group 'bingo'
+    description 'bingo'
+    doFirst {
+        ['powershell', """(New-Object Media.SoundPlayer "D:\\Downloads\\music\\muse_SchivoNo.2.wav").PlaySync();"""].execute()
+        println("bingo build finish ed")
+    }
+    //println("bingo build finish st")
+}
+//bingo.shouldRunAfter ':assembleDebug'
+//tasks.whenTaskAdded{ theTask ->
+//    //println(theTask.name)
+//    if(theTask.name.equals("packageRelease")/* || theTask.name.equals("assembleDebug")*/){
+//        tasks.getByPath("packageRelease").finalizedBy(bingo)
+//        //theTask.finalizedBy(bingo)
+//    }
+//}
+
+
+//tasks[:PLOD:assembleDebug].finalizedBy(bingo)
+
 configurations {
     compile.exclude group:'androidx.core', module: 'core'
     all*.exclude group:'androidx.core', module: 'core'
@@ -278,7 +299,12 @@ dependencies {
 }
 
 afterEvaluate {
-    gradle.afterProject {}
+    gradle.projectsEvaluated  { project  ->
+        println("buildStarted.")
+        tasks["packageRelease"].finalizedBy(bingo)
+        tasks["assembleDebug"].finalizedBy(bingo)
+        ['powershell', """(New-Object Media.SoundPlayer 'C:\\Windows\\Media\\Speech On.wav').PlaySync();"""].execute()
+    }
     gradle.buildFinished{ BuildResult buildResult ->
 //        URL requestURL = new URL("http://localhost:8080/GC.jsp");
 //        HttpURLConnection urlConnection = requestURL.openConnection();
