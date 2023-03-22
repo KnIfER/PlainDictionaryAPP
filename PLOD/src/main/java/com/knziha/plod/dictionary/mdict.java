@@ -188,9 +188,9 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	protected boolean handleDebugLines(String line) {
 		//SU.Log("handleDebugLines", line);
-		if(line.length()>0){
+		if(line.length()>0) {
 			line = line.replace("\\", File.separator);
-			if(line.startsWith(":")){
+			if(line.startsWith(":")) {
 				String[] arr = line.substring(1).split(":"); //竟然长度为3
 				long id;
 				if(arr.length==2&&(id=IU.parseLong(arr[0]))>=0) {
@@ -199,22 +199,19 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					}
 					PageNumberMap.put(id, arr[1]);
 				}
-			} else if(line.startsWith(File.separator)){
-				File p = f.getParentFile();
-				File f = new File(p, line.substring(1));
-				if(f.exists()) {
-					if(f.isDirectory()) {
-						ftd.add(f);
-					}
-				}
-				return true;
-			} else if(line.contains(File.separator)){
+			}
+			else if(!line.startsWith("`")) {
 				File f = new File(line);
-				if(f.isDirectory()) {
+				boolean b1 = line.contains(File.separator) && f.isDirectory();
+				if(!b1) {
+					f = new File(f.getParentFile(), line);
+					b1 = f.isDirectory();
+				}
+				if(b1) {
 					ftd.add(f);
+					return true;
 				}
 			}
-			
 			if(line.startsWith("`")&&line.length()>1){
 				int nxt=line.indexOf("`", 1);
 				_stylesheet.put(line.substring(1,nxt), line.substring(nxt+1).trim().split("`",2));
