@@ -245,7 +245,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					if (keykey.contains(".")) {
 						try {
 							ft = ft.getCanonicalFile();
-							if (!ft.getPath().startsWith(this.f.getPath())) {
+							if (!ft.getPath().startsWith(this.f.getParent())) {
 								ft = null;
 							}
 						} catch (Exception e) {
