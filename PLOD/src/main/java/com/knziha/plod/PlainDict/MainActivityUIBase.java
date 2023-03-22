@@ -702,9 +702,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						doCheck = opt.getUseBackKeyClearWebViewFocus();
 				}
 				else if (view instanceof TextView) {
-					if (view==etSearch && !etTools.isVisible()) {
-						return false;
-					}
+					//if (view==etSearch && !etTools.isVisible())
+					//	return false;
 					TextView tv = ((TextView) view);
 					if (tv.hasSelection()) {
 						tv.clearFocus();
@@ -5910,7 +5909,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showBottombarsTweaker(-2);
 			} break;
 			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
-				shareUrlOrText(true);
+				shareUrlOrText(weblist!=weblistHandler || isContentViewAttached());
 			} break;
 			case R.drawable.ic_baseline_nightmode_24: {
 				showNightModeSwitch();
@@ -6293,7 +6292,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					}
 //				}
 				
-				if (wv==null) {
+				if (wv==null && (weblist!=weblistHandler || isContentViewAttached())) {
 					wv = weblist.getWebContext();
 				}
 				if (wv!=null) {
@@ -6310,6 +6309,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						});
 					} else {
 						shareUrlOrText(null, wv.weblistHandler.displaying, shareLink, activities);
+					}
+				}
+				else if (view instanceof TextView) {
+					TextView tv = ((TextView) view);
+					if (tv.hasSelection()) {
+						int st = tv.getSelectionStart(), ed = tv.getSelectionEnd();
+						if (st > ed) {
+							int tmp = st;
+							st = ed;
+							ed = tmp;
+						}
+						shareUrlOrText(null, tv.getText().subSequence(st, ed).toString(), shareLink, activities);
 					}
 				}
 			}
@@ -10798,9 +10809,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (!bBackBtn && settingsPanel.onBackPressed()) {
 				return true;
 			}
-			CMN.debug("PerFormBackPrevention", settingsPanel);
+			//CMN.debug("PerFormBackPrevention", settingsPanel);
 			hideSettingsPanel(settingsPanel);
-			CMN.debug("PerFormBackPrevention done", settingsPanel);
+			//CMN.debug("PerFormBackPrevention done", settingsPanel);
 			return true;
 		}
 		if(!bBackBtn && checkWebSelection())
