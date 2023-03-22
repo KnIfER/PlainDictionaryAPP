@@ -793,7 +793,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			a.ivBack.setImageResource(R.drawable.ic_menu_material);
 			a.ivBack.setId(R.id.multiline);
 		}
-		if (PDICMainAppOptions.autoSelectAllEtTool()) {
+		//etSearch.setSelectAllOnFocus(PDICMainAppOptions.autoSelectAllEtTool());
+		if (PDICMainAppOptions.autoSelectAllEtTool() && !a.keyboardShown) {
 			etSearch.postDelayed(() -> {
 				try {
 					etSearch.setSelection(0, etSearch.getText().length());
