@@ -211,10 +211,12 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 					break;
 				case "use_f_size":
 					if(get) return datum.getUseInternalFS(); else datum.setUseInternalFS((boolean)val);
+					if(!get) PDICMainAppOptions.dynamicPadding(true);
 					break;
 				case "f_size":
 					if((int)val<0 || (int)val>9999) val = 100;
 					if(get) return datum.getFontSize(); else datum.internalScaleLevel=(int)val;
+					if(!get) PDICMainAppOptions.dynamicPadding(true);
 					break;
 			}
 			datum.checkTint();
@@ -377,6 +379,12 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 							break;
 						case "zho_high":
 							init_switcher(key, false, 55, p);
+							break;
+						case "verTex":
+							init_switcher(key, false, 56, p);
+							break;
+						case "verTexSt":
+							init_switcher(key, false, 57, p);
 							break;
 						case "reload":
 							p.setOnPreferenceClickListener(this);
@@ -566,6 +574,8 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "zho_ver":
 				case "zho_hor":
 				case "zho_high":
+				case "verTex":
+				case "verTexSt":
 					PDICMainAppOptions.dynamicPadding(true);
 				break;
 				case "p_df":

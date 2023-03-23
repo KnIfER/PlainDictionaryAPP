@@ -389,6 +389,31 @@
 			/>
 	</PreferenceCategory>
 
+
+	<PreferenceCategory
+		android:key="margin"
+		android:title="文本竖排"
+		app:icon="@drawable/ic_baseline_gamepad_24"
+		android:tint="@color/colorHeaderBlue"
+		android:clickable="true"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="verTex"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="启用文本竖排"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="verTexSt"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="从左往右竖排"
+			/>
+	</PreferenceCategory>
+
+
 	<PreferenceCategory
 		android:key="gp_tapsch"
 		android:title="点击翻译"

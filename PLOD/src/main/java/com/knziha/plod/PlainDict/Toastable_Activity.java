@@ -149,6 +149,8 @@ public class Toastable_Activity extends AppCompatActivity {
 	public View.OnClickListener mInterceptorListener;
 	public boolean mInterceptorListenerHandled;
 	
+	public BaseHandler hdl;
+	
 	public FloatApp floatApp;
 	
 	@Override
@@ -177,7 +179,10 @@ public class Toastable_Activity extends AppCompatActivity {
 			   GlobalOptions.isSystemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 		   }
 	   }
-	   VersionUtils.checkVersion(opt);
+		if (!skipCheckLog)
+		{
+			VersionUtils.checkVersion(opt);
+		}
 	   if (opt.darkSystem() && Build.VERSION.SDK_INT>=29) {
 			GlobalOptions.isDark = GlobalOptions.isSystemDark;
 	   }
@@ -961,9 +966,13 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	public void copyText(String text, boolean toast) {
 		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-		if(cm!=null){
+		//CMN.debug("copyText", text, toast, cm);
+		if (cm != null) {
 			cm.setPrimaryClip(ClipData.newPlainText(null, text));
-			if(toast) showT("已复制"+text);
+			if (toast) {
+				if(Thread.currentThread().getId()==CMN.mid) showT("已复制" + text);
+				else if(hdl!=null) hdl.obtainMessage(2023, "已复制" + text).sendToTarget();
+			}
 		}
 	}
 }

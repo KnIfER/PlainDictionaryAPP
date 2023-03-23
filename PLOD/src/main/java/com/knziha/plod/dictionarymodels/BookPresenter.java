@@ -540,11 +540,19 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=52) public boolean tapschWebStandaloneSet() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52) public void tapschWebStandaloneSet(boolean v) { firstFlag=firstFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=53, flagSize=2) public int zhoAny() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=53, flagSize=4) public int zhoAny() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=53) public boolean zhoVer() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=54) public boolean zhoHor() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=55) public boolean zhoHigh() { firstFlag=firstFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=56) public boolean verTex() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=56) public void verTex(boolean value) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=57) public boolean verTexSt() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=57) public void verTexSt(boolean value) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=58) public boolean allowPlugCss() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=58) public void allowPlugCss(boolean value) { firstFlag=firstFlag; throw new RuntimeException();}
 	
 	public boolean getSavePageToDatabase(){
 		return true;
@@ -754,7 +762,7 @@ function debug(e){console.log(e)};
 				int bL = buffer.length();
 				File externalFile;
 				/* 外挂同名css */
-				if(PDICMainAppOptions.getAllowPlugCss()) {
+				if(PDICMainAppOptions.getAllowPlugCss() || allowPlugCss()) {
 					externalFile = new File(p, buffer.append(".css").toString());
 					if(externalFile.exists()) {
 						hasExtStyle = true;
@@ -910,6 +918,7 @@ function debug(e){console.log(e)};
 			
 			mWebView.pBc = IBC;
 			mWebView.titleBar = (AdvancedNestFrameView) toolbar;
+			mWebView.titleBar.appbar = a.appbar;
 			mWebView.FindBGInTitle(a, toolbar);
 			//mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
@@ -928,7 +937,7 @@ function debug(e){console.log(e)};
 				@Override
 				public boolean onTouch(View v, MotionEvent event) {
 					if (event.getActionMasked()==MotionEvent.ACTION_DOWN) {
-						//CMN.Log("down!!!");
+						CMN.debug("down!!!");
 //						if (mWebView.AlwaysCheckRange!=0) {
 //							mWebView.AlwaysCheckRange=0;
 //							//mWebView.weblistHandler.pageSlider.bZoomOut=true;
@@ -2307,12 +2316,13 @@ function debug(e){console.log(e)};
 			ApplyPadding(htmlBuilder);
 			htmlBuilder.append("}");
 		}
-		if (zhoAny()!=0) {
+		if (zhoAny()&~(1L<<55)!=0) {
 			if(!styleOpened){ htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;}
 			htmlBuilder.append("html{min-height:").append(zhoHigh() ? "92%" : "100%")
 					.append(";display:flex;")
 					.append(zhoVer() ? "align-items:center;" : "")
 					.append(zhoHor() ? "justify-content:center;" : "")
+					.append(verTex() ? (verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
 					.append("}");
 		}
 		if(styleOpened) {
@@ -2695,6 +2705,7 @@ function debug(e){console.log(e)};
 		
 		@JavascriptInterface
 		public void scrollLck(int sid, int scrollLck) {
+			//CMN.debug("scrollLck::", scrollLck);
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
@@ -5050,6 +5061,18 @@ function debug(e){console.log(e)};
 			a.unregisterWebx(this);
 			getWebx().setMirroredHost(val?-2:-1);
 			a.registerWebx(this);
+		}
+	}
+	
+	public void checkExtStyle() {
+		hasExtStyle = false;
+		if(PDICMainAppOptions.getAllowPlugCss() || allowPlugCss()) {
+			StringBuilder buffer = getCleanDictionaryNameBuilder();
+			File externalFile = new File(f().getParent(), buffer.append(".css").toString());
+			if(externalFile.exists()) {
+				hasExtStyle = true;
+			}
+			CMN.debug("插入 同名 css 文件::", hasExtStyle);
 		}
 	}
 }

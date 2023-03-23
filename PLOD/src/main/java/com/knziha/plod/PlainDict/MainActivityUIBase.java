@@ -449,7 +449,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ListViewAdapter2 adaptermy5;
 	public BasicAdapter lastActivedAdapter;
 	public BasicAdapter ActivedAdapter;
-	public BaseHandler hdl;
 	public int  CurrentViewPage = 1;
 	public String fontFaces;
 	public String plainCSS;
@@ -467,6 +466,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@NonNull public BookPresenter currentDictionary;
 	HashSet<String> mdlibsCon;
 	public ArrayList<BookPresenter> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
+	
+	public final ArrayList<BookPresenter> translators = new ArrayList<>();
 	
 	public resultRecorderDiscrete EmptySchResults;
 	
@@ -5056,11 +5057,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								dragging = false;
 							if (state == RecyclerView.SCROLL_STATE_IDLE) {
 								if (flip != 0) {
-									int np = shareHelper.page + flip;
-									if (np >= 0 && np <= 1) {
-										shareHelper.page = np;
-										tintSwitchBtn();
-									}
+									int np = (shareHelper.page + flip + 10) % 2;
+									shareHelper.page = np;
+									tintSwitchBtn();
 									flip = 0;
 								}
 							}
@@ -5097,6 +5096,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dialogList.addFooterView(twoColumnView);
 				dialogList.addFooterView(bottomView);
 			}
+//			ViewUtils.removeView(weblistHandler.txtMenuGrid);
+//			weblistHandler.txtMenuGrid.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
+//			dialogList.addFooterView(weblistHandler.txtMenuGrid);
 			//twoColumnAda.page = toText?1:0;
 			if (hasText()) {
 				twoColumnAda.putImage(shareHelper.page==1||bFromTextView?2:-1, R.drawable.voice_ic_big);
@@ -6877,7 +6879,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					dd = new AlertDialog.Builder(this)
 						.setView(cv)
 						.setTitle("翻译当前页面")
-						.setWikiText("谷歌翻译已经无法正常使用。\n繁简转换结果仅供参考。", null)
+						.setWikiText("    启用“点击翻译”后，点击单词会显示小弹窗。“点击查词”则直接在当前页面查看单词释义，也可设置“页面设置”，在新窗口打开。\n" +
+								"\t\n" +
+								"\t如果用右上角菜单打开“点击翻译”，APP会检测页面上的文本选择。如果有选择则搜寻选中的文本。如果是长按“点击翻译”菜单，或长按“快捷翻译栏”，则是直接弹出界面，不搜寻。\n" +
+								"    \n" +
+								"\t“点选”使用的是系统分词模块，可识别简单的汉语词组等。建议开启“段落点选”后，配合“快捷翻译栏，调用在线翻译网站。\n" +
+								"\n" +
+								"    谷歌翻译需联“网”使用，可全文翻译页面内容。界面经过特殊适配，可横向滑动，选择所有语种。长按文本以对照查看原文，可拖动图标，避免遮住正文。\n" +
+								"\n" +
+								"    繁简转换结果仅供参考。", null)
 						.create();
 					topDlg(dd.getWindow(), PDICMainAppOptions.topDialogTranslate());
 					
@@ -7035,8 +7045,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mWebView.reload();
 				}
 				break;
-			case R.string.dict_opt:
+			case R.id.dict_title_opt:
 				showDictTweakerMain(mWebView.presenter, mWebView);
+				break;
+			case R.string.dict_opt:
+				showBookPreferences(MainActivityUIBase.this, mWebView.presenter);
 				break;
 			case R.string.page_source:
 				book.bViewSource=true;
@@ -8254,21 +8267,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.evaluateJavascript(BookPresenter.jsViewChanged, new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String value) {
-						finalInvoker.setCurrentDis(mWebView, mWebView.currentPos);
-						final WebViewListHandler wlh = mWebView.weblistHandler;
-						if (finalInvoker.isMergedBook() || mWebView.isViewSingle() && wlh.scrollFocus==mWebView) {
-							int frame = mWebView.frameAt;
-							if (wlh.getFrameAt(frame)!=mWebView.presenter) {
-								frame = wlh.entrySeek.getProgress();
+						try {
+							finalInvoker.setCurrentDis(mWebView, mWebView.currentPos);
+							final WebViewListHandler wlh = mWebView.weblistHandler;
+							if (finalInvoker.isMergedBook() || mWebView.isViewSingle() && wlh.scrollFocus == mWebView) {
+								int frame = mWebView.frameAt;
+								if (wlh.getFrameAt(frame) != mWebView.presenter) {
+									frame = wlh.entrySeek.getProgress();
+								}
+								wlh.setScrollFocus(mWebView, frame);
 							}
-							wlh.setScrollFocus(mWebView, frame);
+						} catch (Exception e) {
+							CMN.debug(e);
 						}
+						if(mWebView.bRequestedSoundPlayback) readEntry(mWebView);
 					}
 				});
 				mWebView.changed = 0;
+			} else {
+				if(mWebView.bRequestedSoundPlayback) readEntry(mWebView);
 			}
-			
-			if(mWebView.bRequestedSoundPlayback) readEntry(mWebView);
 			
 			if(invoker.GetSearchKey()!=null)
 				invoker.ApplySearchKey(mWebView);
@@ -9081,14 +9099,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		boolean shouldLoadFiles = PDICMainAppOptions.getAllowPlugRes()||invoker.isHasExtStyle();
 		//检查后缀，js，ini,png,css,直接路径。
-		if(shouldLoadFiles && (!PDICMainAppOptions.getAllowPlugResNone()||!invoker.bookImpl.hasMdd()||parms!=null&&parms.contains("f=a"))) {
+		if(shouldLoadFiles && parms!=null&&parms.contains("f=a")) {
 			WebResourceResponse ret = getPlugRes(invoker, key);
 			if(ret!=null) return ret;
 			shouldLoadFiles = false;
 		}
 		
-		if(!invoker.bookImpl.hasMdd())
+		if(!invoker.bookImpl.hasMdd()) {
+			if(PDICMainAppOptions.getAllowPlugRes()) {
+				WebResourceResponse ret = getPlugRes(invoker, key);
+				if(ret!=null) return ret;
+			}
 			return fakedDomainResponse;
+		}
+		
 		if(mWebView.fromCombined==0 && !mWebView.fromNet() && invoker.getIsolateImages() && RegImg.matcher(key).find()){
 			//CMN.Log("Isolating Images...");
 			new_photo = key;
@@ -9261,7 +9285,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
 						CMN.debug("文件", uri, mid);
-						if(mid>=0 && !(mid>=5&&mid<=18)) {
+						if(mid>=0/* && !(mid>=5&&mid<=18)*/) {
 							InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
 							if(input!=null) {
 								String MIME = mid==0?"application/x-javascript"
@@ -9648,10 +9672,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void onBookOptionsSet(boolean set) {
-		if(PDICMainAppOptions.dynamicPadding()){
+		if(PDICMainAppOptions.dynamicPadding()) {
 			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
 			if (wv!=null) wv.presenter.ApplyPadding(wv, true);
 			PDICMainAppOptions.dynamicPadding(false);
+			BookPresenter tweaking = wv.presenter;
+			StringBuilder MdPageBuilder = new StringBuilder();
+			MdPageBuilder.append("var r=document.getElementById('_PDictPB');if(!r){r=document.createElement('STYLE');r.id=\"_PDictPB\";document.head.appendChild(r);}r.innerHTML=\"");
+			MdPageBuilder.append("html{min-height:").append(tweaking.zhoHigh() ? "92%" : "100%")
+					.append(";display:flex;")
+					.append(tweaking.zhoVer() ? "align-items:center;" : "")
+					.append(tweaking.zhoHor() ? "justify-content:center;" : "")
+					.append(tweaking.verTex() ? (tweaking.verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
+					.append("}");
+			MdPageBuilder.append("\"");
+			wv.evaluateJavascript(MdPageBuilder.toString(), null);
 		}
 	}
 
@@ -9834,9 +9869,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewmy wv = weblist.getWebContext();
 		String target = wlh.displaying;
 		CMN.debug("performReadEntry PRE "+(wv==null?EmptyBook:wv.presenter)+"-"+target+"-"+wv);
+		try {
+			throw new RuntimeException("watch stacktrace!");
+		} catch (RuntimeException e) {
+			CMN.debug(e);
+		}
 		if(wv!=null) {
 			if (wv.isSingleLayout()) {
 				target = wv.word();
+				CMN.debug("target::", target);
 			}
 			if (target!=null) {
 				BookPresenter reader = wv.presenter;
@@ -10173,11 +10214,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int[] ForegroundTintListArr;
 
 	public void showBottombarsTweaker(int pos) {
-		CMN.debug("showBottombarsTweaker", pos);
 		final int jd = WeakReferenceHelper.app_bar_customize_dlg;
 		BottombarTweakerAdapter ada = (BottombarTweakerAdapter) getReferencedObject(jd);
+		CMN.debug("showBottombarsTweaker", pos, ada);
 		if (pos<0) {
-			if (pos == -100) {
+			if (pos == -100) { // 点击翻译 - 工具栏
 				pos = 4;
 				if (ada != null) {
 					int idx = ada.sideBar.indexOfChild(ada.sideBar.selectedTool);
@@ -11865,7 +11906,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			focus = getCurrentFocus();
 		}
-		CMN.debug("onReceivedText", focus, settingsPanel);
+		CMN.debug("onReceivedText", text, "focus="+focus, settingsPanel);
 		if (focus instanceof EditText) {
 			ViewUtils.getText((EditText) focus).append(text);
 		} else {
@@ -12010,5 +12051,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
+	}
+	
+	public View appbar() {
+		if(null==appbar) return anyView(0);
+		return appbar;
 	}
 }

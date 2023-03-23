@@ -9,7 +9,7 @@
 	android:layout_marginTop="4dp"
 	>
 	<com.knziha.plod.widgets.TextMenuView
-		android:id="@string/dict_opt"
+		android:id="@+id/dict_title_opt"
 		android:text="设置"
 		android:layout_width="0dp"
 		android:layout_height="match_parent"

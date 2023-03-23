@@ -253,9 +253,11 @@ public class ButtonUIProject extends ButtonUIData{
 							if(smallIconSet) {
 								ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) btn.getLayoutParams();
 								layoutParams.bottomMargin = smallIconPad;
-								layoutParams.leftMargin =   smallIconPad;
-								layoutParams.rightMargin =  smallIconPad;
 								layoutParams.topMargin =    smallIconPad;
+								if(bottombar!=a.wordPopup.pottombar && bottombar!=a.wordPopup.toolbar) {
+									layoutParams.leftMargin =   smallIconPad;
+									layoutParams.rightMargin =  smallIconPad;
+								}
 							}
 						}
 					}

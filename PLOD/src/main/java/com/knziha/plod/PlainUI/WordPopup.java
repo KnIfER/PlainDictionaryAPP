@@ -172,14 +172,25 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				}
 				if(GlobalOptions.isDark){
 					popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+					//popupContentView.setBackgroundResource(R.drawable.popup_shadow_d);
 					pottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
 					((ImageView)bottombarProject.btnsStack.get(0)[6]).setColorFilter(GlobalOptions.NEGATIVE);
+					popupGuarder.setBackgroundColor(0x0fffffff);
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+						popupContentView.setOutlineAmbientShadowColor(Color.WHITE);
+						popupContentView.setOutlineSpotShadowColor(Color.WHITE);
+					}
 				} else /*if(popIvBack.getTag()!=null)*/{ //???
 					popupContentView.getBackground().setColorFilter(null);
 					pottombar.getBackground().setColorFilter(null);
 					popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
 					((ImageView)bottombarProject.btnsStack.get(0)[6]).setColorFilter(null);
+					popupGuarder.setBackgroundColor(0x00ffffff);
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && popupContentView.getOutlineAmbientShadowColor()==Color.WHITE) {
+						popupContentView.setOutlineAmbientShadowColor(Color.BLACK);
+						popupContentView.setOutlineSpotShadowColor(Color.BLACK);
+					}
 				}
 				if (toolbarProject != null) {
 					entryTitle_setTextColor(GlobalOptions.isDark ? a.AppBlack : Color.GRAY);
@@ -1644,6 +1655,16 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
 		CMN.debug("SearchDone::", rec, currentPos, CCD, cleanPage);
+		WebViewListHandler wlh;
+		if(bFromWebTap && invoker!=null) {
+			requestAudio = PDICMainAppOptions.getAutoReadEntry();
+			wlh = invoker.weblistHandler;
+			if(wlh==a.weblistHandler) {
+				if(!a.isContentViewAttached()) return;
+			} else if(wlh.alloydPanel!=null && !wlh.isPopupShowing()) {
+				return;
+			}
+		}
 		if (rec != null) {
 			if(b1 && isMaximized()){
 				wordCamera.onPause();
@@ -1663,7 +1684,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				}
 				boolean isWebx = CCD.getIsWebx();
 				WebViewmy renderingWV = dictView(bFromWebTap);
-				WebViewListHandler wlh = renderingWV.weblistHandler;
+				wlh = renderingWV.weblistHandler;
 				if(!bFromWebTap)  renderingWV = getRenderingWV(isWebx ? CCD : null);
 				wlh.setViewMode(null, 0, renderingWV);
 				if (isWebx) { //todo 合并逻辑
@@ -1676,13 +1697,15 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				} else {
 					loadEntry(0, true);
 				}
-				if(bFromWebTap)
+				if(bFromWebTap) {
+					WebViewListHandler finalWlh = wlh;
 					renderingWV.post(new Runnable() {
 						@Override
 						public void run() {
-							wlh.textMenu(null);
+							finalWlh.textMenu(null);
 						}
 					});
+				}
 			} else if(b1 && isMaximized()){
 				dismiss();
 			}

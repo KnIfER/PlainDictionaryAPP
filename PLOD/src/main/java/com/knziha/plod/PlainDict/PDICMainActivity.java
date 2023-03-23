@@ -582,6 +582,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(msg.obj instanceof String)
 					a.showTopSnack((String)msg.obj);
 				break;
+				case 2023:
+					if(msg.obj instanceof String)
+					a.showT((String)msg.obj);
+				break;
 				case 1024:
 					a.handleFloatMessage(msg);
 				break;

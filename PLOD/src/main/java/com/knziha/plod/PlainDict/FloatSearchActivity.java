@@ -784,8 +784,15 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		@Override
 		public void handleMessage(@NonNull Message msg) {
-			if (msg.what==3344) {
-				((PageSlide)msg.obj).handleMsg(msg);
+			Toastable_Activity a = activity.get();
+			if (a != null) {
+				if (msg.what==3344) {
+					((PageSlide)msg.obj).handleMsg(msg);
+				}
+				else if (msg.what==2023) {
+					if(msg.obj instanceof String)
+						a.showT((String)msg.obj);
+				}
 			}
 		}
 	}

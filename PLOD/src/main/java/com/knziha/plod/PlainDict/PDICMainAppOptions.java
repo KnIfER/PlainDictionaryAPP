@@ -2799,14 +2799,14 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=30, shift=1) public static boolean getShowNotificationSettings() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=30, shift=1) public static void setShowNotificationSettings(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=31, shift=1) public static boolean getAllowPlugCss() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=31, shift=1) public static void setAllowPlugCss(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31) public static boolean getAllowPlugCss() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=31) public static void setAllowPlugCss(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=32, shift=1) public static boolean getAllowPlugRes() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=32, shift=1) public static void setAllowPlugRes(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=33, shift=1) public static boolean getAllowPlugResNone() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33, shift=1) public static void setAllowPlugResNone(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static boolean debugDictTxt() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static void debugDictTxt(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=34, shift=1) public static boolean getAllowPlugResSame() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=34, shift=1) public static void setAllowPlugResSame(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}

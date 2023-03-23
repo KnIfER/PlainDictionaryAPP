@@ -157,7 +157,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float highRigkt_B;
 	public static boolean supressNxtClickTranslator;
 	
-	private final SIDProvider mSimpleId = new SIDProvider(CMN.id(this));
+	private final SIDProvider mSimpleId = new SIDProvider(System.identityHashCode(this));
 	
 	View scrollRect;
 	ScrollAbility mScrollAbility;

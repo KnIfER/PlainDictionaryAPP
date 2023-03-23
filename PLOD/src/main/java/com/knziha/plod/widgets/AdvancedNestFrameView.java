@@ -19,12 +19,16 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
+
+import com.knziha.plod.plaindict.CMN;
 
 /**
  * https://github.com/tobiasrohloff/NestedScrollWebView/edit/master/lib/src/main/java/com/tobiasrohloff/view/NestedScrollWebView.java
@@ -48,11 +52,30 @@ public class AdvancedNestFrameView extends FrameLayout implements NestedScrollin
 		mChildHelper = ViewUtils.sNestScrollHelper;
 		setNestedScrollingEnabled(true);
 	}
+	public View appbar;
+	int appbar_top;
+	boolean appbar_top_changed;
+	
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev) {
+		return super.onInterceptTouchEvent(ev)||appbar_top_changed;
+	}
 	
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent event) {
+		if (appbar != null) {
+			if (event.getActionMasked()==0) {
+				appbar_top = appbar.getTop();
+				appbar_top_changed = false;
+			}
+		}
 		if(mNestedScrollEnabled&&!fromCombined) {
 			mChildHelper.onTouchEvent(this, event);
+			if (appbar != null) {
+				if (!appbar_top_changed && Math.abs(appbar.getTop()-appbar_top)>GlobalOptions.density*1.5) {
+					appbar_top_changed = true;
+				}
+			}
 			super.dispatchTouchEvent(event);
 			return true;
 		}

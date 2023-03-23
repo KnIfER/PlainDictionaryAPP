@@ -272,6 +272,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 					if(msg.obj instanceof String)
 						a.showT((String)msg.obj, Toast.LENGTH_LONG);
 					break;
+				case 2023:
+					if(msg.obj instanceof String)
+						a.showT((String)msg.obj);
+					break;
 				case 3322123:
 					a.performReadEntry();
 					break;

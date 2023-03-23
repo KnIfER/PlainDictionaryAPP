@@ -62,8 +62,9 @@ var de;
 function pageScroll(e){
 	var k=0,l=de.scrollLeft,wd=w.innerWidth;
 	if(l>0) k=1;
-	if(Math.ceil(l+0.2+wd)<de.scrollWidth) k|=2;
-	debug('onscroll', k, l+0.2+wd<de.scrollWidth);
+	var de_scrollWidth = frameElement?de.scrollWidth:de.clientWidth;
+	if(Math.ceil(l+0.5+wd)<de_scrollWidth) k|=2;
+	debug('onscroll', k, l+0.2+wd, '<', de_scrollWidth);
 	if((pw.scrollLck||0)!=k) _app.scrollLck(sid.get(), pw.scrollLck=k);
 }
 function wrappedOnLoadFunc(){
@@ -133,7 +134,7 @@ function wrappedOnLoadFunc(){
 	//todo 处理背景色？
 	if(_app) {
 		de = document.documentElement;
-		document.body.onscroll = pageScroll;
+		if(frameElement) document.body.onscroll = pageScroll;
 	}
 }
 

@@ -80,8 +80,8 @@
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugCss"
-			android:title="允许加载词典同名css文件"
-			android:summary="初始化词典时检测一次"
+			android:title="全局允许加载词典同名css文件"
+			android:summary="初始化词典时检测一次\n建议关闭，然后按需为某个mdx词典开启。"
 			android:persistent="false"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
@@ -94,7 +94,7 @@
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="debugCss"
 			android:title="以调试模式加载同名css"
-			android:summary="总是从文件读取，不用缓存"
+			android:summary="总是从文件读取，不利用缓存"
 			android:persistent="false"
 			app:allowDividerAbove="true"
 			/>
@@ -106,33 +106,34 @@
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugRes"
-			android:title="允许检测同目录资源文件"
-			android:summary="（不建议）仅支持一级目录，限制最大文件名长度为30，支持js/css/ini后缀，同一词典至多加载20个不同的文件。\n建议以另一方式加载：建立与词典同名文件，如为TLD.mdx建立TLD.0.txt，文件中填写一个斜杠字符“/”，这样会优先加载外部文件，适合词典制作者调试使用。"
+			android:title="全局允许检测同目录资源文件（仅在mdd资源包中不存在请求的资源时）"
+			android:summary="仅支持一级目录，限制最大文件名长度为30，支持js/css/ini/图片后缀，同一词典至多加载20个不同的文件。"
 			android:persistent="false"
 			/>
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="plugResNone"
-			android:title="仅在资源包中不存在请求的资源时，才检测文件系统"
-			android:summary="避免所有符合条件的URL都触发文件检测"
+			android:key="unpackRes"
+			android:title="全局允许检测“词典名.0.txt”配置文件"
+			android:summary="➀ 此项不建议全局设置，建议从词典设置为单个mdx词典开启。\n➁ 用于加载部分解压出来的资源文件，覆盖mdd资源包，方便制作者调试。\n➂ 如为TLD.mdx建立TLD.0.txt，文件中填写一个斜杠字符“/”，这样会优先加载外部文件，适合词典制作者调试使用。"
 			android:persistent="false"
 			app:allowDividerBelow="true"
 			/>
 
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="plugResNone"-->
+<!--			android:title="仅在资源包中不存在请求的资源时，才检测文件系统"-->
+<!--			android:summary="强制开启。如需覆盖mdd中的资源，请启用“词典名.0.txt”"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="true"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			android:enabled="false"-->
+<!--			/>-->
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugResSame"
-			android:title="仅在父级目录与词典名称相似时，才检测同目录资源文件"
+			android:title="“全局检测同目录文件”时，仅在父级目录与词典名称相似时，才检测。"
 			android:persistent="false"
 			/>
 	</PreferenceCategory>
-
-		<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
-<!--			android:key="unpackRes"-->
-<!--			android:title="允许用 NAME.0.txt 指定资源文件目录"-->
-<!--			android:summary="用同目录同名称的文本文件，记录资源路径，无上述限制。"-->
-<!--			android:persistent="false"-->
-<!--			app:allowDividerBelow="true"-->
-<!--			/>-->
 
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="plugResMdx"-->

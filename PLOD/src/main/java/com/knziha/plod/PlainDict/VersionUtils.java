@@ -81,13 +81,15 @@ public class VersionUtils {
 			}
 		}
 		
-		if(PDICMainAppOptions.checkVersionBefore_8_3())
-		{
-			PDICMainAppOptions.checkVersionBefore_8_3(false);
+		int verison_check = opt.getInt("ver", 0);
+		if (verison_check < 127/*BuildConfig.VERSION_CODE*/) {
+			opt.putInt("ver", 127);
 			PDICMainAppOptions.checkVersionBefore_7_6(true);
-			PDICMainAppOptions.revisitOnBackPressed(true);
-			PDICMainAppOptions.showEntrySeekbar(false);
-			PDICMainAppOptions.showDictName(false);
+			PDICMainAppOptions.checkVersionBefore_8_3(true);
+			
+			PDICMainAppOptions.debugDictTxt(false);
+			PDICMainAppOptions.setAllowPlugCss(false);
+			PDICMainAppOptions.setAllowPlugRes(true);
 		}
 //		opt.setPageTurn1(true);
 //		opt.setPageTurn2(true);

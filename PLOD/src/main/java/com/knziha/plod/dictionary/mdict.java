@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.lang3.StringUtils;
@@ -3283,24 +3284,26 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					sb.append(full_Dictionary_fName);
 				}
 				int base_full_name_L = sb.length();
-				File f2 = new File(p, sb.append(".0.txt").toString());
-				if(f2.exists()){
-					fZero_LPT = 0;
-					fZero=f2;
-					ftd = new ArrayList<>();
-					handleDebugLines();
+				CMN.debug("debugDictTxt::", PDICMainAppOptions.debugDictTxt());
+				if(PDICMainAppOptions.debugDictTxt()) {
+					fZero = new File(p, sb.append(".0.txt").toString());
+					if (fZero.exists()) {
+						fZero_LPT = 0;
+						ftd = new ArrayList<>();
+						handleDebugLines();
+					}
 				}
 				sb.setLength(base_full_name_L);
-				f2 = new File(p, sb.append(".mdd").toString());
-				if (f2.exists() && (mddCon==null||!mddCon.contains(f2.getPath()))) {
+				File fTmp = new File(p, sb.append(".mdd").toString());
+				if (fTmp.exists() && (mddCon==null||!mddCon.contains(fTmp.getPath()))) {
 					mdd = new ArrayList<>();
-					mdd.add(new mdictRes(f2));
+					mdd.add(new mdictRes(fTmp));
 					int cc = 1;
 					sb.setLength(base_full_name_L);
-					while ((f2 = new File(p, sb.append(".").append(cc++).append(".mdd").toString())).exists()) {
+					while ((fTmp = new File(p, sb.append(".").append(cc++).append(".mdd").toString())).exists()) {
 						sb.setLength(base_full_name_L);
-						if(mddCon==null||!mddCon.contains(f2.getPath()))
-							mdd.add(new mdictRes(f2));
+						if(mddCon==null||!mddCon.contains(fTmp.getPath()))
+							mdd.add(new mdictRes(fTmp));
 					}
 				}
 				//if(_header_tag.containsKey("SharedMdd")) {

@@ -51,11 +51,11 @@ public class PageMenuHelper {
 					ret = new int[]{
 						R.layout.page_nav_util
 						,R.string.bmAdd
-						,R.string.page_fuzhi
-						,R.string.page_dakai
-						,R.layout.page_dopt_refresh
-						,0
-						,R.string.page_ucc
+						, R.string.page_fuzhi
+						, R.layout.page_dopt_refresh
+						, R.string.dict_opt
+						//, R.string.page_dakai
+						, R.string.page_ucc
 					};
 				break;
 				case Nav_WEB:
@@ -101,7 +101,7 @@ public class PageMenuHelper {
 			utils.put(type.ordinal(), ret);
 		}
 		if(type==Nav_main) {
-			ret[5] = mWebView.merge?R.string.pageOpt:0;
+			ret[4] = mWebView.merge?R.string.pageOpt:R.string.dict_opt;
 		}
 		return ret;
 	}

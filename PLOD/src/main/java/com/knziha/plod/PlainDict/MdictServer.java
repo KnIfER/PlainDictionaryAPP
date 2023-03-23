@@ -20,6 +20,8 @@ import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 import static org.nanohttpd.protocols.http.response.Response.newRecyclableResponse;
 
+import android.webkit.WebResourceResponse;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -444,7 +446,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		//CMN.debug("getPlugRes::", presenter, uri);
 		boolean shouldLoadFiles = !presenter.isMergedBook() && (PDICMainAppOptions.getAllowPlugRes()||presenter.isHasExtStyle());
 		// todo check session.getHeaders() nullable???
-		if(shouldLoadFiles && (!PDICMainAppOptions.getAllowPlugResNone()||!presenter.bookImpl.hasMdd()||session.getHeaders().size()>0&&session.getHeaders().containsKey("f"))) {
+		if(shouldLoadFiles && session.getHeaders()!=null && session.getHeaders().size()>0&&session.getHeaders().containsKey("f")) {
 			Response ret=getPlugRes(presenter, uri);
 			if(ret!=null) return ret;
 			shouldLoadFiles = false;
@@ -556,7 +558,7 @@ public abstract class MdictServer extends NanoHTTPD {
 						}
 						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
 //						CMN.debug("文件", uri, mid);
-						if(mid>=0 && !(mid>=5&&mid<=18)) {
+						if(mid>=0/* && !(mid>=5&&mid<=18)*/) {
 							if(decoded==null)
 								decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
 							InputStream input = presenter.getDebuggingResource(decoded);
@@ -856,12 +858,13 @@ public abstract class MdictServer extends NanoHTTPD {
 				presenter.ApplyPadding(MdPageBuilder);
 				MdPageBuilder.append("}</style>");
 			}
-			if (presenter.zhoAny()!=0) {
-				MdPageBuilder.append("<style>");
+			if (presenter.zhoAny()&~(1L<<55)!=0) {
+				MdPageBuilder.append("<style id=\"_PDictPB\">");
 				MdPageBuilder.append("html{min-height:").append(presenter.zhoHigh() ? "92%" : "100%")
 						.append(";display:flex;")
 						.append(presenter.zhoVer() ? "align-items:center;" : "")
 						.append(presenter.zhoHor() ? "justify-content:center;" : "")
+						.append(presenter.verTex() ? (presenter.verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
 						.append("}");
 				MdPageBuilder.append("</style>");
 			}

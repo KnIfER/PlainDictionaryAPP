@@ -260,6 +260,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		tapSel = opt.getInt("tapSel", 0);
 		shezhi = BookPresenter.MakePageFlag(this, opt);
 		zhTrans = PDICMainAppOptions.webZhTranslate();
+		translators = a.translators;
 	}
 	
 	public final Runnable entrySeekRn = new Runnable() {
@@ -536,6 +537,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		}
 		(mWebView==null?contentUIData.WHP:mWebView).setVerticalScrollBarEnabled(vsi);
+		if(mWebView!=null) mWebView.setHorizontalScrollBarEnabled(true);
 		a.weblist = this;
 		this.mWebView = mWebView;
 	}
@@ -2443,7 +2445,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return sb.toString();
 	}
 	
-	ArrayList<BookPresenter> translators = new ArrayList<>();
+	final ArrayList<BookPresenter> translators;
 	TwoWayGridView txtMenuGrid;
 	
 	public void initQuickTranslatorsBar(boolean show, boolean animate) {
@@ -2492,7 +2494,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(bDataOnly)
 			return;
 		if (show) {
-			if (translators.size() == 0) {
+			if (translators.size() == 0) { // todo 快捷翻译组
 				try {
 					translators.add(a.new_book(a.defDicts[4], a));
 					translators.add(a.new_book(a.defDicts[5], a));
@@ -2573,8 +2575,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					return true;
 				});
 			}
-			if (txtMenuGrid.getParent() == null) {
-				VU.addViewToParent(txtMenuGrid, (ViewGroup) toolsBtn.getParent(), toolsBtn);
+			if (txtMenuGrid.getParent()!=toolsBtn.getParent()) {
+				try {
+					VU.addViewToParent(txtMenuGrid, (ViewGroup) toolsBtn.getParent(), toolsBtn);
+				} catch (Exception e) {
+					if (txtMenuGrid.getParent() instanceof ListView) {
+						((ListView) txtMenuGrid.getParent()).removeFooterView(txtMenuGrid);
+					}
+					try {
+						VU.addViewToParent(txtMenuGrid, (ViewGroup) toolsBtn.getParent(), toolsBtn);
+					} catch (Exception e1) {
+						CMN.debug(e1);
+					}
+				}
 				FrameLayout.LayoutParams lp = VU.newFrameLayoutParams((FrameLayout.LayoutParams) toolsBtn.getLayoutParams());
 				txtMenuGrid.setLayoutParams(lp);
 				lp.width = -2;
@@ -2604,7 +2617,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						.translationX(tx)
 					//.setListener(null)
 				;
-			} else {
+			}
+			else {
 				VU.setVisible(txtMenuGrid, show);
 				txtMenuGrid.setAlpha(show ? 1 : 0);
 				txtMenuGrid.setTranslationX(tx);
