@@ -2102,7 +2102,8 @@ public class PlainWeb extends DictionaryAdapter {
 
 	/** 接管进入黑暗模式、编辑模式 */
 	@StripMethods()
-	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
+	public void onPageFinished(BookPresenter bookPresenter, Object wv, String url, boolean updateTitle) {
+		WebViewmy mWebView = (WebViewmy) wv;
 		CMN.debug("chromium", "web  - onPageFini_NWPshed", currentUrl, getDictionaryName());
 		mWebView.removePostFinished();
 		fadeOutProgressbar(bookPresenter, mWebView, updateTitle);
