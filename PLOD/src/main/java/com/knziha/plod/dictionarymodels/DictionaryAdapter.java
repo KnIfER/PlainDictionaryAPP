@@ -682,6 +682,11 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
+	public void plugFZero(boolean allowFZero, boolean b) {
+	
+	}
+	
+	@Override
 	public void onPageFinished(BookPresenter invoker, Object mWebView, String url, boolean b) {
 	
 	}

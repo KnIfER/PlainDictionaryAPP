@@ -221,6 +221,29 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory
+		android:key="res"
+		android:title="资源加载"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		app:icon="@drawable/ic_baseline_bug_report_24"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugCss"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许加载词典同名css文件"
+			android:summary=""
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugTxt"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许检测“词典名.0.txt”配置文件"
+			android:summary="填写资源文件的相对路径，“/”代表同目录"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="gp_img"
 		android:title="图片浏览"
 		app:icon="@drawable/ic_view_carousel_black_24dp"

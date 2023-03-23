@@ -389,6 +389,12 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						case "reload":
 							p.setOnPreferenceClickListener(this);
 							break;
+						case "plugCss":
+							init_switcher(key, false, 58, p);
+							break;
+						case "plugTxt":
+							init_switcher(key, false, 59, p);
+							break;
 						case "p_df":
 							p.setVisible(data[0].getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF);
 							init_switch_preference(this, key, PDICMainAppOptions.debugPDFFont(), null, null, p);
@@ -581,6 +587,19 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "p_df":
 					PDICMainAppOptions.debugPDFFont((boolean)newValue);
 				break;
+				case "plugCss":
+					for (BookPresenter datum:data) {
+						datum.checkExtStyle();
+					}
+					PDICMainAppOptions.dynamicPadding_1(true);
+					break;
+				case "plugTxt":
+					for (BookPresenter datum:data) {
+						if(datum.bookImpl!=null)
+							datum.bookImpl.plugFZero((boolean)newValue, false);
+					}
+					PDICMainAppOptions.dynamicPadding_1(true);
+					break;
 			}
 			if (key.startsWith("tz")) {
 				SearchUI.tapZoomV++;

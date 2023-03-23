@@ -3462,6 +3462,30 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	@Override
+	public void plugFZero(boolean allowFZero, boolean init) {
+		if (!init || fZero==null) {
+			if (fZero==null) {
+				File p=f.getParentFile();
+				String full_Dictionary_fName = _Dictionary_fName;
+				StringBuilder sb = AcquireStringBuffer(full_Dictionary_fName.length()+15);
+				int idx = full_Dictionary_fName.lastIndexOf(".");
+				if(idx!=-1) {
+					sb.append(full_Dictionary_fName, 0, idx);
+				} else {
+					sb.append(full_Dictionary_fName);
+				}
+				fZero = new File(p, sb.append(".0.txt").toString());
+			}
+			ftd = null;
+			if (allowFZero && fZero.exists()) {
+				fZero_LPT = 0;
+				ftd = new ArrayList<>();
+				handleDebugLines();
+			}
+		}
+	}
+	
+	@Override
 	public int guessRootWord(UniversalDictionaryInterface d, String keyword){
 		return -1;
 	}

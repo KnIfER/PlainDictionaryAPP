@@ -554,6 +554,10 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=58) public boolean allowPlugCss() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=58) public void allowPlugCss(boolean value) { firstFlag=firstFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=59) public boolean allowFZero() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=59) public void allowFZero(boolean value) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	
 	public boolean getSavePageToDatabase(){
 		return true;
 	}
@@ -782,6 +786,9 @@ function debug(e){console.log(e)};
 			readConfigs(THIS, THIS.prepareHistoryCon());
 			if (isWebx && hasWebEntrances()) {
 				getWebx().readEntrances(false);
+			}
+			if (allowFZero()) {
+				bookImpl.plugFZero(allowFZero(), true);
 			}
 		}
 		
@@ -2316,7 +2323,7 @@ function debug(e){console.log(e)};
 			ApplyPadding(htmlBuilder);
 			htmlBuilder.append("}");
 		}
-		if (zhoAny()&~(1L<<55)!=0) {
+		if ((zhoAny()&~(1L<<55))!=0) {
 			if(!styleOpened){ htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;}
 			htmlBuilder.append("html{min-height:").append(zhoHigh() ? "92%" : "100%")
 					.append(";display:flex;")

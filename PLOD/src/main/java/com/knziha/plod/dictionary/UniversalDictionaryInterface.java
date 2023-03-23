@@ -100,4 +100,6 @@ public interface UniversalDictionaryInterface {
 	InputStream getRecordStream(int idx) throws IOException;
 	
 	void saveConfigs(Object book);
+	
+	void plugFZero(boolean allowFZero, boolean b);
 }

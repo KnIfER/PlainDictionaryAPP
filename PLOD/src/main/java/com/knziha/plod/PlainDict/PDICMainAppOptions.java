@@ -237,7 +237,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=39, shift=1) public static boolean dictManager1MultiSelecting() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=39, shift=1) public static void dictManager1MultiSelecting(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
-	// xx
+	@Metaline(flagPos=40) public static boolean dynamicPadding_1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40) public static void dynamicPadding_1(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=41, shift=1) public static boolean dictManagerClickPopup1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=41, shift=1) public static void dictManagerClickPopup1(boolean v) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}

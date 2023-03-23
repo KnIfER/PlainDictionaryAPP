@@ -573,7 +573,7 @@ public abstract class MdictServer extends NanoHTTPD {
 							}
 						}
 					}
-					if(presenter.isHasExtStyle() && uri.endsWith(".css") && PDICMainAppOptions.getAllowPlugCss())
+					if(presenter.isHasExtStyle() && uri.endsWith(".css") && (PDICMainAppOptions.getAllowPlugCss() || presenter.allowPlugCss()))
 					{
 						decoded = uri.contains("%")?URLDecoder.decode(uri):uri;
 						if (decoded.regionMatches(1, presenter.getDictionaryName(), 0, sid-1)) {
@@ -858,7 +858,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				presenter.ApplyPadding(MdPageBuilder);
 				MdPageBuilder.append("}</style>");
 			}
-			if (presenter.zhoAny()&~(1L<<55)!=0) {
+			if ((presenter.zhoAny()&~(1L<<55))!=0) {
 				MdPageBuilder.append("<style id=\"_PDictPB\">");
 				MdPageBuilder.append("html{min-height:").append(presenter.zhoHigh() ? "92%" : "100%")
 						.append(";display:flex;")

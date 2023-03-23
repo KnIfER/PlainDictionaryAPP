@@ -9672,21 +9672,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void onBookOptionsSet(boolean set) {
-		if(PDICMainAppOptions.dynamicPadding()) {
+		if(PDICMainAppOptions.dynamicPadding_1()) {
+			PDICMainAppOptions.dynamicPadding_1(false);
 			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
-			if (wv!=null) wv.presenter.ApplyPadding(wv, true);
-			PDICMainAppOptions.dynamicPadding(false);
-			BookPresenter tweaking = wv.presenter;
-			StringBuilder MdPageBuilder = new StringBuilder();
-			MdPageBuilder.append("var r=document.getElementById('_PDictPB');if(!r){r=document.createElement('STYLE');r.id=\"_PDictPB\";document.head.appendChild(r);}r.innerHTML=\"");
-			MdPageBuilder.append("html{min-height:").append(tweaking.zhoHigh() ? "92%" : "100%")
-					.append(";display:flex;")
-					.append(tweaking.zhoVer() ? "align-items:center;" : "")
-					.append(tweaking.zhoHor() ? "justify-content:center;" : "")
-					.append(tweaking.verTex() ? (tweaking.verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
-					.append("}");
-			MdPageBuilder.append("\"");
-			wv.evaluateJavascript(MdPageBuilder.toString(), null);
+			if (wv!=null) wv.reload();
+		}
+		else if(PDICMainAppOptions.dynamicPadding()) {
+			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
+			if (wv != null) {
+				wv.presenter.ApplyPadding(wv, true);
+				PDICMainAppOptions.dynamicPadding(false);
+				BookPresenter tweaking = wv.presenter;
+				StringBuilder MdPageBuilder = new StringBuilder();
+				MdPageBuilder.append("var r=document.getElementById('_PDictPB');if(!r){r=document.createElement('STYLE');r.id=\"_PDictPB\";document.head.appendChild(r);}r.innerHTML=\"");
+				MdPageBuilder.append("html{min-height:").append(tweaking.zhoHigh() ? "92%" : "100%")
+						.append(";display:flex;")
+						.append(tweaking.zhoVer() ? "align-items:center;" : "")
+						.append(tweaking.zhoHor() ? "justify-content:center;" : "")
+						.append(tweaking.verTex() ? (tweaking.verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
+						.append("}");
+				MdPageBuilder.append("\"");
+				wv.evaluateJavascript(MdPageBuilder.toString(), null);
+			}
 		}
 	}
 
