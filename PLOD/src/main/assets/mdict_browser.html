@@ -1095,8 +1095,7 @@
 			setup();
 			defP.onscroll=onWebListScroll;
 			document.body.addEventListener('touchstart',function(e) {
-				if(app)
-				{
+				if(app && window.scrollLck) {
 					var k=0,l=document.body.scrollLeft,wd=window.innerWidth;
 					if(l>0) k=1;
 					var de_scrollWidth = document.body.scrollWidth;
