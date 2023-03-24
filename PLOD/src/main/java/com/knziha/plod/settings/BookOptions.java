@@ -1,13 +1,11 @@
 package com.knziha.plod.settings;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -31,7 +29,6 @@ import com.knziha.filepicker.settings.IntPreference;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
@@ -43,7 +40,6 @@ import com.knziha.plod.plaindict.OptionProcessor;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.knziha.metaline.Metaline;
@@ -395,6 +391,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						case "plugTxt":
 							init_switcher(key, false, 59, p);
 							break;
+						case "plugTxtDef":
+							init_switch_preference(this, key, PDICMainAppOptions.allowFZeroDef(), null, null, p);
+							break;
 						case "p_df":
 							p.setVisible(data[0].getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF);
 							init_switch_preference(this, key, PDICMainAppOptions.debugPDFFont(), null, null, p);
@@ -596,7 +595,15 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "plugTxt":
 					for (BookPresenter datum:data) {
 						if(datum.bookImpl!=null)
-							datum.bookImpl.plugFZero((boolean)newValue, false);
+							datum.bookImpl.plugFZero((boolean)newValue||PDICMainAppOptions.debugDictTxt_fZero(), false, (boolean)newValue);
+					}
+					PDICMainAppOptions.dynamicPadding_1(true);
+					break;
+				case "plugTxtDef":
+					PDICMainAppOptions.allowFZeroDef((boolean)newValue);
+					for (BookPresenter datum:data) { // todo check multidict shezhi
+						if (datum.bookImpl != null)
+							datum.bookImpl.plugFZero(datum.allowFZero() || PDICMainAppOptions.debugDictTxt_fZero(), false, datum.allowFZero());
 					}
 					PDICMainAppOptions.dynamicPadding_1(true);
 					break;

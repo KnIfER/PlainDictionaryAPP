@@ -101,5 +101,5 @@ public interface UniversalDictionaryInterface {
 	
 	void saveConfigs(Object book);
 	
-	void plugFZero(boolean allowFZero, boolean b);
+	void plugFZero(boolean allowFZero, boolean init, boolean allowForThis);
 }

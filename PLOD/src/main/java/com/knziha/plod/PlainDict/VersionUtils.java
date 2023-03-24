@@ -87,7 +87,7 @@ public class VersionUtils {
 			PDICMainAppOptions.checkVersionBefore_7_6(true);
 			PDICMainAppOptions.checkVersionBefore_8_3(true);
 			
-			PDICMainAppOptions.debugDictTxt(false);
+			PDICMainAppOptions.debugDictTxt_fZero(false);
 			PDICMainAppOptions.setAllowPlugCss(false);
 			PDICMainAppOptions.setAllowPlugRes(true);
 		}

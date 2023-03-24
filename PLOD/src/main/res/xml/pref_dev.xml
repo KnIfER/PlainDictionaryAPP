@@ -81,7 +81,7 @@
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugCss"
 			android:title="全局允许加载词典同名css文件"
-			android:summary="初始化词典时检测一次\n建议关闭，然后按需为某个mdx词典开启。"
+			android:summary="&lt;建议关闭&gt;，然后按需为某个mdx词典开启。"
 			android:persistent="false"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
@@ -113,7 +113,7 @@
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="unpackRes"
 			android:title="全局允许检测“词典名.0.txt”配置文件"
-			android:summary="➀ 此项不建议全局设置，建议从词典设置为单个mdx词典开启。\n➁ 在txt中填写资源文件夹的相对路径，用于检测并加载部分解压出来的资源文件，覆盖mdd资源包。\n➂ 如为TLD.mdx建立TLD.0.txt，文件中填写一个斜杠字符“/”，这样会优先加载外部文件，适合词典制作者调试使用。"
+			android:summary="&lt;建议关闭&gt; ➀ 此项不宜全局设置，建议从词典设置为单个mdx词典开启。\n➁ 在txt中填写资源文件夹的相对路径，用于检测并加载部分解压出来的资源文件，覆盖mdd资源包。\n➂ 如为TLD.mdx建立TLD.0.txt，文件中填写一个斜杠字符“/”，这样会优先加载外部文件，适合词典制作者调试使用。"
 			android:persistent="false"
 			app:allowDividerBelow="true"
 			/>

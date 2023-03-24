@@ -241,6 +241,13 @@
 			android:title="允许检测“词典名.0.txt”配置文件"
 			android:summary="填写资源文件的相对路径，“/”代表同目录"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugTxtDef"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="上一选项，若该文件不存在，…"
+			android:summary="…则默认添加“/”同目录为资源路径。（全局设置）"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

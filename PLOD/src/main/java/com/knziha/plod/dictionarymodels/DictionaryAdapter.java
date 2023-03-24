@@ -8,7 +8,6 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.jcodings.Encoding;
@@ -682,7 +681,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public void plugFZero(boolean allowFZero, boolean b) {
+	public void plugFZero(boolean allowFZero, boolean b, boolean b1) {
 	
 	}
 	

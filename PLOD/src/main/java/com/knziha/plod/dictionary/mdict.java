@@ -3284,8 +3284,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					sb.append(full_Dictionary_fName);
 				}
 				int base_full_name_L = sb.length();
-				CMN.debug("debugDictTxt::", PDICMainAppOptions.debugDictTxt());
-				if(PDICMainAppOptions.debugDictTxt()) {
+				CMN.debug("debugDictTxt::", PDICMainAppOptions.debugDictTxt_fZero());
+				if(PDICMainAppOptions.debugDictTxt_fZero()) {
 					fZero = new File(p, sb.append(".0.txt").toString());
 					if (fZero.exists()) {
 						fZero_LPT = 0;
@@ -3462,7 +3462,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	@Override
-	public void plugFZero(boolean allowFZero, boolean init) {
+	public void plugFZero(boolean allowFZero, boolean init, boolean allowForThis) {
 		if (!init || fZero==null) {
 			if (fZero==null) {
 				File p=f.getParentFile();
@@ -3477,11 +3477,23 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				fZero = new File(p, sb.append(".0.txt").toString());
 			}
 			ftd = null;
-			if (allowFZero && fZero.exists()) {
-				fZero_LPT = 0;
-				ftd = new ArrayList<>();
-				handleDebugLines();
+			if (allowFZero) {
+				if (fZero.exists()) {
+					fZero_LPT = 0;
+					ftd = new ArrayList<>();
+					handleDebugLines();
+				} else if(allowForThis && PDICMainAppOptions.allowFZeroDef()) {
+					File p=f.getParentFile();
+					fZero_LPT = 0;
+					ftd = new ArrayList<>();
+					ftd.add(p);
+				}
 			}
+		} else if (init && allowForThis && PDICMainAppOptions.allowFZeroDef()) {
+			File p=f.getParentFile();
+			fZero_LPT = 0;
+			ftd = new ArrayList<>();
+			ftd.add(p);
 		}
 	}
 	

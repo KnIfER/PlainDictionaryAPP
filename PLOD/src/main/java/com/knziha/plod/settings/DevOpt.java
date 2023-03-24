@@ -19,7 +19,6 @@ import androidx.preference.Preference;
 
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.AU;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.FcfrtAppBhUtils;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -87,7 +86,7 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "debugCss", PDICMainAppOptions.debugCss(), null, null, null);
 		init_switch_preference(this, "plugCss", PDICMainAppOptions.getAllowPlugCss(), null, null, null);
 		init_switch_preference(this, "plugRes", PDICMainAppOptions.getAllowPlugRes(), null, null, null);
-		init_switch_preference(this, "unpackRes", PDICMainAppOptions.debugDictTxt(), null, null, null);
+		init_switch_preference(this, "unpackRes", PDICMainAppOptions.debugDictTxt_fZero(), null, null, null);
 		init_switch_preference(this, "plugResSame", PDICMainAppOptions.getAllowPlugResSame(), null, null, null);
 		
 		
@@ -223,7 +222,7 @@ public class DevOpt extends PlainSettingsFragment implements Preference.OnPrefer
 				PDICMainAppOptions.setAllowPlugRes((Boolean) newValue);
 			return true;
 			case "unpackRes":
-				PDICMainAppOptions.debugDictTxt((Boolean) newValue);
+				PDICMainAppOptions.debugDictTxt_fZero((Boolean) newValue);
 			return true;
 			case "plugResSame":
 				PDICMainAppOptions.setAllowPlugResSame((Boolean) newValue);

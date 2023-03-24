@@ -2812,8 +2812,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=32, shift=1) public static boolean getAllowPlugRes() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=32, shift=1) public static void setAllowPlugRes(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=33) public static boolean debugDictTxt() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33) public static void debugDictTxt(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static boolean debugDictTxt_fZero() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static void debugDictTxt_fZero(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=34, shift=1) public static boolean getAllowPlugResSame() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=34, shift=1) public static void setAllowPlugResSame(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -3505,6 +3505,9 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=45) public static boolean showTitlbarColorTwoOpts() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=45) public static void showTitlbarColorTwoOpts(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=46) public static boolean allowFZeroDef() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46) public static void allowFZeroDef(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
 	
 }

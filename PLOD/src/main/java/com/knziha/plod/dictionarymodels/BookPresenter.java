@@ -103,7 +103,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -791,7 +790,7 @@ function debug(e){console.log(e)};
 				getWebx().readEntrances(false);
 			}
 			if (allowFZero()) {
-				bookImpl.plugFZero(allowFZero(), true);
+				bookImpl.plugFZero(true, true, true);
 			}
 		}
 		
