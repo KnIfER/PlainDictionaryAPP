@@ -94,7 +94,6 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 	Toolbar Searchbar;
 	private EditText etSearchDict;
 	private boolean SearchDictPatternChanged;
-	private IBinder wtSearch;
 	private ImageView tweakBtn;
 	private CheckableImageView pinBtn;
 	private View exitBtn;
@@ -647,8 +646,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 		}
 		switch (v.getId()) {
 			case R.id.dialogHolder:
-				if(wtSearch!=null && ViewUtils.isVisibleV2(Searchbar)) {
-					a.imm.hideSoftInputFromWindow(wtSearch, 0);
+				if(ViewUtils.isVisibleV2(Searchbar)) {
+					a.imm.hideSoftInputFromWindow(Searchbar.getWindowToken(), 0);
 				}
 				// 点击界面背景
 				dismiss();
@@ -725,17 +724,15 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					});
 					etSearchDict.setOnEditorActionListener((v12, actionId, event) -> searchbar.findViewById(R.id.forward).performClick());
 					this.Searchbar = searchbar;
-					wtSearch = etSearchDict.getWindowToken();
 					showImmAby = ()->{
 						etSearchDict.requestFocus();
 						a.imm.showSoftInput(etSearchDict, InputMethodManager.SHOW_IMPLICIT);
 					};
 					etSearchDict.postDelayed(showImmAby, 200);
-				}
-				else {
+				} else {
 					if (v == Searchbar.getNavigationBtn()) {
+						a.imm.hideSoftInputFromWindow(Searchbar.getWindowToken(), 0);
 						ViewUtils.setVisible(Searchbar, false);
-						a.imm.hideSoftInputFromWindow(wtSearch, 0);
 						if (pinBtn.isChecked()) dismiss();
 					} else {
 						ViewUtils.setVisible(Searchbar, true);
@@ -881,7 +878,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					if(msg!=0) {
 						a.show(msg);
 					}
-					a.imm.hideSoftInputFromWindow(wtSearch, 0);
+					a.imm.hideSoftInputFromWindow(Searchbar.getWindowToken(), 0);
 					dataChanged();
 				}
 			} break;

@@ -1,11 +1,14 @@
 package com.knziha.plod.PlainUI;
 
 import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK;
+import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK_IMG;
 import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK_WEB;
 import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.Nav_main;
 
+import android.os.Build;
 import android.os.Looper;
 import android.util.SparseArray;
+import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebResourceResponse;
@@ -13,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -62,6 +66,12 @@ public class PageMenuHelper {
 	}
 	
 	public void handleLnkUtils(PopupMenuHelper popupMenuHelper, int id, WebViewmy mWebView, boolean isLongClick) {
+		popupMenuHelper.dismiss();
+		if (id==R.string.page_sel) {
+			int type = mType==LNK_IMG?1:0;
+			SelectHtmlObject(a, mWebView, type);
+			return;
+		}
 		if (id==R.string.page_lnk_situ || id==R.string.page_lnk_pop) {
 			String url = a.pageMenuHelper.lnk_href;
 			try {
@@ -94,7 +104,9 @@ public class PageMenuHelper {
 						a.popupWord(value, null, isLongClick?-100:-1, null, false);
 					}
 					else if (id==R.id.page_lnk_sch) {
+						// 查词
 						a.popupWord(value, null, -1, mWebView, true);
+						a.wordPopup.forceDirectSchInNewWindow = true;
 					}
 					else if (id==R.id.page_lnk_fye) {
 						a.JumpToPeruseModeWithWord(value);
@@ -111,7 +123,6 @@ public class PageMenuHelper {
 				}
 			}
 		});
-		popupMenuHelper.dismiss();
 	}
 	
 	public PageMenuHelper(MainActivityUIBase a) {
@@ -308,4 +319,41 @@ public class PageMenuHelper {
 				&& popupMenuHelper.tag<=LNK_WEB.ordinal()
 				&& popupMenuHelper.tag2 instanceof PageMenuType;
 	}
+	
+	public static void SelectHtmlObject(MainActivityUIBase a, WebViewmy wv, int source) {
+		wv.evaluateJavascript(BookPresenter.touchTargetLoader+"("+source+")", new ValueCallback<String>() {
+			@Override
+			public void onReceiveValue(String value) {
+				int len = IU.parsint(value, 0);
+				boolean fakePopHandles = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
+				if(len>0) {
+					/* bring in action mode by a fake click on the programmatically  selected text. */
+					if(fakePopHandles) {
+						//wv.forbidLoading=true;
+						//wv.getSettings().setJavaScriptEnabled(false);
+						//wv.getSettings().setJavaScriptEnabled(false);
+						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, wv.lastX, wv.lastY, 0);
+						wv.lastSuppressLnkTm = CMN.now();
+						wv.dispatchTouchEvent(te);
+						te.setAction(MotionEvent.ACTION_UP);
+						wv.dispatchTouchEvent(te);
+						te.recycle();
+						/* restore href attribute */
+					}
+				} else {
+					a.showT("选择失败");
+				}
+//				if(fakePopHandles) {
+//					wv.postDelayed(() -> {
+//						wv.forbidLoading=false;
+//						//wv.getSettings().setJavaScriptEnabled(true);
+//						//wv.evaluateJavascript("restoreTouchtarget()", null);
+//					}, 300);
+//				} else {
+//					//wv.evaluateJavascript("restoreTouchtarget()", null);
+//				}
+			}
+		});
+	}
+	
 }

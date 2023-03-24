@@ -94,6 +94,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	BookPresenter popupForceId;
 	/** 来自普通内容页面点击 */
 	boolean bFromWebTap;
+	public boolean forceDirectSchInNewWindow;
 	protected PopupTouchMover moveView;
 	public WebViewmy mWebView;
 	public BookPresenter.AppHandler popuphandler;
@@ -1053,15 +1054,20 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			dismissImmediate();
 			if (!invoker.weblistHandler.bShowingInPopup)
 			{
-				boolean newWnd = PDICMainAppOptions.tapDefInNewWindow1();
-				if (invoker.peruseView!=null) {
-					newWnd = PDICMainAppOptions.fyeTapViewDefInNewWnd();
-				}
-				else if (invoker.merge/* && invoker.weblistHandler.isMultiRecord() && !invoker.weblistHandler.isFoldingScreens()*/) {
-					newWnd = PDICMainAppOptions.tapDefInNewWindowMerged();
-				}
-				else if (ViewUtils.getNthParentNonNull(invoker.rl, 1).getId()==R.id.webholder) {
-					newWnd = PDICMainAppOptions.tapDefInNewWindow2();
+				boolean newWnd = forceDirectSchInNewWindow;
+				if (newWnd) {
+					forceDirectSchInNewWindow = false;
+				} else {
+					newWnd = PDICMainAppOptions.tapDefInNewWindow1();
+					if (invoker.peruseView!=null) {
+						newWnd = PDICMainAppOptions.fyeTapViewDefInNewWnd();
+					}
+					else if (invoker.merge/* && invoker.weblistHandler.isMultiRecord() && !invoker.weblistHandler.isFoldingScreens()*/) {
+						newWnd = PDICMainAppOptions.tapDefInNewWindowMerged();
+					}
+					else if (ViewUtils.getNthParentNonNull(invoker.rl, 1).getId()==R.id.webholder) {
+						newWnd = PDICMainAppOptions.tapDefInNewWindow2();
+					}
 				}
 				//CMN.debug("newWnd::", newWnd, invoker.weblistHandler.isMultiRecord(), ViewUtils.getNthParentNonNull(invoker.rl, 1).getId()==R.id.webSingleholder);
 				if (newWnd)
@@ -1867,6 +1873,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;
 			this.bFromWebTap = bFromWebTap;
+			if(forceDirectSchInNewWindow) forceDirectSchInNewWindow = false;
 			popupForceId = forceStartId;
 			a.hdl.removeCallbacks(this);
 			if (frameAt == -100) {

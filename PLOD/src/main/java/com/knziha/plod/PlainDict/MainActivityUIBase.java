@@ -7092,11 +7092,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				weblist = mWebView.weblistHandler;
 				performReadEntry();
 				break;
-			/* 选择链接文本 */
-			case R.string.page_sel: {
-				int type = pageMenuHelper.mType == LNK_IMG?1:0;
-				book.SelectHtmlObject(this, mWebView, type);
-			} break;
 			case R.string.page_fuzhi:
 //				if(popupMenuHelper.tag!=PageMenuHelper.PageMenuType.LNK.ordinal()) {
 					copyText(mWebView.word(), true);

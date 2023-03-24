@@ -114,6 +114,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.InflaterOutputStream;
 
+import static com.knziha.plod.PlainUI.PageMenuHelper.SelectHtmlObject;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_ANNOT_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
@@ -1197,42 +1198,6 @@ function debug(e){console.log(e)};
 				else mWebView.goForward();
 				break;
 		}
-	}
-	
-	public static void SelectHtmlObject(MainActivityUIBase a, WebViewmy wv, int source) {
-		wv.evaluateJavascript(touchTargetLoader+"("+source+")", new ValueCallback<String>() {
-			@Override
-			public void onReceiveValue(String value) {
-				int len = IU.parsint(value, 0);
-				boolean fakePopHandles = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
-				if(len>0) {
-					/* bring in action mode by a fake click on the programmatically  selected text. */
-					if(fakePopHandles) {
-						//wv.forbidLoading=true;
-						//wv.getSettings().setJavaScriptEnabled(false);
-						//wv.getSettings().setJavaScriptEnabled(false);
-						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, wv.lastX, wv.lastY, 0);
-						wv.lastSuppressLnkTm = CMN.now();
-						wv.dispatchTouchEvent(te);
-						te.setAction(MotionEvent.ACTION_UP);
-						wv.dispatchTouchEvent(te);
-						te.recycle();
-						/* restore href attribute */
-					}
-				} else {
-					a.showT("选择失败");
-				}
-//				if(fakePopHandles) {
-//					wv.postDelayed(() -> {
-//						wv.forbidLoading=false;
-//						//wv.getSettings().setJavaScriptEnabled(true);
-//						//wv.evaluateJavascript("restoreTouchtarget()", null);
-//					}, 300);
-//				} else {
-//					//wv.evaluateJavascript("restoreTouchtarget()", null);
-//				}
-			}
-		});
 	}
 	
 	public void setDictionaryName(String toString) {
