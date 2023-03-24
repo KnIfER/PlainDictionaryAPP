@@ -2080,7 +2080,13 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public View entryTitle() {
-		return toolbarProject.btnsStack.get(0)[1];
+		if (toolbarProject != null)
+		try {
+			return toolbarProject.btnsStack.get(0)[1];
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return null;
 	}
 	
 }

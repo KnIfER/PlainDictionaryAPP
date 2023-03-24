@@ -996,8 +996,13 @@ public class ViewUtils extends VU {
 	}
 	
 	public static String getTextInView(View view) {
-		CharSequence ret = ((TextView)view).getText();
-		return ret==null?"":ret.toString();
+		try {
+			CharSequence ret = ((TextView) view).getText();
+			return ret == null ? "" : ret.toString();
+		} catch (Exception e) {
+			CMN.debug(e);
+			return "";
+		}
 	}
 	
 	public static String getFieldInView(View view) {
