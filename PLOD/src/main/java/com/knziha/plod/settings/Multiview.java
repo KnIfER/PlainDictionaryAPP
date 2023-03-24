@@ -294,6 +294,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 				if (MdictServer.hasRemoteDebugServer = (Boolean) newValue) {
 					WebView.setWebContentsDebuggingEnabled(true);
 					MdictServerMobile.getRemoteServerRes("/李白全集.0.txt", true);
+					getSettingActivity().showT(MdictServerMobile.remoteDebugServer);
 				}
 			break;
 			case "tz":
