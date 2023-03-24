@@ -1395,6 +1395,7 @@ function debug(e){console.log(e)};
 			int type = result.getType();
 			CMN.debug("getHitTestResult", type, result.getExtra());
 			a.pageMenuHelper.lnk_href = result.getExtra();
+			//ViewUtils.preventDefaultTouchEvent(wv.rl, (int) wv.lastX, (int) wv.lastY);
 			switch (type) {
 				/* 长按下载图片 */
 				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
