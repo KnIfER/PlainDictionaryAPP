@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -57,10 +56,12 @@ public class PageMenuHelper {
 			}
 		}
 		String msg = a.handleEntryJump(url, mWebView, invoker, !popup && isLongClick, popup, false);
-		a.showT(url);
+		if (msg!=null) {
+			a.showT(url+"\n"+msg);
+		}
 	}
 	
-	public void handleLnkUtils(int id, WebViewmy mWebView, boolean isLongClick) {
+	public void handleLnkUtils(PopupMenuHelper popupMenuHelper, int id, WebViewmy mWebView, boolean isLongClick) {
 		if (id==R.string.page_lnk_situ || id==R.string.page_lnk_pop) {
 			String url = a.pageMenuHelper.lnk_href;
 			try {
@@ -110,6 +111,7 @@ public class PageMenuHelper {
 				}
 			}
 		});
+		popupMenuHelper.dismiss();
 	}
 	
 	public PageMenuHelper(MainActivityUIBase a) {
@@ -160,7 +162,7 @@ public class PageMenuHelper {
 						, R.string.page_sel
 						, R.layout.page_lnk_fanyi
 						, R.layout.page_lnk_apply
-						, R.string.close_pop
+						//, R.string.close_pop
 						, R.string.page_ucc
 						//, R.string.page_dakai
 					};

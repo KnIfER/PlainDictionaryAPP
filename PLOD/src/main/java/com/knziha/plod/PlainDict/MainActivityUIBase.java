@@ -3938,9 +3938,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						else if (url.regionMatches(schemaIdx + 12, "base", 0, 4)) {
 							int idx = schemaIdx + 12 + 5, ed=url.indexOf("/", idx+1);
-							if (url.charAt(idx) == '/') { // base/d0/entry/...
+							if (url.charAt(idx) == 'd') { // base/d0/entry/...
 								//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
-								bid = getMdictServer().getBookIdByURLPath(url, idx+1, ed);
+								bid = getMdictServer().getBookIdByURLPath(url, idx, ed);
 							}
 						}
 					}
@@ -6989,7 +6989,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter book = mWebView.presenter;
 		if(pageMenuHelper.isLnkUtils(popupMenuHelper)) {
 			// 这边是长按页面链接，弹出的菜单
-			pageMenuHelper.handleLnkUtils(v.getId(), mWebView, isLongClick);
+			pageMenuHelper.handleLnkUtils(popupMenuHelper, v.getId(), mWebView, isLongClick);
 			return true;
 		}
 		if(isLongClick) {
@@ -8139,8 +8139,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				else if (url.regionMatches(schemaIdx+12, "base", 0, 4)) {
 					int idx=schemaIdx+12+5;
-					if (url.charAt(idx)=='/') { // base/d0/entry/...
-						idx++;
+					if (url.charAt(idx)=='d') { // base/d0/entry/...
 						invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("/", idx));
 					}
 					else if (url.charAt(idx)=='.') { // base.html
