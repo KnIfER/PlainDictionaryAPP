@@ -64,7 +64,7 @@ function pageScroll(e){
 	if(l>0) k=1;
 	var de_scrollWidth = frameElement?de.scrollWidth:de.clientWidth;
 	if(Math.ceil(l+0.5+wd)<de_scrollWidth) k|=2;
-	debug('onscroll', k, l+0.2+wd, '<', de_scrollWidth);
+	//debug('onscroll', k, l+0.2+wd, '<', de_scrollWidth);
 	if((pw.scrollLck||0)!=k) _app.scrollLck(sid.get(), pw.scrollLck=k);
 }
 function wrappedOnLoadFunc(){
@@ -134,7 +134,8 @@ function wrappedOnLoadFunc(){
 	//todo 处理背景色？
 	if(_app) {
 		de = document.documentElement;
-		if(frameElement) document.body.onscroll = pageScroll;
+		//if(frameElement) 
+		document.body.onscroll = pageScroll;
 	}
 }
 

@@ -1094,8 +1094,28 @@
 			// 扫描设置
 			setup();
 			defP.onscroll=onWebListScroll;
-			ge('body_').addEventListener('scroll',function(e){
+			document.body.addEventListener('touchstart',function(e) {
+				if(app)
+				{
+					var k=0,l=document.body.scrollLeft,wd=window.innerWidth;
+					if(l>0) k=1;
+					var de_scrollWidth = document.body.scrollWidth;
+					if(Math.ceil(l+0.5+wd)<de_scrollWidth) k|=2;
+					if((window.scrollLck||0)!=k) app.scrollLck(sid.get(), window.scrollLck=k);
+					debug('onscroll', k, l+0.5+wd, '<', de_scrollWidth);
+				}
+			});
+			document.body.addEventListener('scroll',function(e) {
 				if(e.srcElement.scrollTop>0)e.srcElement.scrollTop=0;
+				if(app)
+				{
+					var k=0,l=document.body.scrollLeft,wd=window.innerWidth;
+					if(l>0) k=1;
+					var de_scrollWidth = document.body.scrollWidth;
+					if(Math.ceil(l+0.5+wd)<de_scrollWidth) k|=2;
+					if((window.scrollLck||0)!=k) app.scrollLck(sid.get(), window.scrollLck=k);
+					debug('onscroll', k, l+0.5+wd, '<', de_scrollWidth);
+				}
 			});
 			if(app)
 				setTimeout(_highlight, 200)
@@ -4298,7 +4318,8 @@
 
 <div id="jsonid" style="display:none;"></div>
 
-<p id="tmpText" class="sel"></p>
+<p id="tmpText" class="sel" style="display:none;"></p>
+<!-- <p id="tmpText" class="sel" style="width:0;position:absolute;height:0;"></p> -->
 
 <div id="aboutP">
 	<div id="aboutB" class='sel'>
