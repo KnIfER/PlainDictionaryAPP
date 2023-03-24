@@ -291,9 +291,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK;
 import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK_IMG;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionary.mdBase.markerReg;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_LOADURL;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
@@ -353,7 +356,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String hardSearchKey;
 	public static boolean bSkipNxtExtApp;
 	public static final KeyEvent BackEvent = new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BACK);
-	final static String entryTag = "entry://";
+	public final static String entryTag = "entry://";
 	final static String soundTag = "sound://";
 	protected final static String soundsTag = "sounds://";
 	public boolean hideDictToolbar=false;
@@ -1455,8 +1458,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ChooseFavorDialog.clear();
 	}
 
-	public void popupWord(final String key, BookPresenter forceStartId, int frameAt, WebViewmy wv, boolean b) {
-		wordPopup.popupWord(wv, key, forceStartId, frameAt, b);
+	public void popupWord(final String key, BookPresenter forceStartId, int frameAt, WebViewmy wv, boolean directSch) {
+		wordPopup.popupWord(wv, key, forceStartId, frameAt, directSch);
 	}
 	
 	public boolean DetachClickTranslator() {
@@ -6124,7 +6127,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (pos < 0 || pos >= wv.presenter.bookImpl.getNumberEntries()) {
 								showTopSnack(null, R.string.endendr, -1, -1, -1, 0);
 							} else {
-								wv.presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, wv, wv.currentPos + delta);
+								wv.presenter.renderContentAt(-1, RENDERFLAG_NEW, 0, wv, wv.currentPos + delta);
 								if (wv.getBackgroundColor() == 0)
 									wv.setBackgroundColor(GlobalPageBackground); //todo optimize
 							}
@@ -6984,6 +6987,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick) {
 		WebViewmy mWebView = (WebViewmy) popupMenuHelper.tag1;
 		BookPresenter book = mWebView.presenter;
+		if(pageMenuHelper.isLnkUtils(popupMenuHelper)) {
+			// 这边是长按页面链接，弹出的菜单
+			pageMenuHelper.handleLnkUtils(v.getId(), mWebView, isLongClick);
+			return true;
+		}
 		if(isLongClick) {
 			switch (v.getId()) {
 				case R.string.page_ucc:
@@ -6992,7 +7000,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					getVtk().onClick(title_bar_no_sel?anyView(0):null);
 					return true;
 			}
-			return false;
 		}
 		popupMenuHelper.dismiss();
 		switch (v.getId()) {
@@ -7003,9 +7010,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.string.pageOpt:
 				if(weblist==null) weblist = weblistHandler;
 				weblist.getMergedFrame().evaluateJavascript("showSettings()", null);
-				break;
-			case R.string.page_fuzhi:
-				copyText(mWebView.word(), true);
 				break;
 			case R.string.page_rukou:
 				if(pageMenuHelper.lnk_href!=null) {
@@ -7040,7 +7044,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.string.refresh:
 				if (book.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF) {
 					mWebView.setTag("forceLoad");
-					book.renderContentAt(-1, book.RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+					book.renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
 				} else {
 					mWebView.reload();
 				}
@@ -7053,10 +7057,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				break;
 			case R.string.page_source:
 				book.bViewSource=true;
-				book.renderContentAt(-1, book.RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
+				book.renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, mWebView.currentRendring);
 				break;
 			/* 打开中枢 */
-			case R.string.page_ucc:{
+			case R.string.page_ucc:
+			{
 				mWebView.evaluateJavascript("window.getSelection().isCollapsed", new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String value) {
@@ -7092,6 +7097,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int type = pageMenuHelper.mType == LNK_IMG?1:0;
 				book.SelectHtmlObject(this, mWebView, type);
 			} break;
+			case R.string.page_fuzhi:
+//				if(popupMenuHelper.tag!=PageMenuHelper.PageMenuType.LNK.ordinal()) {
+					copyText(mWebView.word(), true);
+//					break;
+//				}
+//			case R.id.page_lnk_tapSch:
+//			case R.id.page_lnk_sch:
+//			case R.id.page_lnk_fye:
+//				BookPresenter.handlePageLinkUtils(this, v.getId(), mWebView, popupMenuHelper, isLongClick);
+				break;
 			/* 下载图片 */
 			case R.string.page_save_img: {
 				pageMenuHelper.saveImage();
@@ -8511,97 +8526,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				else {
 					//CMN.debug("chromium inter_ entry2", url);
 					url = url.substring(entryTag.length());
-					try {
-						boolean popup = invoker.getPopEntry();
-						if(popup) {
-							wordPopup.init();
-							wordPopup.mWebView.frameAt = mWebView.frameAt;
-							//popupWebView.SelfIdx = mWebView.SelfIdx;
-							//mWebView = wordPopup.mWebView;
-						}
-						int tagIdx = url.indexOf("#");
-						if (tagIdx > 0) {
-							mWebView.toTag = url.substring(tagIdx + 1);
-							url = url.substring(0, tagIdx);
-						}
-						else if(mWebView.toTag!=null) mWebView.toTag = null;
-						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
-						url = URLDecoder.decode(url, "UTF-8");
-						if(popup){
-							popupWord(url, mWebView.presenter, mWebView.frameAt, mWebView, false);
-							return true;
-						}
-						else {
-							/* 查询跳转目标 */
-							ArrayList<myCpr<String, Long>> rangReceiver = new ArrayList<>();
-							invoker.bookImpl.lookUpRange(url, rangReceiver, null, 0, 30, null, true);
-							//int idx = invoker.bookImpl.lookUp(url, true);
-							//CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
-							CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), rangReceiver, url, (URLDecoder.decode(url,"UTF-8")));
-							if (rangReceiver.size() > 0) {
-								long[] pos = new long[rangReceiver.size()];
-								for (int i = 0; i < rangReceiver.size(); i++) {
-									pos[i] = rangReceiver.get(i).value;
-								}
-								if(newWindow) { // 新窗口打开词条跳转 open in new window
-									wlh = getRandomPageHandler(true, true, null);
-									if (mWebView.toTag!=null) {
-										wlh.getMergedFrame().toTag = mWebView.toTag;
-										mWebView.toTag = null;
-									}
-									WebViewmy wv = wlh.getMergedFrame();
-									wlh.viewContent();
-									wlh.setViewMode(null, 0, wv);
-									wlh.bShowInPopup=true;
-									wlh.bMergeFrames=0;
-									wlh.initMergedFrame(0, true, false);
-									wlh.popupContentView(null, url);
-									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,wv, pos);
-									wlh.pageSlider.setWebview(wv, null);
-									wlh.resetScrollbar();
-									if(wv.getBackgroundColor()==0) wv.setBackgroundColor(GlobalPageBackground); //todo optimize
-									return true;
-								}
-								else if(!fromPopup) {
-									//peruseView.isJumping = true;
-									//invoker.isJumping = true;
-									//peruseView.setCurrentDis(invoker, idx);
-									//invoker.setCurrentDis(mWebView, idx);
-									if (mWebView.toTag == null) {
-										/* 跳转至顶部 */
-										mWebView.toTag = "===000";
-										mWebView.expectedPosX = 0;
-										mWebView.expectedPos = 0;
-									} else {
-										/* 什么都不要做 */
-										mWebView.expectedPos = -100;
-									}
-								}
-//								invoker.renderContentAt(-1, RENDERFLAG_NEW, mWebView.frameAt, mWebView, idx);
-								float initialScale = BookPresenter.def_zoom;
-								mWebView.setInitialScale((int) (100 * (initialScale / BookPresenter.def_zoom) * opt.dm.density));
-								mWebView.isloading = true;
-								invoker.setCurrentDis(mWebView, pos[0]);
-								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
-								invoker.AddPlodStructure(mWebView, htmlBuilder, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
-								String htmlCode = invoker.bookImpl.getRecordsAt(null, pos);
-								if(invoker.hasFilesTag()){
-									htmlCode = htmlCode.replace("file://", "");
-								}
-								invoker.LoadPagelet(mWebView, htmlBuilder, htmlCode);
-								return true;
-							}
-						}
-					}
-					catch (Exception e) {
-						//TODO !!!
-						msg=e.toString();
-						CMN.debug(e);
-					}
+					msg = handleEntryJump(url, mWebView, invoker, newWindow, invoker.getPopEntry(), fromPopup);
+					if(msg==null) return true;
 				}
 				/* 跳转失败 */
 				String showError = getResources().getString(R.string.jumpfail) + url;
-				if(msg!=null) showError+=" "+msg;
+				if(msg!=null && msg.length()>0) showError+=" "+msg;
 				showT(showError);
 				return true;
 			}
@@ -8662,6 +8592,119 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			dialog.show();
 		}
 	};
+	
+	public String handleEntryJump(String url, WebViewmy mWebView, BookPresenter invoker
+			, boolean newWindow, boolean popup, boolean fromPopup) {
+		String msg = "";
+		try {
+			if(popup) {
+				wordPopup.init();
+				wordPopup.mWebView.frameAt = mWebView.frameAt;
+				//popupWebView.SelfIdx = mWebView.SelfIdx;
+				//mWebView = wordPopup.mWebView;
+			}
+			int tagIdx = url.indexOf("#");
+			if (tagIdx > 0) {
+				mWebView.toTag = url.substring(tagIdx + 1);
+				url = url.substring(0, tagIdx);
+			}
+			else if(mWebView.toTag!=null) mWebView.toTag = null;
+			if(url.endsWith("/")) url=url.substring(0, url.length()-1);
+			url = URLDecoder.decode(url, "UTF-8");
+			if(popup){
+				popupWord(url, mWebView.presenter, mWebView.frameAt, mWebView, false);
+				msg = null;
+				return msg;
+			}
+			else {
+				/* 查询跳转目标 */
+				ArrayList<myCpr<String, Long>> rangReceiver = new ArrayList<>();
+				invoker.bookImpl.lookUpRange(url, rangReceiver, null, 0, 30, null, true);
+				//int idx = invoker.bookImpl.lookUp(url, true);
+				//CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), idx, url, (URLDecoder.decode(url,"UTF-8")));
+				CMN.debug("查询跳转目标 : ", invoker.getDictionaryName(), rangReceiver, url, (URLDecoder.decode(url,"UTF-8")));
+				if (rangReceiver.size() > 0) {
+					long[] pos = new long[rangReceiver.size()];
+					for (int i = 0; i < rangReceiver.size(); i++) {
+						pos[i] = rangReceiver.get(i).value;
+					}
+					if(newWindow) { // 新窗口打开词条跳转 open in new window
+						WebViewListHandler wlh = getRandomPageHandler(true, true, null);
+						if (mWebView.toTag!=null) {
+							wlh.getMergedFrame().toTag = mWebView.toTag;
+							mWebView.toTag = null;
+						}
+						WebViewmy wv = wlh.getMergedFrame();
+						wlh.viewContent();
+						wlh.setViewMode(null, 0, wv);
+						wlh.bShowInPopup=true;
+						wlh.bMergeFrames=0;
+						wlh.initMergedFrame(0, true, false);
+						wlh.popupContentView(null, url);
+						invoker.renderContentAt(-1, RENDERFLAG_NEW,0,wv, pos);
+						wlh.pageSlider.setWebview(wv, null);
+						wlh.resetScrollbar();
+						if(wv.getBackgroundColor()==0) wv.setBackgroundColor(GlobalPageBackground); //todo optimize
+						msg = null;
+						return msg;
+					}
+					else if(!fromPopup) {
+						//peruseView.isJumping = true;
+						//invoker.isJumping = true;
+						//peruseView.setCurrentDis(invoker, idx);
+						//invoker.setCurrentDis(mWebView, idx);
+						if (mWebView.toTag == null) {
+							/* 跳转至顶部 */
+							mWebView.toTag = "===000";
+							mWebView.expectedPosX = 0;
+							mWebView.expectedPos = 0;
+						} else {
+							/* 什么都不要做 */
+							mWebView.expectedPos = -100;
+						}
+					}
+					if(true) {
+						//invoker.renderContentAt(-1, RENDERFLAG_NEW|RENDERFLAG_LOADURL, mWebView.frameAt, mWebView, pos);
+						StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
+						mergedUrl.append("d");
+						IU.NumberToText_SIXTWO_LE(invoker.getId(), mergedUrl);
+						for(long p:pos) {
+							mergedUrl.append("_");
+							IU.NumberToText_SIXTWO_LE(p, mergedUrl);
+						}
+						if (mWebView.toTag!=null) {
+							mergedUrl.append("#").append(mWebView.toTag);
+							mWebView.toTag=null;
+						}
+						String htmlCode = mergedUrl.toString();
+						mWebView.loadUrl(htmlCode);
+					} else if (false){
+						invoker.renderContentAt(-1, RENDERFLAG_NEW|RENDERFLAG_LOADURL, mWebView.frameAt, mWebView, pos);
+					} else {
+						float initialScale = BookPresenter.def_zoom;
+						mWebView.setInitialScale((int) (100 * (initialScale / BookPresenter.def_zoom) * opt.dm.density));
+						mWebView.isloading = true;
+						invoker.setCurrentDis(mWebView, pos[0]);
+						StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
+						invoker.AddPlodStructure(mWebView, htmlBuilder, invoker.rl == mWebView.getParent() && invoker.rl.getLayoutParams().height > 0);
+						String htmlCode = invoker.bookImpl.getRecordsAt(null, pos);
+						if (invoker.hasFilesTag()) {
+							htmlCode = htmlCode.replace("file://", "");
+						}
+						invoker.LoadPagelet(mWebView, htmlBuilder, htmlCode);
+					}
+					msg = null;
+					return msg;
+				}
+			}
+		}
+		catch (Exception e) {
+			//TODO !!!
+			msg=e.toString();
+			CMN.debug(e);
+		}
+		return msg;
+	}
 	
 	public WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
 		//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());

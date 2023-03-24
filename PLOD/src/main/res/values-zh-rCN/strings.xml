@@ -272,5 +272,8 @@
 	<string name="auto_sel_all">自动全选</string>
 	<string name="pageOpt">页面设置</string>
 	<string name="lock_viewpage_lst">锁定左右列表切换</string>
+	<string name="close_pop">点击后关闭本菜单</string>
+	<string name="page_lnk_situ">本页</string>
+	<string name="page_lnk_pop">弹窗打开</string>
 	>
 </resources>

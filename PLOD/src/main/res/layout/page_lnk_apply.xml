@@ -9,8 +9,8 @@
 	android:layout_marginTop="4dp"
 	>
 	<com.knziha.plod.widgets.TextMenuView
-		android:id="@+id/page_lnk_pop"
-		android:text="本页"
+		android:id="@string/page_lnk_situ"
+		android:text="@string/page_lnk_situ"
 		android:layout_width="0dp"
 		android:layout_height="match_parent"
 		android:gravity="center"
@@ -19,10 +19,11 @@
 		android:background="?listChoiceBackgroundIndicator"
 		android:paddingTop="4dp"
 		android:paddingBottom="4dp"
+		android:longClickable="true"
 		/>
 	<com.knziha.plod.widgets.TextMenuView
-		android:id="@+id/page_lnk_apply"
-		android:text="弹窗打开"
+		android:id="@string/page_lnk_pop"
+		android:text="@string/page_lnk_pop"
 		android:layout_width="0dp"
 		android:layout_height="match_parent"
 		android:gravity="center"

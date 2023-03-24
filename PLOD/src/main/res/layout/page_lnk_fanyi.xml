@@ -8,6 +8,19 @@
 	android:paddingStart="24dp"
 	>
 	<com.knziha.plod.widgets.TextMenuView
+		android:id="@+id/page_lnk_sch"
+		android:text="查词"
+		android:layout_width="0dp"
+		android:layout_height="match_parent"
+		android:gravity="center"
+		android:textColor="#000"
+		android:layout_weight="1"
+		android:background="?listChoiceBackgroundIndicator"
+		android:paddingTop="4dp"
+		android:paddingBottom="4dp"
+		android:longClickable="true"
+		/>
+	<com.knziha.plod.widgets.TextMenuView
 		android:id="@+id/page_lnk_tapSch"
 		android:text="点译"
 		android:layout_width="0dp"
@@ -18,18 +31,7 @@
 		android:background="?listChoiceBackgroundIndicator"
 		android:paddingTop="4dp"
 		android:paddingBottom="4dp"
-		/>
-	<com.knziha.plod.widgets.TextMenuView
-		android:id="@+id/page_lnk_translate"
-		android:text="翻译"
-		android:layout_width="0dp"
-		android:layout_height="match_parent"
-		android:gravity="center"
-		android:textColor="#000"
-		android:layout_weight="1"
-		android:background="?listChoiceBackgroundIndicator"
-		android:paddingTop="4dp"
-		android:paddingBottom="4dp"
+		android:longClickable="true"
 		/>
 	<com.knziha.plod.widgets.TextMenuView
 		android:id="@+id/page_lnk_fye"

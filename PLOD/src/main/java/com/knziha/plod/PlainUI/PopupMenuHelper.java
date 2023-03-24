@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.TextMenuView;
@@ -38,6 +37,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	ArrayList<TextMenuView> tvArr = new ArrayList<>();
 	public int tag;
 	public Object tag1;
+	public Object tag2;
 	
 	public interface PopupMenuListener{
 		boolean onMenuItemClick(PopupMenuHelper popupMenuHelper, View v, boolean isLongClick);
@@ -73,6 +73,8 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	public void initLayout(int[] texts, PopupMenuListener listener) {
 		this.texts = texts;
 		this.listener = listener;
+		this.tag = 0;
+		this.tag2 = null;
 		if (lv.getChildCount()>0) {
 			lv.removeAllViews();
 		}

@@ -84,7 +84,6 @@ import com.knziha.plod.widgets.AdvancedNestFrameView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -104,6 +103,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -303,6 +303,8 @@ public class BookPresenter
 	 */
 	@Metaline()
 	public final static String touchTargetLoader=StringUtils.EMPTY;
+	
+	public final static String touchTargetLoader_getText="window._touchtarget?window._touchtarget.innerText:''";
 	
 	/** var w=window,d=document;//!!!高亮开始
 		var MarkLoad,MarkInst;
@@ -1113,7 +1115,7 @@ function debug(e){console.log(e)};
 				/* 复制链接文本 */
 				case 1:{
 					if(url!=null) {
-						mWebView.evaluateJavascript("window._touchtarget?window._touchtarget.innerText:''", new ValueCallback<String>() {
+						mWebView.evaluateJavascript(touchTargetLoader_getText, new ValueCallback<String>() {
 							@Override
 							public void onReceiveValue(String value) {
 								a.copyText(StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1)), true);
@@ -1883,6 +1885,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public final static int RENDERFLAG_NEW=0x1;
+	public final static int RENDERFLAG_LOADURL=0x1;
 
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int fRender, int frameAt, WebViewmy mWebView, long...position){
@@ -2013,7 +2016,7 @@ function debug(e){console.log(e)};
 			mWebView.setWebChromeClient(a.myWebCClient);
 	   	    mWebView.setWebViewClient(a.myWebClient);
     	}
-
+	
 		renderContentAt_internal(mWebView, initialScale, fromCombined, mIsolateImages, position);
     }
 	

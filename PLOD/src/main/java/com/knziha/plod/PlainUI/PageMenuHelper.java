@@ -1,26 +1,34 @@
 package com.knziha.plod.PlainUI;
 
+import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK;
+import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK_WEB;
 import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.Nav_main;
 
 import android.os.Looper;
 import android.util.SparseArray;
 import android.view.View;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 
 public class PageMenuHelper {
 	final MainActivityUIBase a;
@@ -29,6 +37,80 @@ public class PageMenuHelper {
 	public String lnk_href;
 	public PageMenuType mType;
 	public WebViewmy mWebView;
+	
+	private void handleLnkRepopup(WebViewmy mWebView, BookPresenter invoker, String url, boolean popup, boolean isLongClick) {
+		if (url.startsWith(MainActivityUIBase.entryTag)) {
+			url = url.substring(MainActivityUIBase.entryTag.length());
+		} else {
+			//  转换为contentUrl词条跳转 "http://mdbr.com/base/dOED/entry/词条名";
+			int schemaIdx = url.indexOf(":");
+			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>schemaIdx+8;
+			if(mdbr) {
+				if (url.regionMatches(schemaIdx+12, "base", 0, 4)) {
+					int idx = schemaIdx + 12 + 5;
+					if (url.charAt(idx) == 'd') { // base/d0/entry/...
+						int idxEd = url.indexOf("/", idx);
+						invoker = a.getMdictServer().md_getByURLPath(url, idx, idxEd);
+						url = url.substring(url.indexOf("/", idxEd+1)+1);
+					}
+				}
+			}
+		}
+		String msg = a.handleEntryJump(url, mWebView, invoker, !popup && isLongClick, popup, false);
+		a.showT(url);
+	}
+	
+	public void handleLnkUtils(int id, WebViewmy mWebView, boolean isLongClick) {
+		if (id==R.string.page_lnk_situ || id==R.string.page_lnk_pop) {
+			String url = a.pageMenuHelper.lnk_href;
+			try {
+				url = URLDecoder.decode(url, "UTF-8");
+			} catch (Exception ignored) { }
+			if (mWebView.merge) {
+				String finalUrl = url;
+				mWebView.evaluateJavascript("window._touchtarget.href", value -> {
+					try {
+						value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+						if (value.startsWith("http")) {
+							handleLnkRepopup(mWebView, mWebView.presenter, finalUrl, id==R.string.page_lnk_pop, isLongClick);
+							return;
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+					handleLnkRepopup(mWebView, mWebView.presenter, finalUrl, id == R.string.page_lnk_pop, isLongClick);
+				});
+			} else {
+				handleLnkRepopup(mWebView, mWebView.presenter, url, id == R.string.page_lnk_pop, isLongClick);
+			}
+			return;
+		}
+		mWebView.evaluateJavascript(BookPresenter.touchTargetLoader_getText, new ValueCallback<String>() {
+			public void onReceiveValue(String value) {
+				try {
+					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+					if (id==R.id.page_lnk_tapSch) {
+						a.popupWord(value, null, isLongClick?-100:-1, null, false);
+					}
+					else if (id==R.id.page_lnk_sch) {
+						a.popupWord(value, null, -1, mWebView, true);
+					}
+					else if (id==R.id.page_lnk_fye) {
+						a.JumpToPeruseModeWithWord(value);
+					}
+					else if (id==R.string.page_fuzhi) {
+						a.copyText(value, true);
+					}
+					else if (id==R.string.page_ucc) {
+						a.getVtk().setInvoker(null, null, null, value);
+						a.getVtk().onClick(null);
+					}
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
+		});
+	}
 	
 	public PageMenuHelper(MainActivityUIBase a) {
 		this.a = a;
@@ -70,14 +152,17 @@ public class PageMenuHelper {
 						,R.string.page_ucc
 					};
 				break;
+				// 长按链接
 				case LNK:
 					ret = new int[] {
-						R.string.page_lianjie
+						//, R.string.page_lianjie
+						R.string.page_fuzhi
 						, R.string.page_sel
 						, R.layout.page_lnk_fanyi
 						, R.layout.page_lnk_apply
+						, R.string.close_pop
 						, R.string.page_ucc
-						, R.string.page_dakai
+						//, R.string.page_dakai
 					};
 				break;
 				case LNK_WEB:
@@ -111,6 +196,8 @@ public class PageMenuHelper {
 		this.mWebView = mWebView;
 		PopupMenuHelper popupMenu = a.getPopupMenu();
 		popupMenu.initLayout(getPageUtils(type, mWebView), a);
+		popupMenu.tag = type.ordinal();
+		popupMenu.tag2 = type;
 		int[] vLocationOnScreen = new int[2];
 		v.getLocationOnScreen(vLocationOnScreen);
 		int x,y;
@@ -212,5 +299,11 @@ public class PageMenuHelper {
 				}
 			}
 		}).start();
+	}
+	
+	public boolean isLnkUtils(PopupMenuHelper popupMenuHelper) {
+		return popupMenuHelper.tag>=LNK.ordinal()
+				&& popupMenuHelper.tag<=LNK_WEB.ordinal()
+				&& popupMenuHelper.tag2 instanceof PageMenuType;
 	}
 }
