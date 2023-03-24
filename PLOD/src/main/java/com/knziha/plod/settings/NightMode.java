@@ -44,6 +44,9 @@ public class NightMode extends PlainSettingsFragment implements Preference.OnPre
 							init_switch_preference(this, key, PDICMainAppOptions.darkSystem(), null, null, p)
 									.setEnabled(Build.VERSION.SDK_INT>=29);
 						break;
+						case "YTC":
+							init_switch_preference(this, key, PDICMainAppOptions.showTitlbarColorTwoOpts(), null, null, p);
+						break;
 						case "revert":
 							p.setOnPreferenceClickListener(this);
 						break;
@@ -107,8 +110,11 @@ public class NightMode extends PlainSettingsFragment implements Preference.OnPre
 				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolorDark(bUsing==3);
 				break;
 			case "TFY":
-				if(bUsing==1) return PDICMainAppOptions.TintTitlbarBkcolorDark();
-				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolorDark(bUsing==3);
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarForeground();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarForeground(bUsing==3);
+				break;
+			case "YTC":
+				PDICMainAppOptions.showTitlbarColorTwoOpts((Boolean) newValue);
 				break;
 		}
 		return true;

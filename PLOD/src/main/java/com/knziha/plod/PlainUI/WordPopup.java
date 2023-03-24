@@ -566,10 +566,22 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		dictPicker.filterByRec(null, 0);
 	}
 	
+	// longclick
 	@Override
 	public boolean onLongClick(View v) {
-		if(v.getId()==R.id.popIvBack){
-			weblistHandler.showMoreToolsPopup(v);
+		switch (v.getId()) {
+			case R.id.popIvBack:
+			case R.id.popupText1:
+				weblistHandler.showMoreToolsPopup(v);
+			return true;
+			case R.id.popIvStar:
+			case R.drawable.star_ic_grey:
+				a.weblist = weblistHandler;
+				a.showMultipleCollection(popupKey, weblistHandler.getViewGroup());
+			return true;
+			case R.drawable.voice_ic:
+				a.weblist = weblistHandler;
+				a.ttsHub.show();
 			return true;
 		}
 		if (!moveView.moveTriggered) {
@@ -1082,7 +1094,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			show();
 			entryTitle_setText(popupKey);
 		}
-		if(cleanPage) cleanPage = sch;
+		if(cleanPage) cleanPage = sch; // 仅启动搜索时，才需要清空历史
 		if (popupKey!=null && sch) {
 			//SearchOne(task, taskVer, taskVersion);
 			boolean singleThread = false;
@@ -1718,8 +1730,12 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		}
 		if (cleanPage) {
 			cleanPage = false;
-			if (PDICMainAppOptions.revisitOnBackPressed() && lastRenderingWV!=null && !bFromWebTap) {
-				lastRenderingWV.cleanPage = true;
+			if (PDICMainAppOptions.revisitOnBackPressed()
+					&& lastRenderingWV!=null && !bFromWebTap
+			) {
+				if(lastRenderingWV.isloading)
+					lastRenderingWV.cleanPage = true;
+				//else lastRenderingWV.clearHistory();
 			}
 		}
 		if (popupKey!=null && !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeTapsch()) {

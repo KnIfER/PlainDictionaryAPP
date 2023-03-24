@@ -165,6 +165,8 @@
       -ms-user-select:none;
       -khtml-user-select:none;
       user-select:none;
+	  height: 27px;
+	  vertical-align: middle;
     }
 	#defPx {
 		counter-reset: def;
@@ -173,9 +175,9 @@
 		counter-increment: def;
 		content: counter(def) '. ';
 	}
-    .dc
-    {
+    .dc{
       height:20px;
+      width:13px;
 	  padding-bottom: 4px;
 	  vertical-align: middle;
     }
@@ -184,7 +186,8 @@
 	  display: block;
       background:linear-gradient(to top, #3477C9 , #397CCD);
       padding-left:10px;
-      color:white;
+      color:white;    
+	  box-shadow: inset 0 0 .75px 0px  #a9a9a9ff;
     }
     .title.focus
 	{
@@ -782,6 +785,8 @@
 		var mousewheel;
 		
 		var initStates=[];
+		
+		var _grad = 0.04;
 
 		var onmousewheelDown = function(e) {
 			//debug(["onmousewheelDown: ", e, e.wheelDelta, e.detail]);
@@ -1519,13 +1524,15 @@
 					t.onselectstart=function(){return false};
 					t.dictInfo=inf;
 					inf.cover = craft('img', 'dc', craft('td',0,t));
-					inf.cover.src = "/MdbR/cover.png";
+					//inf.cover.src = "/MdbR/cover.png";
+					inf.cover.style.visibility = "hidden";
 					inf.dictTitle = craft('span', 'dt', t);
-					inf.dictTitle.onclick=onTitleClick;
+					//inf.dictTitle.onclick=onTitleClick;
 					if(app) inf.dictTitle.addEventListener('touchstart', function(){
 						if(window.scrollLck) app.scrollLck(sid.get(), scrollLck=0);
 					});
-					inf.cover.onclick=onCoverClick;
+					//inf.cover.onclick=onCoverClick;
+					t.onclick=onTitleClick;
 					inf.viewDirty=1;
 				}
 			}
@@ -2361,6 +2368,24 @@
 				}
 				getFrame(wbf, true, false);
 				wbf.dictTitle.innerText = '在线词典';
+				wbf.title.classList.add('_pdInv');
+				// cheat
+				if(app) {
+					wbf.tbg = app.tbg();
+					wbf.tfg = app.tfg();
+					if(wbf.tbg) {
+						wbf.title.style.background='linear-gradient(to top, #'+wbf.tbg+' , '+whiterRgb(wbf.tbg, 0.05)+')';
+						wbf._tbg|=0x1;
+					} else if(wbf._tbg&0x1){
+						wbf.dictTitle.style.background='unset';
+					}
+					if(wbf.tfg) {
+						wbf.dictTitle.style.color='#'+wbf.tfg;
+						wbf._tbg|=0x2;
+					} else if(wbf._tbg&0x2){
+						wbf.dictTitle.style.color='unset';
+					}
+				}
 				wbf.p.innerHTML='';
 				wbf.p.style.justifyContent=wbframes.length>2?'center':'flex-start';
 				if(wbframes.synth==wbframes.length) {
@@ -2548,19 +2573,24 @@
 			}
 			if(inf.title) {
 				inf._tbg|=0;
-				inf.dictTitle.innerText=inf.name;
+				inf.dictTitle.innerText=inf.name.endsWith(".mdx")?inf.name.slice(0, inf.name.length-4):inf.name;
+				var set = false;
 				if(inf.tbg) {
-					inf.title.style.background='linear-gradient(to top, #'+inf.tbg+' , '+whiterRgb(inf.tbg)+')';
+					inf.title.style.background='linear-gradient(to top, #'+inf.tbg+' , '+whiterRgb(inf.tbg, _grad)+')';
 					inf._tbg|=0x1;
+					set = true;
 				} else if(inf._tbg&0x1){
 					inf.dictTitle.style.background='unset';
 				}
 				if(inf.tfg) {
 					inf.dictTitle.style.color='#'+inf.tfg;
 					inf._tbg|=0x2;
+					set = true;
 				} else if(inf._tbg&0x2){
 					inf.dictTitle.style.color='unset';
 				}
+				//if(set)
+				inf.title.classList.add('_pdInv');
 			}
 			inf.viewDirty = false;
 		}
@@ -2681,7 +2711,7 @@
 		}
 
 		function onTitleClick(e){//折叠内容
-			//debug(e);
+			//debug('onTitleClick', e);
 			if(app) app.banDbclk(sid.get());
 			var t = e.srcElement;
 			while(t.tagName!=='LI') t = t.parentNode;
@@ -3068,6 +3098,7 @@
 					defP.style.background='unset';
 				}
 				resetBottom(e);
+				if(e.dark) _grad = 0.002;
 				if(merge && e.bgr && !e.dark) {
 					var sty=craft('style', 0, document.body);
 					sty.id='setyle';

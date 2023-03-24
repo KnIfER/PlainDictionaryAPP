@@ -23,6 +23,11 @@ public class ButtonUIData {
 				, 17, 106, 107, 108, 109, 110, 111, 112, 114, 118
 				, 119
 				, R.drawable.ic_baseline_find_in_page_24
+				, R.id.popIvBack
+				, R.id.popupText1
+				, R.id.popIvStar
+				, R.drawable.star_ic_grey
+				, R.drawable.voice_ic
 		));
 	}
 	

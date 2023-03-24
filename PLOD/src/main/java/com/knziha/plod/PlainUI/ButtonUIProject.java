@@ -239,6 +239,9 @@ public class ButtonUIProject extends ButtonUIData{
 							else {
 								ViewGroup svp = (ViewGroup) btn.getParent();
 								btn.setBackgroundResource(rippleBG);
+								if (LongclickableMap.contains(btn.getId())) {
+									btn.setOnLongClickListener(onLongClickListener);
+								}
 								if (svp != null) svp.removeView(btn);
 								btn.setContentDescription(this.titles[i]);
 								if (modRipple) {

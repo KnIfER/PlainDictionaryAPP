@@ -111,6 +111,11 @@
 			android:persistent="true"
 			app:hasCheck="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="YTC"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在首选项主页显示以上两项"/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

@@ -2668,6 +2668,25 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		
+		@JavascriptInterface
+		public String tbg() {
+			if (presenter!=null) {
+				return SU.toHexRGB(GlobalOptions.isDark?presenter.opt.getTitlebarBackgroundColor(Color.BLACK)
+						:presenter.opt.getTitlebarBackgroundColor(presenter.a.MainBackground));
+			}
+			return "";
+		}
+		
+		@JavascriptInterface
+		public String tfg() {
+			if (presenter!=null) {
+				return SU.toHexRGB(GlobalOptions.isDark?presenter.opt.getTitlebarForegroundColor(Color.WHITE)
+						: presenter.opt.getTitlebarForegroundColor(presenter.a.tintListFilter.sForeground));
+			}
+			return "";
+		}
+		
 		@JavascriptInterface
 		public void maySound(int sid, boolean maybe) {
 			if (presenter!=null) {

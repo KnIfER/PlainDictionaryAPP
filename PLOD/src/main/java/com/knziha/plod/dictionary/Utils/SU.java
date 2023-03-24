@@ -152,7 +152,7 @@ public class  SU{
 	public static String toHexRGB(int color) {
 		color&=0xFFFFFF;
 		if(color==0) {
-			return null;
+			return "000";
 		}
 		String val = Integer.toHexString(color);
 		for (int i = val.length(); i < 6; i++) {

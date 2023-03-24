@@ -1437,6 +1437,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			WebViewmy wv = getWebContextNonNull();
 			if (pageSlider != null) {
 				pageSlider.OrgX = v.getWidth();
+				if (pageSlider.OrgX > GlobalOptions.density * 55) {
+					pageSlider.OrgX /= 2;
+				}
 				pageSlider.OrgY = v.getHeight();
 			}
 			wv.presenter.showMoreToolsPopup(wv, v);

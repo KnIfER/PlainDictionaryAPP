@@ -107,6 +107,10 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 						case "more_color":
 							p.setOnPreferenceClickListener(this);
 							break;
+						case "TBY":
+						case "TFY":
+							p.setVisible(PDICMainAppOptions.showTitlbarColorTwoOpts());
+							break;
 					}
 					p.setOnPreferenceChangeListener(this);
 				}
@@ -233,6 +237,14 @@ public class MainProgram extends PlainSettingsFragment implements Preference.OnP
 				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolor(bUsing==3);
 				break;
 			case "TF":
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarForeground();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarForeground(bUsing==3);
+				break;
+			case "TBY":
+				if(bUsing==1) return PDICMainAppOptions.TintTitlbarBkcolorDark();
+				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarBkcolorDark(bUsing==3);
+				break;
+			case "TFY":
 				if(bUsing==1) return PDICMainAppOptions.TintTitlbarForeground();
 				else if(bUsing!=0) PDICMainAppOptions.TintTitlbarForeground(bUsing==3);
 				break;

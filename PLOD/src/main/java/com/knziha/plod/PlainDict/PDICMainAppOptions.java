@@ -739,6 +739,12 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 						.append(defaultReader.getInt("dkTD", 80))
 						.append("%)");
 			}
+			if (nightUseInvertFilter()) {
+				sb.append("}._pdInv{");
+				sb.append("-webkit-filter:invert(")
+						.append(defaultReader.getInt("dkR", 100))
+						.append("%)");
+			}
 			if (true) {
 				sb.append("}.PLOD_HL{");
 				sb.append("-webkit-filter:invert(100%);color:#fff;").append(";");
@@ -3496,6 +3502,9 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=44) public static boolean slowDragTurnPage() { NinthFlag=NinthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=44) public static void slowDragTurnPage(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=45) public static boolean showTitlbarColorTwoOpts() { NinthFlag=NinthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45) public static void showTitlbarColorTwoOpts(boolean v) { NinthFlag=NinthFlag; throw new RuntimeException();}
 	
 	
 }
