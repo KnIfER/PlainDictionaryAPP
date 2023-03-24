@@ -1,6 +1,9 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
+import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
+
+import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -39,9 +42,8 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -185,7 +187,7 @@ public class MdictServerMobile extends MdictServer {
 				if (check) {
 					try {
 						return testDebugServer("192.168.0.102", key, check);
-					} catch (IOException ex) {
+					} catch (Exception ex) {
 						CMN.debug("getRemoteServerRes failed::"+e);
 						hasRemoteDebugServer = false;
 					}
@@ -200,10 +202,10 @@ public class MdictServerMobile extends MdictServer {
 			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 			StrictMode.setThreadPolicy(policy);
 		}
-		if(check)
-			CMN.Log("OpenMdbResourceByName   http://"+ipAddress+"/base/李白全集" + key.replace("\\", "/"));
 		String uri = "http://"+ipAddress+":8080/base/李白全集" + URLEncoder.encode(key.replace("\\", "/"));
 		HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
+		if(check)
+			CMN.Log("OpenMdbResourceByName", uri);
 		if (urlConnection instanceof HttpsURLConnection) {
 			((HttpsURLConnection) urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
 		}
@@ -220,6 +222,9 @@ public class MdictServerMobile extends MdictServer {
 //				String val = BU.StreamToString(input);
 //				//input = new AutoCloseNetStream(input, urlConnection);
 //				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
+		if (urlConnection.getResponseCode()==HTTP_NO_CONTENT) {
+			return null;
+		}
 		CMN.debug("请求的是本机调试资源…", key);
 		if(check)
 			remoteDebugServer=ipAddress;
