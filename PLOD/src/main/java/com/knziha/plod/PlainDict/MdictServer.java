@@ -20,8 +20,6 @@ import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 import static org.nanohttpd.protocols.http.response.Response.newRecyclableResponse;
 
-import android.webkit.WebResourceResponse;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -461,7 +459,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return emptyResponse; // todo /favico
 		}
 		InputStream restmp = presenter.bookImpl.getResourceByKey(key);
-		CMN.debug("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
+		CMN.debug("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-100:restmp.available());
 		
 		if(restmp==null){
 			if(shouldLoadFiles) {
