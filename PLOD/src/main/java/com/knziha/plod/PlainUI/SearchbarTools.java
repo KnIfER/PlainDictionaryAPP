@@ -267,7 +267,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	private void initList() {
 		if (mRecycler==null) {
-			etHistoryExpanded = PDICMainAppOptions.etHistoryExpanded();
+			etHistoryExpanded = !PDICMainAppOptions.autoCollapseEtTool() && PDICMainAppOptions.etHistoryExpanded();
 			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.etsch_recyclerview, a.root, false);
 			ViewUtils.setForegroundColor(lv, a.tintListFilter);
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
@@ -812,7 +812,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if (PDICMainAppOptions.autoCollapseEtTool()) {
 			etHistoryExpanded = false;
 			redrawExpandBtn();
-			drpdn(false);
+			//drpdn(false);
 		}
 	}
 	
