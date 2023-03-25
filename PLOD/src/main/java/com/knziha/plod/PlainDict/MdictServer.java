@@ -25,7 +25,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -53,7 +52,6 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -113,6 +111,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				if(uri.contains(".css")) mime = "text/css";
 				if(uri.contains(".js")) mime = "text/js";
 				if(uri.contains(".html")) mime = "text/html";
+				if(uri.contains(".svg")) mime = "image/svg+xml";
 				try {
 					return newChunkedResponse(Status.OK,mime,  candi);
 					//return newFixedLengthResponse(Status.OK,mime,  candi, candi.available());
@@ -563,8 +562,8 @@ public abstract class MdictServer extends NanoHTTPD {
 							if(input!=null) {
 								String MIME = mid==0?"application/x-javascript"
 										:mid==2?"text/css"
-										:mid>=5&&mid<18?"img/*"
-										:mid==18?"img/svg" //todo
+										:mid>=5&&mid<18?"image/*"
+										:mid==18?"image/svg+xml" //todo
 										:"*/*"
 										;
 								return newChunkedResponse(Status.OK,MIME, input);

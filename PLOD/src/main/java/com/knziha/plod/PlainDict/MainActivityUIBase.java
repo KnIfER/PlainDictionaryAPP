@@ -8753,6 +8753,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(key.endsWith(".css")) mime = "text/css";
 							if(key.endsWith(".js")) mime = "text/js";
 							if(key.contains(".html")) mime = "text/html";
+							if(key.contains(".svg")) mime = "image/svg+xml";
 							return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
 						} catch (Exception e) {
 							CMN.debug(e);
@@ -9327,8 +9328,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(input!=null) {
 								String MIME = mid==0?"application/x-javascript"
 										:mid==2?"text/css"
-										:mid>=5&&mid<18?"img/*"
-										:mid==18?"img/svg" //todo
+										:mid>=5&&mid<18?"image/*"
+										:mid==18?"image/svg+xml" //todo
 										:"*/*"
 										;
 								return new WebResourceResponse(MIME, "UTF-8", input);

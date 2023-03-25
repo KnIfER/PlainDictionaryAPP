@@ -695,6 +695,36 @@
 			z-index:999;
 			display:none;
 		}
+		.fold .expand-btn{
+			transform: rotate(-90deg);
+		}
+		.expand-btn-td{
+			vertical-align: middle;
+			padding-right: 0.78em;
+		}
+		.expand-btn{
+			border: 0;
+			width: 1.5em;
+			height: 1.5em;
+			font-size: 0.75em;
+			display: block;
+			transform: rotate(0deg);
+			xbackground-image: url(/MdbR/expand.svg);
+			transition: 100ms;
+			background-repeat: no-repeat;
+			background-size: 1em 1em;
+			background-position-x: center;
+			background-position-y: center;
+			margin: auto;
+			margin-top: 2px;
+			background-repeat: no-repeat;
+			-webkit-mask-repeat: no-repeat;
+			-webkit-mask-size: 1em 1em;
+			-webkit-mask-image: url(/MdbR/expand.svg);
+    		background-color: #fff;
+   			-webkit-mask-position-x: center;
+   			-webkit-mask-position-y: center;
+		}
 	</style> 
 	<script>
 		var shzh=0;
@@ -1334,7 +1364,7 @@
 		function JumpUrlTag(fx,hash,href,e) {
 			var inf=fx.dictInfo;
 			if(opt.fm2 && currentFocus!==fx.dictInfo) {
-				click(inf.dictTitle, {_foc:1});
+				click(inf.title, {_foc:1});
 			}
 			fx.u=href;
 			fx.tag=hash;
@@ -1532,8 +1562,10 @@
 						if(window.scrollLck) app.scrollLck(sid.get(), scrollLck=0);
 					});
 					//inf.cover.onclick=onCoverClick;
+					inf.expBtn = craft('button', 'expand-btn', craft('td','expand-btn-td',t));
 					t.onclick=onTitleClick;
 					inf.viewDirty=1;
+					if(inf.fold) t.classList.add("fold");
 				}
 			}
 
@@ -1851,6 +1883,7 @@
 							f0 = f2 = 1;
 						}
 					}
+					
 					if(f0) {
 						var nf=!bStayExpandedFocus || currentFocus!=inf;
 						if(f2) {
@@ -1869,11 +1902,12 @@
 							}
 						}
 					}
+					//inf.collapsed = false; // todo fix 两种模式切换后，页面始终半折叠
 					inf.scrollExpand=true;
 					var fx = getFrame(inf, true);
 					//debug('processContents-waiting', inf.name, 'waiting='+inf.waiting, 'wait='+(fx==null));
 					if(fx) { //todo
-						if(inf.collapsed && f2) { // 
+						if(inf.collapsed && f2 && inf.fbox) { // 
 							inf.fbox.style.height=inf.initHeight+'px';
 						}
 						var h=inf.initHeight;
@@ -2145,7 +2179,7 @@
 			e = e.srcElement;
 			var inf=e.dictInfo;
 			if(e.id==='foldText') {
-				click(inf.dictTitle, {_fold:1});
+				click(inf.title, {_fold:1});
 				return;
 			}
 			var bhv=opt.smoothNestedScroll2?'smooth':'auto'
@@ -2381,6 +2415,7 @@
 					}
 					if(wbf.tfg) {
 						wbf.dictTitle.style.color='#'+wbf.tfg;
+						wbf.expBtn.style.background='#'+wbf.tfg;
 						wbf._tbg|=0x2;
 					} else if(wbf._tbg&0x2){
 						wbf.dictTitle.style.color='unset';
@@ -2460,7 +2495,7 @@
 			scrollToFrame(fx);
 			fx._scroll=1;
 			// if(focusMode) {
-				click(fx.dictTitle, {_foc:1});
+				click(fx.title, {_foc:1});
 			// } else if(fx.item && fx.item.style.display==='none') {
 			// 	fx.item.style.display='block';
 			// }
@@ -2584,6 +2619,7 @@
 				}
 				if(inf.tfg) {
 					inf.dictTitle.style.color='#'+inf.tfg;
+					inf.expBtn.style.background='#'+inf.tfg;
 					inf._tbg|=0x2;
 					set = true;
 				} else if(inf._tbg&0x2){
@@ -2820,8 +2856,11 @@
 			fixBtnText(inf);
 			checkFakeScroll(inf);
 			postOnClick(inf);
-			if(!fold && opt.lazy && opt.delay) { // 折叠了
-				onWebListScroll();
+			if(inf.fold) { // 折叠了
+				if(opt.lazy && opt.delay) onWebListScroll();
+				inf.title.classList.add('fold');
+			} else {
+				inf.title.classList.remove('fold');
 			}
 		}
 
@@ -3313,6 +3352,7 @@
 		function foldFrame(e) {
 			if(e.fold) return;
 			e.fold=1;
+			if(e.title) e.title.classList.add('fold');
 			if(e.box)
 				e.box.style.display="none";
 		}
@@ -3320,6 +3360,7 @@
 		function unfoldFrame(e) {
 			if(!e.fold) return;
 			e.fold=0;
+			if(e.title) e.title.classList.remove('fold');
 			if(e.box)
 				e.box.style.display="block";
 		}
