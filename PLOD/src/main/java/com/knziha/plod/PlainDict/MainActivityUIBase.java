@@ -2,6 +2,22 @@ package com.knziha.plod.plaindict;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
+import static com.knziha.plod.dictionary.mdBase.markerReg;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_LOADURL;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
+import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.EmptyRef;
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_FAVORITE;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_HISTORY;
+import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
+import static com.knziha.plod.plaindict.MdictServer.hasRemoteDebugServer;
+import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
+import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
+import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
+import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
@@ -157,14 +173,15 @@ import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AnnotationDialog;
-import com.knziha.plod.PlainUI.ButtonUIProject;
 import com.knziha.plod.PlainUI.BookNotes;
 import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.BuildIndexInterface;
+import com.knziha.plod.PlainUI.ButtonUIProject;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.FavoriteHub;
 import com.knziha.plod.PlainUI.FloatBtn;
+import com.knziha.plod.PlainUI.JsonNames;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NewTitlebar;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
@@ -181,7 +198,6 @@ import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.PlainUI.WordMap;
 import com.knziha.plod.PlainUI.WordPopup;
-import com.knziha.plod.PlainUI.JsonNames;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.db.SearchUI;
@@ -215,11 +231,11 @@ import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptions;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.History;
+import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.settings.Multiview;
 import com.knziha.plod.settings.NightMode;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.TapTranslator;
-import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.AppIconsAdapter;
@@ -228,11 +244,11 @@ import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.FIlePickerOptions;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.ListViewOverscroll;
-import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ListSizeConfiner;
+import com.knziha.plod.widgets.ListViewOverscroll;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.OnScrollChangedListener;
+import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
@@ -291,26 +307,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK;
-import static com.knziha.plod.PlainUI.PageMenuHelper.PageMenuType.LNK_IMG;
-import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
-import static com.knziha.plod.dictionary.mdBase.markerReg;
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_LOADURL;
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
-import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
-import static com.knziha.plod.plaindict.CMN.AssetTag;
-import static com.knziha.plod.plaindict.CMN.EmptyRef;
-import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-import static com.knziha.plod.plaindict.DBListAdapter.DB_FAVORITE;
-import static com.knziha.plod.plaindict.DBListAdapter.DB_HISTORY;
-import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
-import static com.knziha.plod.plaindict.MdictServer.hasRemoteDebugServer;
-import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
-import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
-import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
-
-import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
-
 import io.noties.markwon.Markwon;
 import io.noties.markwon.core.spans.LinkSpan;
 
@@ -339,7 +335,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	//private static final String RegExp_VerbatimDelimiter = "[ ]{1,}|\\pP{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private static final Pattern RegImg = Pattern.compile("(png$)|(jpg$)|(jpeg$)|(tiff$)|(tif$)|(bmp$)|(webp$)", Pattern.CASE_INSENSITIVE);
-	private static Pattern bookMarkEntryPattern = Pattern.compile("entry://@[0-9]*");
+	private static final Pattern bookMarkEntryPattern = Pattern.compile("entry://@[0-9]*");
 	public static final String SEARCH_ACTION   = "plaindict.intent.action.SEARCH";
 	public static final String EXTRA_QUERY    = "EXTRA_QUERY";
 	public static final String EXTRA_FULLSCREEN = "EXTRA_FULLSCREEN";
@@ -371,7 +367,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	boolean focused;
 	protected MdictServerMobile server;
 	public Map<SubStringKey, String>  serverHosts;
-	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
+	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList<>();
 	public FrameLayout lvHeaderView;
 	public final Bag bNeverBlink = new Bag(false);
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
@@ -967,6 +963,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		etSearch.setText(text);
 	}
 
+	@SuppressLint("MissingSuperCall")
 	@Override
 	public void onActionModeStarted(ActionMode mode) {
 		onActionModeStarted(mode, null);
@@ -5513,7 +5510,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	/** 滚动条 [在右/在左/无/系统滚动条] see {@link WebViewListHandler#resetScrollbar}
 	 *<br>  see {@link BookPresenter.AppHandler#cs}
-	 *<br>  see {@link QuickBookSettingsPanel#initScrollHandle}
+	 *<br>  see {@linkx QuickBookSettingsPanel#initScrollHandle}
 	 * */
 	public void showScrollSet() {
 		String title = "设置网页滚动条 - ";
@@ -8793,7 +8790,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							return resp;
 						}
 						if (book.jinkeSheaths!=null&&book.jinkeSheaths.containsKey(SubStringKey.new_hostKey(url))) {
-							return (WebResourceResponse) book.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+							return (WebResourceResponse) book.getClientResponse(MainActivityUIBase.this, url, origin, null
+									, request==null||Build.VERSION.SDK_INT<Build.VERSION_CODES.LOLLIPOP?null:request.getRequestHeaders(), false);
 						}
 					}
 				}
@@ -8827,7 +8825,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								for (BookPresenter wb:mWebView.webx_frames) {
 									PlainWeb webx = wb.getWebx();
 									if (webx.shouldUseClientResponse(url)) {
-										return (WebResourceResponse) webx.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+										return (WebResourceResponse) webx.getClientResponse(null, url, origin, null
+												, request==null||Build.VERSION.SDK_INT<Build.VERSION_CODES.LOLLIPOP?null:request.getRequestHeaders(), false);
 									}
 									WebResourceResponse resp = webx.modifyRes(MainActivityUIBase.this, url, true);
 									if(resp!=null) { //todo opt
@@ -8981,7 +8980,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					if(invoker.getUseHosts() && webx.shouldUseClientResponse(url)) {
 						// hosts
-						return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+						return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null
+								, request==null||Build.VERSION.SDK_INT<Build.VERSION_CODES.LOLLIPOP?null:request.getRequestHeaders(), false);
 					}
 					if(url.startsWith("http://mdbr.com")) {
 						try {
@@ -8994,7 +8994,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if(idx>0) mime = mime.substring(0, idx);
 								
 								WebResourceResponse resp = new WebResourceResponse(mime, "UTF-8", ret.getData());
-								resp.setResponseHeaders(CrossFireHeaders);
+								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+									resp.setResponseHeaders(CrossFireHeaders);
+								}
 								return resp;
 							}
 						} catch (Exception e) {
@@ -9517,13 +9519,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return null;
 	}
 
-	private WebResourceResponse decodeSpxFile(InputStream restmp, File f) throws IOException {
+	private void decodeSpxFile(InputStream restmp, File f) {
 		//CMN.Log("decodeSpxFile……");
 		JSpeexDec decoder = new JSpeexDec();
 		try {
 			decoder.decode(new DataInputStream(restmp) , f, JSpeexDec.FILE_FORMAT_WAVE);
 		} catch (Exception e) { CMN.debug(e); }
-		return null;
 	}
 
 	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {
@@ -9680,9 +9681,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case Multiview.requestCode:{
 				resetMerge(-1, false);
-				if (true) {
-					weblistHandler.checkTitlebarHeight();
-				}
+				weblistHandler.checkTitlebarHeight();
 				if (PDICMainAppOptions.showMoreOpt_intentForMultiView()) {
 					PDICMainAppOptions.showMoreOpt_intentForMultiView(false);
 					weblistHandler.getMergedFrame().evaluateJavascript("showSettings()", null);
@@ -9998,7 +9997,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		 }
 	 }*/
 	@Metaline
-	private String WebviewSoundJS=StringUtils.EMPTY;
+	private final String WebviewSoundJS=StringUtils.EMPTY;
 
 	private void requestSoundPlayBack(String finalTarget, BookPresenter invoker, WebViewmy wv) {
 		CMN.debug("requestSoundPlayBack", finalTarget, invoker, wv);
@@ -10020,6 +10019,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")"), invoker.getIsWebx()?new ValueCallback<String>() {
 				@Override
 				public void onReceiveValue(String value) {
+					// todo
 					//wv.getSettings().setMediaPlaybackRequiresUserGesture(true);
 				}
 			}:null);
@@ -10209,7 +10209,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						putCurrFavoriteNoteBookId(NID);
 						DBrowser.Selection.clear();
 						DBrowser.loadInAll(this);
-					} else if(reason1==2 && DBrowser!=null) {
+					} else if(reason1==2) {
 						// 移动收藏夹
 						DBrowser.moveSelectedCardsToFolder(name, NID);
 					}
@@ -10231,9 +10231,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 			d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(MainActivityUIBase.this,R.color.colorHeaderBlue));
 			d.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.RED);
-			d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
-				showCreateNewFavoriteDialog(finalD.getListView().getWidth());
-			});
+			d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 ->
+					showCreateNewFavoriteDialog(finalD.getListView().getWidth()));
 			ChooseFavorDialog = new WeakReference<>(d);
 		}
 		else {
@@ -10595,7 +10594,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	LongSparseArray<Integer> mergedKeyHeaders = new LongSparseArray();
+	LongSparseArray<Integer> mergedKeyHeaders = new LongSparseArray<>();
 	private int TotalMergedKeyCount;
 	private int ConfidentMergeShift;
 	private int ConfidentMergeStart;
@@ -10764,7 +10763,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			ScrollerRecord pPos;
 			if (ADA == adaptermy2) {
-				int selection = (int) ADA.lastClickedPos;
+				int selection = ADA.lastClickedPos;
 				if (System.currentTimeMillis()-lastClickTime > 400 && selection >= 0) {
 					//avoyager.set(avoyagerIdx, WHP.getScrollY());
 					pPos = ADA.avoyager.get(selection);
@@ -10779,8 +10778,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			else {
-				if (webview != null
-						&& !webview.isloading //
+				if (!webview.isloading //
 						&& ADA.lastClickedPos >= 0
 						&& ADA.webviewHolder.getChildCount() != 0 ) {
 					final int selection = (int) webview.currentPos;
@@ -10943,7 +10941,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
-		int h = 0, topY;
+		int h, topY;
 		View bar = panel.bottombar;
 		if(bar==null) {
 			bar = bottombar.getId()!=0?bottombar:null;
@@ -11110,7 +11108,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void showBookSettings() {
-		WebViewListHandler weblist = this.weblist;
 		int jd = WeakReferenceHelper.quick_settings;
 		QuickBookSettingsPanel quickSettings
 				= (QuickBookSettingsPanel) getReferencedObject(jd);
@@ -11125,21 +11122,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void showNightModeSwitch() {
 		int jd = WeakReferenceHelper.night_mode;
-		NightModeSwitchPanel quickSettings
+		NightModeSwitchPanel nighMode
 				= (NightModeSwitchPanel) getReferencedObject(jd);
-		if (quickSettings==null) {
-			quickSettings = new NightModeSwitchPanel(this);
-			putReferencedObject(jd, quickSettings);
+		if (nighMode==null) {
+			nighMode = new NightModeSwitchPanel(this);
+			putReferencedObject(jd, nighMode);
 			//CMN.Log("重建NightModeSwitchPanel...");
 		}
-		quickSettings.refresh();
-		boolean vis = quickSettings.toggle(getMenuGridRootViewForPanel(quickSettings), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
+		nighMode.refresh();
+		nighMode.toggle(getMenuGridRootViewForPanel(nighMode), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
 	}
-	
 	
 	public void toggleDarkMode() {
 		if (thisActType==ActType.PlainDict) {
-			((PDICMainActivity) this).drawerFragment.sw4.toggle();
+			drawerFragment.sw4.toggle();
 		} else {
 			opt.setInDarkMode(!GlobalOptions.isDark);
 			changeToDarkMode();
@@ -11465,7 +11461,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ln = layout.getLineForVertical(y);
 					float ed = layout.getLineRight(ln);
 					if (x > ed && Math.sqrt((x0-x)*(x0-x)+(y0-y)*(y0-y)) < 35*GlobalOptions.density) {
-						CMN.debug("ln::", ln, ed, x);;
+						CMN.debug("ln::", ln, ed, x);
 						ListView lv = (ListView) ViewUtils.getParentByClass(v, ListView.class);
 						if (scrollY == v.getScrollY()) {
 							ViewHolder vh = (ViewHolder) ViewUtils.getViewHolderInParents(v, ViewHolder.class);
@@ -11707,7 +11703,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(bookNotes==null)
 		{
 			bookNotes = new BookNotes(MainActivityUIBase.this);
-			bookNoteRef = new WeakReference<BookNotes>(bookNotes);
+			bookNoteRef = new WeakReference<>(bookNotes);
 		}
 		return bookNotes;
 	}
@@ -11760,7 +11756,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(bookNotes==null)
 		{
 			bookNotes = new BookNotes(MainActivityUIBase.this);
-			bookNoteRef = new WeakReference<BookNotes>(bookNotes);
+			bookNoteRef = new WeakReference<>(bookNotes);
 			bookNotes.setInvoker(invoker);
 		} else {
 			bookNotes.setInvoker(invoker);
@@ -11868,7 +11864,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	String zhTranslate(String text, int zh) {
 		ensureTSHanziSheet(null);
 		SparseArrayMap map=zh==1?jnFanMap:fanJnMap;
-		String newText = null;
+		StringBuilder newText = null;
 		for (int i = 0; i < text.length(); i++) {
 			char c=text.charAt(i);
 			String cs=map.get(c);
@@ -11881,14 +11877,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				if (newText==null) {
-					newText = text.substring(0, i);
+					newText = new StringBuilder(text.length());
+					newText.append(text, 0, i);
 				}
 			}
 			if (newText!=null) {
-				newText+=c;
+				newText.append(c);
 			}
 		}
-		return newText==null?text:newText;
+		return newText==null?text: newText.toString();
 	}
 	
 	SpannableStringBuilder zhTranslate(SpannableStringBuilder text, int zh) {
@@ -12024,13 +12021,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (wlh==weblistHandler && !isContentViewAttached() && !wlh.isPopupShowing()) {
 			return null;
 		}
-		WebViewmy view = wlh.getWebContext();
-//		if (getCurrentFocus() instanceof WebViewmy)
-//			return (WebViewmy) getCurrentFocus();
-		if (view!=null) {
-			return view;
-		}
-		return null;
+//		if (getCurrentFocus() instanceof WebViewmy) return (WebViewmy) getCurrentFocus();
+		return wlh.getWebContext();
 	}
 	
 	BasicAdapter getActiveAdapter() {
@@ -12109,12 +12101,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(reSelPos) lv.setSelection(lastPos);
 				int lvPos = ada.lastClickedPos;
 				if (lvPos>=0 && lvPos<ada.getCount()) {
-					int manPos = lvPos;
-					//CMN.debug("manPos::", manPos);
+					//CMN.debug("lvPos::", lvPos);
 					if (reSelPos) {
-						lv.post(() -> selectPos(lv, manPos));
+						lv.post(() -> selectPos(lv, lvPos));
 					} else {
-						selectPos(lv, manPos);
+						selectPos(lv, lvPos);
 					}
 				}
 			}

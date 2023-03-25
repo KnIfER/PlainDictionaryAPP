@@ -23,6 +23,7 @@ import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.plaindict.VersionUtils;
 
 import java.util.ArrayList;
 
