@@ -331,6 +331,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		if (PDICMainAppOptions.revisitOnBackPressed())
 		if (/*userCLick && */lstClick || a.click_handled_not && PDICMainAppOptions.clearHistoryOnTurnPage()) {
+			WebViewmy wv = null;
 			if (weblistHandler.isMergingFramesNum() <= 0) {
 				ViewGroup vg = weblistHandler.getViewGroup();
 				for (int index = 0; index < vg.getChildCount(); index++) {
@@ -338,15 +339,18 @@ public class ListViewAdapter2 extends BasicAdapter {
 						ViewGroup webHolder = (ViewGroup) vg.getChildAt(index);
 						View child = webHolder.getChildAt(1);
 						if(child instanceof WebViewmy){
-							WebViewmy wv = ((WebViewmy) child);
-							wv.clearHistory();
-							if (wv.isloading) wv.cleanPage = true;
+							wv = ((WebViewmy) child);
 						}
 					}
 				}
 			} else {
-				weblistHandler.getWebContextNonNull().cleanPage = true;
+				wv = weblistHandler.getWebContextNonNull();
 			}
+			if (wv!=null) {
+				if (wv.isloading || wv.bPageStarted) wv.cleanPage = true;
+				else wv.clearHistory();
+			}
+			CMN.debug("revisitOnBackPressed::wv::", wv.cleanPage, wv);
 		}
 		
 		weblistHandler.setStar(lstKey);

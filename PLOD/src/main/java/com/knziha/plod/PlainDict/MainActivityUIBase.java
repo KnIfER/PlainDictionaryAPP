@@ -12092,7 +12092,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return appbar;
 	}
 	
-	protected void highlightListRow(BasicAdapter ada) {
+	protected void highlightListRow(BasicAdapter ada, boolean forcePost) {
 		if (ada != null) {
 			int lastPos = ada.lastClickedPos;
 			ListView lv = ada.lava;
@@ -12102,7 +12102,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int lvPos = ada.lastClickedPos;
 				if (lvPos>=0 && lvPos<ada.getCount()) {
 					//CMN.debug("lvPos::", lvPos);
-					if (reSelPos) {
+					if (forcePost) {
+						lv.postDelayed(() -> selectPos(lv, lvPos), 100);
+					} else if (reSelPos) {
 						lv.post(() -> selectPos(lv, lvPos));
 					} else {
 						selectPos(lv, lvPos);

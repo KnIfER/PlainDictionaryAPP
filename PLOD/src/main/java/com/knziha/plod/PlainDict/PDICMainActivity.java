@@ -2949,12 +2949,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		PostDCV_TweakTBIC();
 		if (ActivedAdapter!=null) {
 			ActivedAdapter.SaveVOA();
-			highlightListRow(ActivedAdapter);
 		}
 		weblistHandler.savePagePos();
 		delayedAttaching=false;
 		applyMainMenu();
 		mDrawerToggle.onDrawerClosed(UIData.drawerLayout);
+		boolean resetImmersive = bImmersive;
 //		if(DBrowser!=null){
 //			AttachContentView();
 //		} else {
@@ -2967,14 +2967,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} else {
 				ViewUtils.removeView(contentview);
 			}
-			if(bImmersive) {
+			if(resetImmersive) {
 				try {
 					ViewUtils.removeView(contentUIData.bottombar2);
 					getScrollBehaviour(false).onDependentViewChanged(UIData.webcoord, null, UIData.appbar);
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
-				if(PDICMainAppOptions.resetImmersiveScrollOnExit()) {
+				resetImmersive = UIData.appbar.getTop()<0;
+				if(resetImmersive) {
 					ResetIMOffset();
 				}
 			}
@@ -2990,6 +2991,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //				current_webview.clearView();
 			}
 		}
+		highlightListRow(ActivedAdapter, resetImmersive);
 		checkFastPreview();
 	}
 	

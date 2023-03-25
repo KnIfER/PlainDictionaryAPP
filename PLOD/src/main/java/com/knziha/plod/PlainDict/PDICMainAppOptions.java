@@ -3511,8 +3511,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=46) public static boolean allowFZeroDef() { NinthFlag|=Z; throw new RuntimeException();}
 	@Metaline(flagPos=46) public static void allowFZeroDef(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
 	
-	@Metaline(flagPos=47, shift=1) public static boolean alwaysSelectTop() { NinthFlag|=Z; throw new RuntimeException();}
-	@Metaline(flagPos=47, shift=1) public static void alwaysSelectTop(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=47) public static boolean alwaysSelectTop() { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=47) public static void alwaysSelectTop(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
 	
 	
 }

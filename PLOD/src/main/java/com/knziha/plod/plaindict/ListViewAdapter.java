@@ -290,7 +290,11 @@ public class ListViewAdapter extends BasicAdapter {
 		if(PDICMainAppOptions.revisitOnBackPressed())
 		if (/*userCLick && */lstClick || a.click_handled_not && PDICMainAppOptions.clearHistoryOnTurnPage()) {
 			mWebView.cleanPage = true;
+			//if (mWebView.isloading || mWebView.bPageStarted) mWebView.cleanPage = true;
+			//else mWebView.clearHistory();
 		}
+		// todo 翻页过快时，有时连着两次OPF，导致 cleanPage 被提前消耗
+		//CMN.debug("revisitOnBackPressed::wv::", mWebView.cleanPage, mWebView);
 		
 		long[] POS = a.getMergedClickPositions(pos);
 		if(bUseMergedUrl) {

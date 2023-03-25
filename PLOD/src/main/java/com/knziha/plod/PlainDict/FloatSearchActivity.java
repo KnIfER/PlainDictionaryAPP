@@ -919,7 +919,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public void DetachContentView(boolean leaving) {
 		ViewUtils.removeView(contentview);
 		AllMenus.setItems(MainMenu);
-		highlightListRow(ActivedAdapter);
+		highlightListRow(ActivedAdapter, false);
 	}
 //
 //	@Override
