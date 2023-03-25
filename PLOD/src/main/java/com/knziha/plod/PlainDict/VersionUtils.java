@@ -19,6 +19,7 @@ public class VersionUtils {
 	public static final boolean AnnotOff = false;
 	public static boolean firstInstall = false;
 	public static final int UpgradeCode = 1024;
+	public static boolean testPreInitWV = false;
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
 //		PDICMainAppOptions.storeTapsch(true);

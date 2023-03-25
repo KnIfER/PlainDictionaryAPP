@@ -133,7 +133,8 @@ public class PlainAppPanel extends SettingsPanel implements PlainDialog.BackPrev
 					if(bottombar!=null) {
 						padbot = bottombar.getHeight();
 					} else {
-						padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
+						padbot = a.bottombar.getHeight();
+						if(padbot==0) padbot = a.app_panel_bottombar_height;
 					}
 					settingsLayoutHolder.setPadding(0,a.root.getPaddingTop(),0,padbot);
 					bottomPadding = padbot;

@@ -549,7 +549,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public PeruseView peruseView;
 	/** 主程有 */
-	public @Nullable ViewGroup bottombar;
+	public @NonNull ViewGroup bottombar;
 	public boolean bRequestedCleanSearch;
 	public boolean bRequestedLvHideIM;
 	public boolean bWantsSelection;
@@ -2458,12 +2458,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
 		titleDrawableCS = mResource.getDrawable(R.drawable.titlebar).mutate().getConstantState();
 		
+		if(bottombar==null) {
+			bottombar = new LinearLayout(this);
+		}
+		
 		if(contentview==null) {
 			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
 			weblist.etSearch = etSearch;
-			if (bottombar!=null) {
-				bottombar.setTag(weblist);
-			}
+			bottombar.setTag(weblist);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb1());
 			AllMenus.tag = weblistHandler;
 			contentview = contentUIData.webcontentlister;
@@ -3549,12 +3551,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				bottom = 0;//bottombar.getHeight();
 			} else {
 				parentView = snack_holder;
-				if (bottombar!=null) {
-					bottom = bottombar.getHeight();
-				}
-				if(bottom==0) {
-					bottom = (int) mResource.getDimension(R.dimen.barSzBot);
-				}
+				bottom = bottombar.getHeight();
+				if(bottom==0) bottom = (int) mResource.getDimension(R.dimen.barSzBot);
 			}
 		}
 		if (settingsPanel == dictPicker && !dictPicker.pinned()) {
@@ -10948,7 +10946,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int h = 0, topY;
 		View bar = panel.bottombar;
 		if(bar==null) {
-			bar = bottombar!=null?bottombar:null;
+			bar = bottombar.getId()!=0?bottombar:null;
 		}
 		View svp = null, parent = bar;
 		if (parent != null) {
@@ -12100,5 +12098,47 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public View appbar() {
 		if(null==appbar) return anyView(0);
 		return appbar;
+	}
+	
+	protected void highlightListRow(BasicAdapter ada) {
+		if (ada != null) {
+			int lastPos = ada.lastClickedPos;
+			ListView lv = ada.lava;
+			if (lv != null) {
+				boolean reSelPos = lastPos<lv.getFirstVisiblePosition() || lastPos>lv.getLastVisiblePosition();
+				if(reSelPos) lv.setSelection(lastPos);
+				int lvPos = ada.lastClickedPos;
+				if (lvPos>=0 && lvPos<ada.getCount()) {
+					int manPos = lvPos;
+					//CMN.debug("manPos::", manPos);
+					if (reSelPos) {
+						lv.post(() -> selectPos(lv, manPos));
+					} else {
+						selectPos(lv, manPos);
+					}
+				}
+			}
+		}
+	}
+	
+	protected void selectPos(ListView listView, int position) {
+		int h = 0;
+		View child = listView.getChildAt(0);
+		if(child!=null)
+			h = listView.getChildAt(0).getHeight();
+		if(h==0)
+			h = 50;
+		//listView.setSelectionFromTop(position+listView.getHeaderViewsCount(), listView.getHeight()/2 - h);
+		//listView.postDelayed(() -> {
+		View child1 = listView.getChildAt(0);
+		MainActivityUIBase.ViewHolder vh = (MainActivityUIBase.ViewHolder) ViewUtils.getViewHolderInParents(child1, MainActivityUIBase.ViewHolder.class);
+		int fvp = (vh == null ? -1 : vh.position);
+		child1 = listView.getChildAt(position - fvp);
+		if (child1 != null) {
+			child1.setScaleX(1.4f);
+			child1.setScaleY(1.4f);
+			child1.animate().scaleX(1).scaleY(1).setDuration(380);
+		}
+		//}, 100);
 	}
 }

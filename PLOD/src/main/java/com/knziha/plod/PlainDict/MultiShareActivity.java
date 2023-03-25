@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -269,12 +268,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 			MultiShareActivity a = ((MultiShareActivity)activity.get());
 			switch (msg.what) {
 				case 2020:
-					if(msg.obj instanceof String)
-						a.showT((String)msg.obj, Toast.LENGTH_LONG);
+					a.showT(msg.obj, Toast.LENGTH_LONG);
 					break;
 				case 2023:
-					if(msg.obj instanceof String)
-						a.showT((String)msg.obj);
+					a.showT(msg.obj);
 					break;
 				case 3322123:
 					a.performReadEntry();

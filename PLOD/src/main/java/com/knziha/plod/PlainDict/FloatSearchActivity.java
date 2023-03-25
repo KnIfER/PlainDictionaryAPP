@@ -1,5 +1,8 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,13 +26,10 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -39,7 +39,6 @@ import androidx.core.view.MenuCompat;
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.db.SearchUI;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -48,9 +47,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-
-import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
 /**
@@ -923,6 +919,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public void DetachContentView(boolean leaving) {
 		ViewUtils.removeView(contentview);
 		AllMenus.setItems(MainMenu);
+		highlightListRow(ActivedAdapter);
 	}
 //
 //	@Override

@@ -2746,7 +2746,9 @@
 				}
 			}
 			var fold=inf.fold || inf.waiting;
-			if(fold) inf.fold=false;
+			if(fold) {
+				inf.fold=false;
+			}
 			inf.touched = true; if(_t&&!_t0)_t=0;
 			checkFrame(inf, true);
 			var fx=inf.item,bx=inf.box;
@@ -2818,6 +2820,9 @@
 			fixBtnText(inf);
 			checkFakeScroll(inf);
 			postOnClick(inf);
+			if(!fold && opt.lazy && opt.delay) { // 折叠了
+				onWebListScroll();
+			}
 		}
 
 		function fixBtnText(e) {

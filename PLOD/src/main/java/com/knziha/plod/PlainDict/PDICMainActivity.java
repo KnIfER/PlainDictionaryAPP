@@ -117,7 +117,6 @@ import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.IndexBuildingTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
 import com.knziha.plod.settings.SchOpt;
-import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
@@ -174,7 +173,10 @@ import io.noties.markwon.core.spans.LinkSpan;
  * Our single instanced Main Interface.<br/>
  * Created by KnIfER on 2018.
  */
-@SuppressLint({"SetTextI18n", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi","ResourceType"})
+@SuppressLint({"SetTextI18n", "ClickableViewAccessibility"
+		,"PrivateApi", "DiscouragedPrivateApi"
+		, "SourceLockedOrientationActivity", "NonConstantResourceId"
+})
 public class PDICMainActivity extends MainActivityUIBase implements OnClickListener, OnLongClickListener, OnMenuItemClickListener{
 	public String textToSetOnFocus;
 	public static int taskCounter = 0;
@@ -579,12 +581,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			PDICMainActivity a = ((PDICMainActivity)activity.get());
 			switch (msg.what) {
 				case 2020:
-					if(msg.obj instanceof String)
-					a.showTopSnack((String)msg.obj);
+					a.showTopSnack(msg.obj);
 				break;
 				case 2023:
-					if(msg.obj instanceof String)
-					a.showT((String)msg.obj);
+					a.showT(msg.obj);
 				break;
 				case 1024:
 					a.handleFloatMessage(msg);
@@ -717,12 +717,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			contentUIData.PageSlider.setTranslationX(0);
 			contentUIData.PageSlider.setTranslationY(0);
-			int lastPos = ada.lastClickedPos;
 			DetachContentView(true);
-			PostDCV_TweakTBIC();
-			ListView lva = ada.lava;
-			if(lva!=null && (lastPos<lva.getFirstVisiblePosition() || lastPos>lva.getLastVisiblePosition()))
-				lva.setSelection(lastPos);
 			ActivedAdapter=null;
 			return true;
 		}
@@ -898,8 +893,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP));//, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
 			shunt=true;
 		}
-		View rootView = getWindow(). getDecorView();
-		
+		//View rootView = getWindow(). getDecorView();
 //		SaturationView.getInstance().saturationView(rootView, 0f); // 将整个页面置灰， rootView 代表页面的根布局
 //		SaturationView.getInstance().saturationView(rootView, 1f); // 将整个页面调整为正常色彩
 		
@@ -920,7 +914,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		LauncherInstanceCount=1;
-		Window win = getWindow();
 		
 		softModeStd = softModeResize;
 		setSoftInputMode(softModeStd);
@@ -1336,8 +1329,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//widget0.getBackground().setTint(MainBackground);
 		//widget0.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 		//ViewCompat.setBackgroundTintList(widget0, ColorStateList.valueOf(MainBackground));
-		boolean tint = PDICMainAppOptions.getTintIconForeground();
-		
 		BottombarBtns[0] = UIData.browserWidget1;
 		browser_widget1 = UIData.browserWidget1;
 		UIData.browserWidget1.setOnClickListener(this);
@@ -1640,24 +1631,32 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				while((line=in.readLine())!=null) {
 					String[] arr = line.split(":", 2);
 					if(arr.length==2) {
-						if(arr[0].equals("window margin")||arr[0].equals("窗体边框")) {
-							arr = arr[1].split(" ");
-							if(arr.length==4) {
-								try {
-									MarginLayoutParams lp = (MarginLayoutParams) root.getLayoutParams();
-									DockerMarginL = lp.leftMargin=Integer.parseInt(arr[2]);
-									DockerMarginR = lp.rightMargin=Integer.parseInt(arr[3]);
-									DockerMarginT = lp.topMargin=Integer.parseInt(arr[0]);
-									DockerMarginB = lp.bottomMargin=Integer.parseInt(arr[1]);
-									root.setLayoutParams(lp);
-								} catch (Exception ignored) {}
-							}
-						}else if(arr[0].equals("edit all")) {
-							CMN.editAll=arr[1].length()==3;
-						}else if(arr[0].equals("test float search")) {
-							CMN.testFLoatSearch=arr[1].length()==3;
-						}else if(arr[0].equals("debug string")) {
-							extraText =arr[1];
+						switch (arr[0]) {
+							case "window margin":
+							case "窗体边框":
+								arr = arr[1].split(" ");
+								if (arr.length == 4) {
+									try {
+										MarginLayoutParams lp = (MarginLayoutParams) root.getLayoutParams();
+										DockerMarginL = lp.leftMargin = Integer.parseInt(arr[2]);
+										DockerMarginR = lp.rightMargin = Integer.parseInt(arr[3]);
+										DockerMarginT = lp.topMargin = Integer.parseInt(arr[0]);
+										DockerMarginB = lp.bottomMargin = Integer.parseInt(arr[1]);
+										root.setLayoutParams(lp);
+									} catch (Exception e) {
+										CMN.debug(e);
+									}
+								}
+								break;
+							case "edit all":
+								CMN.editAll = arr[1].length() == 3;
+								break;
+							case "test float search":
+								CMN.testFLoatSearch = arr[1].length() == 3;
+								break;
+							case "debug string":
+								extraText = arr[1];
+								break;
 						}
 					}
 				}
@@ -1670,7 +1669,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//if(opt.getInPageSearchVisible())
 		//	toggleInPageSearch(false);
 
-		if(false) {//按
+		if(VersionUtils.testPreInitWV) {//按
 			AdvancedNestScrollWebView wv = new AdvancedNestScrollWebView(getBaseContext());
 			snack_holder.addView(wv, 0);
 			wv.setVisibility(View.INVISIBLE);
@@ -1682,7 +1681,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}, 2500);
 		}
 		
-		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
 		//toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
@@ -2056,8 +2054,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		public String getPagePattern() {
 			if(currentPageText==null){
 				String val = currentSearchPhrase;
-				val = val.replaceAll("\"", "");
 				if(val==null) val="";
+				val = val.replaceAll("\"", "");
 				String ret=val;
 				/*0=wild card; 1=regex search; 2=plain search; */
 				int InPageSearchType = PDICMainAppOptions.pageSchUseRegex()?1:PDICMainAppOptions.pageSchWild()?0:2;
@@ -2211,8 +2209,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	public void switchToSearchModeDelta(int i) {
 		int new_curr = i==0?1:CurrentViewPage-i;
-		new_curr = new_curr>2?2:new_curr;
-		new_curr = new_curr<0?0:new_curr;
+		if(new_curr>2) new_curr = 2;
+		if(new_curr<0) new_curr = 0;
 		if(new_curr==CurrentViewPage)
 			return;
 		UIData.viewpager.setCurrentItem(new_curr);
@@ -2584,7 +2582,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	// click
-	@SuppressLint("SourceLockedOrientationActivity")
 	public void onIdClick(View v, int id){
 		layoutScrollDisabled=false;
 		fadeSnack();
@@ -2774,7 +2771,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	/** 切换主界面沉浸式 */
 	public void setNestedScrollingEnabled(boolean bImmersive) {
 		this.bImmersive = bImmersive;
-		boolean v1 = bImmersive;// && !PDICMainAppOptions.ImmersiveForContentsOnly();
+//		boolean v1 = bImmersive;// && !PDICMainAppOptions.ImmersiveForContentsOnly();
 //		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(v1);
 //		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(v1);
 //		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(v1);
@@ -2952,6 +2949,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		PostDCV_TweakTBIC();
 		if (ActivedAdapter!=null) {
 			ActivedAdapter.SaveVOA();
+			highlightListRow(ActivedAdapter);
 		}
 		weblistHandler.savePagePos();
 		delayedAttaching=false;
@@ -2960,7 +2958,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		if(DBrowser!=null){
 //			AttachContentView();
 //		} else {
-			boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 			UIData.main.setVisibility(View.VISIBLE);
 			ViewUtils.setVisible(bottombar, !keyboardShown);
 
@@ -2977,13 +2974,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
+				if(PDICMainAppOptions.resetImmersiveScrollOnExit()) {
+					ResetIMOffset();
+				}
 			}
 			ViewUtils.removeView(PhotoPagerHolder);
 			contentUIData.webcontentlister.canClickThrough=false;
 //		}
-		if(bImmersive && PDICMainAppOptions.resetImmersiveScrollOnExit()) {
-			ResetIMOffset();
-		}
 		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
 			WebViewmy current_webview = contentUIData.PageSlider.getWebContext();
 			if(current_webview !=null) {
@@ -3001,7 +2998,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	public void ResetIMOffset() {
-		AppBarLayout barappla = (AppBarLayout) UIData.appbar;
+		AppBarLayout barappla = UIData.appbar;
 		if(barappla.getTop()<0) {
 			CMN.debug("重置了");
 			barappla.resetStretchViews();

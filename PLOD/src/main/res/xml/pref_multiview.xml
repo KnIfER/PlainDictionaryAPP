@@ -237,6 +237,7 @@
 			android:defaultValue="false"
 			android:title="允许先滑动屏风（子词条）"
 			app:allowDividerBelow="true"
+			app:isPreferenceVisible="false"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="seekF"
