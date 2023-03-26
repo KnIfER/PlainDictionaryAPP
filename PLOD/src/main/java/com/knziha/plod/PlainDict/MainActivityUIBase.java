@@ -9723,13 +9723,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(PDICMainAppOptions.dynamicPadding_1()) {
 			PDICMainAppOptions.dynamicPadding_1(false);
 			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
-			if (wv!=null) wv.reload();
+			if (wv!=null && !wv.merge) wv.reload();
 		}
 		else if(PDICMainAppOptions.dynamicPadding()) {
+			PDICMainAppOptions.dynamicPadding(false);
 			WebViewmy wv = weblist==null?null:weblist.scrollFocus;
-			if (wv != null) {
+			if (wv != null && !wv.merge) {
 				wv.presenter.ApplyPadding(wv, true);
-				PDICMainAppOptions.dynamicPadding(false);
 				BookPresenter tweaking = wv.presenter;
 				StringBuilder MdPageBuilder = new StringBuilder();
 				MdPageBuilder.append("var r=document.getElementById('_PDictPB');if(!r){r=document.createElement('STYLE');r.id=\"_PDictPB\";document.head.appendChild(r);}r.innerHTML=\"");

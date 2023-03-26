@@ -23,7 +23,6 @@ import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.plaindict.VersionUtils;
 
 import java.util.ArrayList;
 
@@ -361,7 +360,7 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 				SearchUI.tapZoomV++;
 			break;
 			case "key":
-				PDICMainAppOptions.swipeTopShowKeyboard();
+				PDICMainAppOptions.swipeTopShowKeyboard((Boolean) newValue);
 				SearchUI.tapZoomV++;
 			break;
 			case "switchBtn":

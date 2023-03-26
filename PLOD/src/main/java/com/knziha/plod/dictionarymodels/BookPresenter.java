@@ -1324,6 +1324,7 @@ function debug(e){console.log(e)};
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
 		json.put("img", getImageBrowsable() && bookImpl.hasMdd());
 		if(cover!=null) json.put("ico", true);
+		if(verTex()) json.put("ver", true);
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
 			json.put("isWeb", 1);

@@ -341,6 +341,18 @@
 		app:allowDividerBelow="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turnG"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="全局禁用翻页"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="key"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="下滑弹出键盘"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="ignoreSU"
 			android:persistent="false"
 			android:defaultValue="false"
@@ -352,18 +364,6 @@
 			android:defaultValue="false"
 			app:summary="在顶部右上角固定显示"
 			android:title="多页面显示更多菜单按钮“…”"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="turnG"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="全局禁用翻页"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="key"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="下滑弹出键盘"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="switchBtn"

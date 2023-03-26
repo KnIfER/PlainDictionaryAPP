@@ -1306,6 +1306,15 @@
 							if(inf.collapsed && h>inf.maxHeight) {
 								h=inf.maxHeight;
 							}
+							else if(inf.ver) {
+								var de = fx.contentWindow.document.documentElement;
+								if(de.scrollWidth <= de.clientWidth+35 ) {
+									h=inf.lastHeight;
+								}
+								else if(h>defP.offsetHeight-150) {
+									h=defP.offsetHeight-150;
+								}
+							}
 							//if(inf.lastHeight!=h) {
 							if(inf.box.offsetHeight!=h) {
 								var resume = _t && (bx||inf.box).offsetTop+inf.lastHeight<defP.scrollTop;
@@ -1575,6 +1584,8 @@
 			// 强制塞入fbox，但是暂时只有全展开、全折叠之特性。
 			inf.fm2 = collapse || (opt.fm2||opt.alwaysShowExpand) && inf.scrollExpand;
 			if(e) {
+				if(inf.ver) e.classList.add('vertex');
+				else e.classList.add('vertex');
 				inf.scrollable = opt.fm2 && !opt.noNestedScroll2;
 				if(e.fm2 ^ inf.fm2) {
 					if(inf.fm2) {
@@ -2309,7 +2320,7 @@
 
 		function checkFrame(e, ftitle) {
 			if(e.waiting && !e.fold) {
-				var h=10;
+				var h=500;
 				if(opt.focusMode && e!==currentFocus && !ftitle) {
 					if(opt.fm2) {
 						if(e.collapsed)
@@ -3566,7 +3577,7 @@
 					gn('focusThis', menu).innerText = inf.name;
 				} else { // ('dt'===className||'dc'===className
 					//menu=makeMenu(name, ['foldAll', 'unfoldAll', 'unFoldCurrent', '', 'saveCurrent', '', 'showAbout', null]);
-					menu=makeMenu('dt', ['foldThis', 'foldAll', 'unfoldAll', 'showPageOpt', 'unFoldCurrent', '', 'this', '', 'openTab', null]);
+					menu=makeMenu('dt', ['foldThis', 'foldAll', 'unfoldAll', 'showPageOpt', 'unFoldCurrent', '', 'this', '', 'refresh', null]);
 					gn('this', menu).innerText = inf.name;
 				}
 			}
@@ -3681,6 +3692,10 @@
 						var inf=getMenuDictInfo();
 						copyText(inf.name);
 					}
+				break
+				case 'refresh':
+					var inf=getMenuDictInfo();
+					inf.item.contentWindow.location.reload(true);
 				break
 				case 'showAbout':
 					showAbout();

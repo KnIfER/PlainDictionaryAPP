@@ -8,6 +8,7 @@ var trans={
     ,"unFoldCurrent" : "只展开当前页面"
     ,"saveCurrent" : "保存当前页面"
     ,"showAbout" : "关于…"
+    ,"refresh" : "刷新"
     ,"openTab" : "新窗口打开…"
     ,"openSearch" : "新窗口查询"
     ,"autoSearch" : "切换时自动搜索"
