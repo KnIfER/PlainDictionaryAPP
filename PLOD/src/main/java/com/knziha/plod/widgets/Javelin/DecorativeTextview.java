@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 
 import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.plaindict.CMN;
 
 public class DecorativeTextview extends WahahaTextView {
 	public TextViewDecorator textDecorator = new TextViewDecorator("", "");
@@ -19,7 +20,11 @@ public class DecorativeTextview extends WahahaTextView {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		if (getText() instanceof Spanned && getLayout() != null) {
-			textDecorator.draw(canvas, (Spanned) getText(), getLayout());
+			try {
+				textDecorator.draw(canvas, (Spanned) getText(), getLayout());
+			} catch (Exception e) {
+				CMN.debug(getText(), e);
+			}
 		}
 		super.onDraw(canvas);
 	}

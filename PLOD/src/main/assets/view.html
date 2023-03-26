@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="description" content="PlainDict">
+	<meta name="robots" content="noindex">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+	<style>
+		html, body {
+			background-color: #ffffff;
+			padding: 10px;
+		}
+		bin {
+			color: #000000;
+		}
+	</style>
+</html>
+
+<body>
+	<div id="bin">
+	</div>
+	<script>
+		function parseArgs() {
+			var sch = location.search; 
+			var params = {};
+			if (sch.startsWith("?")) {
+				sch.split("&").forEach(function(it, idx) {
+					var sep = it.indexOf('=');
+					if(sep>0) {
+						params[it.slice(idx==0?1:0, sep)]=it.slice(sep+1);
+					}
+				});
+			}
+			if(params.q){
+				params.q=decodeURIComponent(params.q);
+			}
+			return params;
+		}
+		var args = parseArgs();
+		bin.innerText = args.q||"";
+	</script>
+</body>
+
+	

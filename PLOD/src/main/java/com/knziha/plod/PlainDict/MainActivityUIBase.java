@@ -6696,6 +6696,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					wlh.togSchPage(0);
 				}
 			} break;
+			case R.id.viewPaste:{
+				WebViewmy wv = weblistHandler.getMergedFrame();
+				weblistHandler.setViewMode(new resultRecorderCombined(this, new ArrayList<>(), ""), 1, wv);
+				weblistHandler.initMergedFrame(1, false, true);
+				if (this instanceof PDICMainActivity) {
+					((PDICMainActivity) this).retachContentView();
+				} else {
+					viewContent(weblistHandler);
+				}
+				String url = "http://mdbr.com/view.jsp?q=" + SU.encode(String.valueOf(getFloatBtn().getPrimaryClip()));
+				wv.loadUrl(url);
+				CMN.debug(url);
+			} break;
 			case R.id.viewMode:{
 				boolean bSet = isLongClicked ^ PDICMainAppOptions.swapeMultiViewBtnFn();
 				if (bSet) {

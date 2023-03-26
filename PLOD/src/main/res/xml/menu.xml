@@ -63,5 +63,6 @@
 
 <!--27--><item android:title="清空搜索框" android:id="@+id/etClear"  android:checkable="true" android:icon="@drawable/ic_baseline_clear_96" app:showAsAction="always" android:visible="false"/>
 
+<!--28--><item android:title="查看剪贴板" android:id="@+id/viewPaste"  android:checkable="true" android:icon="@drawable/ic_baseline_clear_96" app:showAsAction="never"/>
 
 </menu>

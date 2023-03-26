@@ -2,8 +2,6 @@ package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 
-import android.graphics.Color;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.view.Gravity;
@@ -17,16 +15,12 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
-import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderLucene;
-import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
-
-import org.jsoup.Jsoup;
 
 import java.util.List;
 

@@ -1,5 +1,17 @@
 package com.knziha.plod.dictionarymodels;
 
+import static com.knziha.plod.PlainUI.PageMenuHelper.SelectHtmlObject;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_ANNOT_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
+import static com.knziha.plod.dictionary.mdBase.fullpageString;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -112,18 +124,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.InflaterOutputStream;
-
-import static com.knziha.plod.PlainUI.PageMenuHelper.SelectHtmlObject;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_ANNOT_v2;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
-import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
-import static com.knziha.plod.dictionary.mdBase.fullpageString;
-import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
-import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
-import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
-import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF;
-import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
 
 import io.noties.markwon.Markwon;
 
@@ -589,14 +589,14 @@ function debug(e){console.log(e)};
 		return tbgColor;
 	}
 	
-	public int getTitleBackground() {
+	public int getTitleBackground(Toastable_Activity a) {
 		final boolean useInternal = getUseTitleBackground();
 		if(useInternal) return tbgColor;
 		return GlobalOptions.isDark?opt.getTitlebarBackgroundColor(Color.BLACK)
 				:opt.getTitlebarBackgroundColor(a.MainBackground);
 	}
 	
-	public int getTitleForeground() {
+	public int getTitleForeground(Toastable_Activity a) {
 		final boolean useInternal = getUseTitleBackground();
 		if(useInternal) return tfgColor;
 		return GlobalOptions.isDark?opt.getTitlebarForegroundColor(Color.WHITE)
@@ -1314,8 +1314,8 @@ function debug(e){console.log(e)};
 		json.put("name", getDictionaryName());
 		json.put("tag", true);
 		json.put("id", idStr);
-		json.put("tbg", SU.toHexRGB(getTitleBackground()));
-		json.put("tfg", SU.toHexRGB(getTitleForeground()));
+		json.put("tbg", SU.toHexRGB(getTitleBackground(a)));
+		json.put("tfg", SU.toHexRGB(getTitleForeground(a)));
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
 		json.put("img", getImageBrowsable() && bookImpl.hasMdd());
 		PlainWeb webx = getWebx();
@@ -1810,12 +1810,13 @@ function debug(e){console.log(e)};
 		}
 		FlowTextView toolbar_title = mWebView.toolbar_title;
 		if(toolbar_title!=null) {
-			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
-			toolbar_title.setStarLevel(StarLevel);
-			if(StarLevel>0) {
-				toolbar_title.setStarDrawables(a.getActiveStarDrawable()
-						, toolbar_title==a.wordPopup.entryTitle() ?a.getRatingDrawable():null);
-			}
+			//todo impl start level
+//			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
+//			toolbar_title.setStarLevel(StarLevel);
+//			if(StarLevel>0) {
+//				toolbar_title.setStarDrawables(a.getActiveStarDrawable()
+//						, toolbar_title==a.wordPopup.entryTitle() ?a.getRatingDrawable():null);
+//			}
 		}
 //		int defTH = 0;
 //		if (mWebView.fromCombined!=1 && PDICMainAppOptions.customTitlebarHeight()) {

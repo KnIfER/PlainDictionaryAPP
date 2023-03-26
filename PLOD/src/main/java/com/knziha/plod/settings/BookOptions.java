@@ -155,13 +155,14 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	private Object GetSetIntField(BookPresenter datum, String key, boolean get, Object val) {
 		CMN.debug("GetSetIntField", key, get, val);
 		if (datum instanceof MagentTransient) datum.getFirstFlag();
+		Toastable_Activity a = (Toastable_Activity) getActivity();
 		if(datum!=null) {
 			switch (key){
 				case "use_mirrors":
 					if(get) return datum.getUseMirrors(); else datum.setUseMirrors((boolean) val);
 					break;
 				case "bgTitle":
-					if(get) return datum.getTitleBackground(); else datum.setTitleBackground((int) val);
+					if(get) return datum.getTitleBackground(a); else datum.setTitleBackground((int) val);
 					break;
 				case "use_bgTitle":
 					if(get) return datum.getUseTitleBackground(); else datum.setUseTitleBackground((boolean) val);

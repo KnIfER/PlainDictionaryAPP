@@ -142,7 +142,7 @@ public class TextViewDecorator extends Annotation{
 				int startOffset = (int) (layout.getPrimaryHorizontal(spanStart)
 						+ -1 * layout.getParagraphDirection(startLine) * horizontalPadding);
 				// end can be on the left or on the right depending on the language direction.
-				int endOffset = (int) (layout.getPrimaryHorizontal(spanEnd)
+				int endOffset = (int) (layout.getPrimaryHorizontal(spanEnd) // todo fix java.lang.IndexOutOfBoundsException: offset(13) should be less than line limit(1)
 						+ layout.getParagraphDirection(endLine) * horizontalPadding);
 				if (startLine == endLine) {
 					drawSingleLine(canvas, layout, startLine, endLine, startOffset, endOffset);

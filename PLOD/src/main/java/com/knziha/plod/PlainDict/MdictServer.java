@@ -134,6 +134,9 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(uri.startsWith("/merge.jsp")) {
 			return getMergedBaseResponse(session.isProxy);
 		}
+		if(uri.startsWith("/view.jsp")) {
+			return getViewTextResponse(uri);
+		}
 		
 		if(uri.startsWith("/MdbRSingleQuery/")) {
 			int tmp = uri.indexOf("/", 17);
@@ -971,6 +974,20 @@ public abstract class MdictServer extends NanoHTTPD {
 		return baseHtml;
 	}
 	
+	private Response getViewTextResponse(String url) {
+		String baseResponse = "";
+		try {
+			InputStream fin = OpenMdbResourceByName("\\view.html");
+			if (fin!=null) {
+				baseResponse = BU.StreamToString(fin);
+				fin.close();
+			}
+		} catch (Exception e) {
+			//CMN.debug(ret);
+		}
+		return newFixedLengthResponse(Status.OK, "text/html", baseResponse);
+	}
+	
 	Response mBaseResponse;
 	private Response getMergedBaseResponse(boolean isProxy) {
 		if (mBaseResponse==null || hasRemoteDebugServer) {
@@ -990,9 +1007,40 @@ public abstract class MdictServer extends NanoHTTPD {
 		} catch (Exception e) {
 			//CMN.debug(ret);
 		}
-		if(ret==null)
+		if (ret == null) {
 			ret = getBaseHtml();
+			ret = ret.replaceAll("/\\*\\*/[\\w\\W]*?/\\*\\*/", "");
+			int idxSt = ret.indexOf("<style>");
+			int idxEd = ret.indexOf("</style>", idxSt)+"</style>".length();
+			String cssSrc = ret.substring(idxSt, idxEd);
+			cssSrc = replaceStyle(cssSrc, "#parentR", input -> input.replaceAll("margin-left.*;", ""));
+			cssSrc = replaceStyle(cssSrc, "#defP", input -> input.replaceAll("margin-top.*;", ""));
+			cssSrc = replaceStyle(cssSrc, "#navR", input -> "#navR{display:none}");
+			cssSrc = replaceStyle(cssSrc, "#ListView", input -> "#ListView{display:none}");
+			ret = ret.substring(0, idxSt)+cssSrc+ret.substring(idxEd);
+			//Document doc = Jsoup.parse(ret);
+			//Element body = doc.getElementsByTag("body").get(0);
+			//body.getElementById("ListView").remove();
+			//body.getElementById("navR").remove();
+			//ret = doc.toString();
+		}
 		return ret;
+	}
+	
+	public interface TextCB {
+		String text(String input);
+	}
+	
+	private static String replaceStyle(String css, String selector, TextCB textCB) {
+		int idxSt=0;
+		while((idxSt = css.indexOf(selector, idxSt))>0) {
+			int idxEd = css.indexOf("}", idxSt)+"}".length();
+			String subStr = css.substring(idxSt, idxEd);
+			subStr = textCB.text(subStr);
+			css = css.substring(0, idxSt)+subStr+css.substring(idxEd);
+			idxSt = idxSt+subStr.length();
+		}
+		return css;
 	}
 	
 	public static boolean isServerRunning = false;
