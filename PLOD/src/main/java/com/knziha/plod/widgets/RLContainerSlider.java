@@ -1,5 +1,16 @@
 package com.knziha.plod.widgets;
 
+import static android.view.MotionEvent.ACTION_CANCEL;
+import static android.view.MotionEvent.ACTION_DOWN;
+import static android.view.MotionEvent.ACTION_MOVE;
+import static android.view.MotionEvent.ACTION_POINTER_DOWN;
+import static android.view.MotionEvent.ACTION_POINTER_UP;
+import static android.view.MotionEvent.ACTION_UP;
+import static android.view.MotionEvent.PointerCoords;
+import static android.view.MotionEvent.PointerProperties;
+import static android.view.MotionEvent.TOOL_TYPE_FINGER;
+import static android.view.MotionEvent.obtain;
+
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -7,8 +18,6 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import static android.view.MotionEvent.*;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -229,8 +238,8 @@ public class RLContainerSlider extends FrameLayout {
 			{
 				float vx = velocityX / 8;
 				CMN.debug("x轴速度/8=", vx, e2.getPointerCount());
-				CMN.debug("WebContextWidth", WebContextWidth);
-				CMN.debug("WebContext.scrollLck", WebContext.scrollLck);
+				if(WebContext!=null) CMN.debug("WebContextWidth", WebContextWidth);
+				if(WebContext!=null) CMN.debug("WebContext.scrollLck", WebContext.scrollLck);
 				if(e2.getPointerCount()>1
 					|| page.getTranslationX()!=0 && Math.signum(velocityX)!=Math.signum(page.getTranslationX())) {
 					return false;

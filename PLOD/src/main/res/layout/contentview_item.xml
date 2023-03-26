@@ -20,6 +20,7 @@
 			android:id="@+id/cover"
 			android:layout_width="@dimen/dtcover"
 			android:layout_height="@dimen/dtcover"
+			android:padding="1.5dp"
 			android:layout_gravity="center_vertical"
 			android:background="@drawable/title_cover"
 			android:layout_marginStart="@dimen/dtcoverL"

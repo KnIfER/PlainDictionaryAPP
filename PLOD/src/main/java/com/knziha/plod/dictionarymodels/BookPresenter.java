@@ -20,7 +20,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -104,6 +106,8 @@ import com.knziha.text.BreakIteratorHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.knziha.metaline.Metaline;
+import org.nanohttpd.protocols.http.response.Response;
+import org.nanohttpd.protocols.http.response.Status;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -968,6 +972,7 @@ function debug(e){console.log(e)};
 //			ViewUtils.removeView(pageData.tools);
 			//toolbar_cover.setId(R.id.lltoolbar);
 			toolbar_cover.setOnClickListener(this);
+			mWebView.toolbar_cover = toolbar_cover;
 			
 			if(cover==null){
 				toolbar_cover.setBackground(null);
@@ -1318,6 +1323,7 @@ function debug(e){console.log(e)};
 		json.put("tfg", SU.toHexRGB(getTitleForeground(a)));
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
 		json.put("img", getImageBrowsable() && bookImpl.hasMdd());
+		if(cover!=null) json.put("ico", true);
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
 			json.put("isWeb", 1);
@@ -1807,6 +1813,8 @@ function debug(e){console.log(e)};
 		/* check and set colors for toolbar title Background*/
 		if(mWebView==this.mWebView){
 			mWebView.titleBar.fromCombined = mWebView.fromCombined==1;
+		} else if(mWebView.toolbar_cover!=null) {
+			mWebView.toolbar_cover.setImageDrawable(cover);
 		}
 		FlowTextView toolbar_title = mWebView.toolbar_title;
 		if(toolbar_title!=null) {
@@ -5069,5 +5077,14 @@ function debug(e){console.log(e)};
 			}
 			CMN.debug("插入 同名 css 文件::", hasExtStyle);
 		}
+	}
+	
+	public Response getIconResponse() {
+		if (cover != null) {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			((BitmapDrawable) cover).getBitmap().compress(Bitmap.CompressFormat.PNG, 99, bout);
+			return Response.newFixedLengthResponse(Status.OK, "image/*", bout.toByteArray());
+		}
+		return null;
 	}
 }

@@ -123,6 +123,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public View progressBar;
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
 	public FlowTextView toolbar_title;
+	public ImageView toolbar_cover;
 	public View rl;
 	public int AlwaysCheckRange;
 	public boolean forbidLoading;

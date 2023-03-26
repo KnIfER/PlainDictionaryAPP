@@ -103,6 +103,10 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(usr==null) return null;
 		
 		if(uri.startsWith("/MdbR/")) {
+			if(uri.startsWith("/MdbR/icons/")) {
+				presenter = md_getByURLPath(uri, 12, -1);
+				return presenter.getIconResponse();
+			}
 			CMN.debug("[fetching internal res : ]", uri);
 			//InputStream candi = MdictServer.class.getResourceAsStream("Mdict-browser"+uri);
 			InputStream candi = OpenMdbResourceByName(uri.replace("/", "\\"));
