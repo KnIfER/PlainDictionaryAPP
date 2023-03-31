@@ -3517,8 +3517,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=48, shift=1) public static boolean persistDBrowser() { NinthFlag|=Z; throw new RuntimeException();}
 	@Metaline(flagPos=48, shift=1) public static void persistDBrowser(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
 	
-	@Metaline(flagPos=49, debug=1) public static boolean alwaysFetchAllDBrowser() { NinthFlag|=Z; throw new RuntimeException();}
-	@Metaline(flagPos=49, debug=1) public static void alwaysFetchAllDBrowser(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=49) public static boolean alwaysFetchAllDBrowser() { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=49) public static void alwaysFetchAllDBrowser(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
 	
 	
 }

@@ -142,7 +142,7 @@
 
 
 					<ToggleButton
-						android:id="@+id/tg2"
+						android:id="@+id/hide_scrollbar"
 						android:layout_width="match_parent"
 						android:layout_height="@dimen/_35_"
 						android:textOn="Ø"

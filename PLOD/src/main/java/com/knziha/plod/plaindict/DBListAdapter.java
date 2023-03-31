@@ -382,9 +382,9 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 		}
 	}
 	
-	void rebuildCursor(MainActivityUIBase a, long folderId) {
+	void rebuildCursor(MainActivityUIBase a, long folderId, boolean loadAll) {
 		boolean bSingleThreadLoadAll = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
-		bSingleThreadLoadAll = PDICMainAppOptions.alwaysFetchAllDBrowser(); // todo 修复时间分栏不对
+		bSingleThreadLoadAll = loadAll || PDICMainAppOptions.alwaysFetchAllDBrowser(); // todo 修复时间分栏不对
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
 		data.dataAdapter.close();
@@ -396,9 +396,10 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 			} else {
 				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
 			}
-			CMN.Log("查询个数::"+cursor.getCount());
+			CMN.debug("查询个数::"+cursor.getCount());
 			data.dataAdapter = displaying = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
 			browser.dataSetChanged();
+			browser.lv.suppressLayout(false);
 		} else {
 			if (browser.pageAsyncLoader==null) {
 				browser.pageAsyncLoader = new ImageView(a);

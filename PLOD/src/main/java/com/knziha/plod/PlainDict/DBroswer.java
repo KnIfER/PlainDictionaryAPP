@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_HISTORY_v2;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
@@ -18,6 +19,7 @@ import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Canvas;
@@ -45,12 +47,12 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Checkable;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -73,9 +75,11 @@ import com.knziha.plod.PlainUI.PopupMenuHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -93,6 +97,8 @@ import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -100,6 +106,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -395,7 +402,7 @@ public class DBroswer extends DialogFragment implements
 //			lv.postDelayed(mAdapter::notifyDataSetChanged, 180);
 			}
 			mLexiDB = a.prepareHistoryCon();
-			mAdapter.rebuildCursor(a, getFragmentId());
+			mAdapter.rebuildCursor(a, getFragmentId(), false);
 			
 			String foldername;
 			if(type==DB_FAVORITE) {
@@ -602,7 +609,7 @@ public class DBroswer extends DialogFragment implements
 			UIData.toolbarAction1.setActivated(bIsCombinedSearch);
 			
 			if(opt.getScrollShown()) {
-				UIData.tg2.setChecked(true);
+				UIData.hideScrollbar.setChecked(true);
 				UIData.fastScroller.setVisibility(View.GONE);
 			}
 			
@@ -783,7 +790,7 @@ public class DBroswer extends DialogFragment implements
 					mLexiDB.getDB().endTransaction();  //事务提交
 					toDB.getDB().endTransaction();  //事务提交
 				}
-				restartPaging();
+				restartPaging(false);
 				UIData.counter.setText(0 +"/"+ getItemCount());
 			}).show();
 	}
@@ -820,7 +827,7 @@ public class DBroswer extends DialogFragment implements
 				} finally {
 					database.endTransaction();  //事务提交
 				}
-				restartPaging();
+				restartPaging(false);
 				UIData.counter.setText(0 +"/"+ getItemCount());
 			}).show();
 	}
@@ -931,9 +938,9 @@ public class DBroswer extends DialogFragment implements
 		String msg=null;
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		switch(v.getId()) {
-			case R.id.tg2://.ver
-				boolean ck = ((ToggleButton)v).isChecked();
-				UIData.fastScroller.setVisibility(opt.setScrollShown(ck)?View.GONE:View.VISIBLE);
+			case R.id.hide_scrollbar://.ver
+				v.performLongClick();
+				((Checkable)v).toggle();
 			break;
 			case R.id.toolbar_action1:
 				v.setActivated(bIsCombinedSearch = !bIsCombinedSearch);
@@ -960,6 +967,8 @@ public class DBroswer extends DialogFragment implements
 				//if(lastFallBackTarget!=SelectionMode_select)
 				//	lastFallBackTarget=SelectionMode;
 				lastFallBackTarget=-100;
+				if(v.getTag()==null)
+					v.performLongClick();
 				if(SelectionMode!=SelectionMode_select) {
 					SelectionMode=SelectionMode_select;
 					UIData.sideBar.selectToolView(v);
@@ -973,6 +982,9 @@ public class DBroswer extends DialogFragment implements
 					else
 						v.setTag(null);
 					refreshFetchWordUI();
+				}
+				if (opt.getInRemoveMode()) {
+					a.showT("当前是剔除模式，拖动时排除多选！");
 				}
 				break;
 			case R.id.tools001://peruse
@@ -1040,7 +1052,7 @@ public class DBroswer extends DialogFragment implements
 								CMN.Log(e);
 							} finally {
 								database_mod_delete.endTransaction();  //事务提交
-								restartPaging(); // 删除
+								restartPaging(false); // 删除
 								UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 							}
 							//notifyDataSetChanged();
@@ -1049,7 +1061,9 @@ public class DBroswer extends DialogFragment implements
 //								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 //							}
 						}).show();
-				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+				if (!GlobalOptions.isDark) {
+					d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+				}
 				break;
 			case R.id.choosed: {//choose deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==1) {//too fast from last hide
@@ -1145,9 +1159,9 @@ public class DBroswer extends DialogFragment implements
 		}
 	}
 	
-	private void restartPaging() {
+	private void restartPaging(boolean loadAll) {
 		lv.suppressLayout(true);
-		mAdapter.rebuildCursor(getMainActivity(), getFragmentId());
+		mAdapter.rebuildCursor(getMainActivity(), getFragmentId(), loadAll);
 		//notifyDataSetChanged();
 		//lv.scrollToPosition(0);
 	}
@@ -1255,11 +1269,16 @@ public class DBroswer extends DialogFragment implements
 //					}
 					show(R.string.bookmarkfailed, key);
 					break;
-				case 50://严格模式
+				case 50://显示滚动条
+					UIData.hideScrollbar.toggle();
+					final boolean ck = UIData.hideScrollbar.isChecked();
+					ViewUtils.setVisible(UIData.fastScroller, opt.setScrollShown(ck));
+					break;
+				case 51://严格模式
 					UIData.fastScroller.setConservativeScroll(true);
 					opt.setShelfStrictScroll(true);
 					break;
-				case 51://宽松模式
+				case 52://宽松模式
 					UIData.fastScroller.setConservativeScroll(false);
 					opt.setShelfStrictScroll(false);//.putBoolean("strictscroll", false);
 					break;
@@ -1298,7 +1317,7 @@ public class DBroswer extends DialogFragment implements
 				onclickBase=40;
 				interceptClick=true;
 			break;
-			case R.id.tg2:
+			case R.id.hide_scrollbar:
 				menuResId=R.array.ver_tweak;
 				onclickBase=50;
 				interceptClick=true;
@@ -1435,7 +1454,7 @@ public class DBroswer extends DialogFragment implements
 			int ret = LexicalDBHelper.getInstance().getDB().update(TABLE_FAVORITE_v2, contentValues, "id=?", new String[]{"" + reader.row_id});
 			CMN.debug("modifyFavLevel", ret);
 			getMainActivity().showT("已"+(i>0?"升":"降")+"为"+level+"颗星");
-			restartPaging(); // 修改星级
+			restartPaging(false); // 修改星级
 		}
 	}
 	
@@ -1446,6 +1465,9 @@ public class DBroswer extends DialogFragment implements
 			switch (v.getId()) {
 				case R.string.start_longpress_sel: {
 					initLongPressSelect(pressedView, pressedRow);
+					if (opt.getInRemoveMode()) {
+						a.showT("当前是剔除模式，拖动时排除多选！");
+					}
 				}
 				break;
 				case R.string.tapSch:
@@ -1470,6 +1492,30 @@ public class DBroswer extends DialogFragment implements
 					break;
 				case R.string.copy:
 					a.copyText(getRowText(), true);
+					break;
+				case R.string.copySelected:
+					ArrayListBookTree<Flag> arr = new ArrayListBookTree<>();
+					for(Long position:Selection) {
+						try {
+							Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select lex,"+FIELD_VISIT_TIME+" from "+getTableName()+" where id=? limit 1", new String[]{""+position});
+							if (cursor.moveToNext()) {
+								Flag val = new Flag();
+								val.val = (int)cursor.getLong(1);
+								val.data = cursor.getString(0);
+								arr.insert(val);
+							}
+							cursor.close();
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+					}
+					Collections.reverse(arr.data);
+					String text = "";
+					for (int i = 0; i < arr.data.size(); i++) {
+						if (i>0) text += "\r\n";
+						text += arr.data.get(i).data;
+					}
+					a.copyText(text, true);
 					break;
 				case R.string.peruse_mode:
 					a.JumpToPeruseModeWithWord(getRowText());
@@ -1512,10 +1558,17 @@ public class DBroswer extends DialogFragment implements
 			if (a == null) return false;
 			pressedRow = position;
 			pressedView = view;
+			long rowId = -1;
+			try {
+				HistoryDatabaseReader reader = mAdapter.getReaderAt(position);
+				rowId = currentRowId = reader.row_id;
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
 			PopupMenuHelper popupMenu = a.getPopupMenu();
 			boolean b1 = getFragmentId()==-1;
 			popupMenu.initLayout(new int[]{
-					R.string.copy
+					Selection.contains(rowId)?R.layout.poplist_quan_fuzhi:R.string.copy
 					, R.layout.poplist_quci_fuzhi
 					, R.string.tapSch
 					, R.string.peruse_mode
@@ -2161,12 +2214,61 @@ public class DBroswer extends DialogFragment implements
 		boolean closeMenu=ret;
 		String msg = null;
 		switch(id) {
-			case R.id.back: {
-				if (isLongClicked) {
-					ret = true;
-					item.setEnabled(!item.isEnabled());
-				} else {
-					dismiss();
+//			case R.id.back: {
+//				if (isLongClicked) {
+//					ret = true;
+//					item.setEnabled(!item.isEnabled());
+//				} else {
+//					dismiss();
+//				}
+//			} break;
+			case R.id.export: {
+//				if (!isLongClicked) {
+//					AlertDialog d = new AlertDialog.Builder(getActivity())
+//							.setTitle(getResources().getString(R.string.warn_delete, Selection.size()))
+//							.setMessage("不可撤销!")
+//							.setIcon(android.R.drawable.ic_dialog_alert)
+//							.setPositiveButton("导出", (dialog, whichButton) -> {
+//								try {
+//									for(Long position:Selection) {
+//										try {
+//											preparedDeleteExecutor.bindLong(1, position);
+//											preparedDeleteExecutor.executeUpdateDelete();
+//										} catch (Exception e) {
+//											CMN.Log(e);
+//										}
+//									}
+//									Selection_clear();
+//									preparedDeleteExecutor.close();
+//									database_mod_delete.setTransactionSuccessful();
+//								} catch (Exception e) {
+//									CMN.Log(e);
+//								} finally {
+//									database_mod_delete.endTransaction();
+//									restartPaging(false);
+//									UIData.counter.setText(Selection.size()+"/"+ getItemCount());
+//								}
+//								//notifyDataSetChanged();
+//							}).setOnDismissListener(dialog -> {
+////							if(hasKeyBoard) {
+////								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+////							}
+//							}).show();
+//					if (!GlobalOptions.isDark) {
+//						d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+//					}
+//				}
+			} break;
+			case R.id.selAll: {
+				if (!isLongClicked) {
+					Selection.clear();
+					restartPaging(true);
+					for(int i = 0; i< getItemCount(); i++) {
+						Selection.add(mAdapter.getReaderAt(i).row_id);
+					}
+					UIData.counter.setText(Selection.size()+"/"+ getItemCount());
+					ViewUtils.setVisible(UIData.counter, true);
+					dataSetChanged();
 				}
 			} break;
 			case R.id.settings: {

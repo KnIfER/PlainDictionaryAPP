@@ -47,10 +47,18 @@
 
 	
     <string-array name="ver_tweak"> 
-		<item>严格模式</item>
-		<item>宽松模式</item>
+		<item>【切换显示/隐藏滚动条】</item>
+		<item>精确拖动模式</item>
+		<item>自由拖动模式</item>
 		<item>前往顶部</item>
 		<item>前往底部</item>
+	</string-array>
+
+
+    <string-array name="qicimoshi">
+		<item>直接取词</item>
+		<item>点击翻译取词</item>
+		<item>翻阅取词</item>
 	</string-array>
 
 

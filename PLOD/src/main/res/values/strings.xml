@@ -315,4 +315,5 @@
 	<string name="close_pop">点击后关闭本菜单</string>
 	<string name="page_lnk_situ">本页</string>
 	<string name="page_lnk_pop">弹窗打开</string>
+	<string name="copySelected">多行复制</string>
 </resources>

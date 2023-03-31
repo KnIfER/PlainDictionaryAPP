@@ -138,7 +138,7 @@
 	<string name="background_color">背景颜色</string>
 	<string name="text_zoom">字体缩放</string>
 	<string name="case_insensitive_policy">大小写转换策略</string>
-	<string name="remove_mode">剔除模式</string>
+	<string name="remove_mode">剔除模式（拖动多选）</string>
 	<string name="jump">跳转</string>
 	<string name="strict_mode">严格模式</string>
 	<string name="loose_mode">宽松模式</string>
@@ -275,5 +275,6 @@
 	<string name="close_pop">点击后关闭本菜单</string>
 	<string name="page_lnk_situ">本页</string>
 	<string name="page_lnk_pop">弹窗打开</string>
+	<string name="copySelected">多行复制</string>
 	>
 </resources>

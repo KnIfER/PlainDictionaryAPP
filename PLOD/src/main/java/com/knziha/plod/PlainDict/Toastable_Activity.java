@@ -1,5 +1,7 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
+
 import android.Manifest;
 import android.animation.Animator;
 import android.app.Activity;
@@ -8,7 +10,6 @@ import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -67,8 +68,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
 
 import io.noties.markwon.Markwon;
 
@@ -557,6 +556,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		m_currentToast.setDuration(len);
 		toastTv.setText(text);
 		toastTv.setTextColor(opt.getToastColor());
+		toastTv.setMaxLines(5);
 		m_currentToast.show();
 	}
 	public void showMT(Object text){
@@ -970,6 +970,9 @@ public class Toastable_Activity extends AppCompatActivity {
 		if (cm != null) {
 			cm.setPrimaryClip(ClipData.newPlainText(null, text));
 			if (toast) {
+				if (text.length() > 100) {
+					text = text.substring(0, 100)+"……";
+				}
 				if(Thread.currentThread().getId()==CMN.mid) showT("已复制" + text);
 				else if(hdl!=null) hdl.obtainMessage(2023, "已复制" + text).sendToTarget();
 			}

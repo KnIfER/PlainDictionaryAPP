@@ -6,7 +6,7 @@ import java.util.HashSet;
 public class ArrayListBookTree<T extends Comparable<? super T>> {
 	//wonderful!
 	
-	protected final ArrayList<T> data;
+	public final ArrayList<T> data;
 	//boolean isdirty=false;
 	
 	public ArrayListBookTree(){
