@@ -5783,6 +5783,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//ViewUtils.removeView(contentview);  multishare
 	}
 	
+	private DBroswer DBrowserPersist;
 	void AttachDBrowser(int type) {
 		if(DBrowser==null || opt.debuggingDBrowser()>0) {
 			DBrowser = DBrowserHolder.get();
@@ -5790,6 +5791,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CMN.debug("重建收藏夹历史记录视图");
 				//showT("DEBUG : 已经重建视图！");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
+			}
+			if (opt.persistDBrowser()) {
+				DBrowserPersist = DBrowser;
 			}
 		}
 		boolean retry = type<0;
@@ -7002,6 +7006,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(isLongClick) {
 			switch (v.getId()) {
+				case R.string.dict_opt:
+					if(!mWebView.merge)
+						return false;
+					break;
 				case R.string.page_ucc:
 					getVtk().setInvoker(book, mWebView, null, null);
 					boolean title_bar_no_sel = true;
@@ -7016,8 +7024,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.presenter.toggleBookMark(mWebView, null, true);
 				break;
 			case R.string.pageOpt:
-				if(weblist==null) weblist = weblistHandler;
-				weblist.getMergedFrame().evaluateJavascript("showSettings()", null);
+				if (isLongClick) {
+					showBookPreferences(mWebView);
+				} else {
+					if(weblist==null) weblist = weblistHandler;
+					weblist.getMergedFrame().evaluateJavascript("showSettings()", null);
+				}
 				break;
 			case R.string.page_rukou:
 				if(pageMenuHelper.lnk_href!=null) {
@@ -7058,7 +7070,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				break;
 			case R.id.dict_title_opt:
-				showDictTweakerMain(mWebView.presenter, mWebView);
+				if (isLongClick) {
+					showBookPreferences(mWebView);
+				} else {
+					showDictTweakerMain(mWebView.presenter, mWebView);
+				}
 				break;
 			case R.string.dict_opt:
 				showBookPreferences(MainActivityUIBase.this, mWebView.presenter);
@@ -11080,6 +11096,30 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		opt.setTmpUserOrientation1(idx);
 		setRequestedOrientation(ScreenOrientation[idx]);
+	}
+	
+	public void showBookPreferences(WebViewmy mWebView) {
+		if (mWebView.merge) {
+			weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
+				@Override
+				public void onReceiveValue(String val) {
+					CMN.debug("onReceiveValue::", val);
+					try {
+						val = val.substring(1, val.length() - 1);
+						String[] arr=val.split("_");
+						val = arr[0];
+						long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
+						BookPresenter book = getBookById(id);
+						showBookPreferences(MainActivityUIBase.this, book);
+					} catch (Exception e) {
+						CMN.debug(e);
+						showBookPreferences(MainActivityUIBase.this, mWebView.presenter);
+					}
+				}
+			});
+		} else {
+			showBookPreferences(MainActivityUIBase.this, mWebView.presenter);
+		}
 	}
 	
 	public void showBookPreferences(FragmentActivity fa, BookPresenter...books) {

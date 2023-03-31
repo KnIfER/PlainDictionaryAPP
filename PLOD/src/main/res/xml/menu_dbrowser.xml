@@ -15,7 +15,7 @@
 
 	<!--7--><item android:title="学习卡片" android:id="@+id/learnCard" android:icon="@drawable/ic_card_learn" app:showAsAction="always" android:checkable="true" android:tint="#fff" />
 
-	<!--2--><item android:id="@+id/back" android:icon="@drawable/ic_search_24k" android:title="返回" app:showAsAction="never"/>
+	<!--2--><item android:id="@+id/back" android:icon="@drawable/ic_search_24k" android:title="加载全部" app:showAsAction="never"/>
 
 	<!--3--><item android:id="@drawable/ic_search_24k" android:icon="@drawable/ic_search_24k" android:title="设置" app:showAsAction="never"/>
 

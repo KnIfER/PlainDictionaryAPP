@@ -32,8 +32,9 @@ public class TextMenuView extends TextView {
 		super(context, attrs, defStyleAttr);
 		leftDrawable = getResources().getDrawable(R.drawable.ic_yes_blue);
 		leftDrawable.setBounds(0, 0, leftDrawable.getIntrinsicWidth(), leftDrawable.getIntrinsicHeight());
-		if(GlobalOptions.isDark)
-			setTextColor(Color.WHITE);
+		if(!isInEditMode())
+			if(GlobalOptions.isDark)
+				setTextColor(Color.WHITE);
 	}
 	
 	@Override

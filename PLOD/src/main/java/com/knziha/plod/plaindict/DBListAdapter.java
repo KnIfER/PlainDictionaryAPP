@@ -16,7 +16,6 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.VU;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
@@ -385,7 +384,7 @@ class DBListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<DbCard
 	
 	void rebuildCursor(MainActivityUIBase a, long folderId) {
 		boolean bSingleThreadLoadAll = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
-		//bSingleThreadLoadAll = true; // todo 修复时间分栏不对
+		bSingleThreadLoadAll = PDICMainAppOptions.alwaysFetchAllDBrowser(); // todo 修复时间分栏不对
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
 		data.dataAdapter.close();

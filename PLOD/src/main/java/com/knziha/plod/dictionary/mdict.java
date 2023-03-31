@@ -3284,7 +3284,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					sb.append(full_Dictionary_fName);
 				}
 				int base_full_name_L = sb.length();
-				CMN.debug("debugDictTxt::", PDICMainAppOptions.debugDictTxt_fZero());
+				//CMN.debug("debugDictTxt::", PDICMainAppOptions.debugDictTxt_fZero());
 				if(PDICMainAppOptions.debugDictTxt_fZero()) {
 					fZero = new File(p, sb.append(".0.txt").toString());
 					if (fZero.exists()) {

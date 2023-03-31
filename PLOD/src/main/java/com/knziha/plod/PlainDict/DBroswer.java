@@ -1,5 +1,18 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_HISTORY_v2;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_FAVORITE;
+import static com.knziha.plod.plaindict.DBListAdapter.DB_HISTORY;
+import static com.knziha.plod.plaindict.DBListAdapter.HistoryDatabaseReader;
+import static com.knziha.plod.plaindict.DBListAdapter.SelectionMode_fetchWord;
+import static com.knziha.plod.plaindict.DBListAdapter.SelectionMode_learncard;
+import static com.knziha.plod.plaindict.DBListAdapter.SelectionMode_pan;
+import static com.knziha.plod.plaindict.DBListAdapter.SelectionMode_select;
+import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
@@ -57,6 +70,7 @@ import com.knziha.ankislicer.customviews.ArrayAdaptermy;
 import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.PopupMenuHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -89,15 +103,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-
-import com.knziha.plod.db.LexicalDBHelper;
-
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_HISTORY_v2;
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
-import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
-import static com.knziha.plod.plaindict.DBListAdapter.*;
-import static java.time.temporal.ChronoUnit.DAYS;
 
 //  todo 分表显示
 @SuppressLint("SetTextI18n")
@@ -209,7 +214,7 @@ public class DBroswer extends DialogFragment implements
 //						this.toDeleteV2.remove(rowId);
 //					}
 //					preparedDeleteExecutor.close();
-//					Selection.clear();
+//					Selection_clear();
 //					db.setTransactionSuccessful();  //控制回滚
 //				} catch (Exception e) {
 //					CMN.Log(e);
@@ -229,8 +234,8 @@ public class DBroswer extends DialogFragment implements
 			UIData.search.performClick();
 			return 1;
 		}
-		if(Selection.size()>0) {//SelectionMode==SelectionMode_select
-			Selection.clear();
+		if(Selection.size()>0 && !huluexuanze) {//SelectionMode==SelectionMode_select
+			Selection_clear();
 			dataSetChanged();
 			UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 			if(SelectionMode==SelectionMode_select) {
@@ -287,6 +292,8 @@ public class DBroswer extends DialogFragment implements
 		}
 		return 0;
 	}
+	
+	boolean huluexuanze = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -315,7 +322,9 @@ public class DBroswer extends DialogFragment implements
 			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			toolbar.setNavigationOnClickListener(v1 -> {
 				if(true && this==getMainActivity().DBrowser)  {
+					huluexuanze = true;
 					getMainActivity().DetachDBrowser();
+					huluexuanze = false;
 				} else {
 					dismiss();
 				}
@@ -763,7 +772,7 @@ public class DBroswer extends DialogFragment implements
 							preparedDeleteExecutor.executeUpdateDelete();
 						}
 					}
-					Selection.clear();
+					Selection_clear();
 					preparedDeleteExecutor.close();
 					preparedInsertExecutor.close();
 					mLexiDB.getDB().setTransactionSuccessful();  //控制回滚
@@ -803,7 +812,7 @@ public class DBroswer extends DialogFragment implements
 						preparedMoveExecutor.bindLong(2, rowId);
 						preparedMoveExecutor.execute();
 					}
-					Selection.clear();
+					Selection_clear();
 					preparedMoveExecutor.close();
 					database.setTransactionSuccessful();  //控制回滚
 				} catch (Exception e) {
@@ -932,7 +941,7 @@ public class DBroswer extends DialogFragment implements
 				break;
 			case R.id.tools0://pan
 				if(!opt.getSelection_Persists())
-					Selection.clear();
+					Selection_clear();
 				opt.setDBMode(0);
 				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
@@ -968,7 +977,7 @@ public class DBroswer extends DialogFragment implements
 				break;
 			case R.id.tools001://peruse
 				if(!opt.getSelection_Persists())
-					Selection.clear();
+					Selection_clear();
 				opt.setDBMode(1);
 				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
@@ -1024,7 +1033,7 @@ public class DBroswer extends DialogFragment implements
 										CMN.Log(e);
 									}
 								}
-								Selection.clear();
+								Selection_clear();
 								preparedDeleteExecutor.close();
 								database_mod_delete.setTransactionSuccessful();  //控制回滚
 							} catch (Exception e) {
@@ -1150,7 +1159,7 @@ public class DBroswer extends DialogFragment implements
 	private void try_exit_selection() {
 		if(SelectionMode==SelectionMode_select)
 			if(!opt.getSelection_Persists()) {//清空选择
-				Selection.clear();
+				Selection_clear();
 				UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 				UIData.counter.setVisibility(View.GONE);
 			}
@@ -1184,7 +1193,7 @@ public class DBroswer extends DialogFragment implements
 					dataSetChanged();
 					break;
 				case 11:
-					Selection.clear();
+					Selection_clear();
 					UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 					dataSetChanged();
 					break;
@@ -2315,4 +2324,9 @@ public class DBroswer extends DialogFragment implements
 			dummyPanel.toggleDummy(getMainActivity());
 		}
 	}
+	
+	private void Selection_clear() {
+		Selection.clear();
+	}
+	
 }
