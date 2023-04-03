@@ -198,6 +198,7 @@ import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordCamera;
 import com.knziha.plod.PlainUI.WordMap;
 import com.knziha.plod.PlainUI.WordPopup;
+import com.knziha.plod.db.FFDB;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.db.SearchUI;
@@ -12130,7 +12131,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public Response handleFFDB(HTTPSession session) {
-		return null;
+		return FFDB.handleRequest(this, session);
 	}
 	
 	public void refreshImmersiveBars(RLContainerSlider pageSlider) {

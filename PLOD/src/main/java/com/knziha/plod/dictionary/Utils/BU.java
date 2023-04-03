@@ -275,13 +275,12 @@ public class  BU{//byteUtils
     @Deprecated
     public static void printFileStream(InputStream b, File path){
 		try {
-			printStreamToFile(b,0,b.available(),path);
-		} catch (IOException e) {
-			e.printStackTrace();
+			printStreamToFile(b,0,-1,path);
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 
-    @Deprecated
     public static void printStreamToFile(InputStream b, int start, int end,  File path){
 		try {
 			if(start>0)
@@ -290,8 +289,12 @@ public class  BU{//byteUtils
 			if(!p.exists()) p.mkdirs();
 			FileOutputStream fo = new FileOutputStream(path);
 			byte[] data = new byte[4096];
+			int max;
+			if (end>0) max = end-start;
+			else max = Integer.MAX_VALUE;
+			int total = 0;
 			int len;
-			while ((len=b.read(data))>0){
+			while ((len=b.read(data, 0, Math.max(0, Math.min(max-total, 4096))))>0){
 				fo.write(data, 0, len);
 			}
 			fo.flush();

@@ -258,7 +258,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return emptyResponse;
 		}
 		
-		if(key.equals("\\DB.jsp"))
+		if(key.startsWith("\\DB.jsp"))
 			return app.handleFFDB(session);
 		
 		if(key.startsWith("\\vi\\")) {

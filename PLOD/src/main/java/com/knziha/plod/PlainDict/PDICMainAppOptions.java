@@ -280,18 +280,21 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 		if (testDBV2) {
 			if(name!=null)
 			{
-				InternalPath.append("favorites/").append(name);
+				InternalPath.append(name);
 			} else {
 				InternalPath.append("databaseV2.sql");
 			}
 		} else {
 			if(name!=null){
-				InternalPath.append("favorites/").append(name);
+				InternalPath.append(name);
 			} else {
 				InternalPath.append("history.sql");
 			}
 		}
 		return InternalPath.toString();
+	}
+	public String pathToFFDB(String name) {
+		return pathToFavoriteDatabases(name, true);
 	}
 	public String pathToFavoriteDatabase(String name, boolean testDBV2) {
 		return pathToFavoriteDatabases(name, testDBV2);
