@@ -20,7 +20,9 @@ import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
 import android.animation.Animator;
+import android.animation.Keyframe;
 import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -5028,7 +5030,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				footRcyView.setClipToPadding(false);
 				GridLayoutManager lman;
 				footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 8) {
-					int flip;
+					int flip = 0;
 					boolean dragging;
 					@Override
 					public int scrollVerticallyBy (int dy, RecyclerView.Recycler recycler, RecyclerView.State state ) {
@@ -5056,8 +5058,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								dragging = false;
 							if (state == RecyclerView.SCROLL_STATE_IDLE) {
 								if (flip != 0) {
-									int np = (shareHelper.page + flip + 10) % 2;
-									shareHelper.page = np;
+									shareHelper.page = (shareHelper.page + flip + 10) % 2;
 									tintSwitchBtn();
 									flip = 0;
 								}
@@ -5515,7 +5516,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 * */
 	public void showScrollSet() {
 		String title = "设置网页滚动条 - ";
-		int flagPos=0;
+		int flagPos;
 		WebViewmy wv = weblist.mWebView;
 		if(wv!=null && wv==wordPopup.mWebView) {
 			title += "点译模式";
@@ -10524,6 +10525,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret==null?"":ret;
 	}
 	
+	public static void yaotou(View view, float shakeFactor) {
+		PropertyValuesHolder pvhScaleX = PropertyValuesHolder.ofKeyframe(View.TRANSLATION_X, new Keyframe[]{Keyframe.ofFloat(0.0F, 1.0F)
+				, Keyframe.ofFloat(0.1F, -60F*shakeFactor)
+				, Keyframe.ofFloat(0.2F, -60F*shakeFactor)
+				, Keyframe.ofFloat(0.3F, 0F*shakeFactor)
+				, Keyframe.ofFloat(0.4F, 50F*shakeFactor)
+				, Keyframe.ofFloat(0.5F, 50F*shakeFactor)
+				, Keyframe.ofFloat(1.0F, 0F)});
+		ObjectAnimator.ofPropertyValuesHolder(view, new PropertyValuesHolder[]{pvhScaleX}).setDuration(900L).start();
+	}
+	
 	void execSingleSearch(CharSequence cs, int count) {
 		try {
 			String key = cs.toString().trim();
@@ -10564,15 +10576,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							&& mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx+1)).startsWith(mdict.processText(key))) {
 						tmpIdx++;
 					}
+					if (mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx)).charAt(0) == mdict.processText(key).charAt(0)) {
+						lv.setSelection(tmpIdx);
+						lv.smoothScrollToPosition(tmpIdx);
+						ViewUtils.preventDefaultTouchEvent(lv, 0, 0);
+					} else {
+						yaotou(lv, GlobalOptions.density);
+					}
 				} else {
 					lv_matched = true;
 					if(bFetchMoreContents) {
 						MergeSingleResults(key, normal_idx, formation_idx);
 					}
+					lv.setSelection(tmpIdx);
+					lv.smoothScrollToPosition(tmpIdx);
+					ViewUtils.preventDefaultTouchEvent(lv, 0, 0);
 				}
-				lv.setSelection(tmpIdx);
-				lv.smoothScrollToPosition(tmpIdx);
-				ViewUtils.preventDefaultTouchEvent(lv, 0, 0);
+//				lv.setSelection(tmpIdx);
+//				lv.smoothScrollToPosition(tmpIdx);
+//				ViewUtils.preventDefaultTouchEvent(lv, 0, 0);
 				if(bIsFirstLaunch||bWantsSelection||来一发) {
 					if(normal_idx>=0) {
 						boolean proceed = true;
