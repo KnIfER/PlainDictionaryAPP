@@ -201,6 +201,17 @@
 			</intent-filter>
 		</activity>
 
+		<activity android:name="com.knziha.plod.preference.PlainSearchActivity"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
+			android:launchMode="standard"
+			>
+			<intent-filter>
+				<action android:name="plainsearch.intent.action.REDIRECT"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+			</intent-filter>
+		</activity>
+
 		<service android:name=".ServiceEnhancer" />
 
 		<provider
