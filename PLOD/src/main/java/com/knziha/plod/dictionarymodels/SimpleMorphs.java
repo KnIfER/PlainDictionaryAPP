@@ -77,6 +77,11 @@ public class SimpleMorphs extends DictionaryAdapter {
 					return lookUp(d, keyword.substring(0, len - 3));
 				}
 			}
+			else if (ch == 'c') {
+				if (keyword.endsWith("ic")) {
+					return lookUp(d, keyword.substring(0, len - 2));
+				}
+			}
 			else if (ch == 'y') {
 				if (len>3) {
 					if (keyword.endsWith("ly")) {
