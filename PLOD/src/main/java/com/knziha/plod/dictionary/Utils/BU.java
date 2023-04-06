@@ -295,6 +295,7 @@ public class  BU{//byteUtils
 			int total = 0;
 			int len;
 			while ((len=b.read(data, 0, Math.max(0, Math.min(max-total, 4096))))>0){
+				total+=len;
 				fo.write(data, 0, len);
 			}
 			fo.flush();
@@ -303,6 +304,29 @@ public class  BU{//byteUtils
 			e.printStackTrace();
 		}
     }
+	
+	public static void printStreamToByteArray(InputStream b, int start, int end, ReusableByteOutputStream bout){
+		try {
+			if(start>0)
+				b.skip(start);
+			byte[] data = new byte[4096];
+			int max;
+			if (end>0) max = end-start;
+			else max = Integer.MAX_VALUE;
+			int total = 0;
+			int len;
+			while ((len=b.read(data, 0, Math.max(0, Math.min(max-total, 4096))))>0){
+				total+=len;
+				bout.write(data, 0, len);
+				CMN.debug("printStreamToByteArray", total+"/"+max);
+				if (total >= max) {
+					break;
+				}
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
 	
 	public static void printStream(InputStream b,  File path) throws IOException {
 		File p = path.getParentFile();

@@ -33,6 +33,17 @@ package org.nanohttpd.protocols.http;
  * #L%
  */
 
+import com.knziha.plod.plaindict.CMN;
+
+import org.nanohttpd.protocols.http.NanoHTTPD.ResponseException;
+import org.nanohttpd.protocols.http.content.ContentType;
+import org.nanohttpd.protocols.http.content.CookieHandler;
+import org.nanohttpd.protocols.http.request.Method;
+import org.nanohttpd.protocols.http.response.Response;
+import org.nanohttpd.protocols.http.response.Status;
+import org.nanohttpd.protocols.http.tempfiles.ITempFile;
+import org.nanohttpd.protocols.http.tempfiles.ITempFileManager;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -61,15 +72,6 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 
 import javax.net.ssl.SSLException;
-
-import org.nanohttpd.protocols.http.NanoHTTPD.ResponseException;
-import org.nanohttpd.protocols.http.content.ContentType;
-import org.nanohttpd.protocols.http.content.CookieHandler;
-import org.nanohttpd.protocols.http.request.Method;
-import org.nanohttpd.protocols.http.response.Response;
-import org.nanohttpd.protocols.http.response.Status;
-import org.nanohttpd.protocols.http.tempfiles.ITempFile;
-import org.nanohttpd.protocols.http.tempfiles.ITempFileManager;
 
 public class HTTPSession implements IHTTPSession {
 
@@ -655,18 +657,20 @@ public class HTTPSession implements IHTTPSession {
                 } else {
                     byte[] postBytes = new byte[fbuf.remaining()];
                     fbuf.get(postBytes);
-                    String postLine = new String(postBytes, contentType.getEncoding()).trim();
                     // Handle application/x-www-form-urlencoded
                     if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType.getContentType())) {
-                        decodeParms(postLine, this.parms);
-                    } else if (postLine.length() != 0) {
-                        // Special case for raw POST data => create a
+						String postLine = new String(postBytes, contentType.getEncoding()).trim();
+						decodeParms(postLine, this.parms);
+                    } else if (files!=null) {
+						String postLine = new String(postBytes, contentType.getEncoding()).trim();
+						// Special case for raw POST data => create a
                         // special files entry "postData" with raw content
                         // data
-                        files.put(POST_DATA, postLine);
+                        if(postLine.length() != 0) files.put(POST_DATA, postLine);
                     }
+					else CMN.debug("raw input not handled");
                 }
-            } else if (Method.PUT.equals(this.method)) {
+            } else if (Method.PUT.equals(this.method) && files!=null) {
                 files.put("content", saveTmpFile(fbuf, 0, fbuf.limit(), null));
             }
         } finally {

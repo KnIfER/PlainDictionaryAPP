@@ -5,6 +5,8 @@
 
 package com.knziha.plod.dictionary.Utils;
 
+import com.knziha.plod.plaindict.CMN;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -157,6 +159,11 @@ public class ReusableByteOutputStream extends OutputStream {
 		//CMN.Log("getBytesLegal::", this.buf.length==count);
         return /*this.buf.length==count||this.buf.length==planSize?this.buf:*/toByteArray();
     }
+	
+	public byte[] getArray() {
+		//CMN.Log("getBytesLegal::", this.buf.length==count);
+		return this.buf.length==count?this.buf:toByteArray();
+	}
 
     public int getCount() {
         return this.count;

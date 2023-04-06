@@ -3,6 +3,7 @@ package com.knziha.plod.db;
 import static com.knziha.plod.plaindict.MdictServer.emptyResponse;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -14,8 +15,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.polymer.wget.WGet;
@@ -27,11 +31,11 @@ import org.nanohttpd.protocols.http.response.Response;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
@@ -69,7 +73,6 @@ public class FFDB extends SQLiteOpenHelper {
 		database = getWritableDatabase();
 		pathName = database.getPath();
 		instance = this;
-		database.execSQL("DROP TABLE IF EXISTS bilibili_history");
 	}
 	
 	@Override
@@ -200,6 +203,15 @@ public class FFDB extends SQLiteOpenHelper {
 		}
 	}
 	
+	private static void copyConflictValues(JSONObject conlict, JSONObject json) {
+		Iterator<String> iter = conlict.keySet().iterator();
+		String key;
+		while (iter.hasNext()) {
+			key=iter.next();
+			conlict.put(key, json.get(key));
+		}
+	}
+	
 	String[] getWhereValues(JSONObject json) {
 		ArrayList<String> where = new ArrayList<>();
 		Iterator<String> iter = json.keySet().iterator();
@@ -225,7 +237,7 @@ public class FFDB extends SQLiteOpenHelper {
 		}
 	}
 	
-	void setValues(SQLiteStatement prepared, JSONObject json) throws SQLException {
+	void bindValues(SQLiteStatement prepared, JSONObject json) throws SQLException {
 		prepared.clearBindings();
 		Collection<Object> vals = json.values();
 		Iterator<Object> iter = vals.iterator();
@@ -281,7 +293,7 @@ public class FFDB extends SQLiteOpenHelper {
 					for (int i = 0; i < array.size(); i++) {
 						json = array.getJSONObject(i);
 						prepared.clearBindings();
-						setValues(prepared, json);
+						bindValues(prepared, json);
 						if (prepared.executeInsert()!=-1) {
 							cc ++;
 						}
@@ -299,24 +311,41 @@ public class FFDB extends SQLiteOpenHelper {
 		}
 	}
 	
-	public long put(String table, JSONObject json) {
+	public long doPut(String table, JSONObject json, boolean replaceOrInsert, long updateRow) {
 		long ret = -1;
 		try {
 			//statement.execute("insert into TEST(rid, fav) VALUES("+rid+", "+fav+")");
 			StringBuffer sb = new StringBuffer();
-			sb.append("REPLACE INTO ").append(table);
-			getValNames(json, sb, true);
-			sb.append(" VALUES(");
-			boolean ftd = false;
-			for (int i = 0; i < json.size(); i++) {
-				if (ftd) {
-					sb.append(",");
-				} else {
-					ftd = true;
+			if (updateRow == -1) {
+				sb.append(replaceOrInsert ? "REPLACE INTO " : "INSERT INTO ").append(table);
+				getValNames(json, sb, true);
+				sb.append(" VALUES(");
+				boolean ftd = false;
+				for (int i = 0; i < json.size(); i++) {
+					if (ftd) {
+						sb.append(",");
+					} else {
+						ftd = true;
+					}
+					sb.append("?");
 				}
-				sb.append("?");
+				sb.append(")");
+			} else {
+				sb.append("UPDATE ").append(table).append(" set ");
+				getValNames(json, sb, true);
+				sb.append(" = ("); // x not VALUES...
+				boolean ftd = false;
+				for (int i = 0; i < json.size(); i++) {
+					if (ftd) {
+						sb.append(",");
+					} else {
+						ftd = true;
+					}
+					sb.append("?");
+				}
+				sb.append(")");
+				sb.append(" where id=?");
 			}
-			sb.append(")");
 			String sql = sb.toString();
 			CMN.debug("put::sql::", sql);
 			synchronized (database) {
@@ -325,7 +354,10 @@ public class FFDB extends SQLiteOpenHelper {
 				int cc= 0;
 				try {
 					prepared.clearBindings();
-					setValues(prepared, json);
+					bindValues(prepared, json);
+					if (updateRow!=-1) {
+						prepared.bindLong(json.size()+1, updateRow);
+					}
 					ret = prepared.executeInsert();
 					database.setTransactionSuccessful();
 				} catch (SQLException e) {
@@ -337,8 +369,64 @@ public class FFDB extends SQLiteOpenHelper {
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
-		return ret;
+		return updateRow!=-1?updateRow:ret;
 	}
+	
+	public String putBlob(String table, String key, long updateRow, HTTPSession session)
+	{
+		ContentValues contentValues = new ContentValues();
+		int size = (int) session.getBodySize();
+		CMN.debug("putBlob::", size);
+		ReusableByteOutputStream bout = new ReusableByteOutputStream(size);
+		//BU.printStreamToFile(session.getInputStream(), 0, (int) session.getBodySize(), new File("/sdcard/test.png"));
+		BU.printStreamToByteArray(session.getInputStream(), 0, size, bout);
+		byte[] result = bout.getArray();
+		contentValues.put(key, result);
+		int ret = database.update(table, contentValues, "id=?", new String[]{updateRow + ""});
+		return ret+","+size+","+result.length;
+	}
+	
+	
+	public long put(String table, JSONObject json, JSONObject conflict, Bag flag) {
+		long found = -1;
+		if (conflict!=null) {
+			StringBuffer sb = new StringBuffer();
+			sb.append("SELECT id from ").append(table).append(" where ");
+			getValMaps(conflict, sb);
+			sb.append(" limit 1");
+			String sql = sb.toString();
+			CMN.debug("conflict::sql::", sql, conflict);
+			try {
+				SQLiteStatement prepared = database.compileStatement(sql);
+				bindValues(prepared, conflict);
+				found = prepared.simpleQueryForLong();
+				if (flag!=null) {
+					flag.val = found != -1;
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return doPut(table, json, conflict==null, found);
+	}
+	
+	private void getRowAttributes(String tableName, long rowId, JSONObject attr, JSONObject result) {
+		Set<String> keys = attr.keySet();
+		Iterator<String> iter = keys.iterator();
+		while (iter.hasNext()) {
+			String key = iter.next();
+			String sql = "select " + key + " from "+tableName+" where id=?";
+			//CMN.debug("getRowAttributes::sql::", sql);
+			try(Cursor cursor = database.rawQuery(sql, new String[]{"" + rowId})) {
+				cursor.moveToNext();
+				result.put(attr.getString(key), cursor.getString(0));
+				CMN.debug("getRowAttributes::value=", attr.getString(key), cursor.getString(0));
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+	}
+	
 	
 	public JSONObject get(String table, JSONObject ret, JSONObject where) {
 		try {
@@ -453,7 +541,7 @@ public class FFDB extends SQLiteOpenHelper {
 						}
 						WGet wGet = new WGet(info, file);
 						wGet.download();
-						put("files", ret);
+						put("files", ret, null, null);
 					} catch (Exception e) {
 						CMN.Log(e);
 					}
@@ -493,14 +581,20 @@ public class FFDB extends SQLiteOpenHelper {
 				, "content-type="+session.getHeaders().get("content-type"), session.getParameters());
 		if (Method.POST.equals(session.getMethod())) {
 			try {
-				HashMap<String, String> map = new HashMap<>();
-				session.parseBody(map);
-				//SU.Log("DB.jsp::", session.getHeaders());
-				SU.Log("DB.jsp::", session.getParameters(), session.getMethod());
+				String text = null;
 				FFDB db = FFDB.getInstance(context);
-//				String text = session.getParameter("data");
-				String text = session.getParms().get("data");
-				//SU.Log("text::", text, text.length());
+				if (query != null && query.startsWith("query=")) {
+					query = URLDecoder.decode(query.substring(6));
+					JSONObject data = JSONArray.parseObject(query);
+					String ret = db.putBlob(data.getString("table"), data.getString("key"), data.getLong("id"), session);
+					return newFixedLengthResponse(ret);
+				} else {
+					session.parseBody(null);
+					//SU.Log("DB.jsp::", session.getHeaders());
+					SU.Log("DB.jsp::", session.getParameters(), session.getMethod());
+					text = session.getParms().get("data");
+				}
+				SU.Log("text::", text);
 				//text = URLDecoder.decode(text);
 				Objects.requireNonNull(text);
 				JSONObject data = null;
@@ -528,8 +622,13 @@ public class FFDB extends SQLiteOpenHelper {
 						JSONArray batch = data.getJSONArray("batch");
 						JSONObject where = data.getJSONObject("where");
 						JSONObject indexed = data.getJSONObject("indexed");
+						JSONObject conflict = data.getJSONObject("conflict");
+						JSONObject attr = data.getJSONObject("attr");
 						if (json==null && batch!=null) {
 							json = batch.getJSONObject(0);
+						}
+						if (conflict!=null && json!=null) {
+							copyConflictValues(conflict, json);
 						}
 						CMN.Log(tableName, json, where, indexed);
 						Objects.requireNonNull(tableName);
@@ -552,7 +651,15 @@ public class FFDB extends SQLiteOpenHelper {
 							if (batch != null) {
 								db.putBatch(tableName, batch);
 							} else {
-								return newFixedLengthResponse("{\"id\":"+db.put(tableName, json)+"}");
+								Bag flag = new Bag(false);
+								long ret = db.put(tableName, json, conflict, flag);
+								JSONObject result = new JSONObject();
+								result.put("id", ret);
+								result.put("update", flag.val);
+								if (attr != null) {
+									db.getRowAttributes(tableName, ret, attr, result);
+								}
+								return newFixedLengthResponse(result.toString());
 							}
 						}
 					}
@@ -563,5 +670,4 @@ public class FFDB extends SQLiteOpenHelper {
 		}
 		return emptyResponse;
 	}
-	
 }
