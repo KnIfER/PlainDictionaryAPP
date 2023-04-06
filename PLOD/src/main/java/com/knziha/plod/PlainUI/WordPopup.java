@@ -1538,7 +1538,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			BookPresenter CCD = this.CCD;
 			/* 仅搜索当前词典 */
 			if (SearchMode == 2 || bookForce !=null) {
-				CCD = loadMan.md_get(CCD_ID);
+				if (bookForce == null)
+					CCD = loadMan.md_get(CCD_ID);
 				if (CCD != a.EmptyBook) {
 					if(CCD.getIsWebx()) webx = CCD; // always takeWord
 					else  idx = CCD.bookImpl.lookUp(popupKey, true, forms);
