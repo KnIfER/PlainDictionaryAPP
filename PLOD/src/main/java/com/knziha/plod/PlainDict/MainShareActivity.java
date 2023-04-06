@@ -118,6 +118,7 @@ public class MainShareActivity extends Activity {
 		if (app.floatApp!=null && app.floatApp.isFloating()) {
 			app.floatApp.a.processIntent(intent, false);
 			app.floatApp.expand(false);
+			app.floatApp.a.moveTaskToBack(false);
 		} else {
 			intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
