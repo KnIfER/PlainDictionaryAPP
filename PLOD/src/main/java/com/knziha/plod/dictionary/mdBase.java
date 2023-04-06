@@ -65,7 +65,7 @@ import static com.knziha.plod.dictionary.mdict.textTailed;
 public abstract class mdBase {
 	//TODO Standardize
 	/** 标准究竟是怎样的呢？ 添加@_，俩符号会在词块trailer和header中出现，不参与排序。暂时禁用了isCompat标志 */
-	public final static Pattern replaceReg = Pattern.compile("[ @_=&:$/.,\\-'()\\[\\]#<>!\\n]");
+	public final static Pattern replaceReg = Pattern.compile("[ @_=&*:$/.,\\-'()\\[\\]#<>!\\n]");
 	public final static Pattern replaceReg2 = Pattern.compile("[ \\-]");
 	public final static Pattern numSuffixedReg = Pattern.compile(".+?([0-9]+)");
 	public final static Pattern markerReg = Pattern.compile("`([\\w\\W]{1,3}?)`");// for `1` `2`...
