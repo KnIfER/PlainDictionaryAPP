@@ -938,56 +938,22 @@ function debug(e){console.log(e)};
 			mWebView.toolbar_title = toolbar_title = pageData.toolbarTitle;
 			toolbar_title.earHintAhead = "内容标题：";
 			toolbar_cover = pageData.cover;
-			if(cover!=null)
-				toolbar_cover.setImageDrawable(cover);
-			//toolbar.setTitle(this.bookImpl.getFileName().split(".mdx")[0]);
+			if(cover!=null) toolbar_cover.setImageDrawable(cover);
 			mWebView.rl = rl;
 			if (bookImpl!=null) {
 				toolbar_title.setText(bookImpl.getDictionaryName());
 			}
 			toolbar_title.setMaxLines(1);
-			toolbar_title.setOnTouchListener(new View.OnTouchListener() {
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					if (event.getActionMasked()==MotionEvent.ACTION_DOWN) {
-						CMN.debug("down!!!");
-//						if (mWebView.AlwaysCheckRange!=0) {
-//							mWebView.AlwaysCheckRange=0;
-//							//mWebView.weblistHandler.pageSlider.bZoomOut=true;
-//						}
-					}
-					if (event.getActionMasked()==MotionEvent.ACTION_UP) {
-						//CMN.Log("up!!!");
-					}
-					return false;
-				}
-			});
 			toolbar_title.setOnLongClickListener(this);
 			viewsHolderReady=true;
 			
-//			ViewUtils.removeView(pageData.recess);
-//			ViewUtils.removeView(pageData.forward);
-//			ViewUtils.removeView(pageData.redo);
-//			ViewUtils.removeView(pageData.save);
-//			ViewUtils.removeView(pageData.tools);
-			//toolbar_cover.setId(R.id.lltoolbar);
-			toolbar_cover.setOnClickListener(this);
 			mWebView.toolbar_cover = toolbar_cover;
 			
 			if(cover==null){
 				toolbar_cover.setBackground(null);
-//				toolbar_cover.setVisibility(View.GONE);
-				toolbar.setOnClickListener(this);
-				//toolbar_title.setPadding((int) (15*GlobalOptions.density), 0, toolbar_title.getPaddingRight(), 0);
 			}
-			//recess.setVisibility(View.GONE);
-			//forward.setVisibility(View.GONE);
+			toolbar_cover.setClickable(false);
 			if (isWebx) {
-//				mWebView.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
-//				mWebView.getSettings().setUseWideViewPort(true);
-//				mWebView.getSettings().setLoadWithOverviewMode(true);
-//				mWebView.getSettings().setMediaPlaybackRequiresUserGesture(true);
-//				mWebView.getSettings().setSupportMultipleWindows(false);
 				String webSetttings = getWebx().getField("webSetttings");
 				WebSettings settings = mWebView.getSettings();
 				settings.setMediaPlaybackRequiresUserGesture(true);
@@ -1153,14 +1119,14 @@ function debug(e){console.log(e)};
 	@Override
 	public void onClick(View v) {
 		switch(v.getId()) {
-			case R.id.cover:
-//				CMN.debug("toolbar_cover onClick", isMergedBook());
-				if(false) {
-					showDictTweaker(mWebView, a, this);
-					break;
-				}
-				a.showDictTweakerMain(this, mWebView);
-				break;
+//			case R.id.cover:
+////				CMN.debug("toolbar_cover onClick", isMergedBook());
+//				if(false) {
+//					showDictTweaker(mWebView, a, this);
+//					break;
+//				}
+//				a.showDictTweakerMain(this, mWebView);
+//				break;
 			case R.id.undo:
 				if(v.getAlpha()==1)mWebView.evaluateJavascript("document.execCommand('Undo')", null);
 				break;
@@ -1176,6 +1142,7 @@ function debug(e){console.log(e)};
 			case R.id.dopt:
 				showMoreToolsPopup(null, v);
 				break;
+			case R.id.titleBar:
 			case R.id.toolbar_title:
 //				CMN.debug("toolbar_title onClick");
 				mWebView.weblistHandler.pageSlider.bSuppressNxtTapZoom = CMN.now();
@@ -1190,9 +1157,9 @@ function debug(e){console.log(e)};
 				//else if(!mWebView.weblistHandler.isViewSingle()) {
 				else if(ViewUtils.getNthParentNonNull(mWebView.rl, 1).getId()==R.id.webholder) {
 					mWebView.setVisibility(View.GONE);
-				}
-				else {
-					toolbar_cover.performClick();
+				} else {
+					//toolbar_cover.performClick();
+					a.showDictTweakerMain(this, mWebView);
 				}
 				break;
 			case R.id.recess:
@@ -1947,13 +1914,18 @@ function debug(e){console.log(e)};
 		setCurrentDis(mWebView, position[0]);
 		
 		if(resposibleForThisWeb) {
+//			int minHeight = 0;
 			if(fromCombined) {
 				if(rl.getLayoutParams()!=null)
 					rl.getLayoutParams().height = -1;//LayoutParams.WRAP_CONTENT;
-				if (getContentFixedHeightWhenCombined()) {
+				if (verTex()) {
+					mWebView.getLayoutParams().height = a.root.getHeight()/2;
+				}
+				else if (getContentFixedHeightWhenCombined()) {
 					mWebView.getLayoutParams().height = a.root.getHeight();
 				} else {
 					mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+					
 				}
 				//mWebView.getLayoutParams().height = -1;
 			}
@@ -1974,6 +1946,10 @@ function debug(e){console.log(e)};
 				//???
 				//mWebView.weblistHandler.resetScrollbar(mWebView, false, false);
 			}
+//			if (rl.getMinimumHeight()!=minHeight) {
+//				CMN.debug("setMinimumHeight::", minHeight);
+//				mWebView.setMinimumHeight(minHeight);
+//			}
 		}
 		
 		if(!fromCombined)
