@@ -31,6 +31,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	public final Context context;
 	public Drawable leftDrawable;
 	public int[] texts;
+	public String[] textsArr;
 	private PopupMenuListener listener;
 	private final Runnable postDismissRunnable = this::dismiss;
 	private boolean bRecycle = false;
@@ -72,6 +73,7 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 	
 	public void initLayout(int[] texts, PopupMenuListener listener) {
 		this.texts = texts;
+		this.textsArr = null;
 		this.listener = listener;
 		this.tag = 0;
 		this.tag2 = null;
@@ -127,6 +129,50 @@ public class PopupMenuHelper implements View.OnClickListener, View.OnLongClickLi
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
+			}
+			if (GlobalOptions.isDark) {
+				sv.getBackground().setColorFilter(GlobalOptions.NEGATIVE_1);
+			}
+		}
+	}
+	
+	public void initLayout(String[] texts, PopupMenuListener listener) {
+		this.texts = null;
+		this.textsArr = texts;
+		this.listener = listener;
+		this.tag = 0;
+		this.tag2 = null;
+		if (lv.getChildCount()>0) {
+			lv.removeAllViews();
+		}
+		int padding = (int) (11* GlobalOptions.density);
+		int padding1 = (int) (32.8*GlobalOptions.density);
+		final int tc = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
+		for (int menuPos = 0; menuPos < texts.length; menuPos++) {
+			if(true) {
+				TextMenuView tv;
+				if (bRecycle && menuPos<tvArr.size()) {
+					tv = tvArr.get(menuPos);
+					//tv.setOnLongClickListener(null); // ???
+					tv.setActivated(false);
+				} else {
+					tv = new TextMenuView(context);
+					tv.setPadding(padding1, padding, padding1, padding);
+					tv.setGravity(Gravity.CENTER_VERTICAL);
+					tv.setSingleLine(true);
+					tv.setClickable(true);
+					tv.setOnClickListener(this);
+					tv.setOnLongClickListener(this);
+					tv.setBackground(ViewUtils.getThemeDrawable(context, R.attr.listChoiceBackgroundIndicator));
+					if (bRecycle) {
+						tvArr.add(tv);
+					}
+				}
+				tv.setText(texts[menuPos]);
+				tv.setId(menuPos);
+				tv.setTextColor(tc);
+				tv.leftDrawable = leftDrawable;
+				lv.addView(tv);
 			}
 			if (GlobalOptions.isDark) {
 				sv.getBackground().setColorFilter(GlobalOptions.NEGATIVE_1);

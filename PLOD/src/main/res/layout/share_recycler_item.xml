@@ -11,5 +11,5 @@
 	android:paddingBottom="18dp"
 	tools:text="HAPPY TO SHARE"
 	android:layout_y="5dp"
-	android:background="?attr/listChoiceBackgroundIndicator"
+	android:background="?android:attr/listChoiceBackgroundIndicator"
 	/>

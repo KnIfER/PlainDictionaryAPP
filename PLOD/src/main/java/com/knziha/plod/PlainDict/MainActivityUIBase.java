@@ -29,6 +29,7 @@ import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -6341,7 +6342,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
 			AppIconsAdapter shareAdapter;
 			if(dlg==null) {
-				shareAdapter=new AppIconsAdapter(this);
+				shareAdapter=new_AppIconsAdapter();
 				putReferencedObject(id, dlg=shareAdapter.shareDialog);
 			} else {
 				shareAdapter = (AppIconsAdapter) dlg.tag;
@@ -6378,7 +6379,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
 			AppIconsAdapter shareAdapter;
 			if(dlg==null) {
-				shareAdapter=new AppIconsAdapter(this);
+				shareAdapter=new_AppIconsAdapter();
 				putReferencedObject(id, dlg=shareAdapter.shareDialog);
 			} else {
 				shareAdapter = (AppIconsAdapter) dlg.tag;
@@ -6395,6 +6396,44 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//shareAdapter.pullAvailableApps(this, null, "happy");
 			//CMN.pt("拉取耗时：");
 		}
+	}
+	
+	private AppIconsAdapter new_AppIconsAdapter() {
+		final AppIconsAdapter ret = new AppIconsAdapter(this, this, mConfiguration);
+		ret.textPainter.setColor(AppBlack);
+		ret.tintListFilter = tintListFilter;
+		ret.itemClicker = v1 -> {
+			try {
+				AppIconsAdapter.ViewHolder vh = (AppIconsAdapter.ViewHolder) v1.getTag();
+				int pos = vh.getLayoutPosition()-ret.headBtnSz;
+				if (pos < 0) { // 选择分享方式
+					ret.shareLink = !ret.shareLink;
+					shareUrlOrText(ret.shareLink);
+				}
+				else { // 分享…
+					AppInfoBean appBean = ret.list.get(pos);
+					Intent shareIntent = new Intent(appBean.intent);
+					shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
+					shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					if (ret.shareLink && shareIntent.getData()!=null && shareIntent.getDataString().contains("localhost")) {
+						// 开启服务器
+						MainActivityUIBase act = this;
+						if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
+							((PDICMainActivity)act).startServer(true);
+						}
+					}
+					try {
+						startActivity(shareIntent);
+						ret.shareDialog.dismiss();
+					} catch (Exception e) {
+						showT(e);
+					}
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		};
+		return ret;
 	}
 	
 	public boolean getUsingDataV2() {

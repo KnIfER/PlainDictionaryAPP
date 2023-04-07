@@ -6,7 +6,7 @@
 	android:layout_height="85dp"
 	android:scaleType="fitCenter"
 	android:layout_gravity="center_horizontal"
-	android:background="?attr/listChoiceBackgroundIndicator">
+	android:background="?android:attr/listChoiceBackgroundIndicator">
 	<com.knziha.plod.widgets.DescriptiveImageView
 		android:id="@+id/app_icon_iv"
 		android:layout_width="match_parent"

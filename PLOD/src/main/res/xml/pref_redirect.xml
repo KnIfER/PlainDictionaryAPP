@@ -2,14 +2,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
-	tools:context="com.knziha.plod.preference.PlainSearchActivity"
+	tools:context="com.knziha.plod.preference.RedirectTargets"
 	android:key="dict"
 	android:title="  设置"
 	>
 
 	<PreferenceCategory
 		android:key="cat_1"
-		android:title="  复制搜索"
+		android:title="  重定向&quot;复制&quot;按钮"
 		app:icon="@drawable/ic_content_paste_black_24dp"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -17,20 +17,20 @@
 		android:clickable="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="dir_0"
+			android:key="0"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="  重定向&quot;复制&quot;按钮"
+			android:title="  启用"
 			/>
 		<Preference
-			android:key="dir_0_type"
+			android:key="0_type"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="  重定向至："
 			app:inlineSummary="true"
 			/>
 		<Preference
-			android:key="dir_0_name"
+			android:key="0_name"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="  指定包名："
@@ -41,7 +41,7 @@
 
 	<PreferenceCategory
 		android:key="cat_2"
-		android:title="  网页搜索"
+		android:title="  重定向&quot;网页搜索&quot;按钮"
 		app:icon="@drawable/ic_web"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -49,20 +49,20 @@
 		android:clickable="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="dir_1"
+			android:key="1"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="  重定向&quot;网页搜索&quot;按钮"
+			android:title="  启用"
 			/>
 		<Preference
-			android:key="dir_1_type"
+			android:key="1_type"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="  重定向至："
 			app:inlineSummary="true"
 			/>
 		<Preference
-			android:key="dir_1_name"
+			android:key="1_name"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="  指定包名："
@@ -73,19 +73,19 @@
 
 	<PreferenceCategory
 		android:key="cat_3"
-		android:title="  🔍搜索+"
+		android:title="🔍  搜索+"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
 		<Preference
-			android:key="dir_2_type"
+			android:key="2_type"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="  重定向至："
 			app:inlineSummary="true"
 			/>
 		<Preference
-			android:key="dir_2_name"
+			android:key="2_name"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="  指定包名："
@@ -93,5 +93,12 @@
 			/>
 	</PreferenceCategory>
 
+	<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		android:key="_"
+		android:persistent="false"
+		android:defaultValue="false"
+		android:title="  (xposed) 只加载一次配置"
+		android:summary=" 开启后更省电，但是无法动态读取修改后的配置。（生效后，刷新配置需划掉宿主APP）"
+		/>
 
 </PreferenceScreen>

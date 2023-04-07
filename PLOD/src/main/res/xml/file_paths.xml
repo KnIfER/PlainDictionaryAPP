@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <external-cache-path path="apks/" name="apks"/>
+    <data-path path="apks/" name="apks"/>
 </paths>
