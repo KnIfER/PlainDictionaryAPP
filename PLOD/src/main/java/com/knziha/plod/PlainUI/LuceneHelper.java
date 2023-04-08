@@ -99,52 +99,78 @@ public class LuceneHelper {
 		TopDocs docs;
 		if (results == null) {
 			results = new resultRecorderLucene(a, a.loadManager, hitsPerPage);
-			query = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
+			query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
 			CMN.debug("breaked query::", query);
 			boolean debug_query = false;// GlobalOptions.debug;
 			if (phrase.contains("\"") || debug_query) {
 				// https://blog.csdn.net/sinat_27171121/article/details/128172024
 				try {
-					String raw = query.toString();
-					CMN.debug("raw::", raw);
-					Pattern p = Pattern.compile("content:\"(.+?)\"");
-					Matcher m = p.matcher(raw);
-					StringBuffer sb = new StringBuffer();
+					String raw;
+					Pattern p = Pattern.compile("\"(.+?)\"");
+					boolean hasWildcardInQuote = false;
 					boolean found = false;
+					Matcher m = p.matcher(phrase);
 					while(m.find()) {
-						found = true;
-						m.appendReplacement(sb, "");
 						String raw_term = m.group(1);
-						int now = 0, last=-1;
-						// loop in "raw_term"
-						while (now < raw_term.length()) {
-							if (raw_term.charAt(now)==' ') {
-								boolean shouldStrip = true;
-								if (now-last-1 <= 1) shouldStrip = false;
-								if (shouldStrip) {
-									boolean quanYingWen = true;
-									for (int i = last+1; i < now; i++) {
-										if (WordBreakFilter.isBigram(raw_term.charAt(i))) {
-											quanYingWen = false;
-											break;
-										}
-									}
-									if(quanYingWen) shouldStrip = false;
-								}
-								if (shouldStrip) last = now;
-								else break;
-							}
-							now ++ ;
+						CMN.debug("raw_term::", raw_term);
+						if (raw_term.contains("?")||raw_term.contains("*")) {
+							hasWildcardInQuote = true;
+							break;
 						}
-						if (last > 0) raw_term = raw_term.substring(last+1);
-						sb.append("content:\"").append(raw_term).append("\"");
 					}
-					if (found || debug_query)
+					if (hasWildcardInQuote) {
+						// 双引号内有通配符，则不能传普通QueryParser解析出来的，因为通配符被QueryParser丢掉了。
+						raw = phrase;
+					} else {
+						p = Pattern.compile("content:\"(.+?)\"");
+						raw = query.toString();
+						CMN.debug("raw::", raw);
+						m = p.matcher(raw);
+						StringBuffer sb = new StringBuffer();
+						while(m.find()) {
+							found = true;
+							m.appendReplacement(sb, "");
+							String raw_term = m.group(1);
+							int now = 0, last=-1;
+							// loop in "raw_term"
+							while (now < raw_term.length()) {
+								if (raw_term.charAt(now)==' ') {
+									boolean shouldStrip = true;
+									if (now-last-1 <= 1) shouldStrip = false;
+									if (shouldStrip) {
+										boolean quanYingWen = true;
+										for (int i = last+1; i < now; i++) {
+											if (WordBreakFilter.isBigram(raw_term.charAt(i))) {
+												quanYingWen = false;
+												break;
+											}
+										}
+										if(quanYingWen) shouldStrip = false;
+									}
+									if (shouldStrip) last = now;
+									else break;
+								}
+								now ++ ;
+							}
+							if (last > 0) raw_term = raw_term.substring(last+1);
+							sb.append("content:\"").append(raw_term).append("\"");
+						}
+						if (found || debug_query) {
+							m.appendTail(sb);
+							raw = sb.toString();
+						}
+					}
+					
+					if (found || debug_query || hasWildcardInQuote)
 					{
-						m.appendTail(sb);
-						raw = sb.toString();
-						CMN.debug("修正前 query::", raw, query);
-						Query refQuery = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse(phrase);
+						CMN.debug("修正前 query::", raw, query, "hasWildcardInQuote="+hasWildcardInQuote);
+						Query refQuery;
+						if (hasWildcardInQuote) {
+							// 双引号内有通配符，直接分析phrase，忽略停止词、分词等的handle。
+							refQuery = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse(phrase);
+						} else {
+							refQuery = new QueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse(raw);
+						}
 //						refQuery = new QueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("content:\"brie* space\"");
 //						refQuery = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("brie* space");
 //						phraseQuery.add(new Term("content", "brie?"));
