@@ -412,6 +412,12 @@
 		opacity: 0.5;
 		padding-left: 10px;
 	}
+	#pageUpIcon, #pageDownIcon{
+		display: none;
+	}
+	.collapsible #pageUpIcon, .collapsible #pageDownIcon{
+		display: inline-block;
+	}
 	button {
 		display: inline-block;
 		position: relative;
@@ -1312,7 +1318,7 @@
 									h=inf.lastHeight;
 								}
 								else if(h>defP.offsetHeight-75) {
-									h=defP.offsetHeight-75;
+									h=defP.offsetHeight;
 								}
 							}
 							//if(inf.lastHeight!=h) {
@@ -1645,6 +1651,10 @@
 					e.scrolling=inf.scrollable?'auto' : 'no';
 				}
 				debug('box.style.height', inf.box.style.height);
+				if(inf.fm2) {
+					if(opt.fm2) inf.fbox.classList.add('collapsible');
+					else inf.fbox.classList.remove('collapsible');
+				}
 			}
 			
 			checkFakeScroll(inf);
@@ -2041,7 +2051,10 @@
 					h = lx.maxHeight;
 				}
 				//debug('initHeight='+h);
-				if(lx.fm2)lx.box.style.height=h+'px';
+				if(lx.fm2){
+					// todo handle verTex // if(opt.fm2 && lx.ver) lx.box.style.height=lx.maxHeight+'px';
+					lx.box.style.height=h+'px';
+				}
 				else lx.box.height=h;
 			}
 		};
