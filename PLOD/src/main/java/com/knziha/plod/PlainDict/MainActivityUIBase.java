@@ -102,6 +102,7 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.ConsoleMessage;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
@@ -534,7 +535,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			RestoreMarks(t, rootNode, doc);
 		}
 		if(!window.marked||1) {
-			t = window._mdbrUrl?app.remarkByUrl(sid.get(), _mdbrUrl):app.remark(sid.get(), currentPos);
+			t = window._mdbrUrl?app.remarkByUrl(sid.get(), _mdbrUrl, currentPos):app.remark(sid.get(), currentPos);
 	 		if(window._mdbrUrl)debug(t);
 			if(t) try{loadJs('//mdbr/annot.js', cb)}catch(e){window.loadJsCb=cb;app.loadJs(sid.get(),'annot.js')}
 			window.marked = 1;
@@ -7853,10 +7854,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//	return false;
 		//}
 		
-//		@Override
-//		public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-//			return true;
-//		}
+		@Override
+		public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+			if (GlobalOptions.debug) {
+				String msg = consoleMessage.message();
+				if (msg.startsWith("%c")) {
+					msg = msg.replaceAll("(color:.*?; )|(%c)", "");
+				}
+				CMN.debug("chromium: ["+consoleMessage.messageLevel()+"] "+msg + ", " + URLDecoder.decode(consoleMessage.sourceId()).replaceAll("\r|\n", " ")+":"+consoleMessage.lineNumber());
+			}
+			return true;
+		}
 		
 		@Override
 		public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
@@ -8153,7 +8161,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if("about:blank".equals(url)/* || !mWebView.active&&!mWebView.fromNet*/) {
 				return;
 			}
-			//CMN.debug("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic));
+			//CMN.debug("chromium: OPF ==> ", mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic), mWebView.presenter, url);
 			
 			//if(!mWebView.isloading && !mWebView.fromNet) return;
 			final WebViewListHandler wlh = mWebView.weblistHandler;
@@ -8810,7 +8818,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//CMN.Log("view::changed::res::", invoker);
 						}
 					}
-					if (slashIdx==schemaIdx+7 || url.regionMatches(slashIdx+1, "MdbR", 0, 4)) {
+					if (slashIdx==schemaIdx+7 || url.regionMatches(slashIdx+1, "MdbR", 0, 4) && !url.regionMatches(slashIdx+5, "icon", 0, 4)) {
 						try { // 内置资源
 							if (slashIdx == schemaIdx + 7) {
 								/** see{@link PlainWeb#loadJs} */
@@ -10507,6 +10515,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(data!=null)
 				CommonAssets.put(key, data);
 		}
+//		if(data==null) {
+//			CMN.debug("空的::", key);
+//			return null;
+//		}
 		return new ByteArrayInputStream(data);
 	}
 	

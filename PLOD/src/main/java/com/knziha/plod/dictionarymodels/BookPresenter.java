@@ -1573,7 +1573,11 @@ function debug(e){console.log(e)};
 		int schemaIdx = url.indexOf(":");
 		boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
 		if (mdbr) {
-			url=bookImpl.getEntryAt(mWebView.currentPos);
+			if (url.regionMatches(schemaIdx + 12, "view", 0, 4)) {
+			
+			} else {
+				url=bookImpl.getEntryAt(mWebView.currentPos);
+			}
 		} else {
 			if (isWebx) {
 				PlainWeb webx = getWebx();
@@ -2882,7 +2886,8 @@ function debug(e){console.log(e)};
 							
 							int schemaIdx = url.indexOf(":");
 							boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
-							boolean web = url.startsWith("http") && !mdbr;
+							boolean view = mdbr && url.regionMatches(schemaIdx + 12, "view", 0, 4);
+							boolean web = view || url.startsWith("http") && !mdbr;
 							if (web) {
 								url = book.getSaveUrl(mWebView); // 在线页面的标记  获取虚拟pos
 								entry = mWebView.title;
@@ -3014,6 +3019,13 @@ function debug(e){console.log(e)};
 						} else {
 							position = IU.TextToNumber_SIXTWO_LE(key);
 							sb = getMarksByPos(mWebView, sb, bid, position);
+						}
+					}
+					else if (url.regionMatches(schemaIdx + 12, "view", 0, 4)) {
+						// 查看剪贴板
+						long vPos = presenter.getBookMarkForWebUrl(url);
+						if (vPos!=-1) {
+							sb = getMarksByPos(mWebView, sb, bid, vPos);
 						}
 					}
 				}
@@ -4694,6 +4706,23 @@ function debug(e){console.log(e)};
 		sayToggleBookMarkResult((int) id, notifier);
 	}
 	
+	// todo 当删除笔记时，需要删除冗余的“书签”记录
+	private long getBookMarkForWebUrl(String url) {
+		long ret = -1;
+		SQLiteDatabase database = a.prepareHistoryCon().getDB();
+		String lex = getSaveUrl(mWebView);
+		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForUrl;
+		try {
+			stat.bindString(1, lex);
+			stat.bindLong(2, getId());
+			ret = stat.simpleQueryForLong();
+		} catch (Exception e) {
+			//CMN.debug(e);
+		}
+		return ret;
+	}
+	
+	// only for web url
 	public long ensureBookMark(WebViewmy mWebView) {
 		long ret = -1;
 		SQLiteDatabase database = a.prepareHistoryCon().getDB();
@@ -4987,6 +5016,7 @@ function debug(e){console.log(e)};
 		return "BookPresenter{" +
 				"bookImpl=" + (bookImpl==null?"":bookImpl.getDictionaryName()) +
 				", id=" + idStr +
+				", int(id)=" + (bookImpl==null?"NaN":getId()) +
 				", isMergedBook=" + isMergedBook() +
 				'}';
 	}

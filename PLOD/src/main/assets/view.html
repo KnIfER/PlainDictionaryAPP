@@ -20,6 +20,10 @@
 	<div id="bin">
 	</div>
 	<script>
+		window.debug = function(a,b,c,d,e){var t=[a,b,c,d,e];for(var i=5;i>=0;i--){if(t[i]===undefined)t[i]='';else break}console.log("%c fatal VIEW ","color:#333!important;background:#0FF;",t[0],t[1],t[2],t[3],t[4])}
+		window._mdbrUrl=location.href;
+		window.currentPos=0;
+		debug("查看剪贴板!");
 		function parseArgs() {
 			var sch = location.search; 
 			var params = {};

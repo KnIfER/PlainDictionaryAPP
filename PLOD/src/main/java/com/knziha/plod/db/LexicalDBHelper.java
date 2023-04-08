@@ -184,6 +184,7 @@ if (!VersionUtils.AnnotOff) {
 					", entry LONGVARCHAR" +
 					", lex LONGVARCHAR" +
 					", url LONGVARCHAR" + // 在线页面的标记  获取虚拟pos
+						/** 获取为某一web url的虚拟pos ，见 {@link com.knziha.plod.dictionarymodels.BookPresenter#ensureBookMark} */
 					", annot TEXT"+ // 标注json，用于恢复高亮/下划线标记
 					", type INTEGER"+ // 下划线/高亮
 					", noteType INTEGER"+ // 正文/气泡/脚注
