@@ -26,6 +26,7 @@ import com.knziha.plod.searchtasks.lucene.WordBreakFilter;
 import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Fields;
@@ -37,6 +38,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -97,13 +99,14 @@ public class LuceneHelper {
 		TopDocs docs;
 		if (results == null) {
 			results = new resultRecorderLucene(a, a.loadManager, hitsPerPage);
-			query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
+			query = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
 			CMN.debug("breaked query::", query);
 			boolean debug_query = false;// GlobalOptions.debug;
 			if (phrase.contains("\"") || debug_query) {
 				// https://blog.csdn.net/sinat_27171121/article/details/128172024
 				try {
 					String raw = query.toString();
+					CMN.debug("raw::", raw);
 					Pattern p = Pattern.compile("content:\"(.+?)\"");
 					Matcher m = p.matcher(raw);
 					StringBuffer sb = new StringBuffer();
@@ -140,8 +143,14 @@ public class LuceneHelper {
 					{
 						m.appendTail(sb);
 						raw = sb.toString();
-						//CMN.debug("修正前 query::", query);
-						Query refQuery = new QueryParser(Version.LUCENE_47, "content", new StandardAnalyzer(Version.LUCENE_47)).parse(raw);
+						CMN.debug("修正前 query::", raw, query);
+						Query refQuery = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse(phrase);
+//						refQuery = new QueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("content:\"brie* space\"");
+//						refQuery = new ComplexPhraseQueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("brie* space");
+//						phraseQuery.add(new Term("content", "brie?"));
+//						phraseQuery.add(new Term("content", "space"));
+//						refQuery = phraseQuery;
+						
 						CMN.debug("修正后 query::", refQuery.equals(new QueryParser(Version.LUCENE_47, "content", new StandardAnalyzer(Version.LUCENE_47)).parse(phrase)), refQuery);
 						query = refQuery;
 					}
