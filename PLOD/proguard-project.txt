@@ -31,6 +31,14 @@
      private int mMinDrawerMargin;
 }
 
+-keepclassmembers class com.knziha.plod.preference.RedirectTargets {
+     *;
+}
+
+-keepclassmembers class com.knziha.plod.l.K8 {
+     *;
+}
+
 # 没用
 -keepnames class knziha.plod.plaindict.PDICMainAppOptions {
 
