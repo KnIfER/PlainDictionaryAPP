@@ -313,12 +313,15 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		drawable.setBounds(0,0, sz, sz);
 		AllMenus.checkDrawable = drawable;
 		
-		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 13, 1, 7, 3, 2, 10, 14);
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 11, 7, 3, 2, 10, 14, 4, 5, 15, 6);
-		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9, 12, 7, 3, 2, 10, 14, 4, 5, 15, 6);
+		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 13, 1, 19, 3, 18, 7, 16, 2, 10, 14);
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9/*, 11*/, 19, 7, 16, 3/*, 2*/, 17, 10, 14, 4, 5, 15, 20, 6);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 8, 1, 9/*, 12*/, 19, 7, 16, 3/*, 2*/, 17, 10, 14, 4, 5, 15, 20, 6);
 		AllMenus.setItems(MainMenu);
 		//SingleContentMenu = Multi_ContentMenu = MainMenu;
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
+	
+		MenuItem menu = ViewUtils.findInMenu(AllMenusStamp, PDICMainAppOptions.floatShowMutliViewBtn()?R.id.viewMode1:R.id.viewMode);
+		if(menu!=null) menu.setVisible(false);
 		
 		hdl = new MyHandler(this);
 		checkLog(savedInstanceState);
@@ -393,6 +396,192 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		super.scanSettings();
 		CMN.AppColorChangedFlag &= ~thisActMask;
 		isCombinedSearching = opt.isFloatCombinedSearching();
+	}
+	
+	FloatViewToucher toucher;
+	class FloatViewToucher implements View.OnTouchListener{
+		GestureDetector mGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+			public boolean onDoubleTap(MotionEvent e) {
+				return false;
+			}
+			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				if (true && touch_id!=R.id.move0) {
+					exit();
+					return true;
+				}
+				return super.onSingleTapUp(e);
+			}
+			
+			@Override
+			public boolean onSingleTapConfirmed(MotionEvent e) {
+				if (false) {
+					exit();
+					return true;
+				}
+				return super.onSingleTapConfirmed(e);
+			}
+		});
+		float lastX;
+		float lastY;
+		boolean wantsMaximize=false;
+		boolean toggleFullScreen=false;
+		boolean wantedMaximize=false;
+		float DedockTheta;
+		float DedockAcc;
+		@Override
+		public boolean onTouch(View v, MotionEvent e) {
+			DedockTheta=_50_/2;
+			touch_id=v.getId();
+			mGestureDetector.onTouchEvent(e);
+			ViewGroup.LayoutParams  lpmy = mfv_lp;
+			getWindowManager().getDefaultDisplay().getMetrics(dm);
+			switch(e.getAction()){
+				case MotionEvent.ACTION_DOWN:{
+					lastX = e.getRawX();
+					lastY = e.getRawY();
+					DedockAcc=0;
+				} break;
+				case MotionEvent.ACTION_MOVE:{
+					int dy = (int) (e.getRawY() - lastY);
+					int dx = (int) (e.getRawX() - lastX);
+					boolean bProceed=true;
+					boolean MOT=false,MOB=false,MOL=false,MOR=false;
+					wantsMaximize=false;
+					if (touch_id == R.id.move0) {
+						MOT = true;
+						if (FVDOCKED) {//解Dock
+							DedockAcc += dx;
+						}
+						if (DedockAcc > DedockTheta) {
+							if (FVDOCKED)
+								//if (bREMUDSIZE) {
+								if (FVW_UNDOCKED != -1 && FVH_UNDOCKED != -1) {
+									lpmy.width = FVW_UNDOCKED;
+									lpmy.height = FVH_UNDOCKED;
+									mainfv.setLayoutParams(lpmy);
+								}
+							opt.setFVDocked(FVDOCKED = false);
+						}
+						
+						if (!FVDOCKED) {//未停靠
+							bProceed = false;
+							mainfv.setTranslationY(Math.min(dm.heightPixels - _50_, Math.max(mainfv.getTranslationY() + dy, 0)));
+							mainfv.setTranslationX(Math.min(dm.widthPixels - _50_, Math.max(mainfv.getTranslationX() + dx + DedockAcc, 0)));//应用累积项
+							DedockAcc = 0;
+							setDocked(false);
+							if (mainfv.getTranslationX() <= 1.45) {
+								wantsMaximize = true;
+								if (!wantedMaximize) {
+									lpmy.width = (int) (lpmy.width + _50_);
+									lpmy.height = (int) (lpmy.height + _50_);
+									mainfv.setLayoutParams(lpmy);
+									wantedMaximize = true;
+								}
+							} else if (wantedMaximize) {
+								lpmy.width = (int) (lpmy.width - _50_);
+								lpmy.height = (int) (lpmy.height - _50_);
+								setDocked(true);
+								mainfv.setLayoutParams(lpmy);
+								wantedMaximize = false;
+							}
+						}
+					}
+					if(bProceed){
+						if(MOT) {
+						
+						}else {
+							if(lastY<=mainfv.getTranslationY())
+								MOT=true;
+							if(lastY>=mainfv.getTranslationY()+lpmy.height)
+								MOB=true;
+							if(lastX<=mainfv.getTranslationX())
+								MOL=true;
+							if(lastX>=mainfv.getTranslationX()+lpmy.width)
+								MOR=true;
+						}
+						
+						if(MOT) {//move on the top
+							if(lpmy.height-dy<=_50_ && dy>0) {//size trim
+								dy=(int) (lpmy.height-_50_);
+							}
+							if(lpmy.height-dy>dm.heightPixels) dy=0;
+							int newTransY = (int) (mainfv.getTranslationY()+dy);
+							lpmy.height=Math.min(lpmy.height-dy, root.getHeight()-newTransY-(DockerMarginB+DockerMarginT));
+							mainfv.setLayoutParams(lpmy);
+							
+							//int newTop = (int) (mainfv.getTop() + dy);
+							mainfv.setTranslationY(newTransY);
+						} else if(MOB) {//move on the bottom
+							if(lpmy.height+dy<=_50_ && dy<0) {//size trim
+								dy=(int) (_50_-lpmy.height);
+							}
+							lpmy.height=lpmy.height+dy;
+							mainfv.setLayoutParams(lpmy);
+						}
+						
+						if(MOL){//move on the left
+							if(lpmy.width-dx<=FVMINWIDTH*dm.density) {//size trim
+								dx=(int) (lpmy.width-FVMINWIDTH*dm.density);
+							}
+							int newTransX = (int) (mainfv.getTranslationX()+dx);
+							lpmy.width=Math.min(lpmy.width-dx, dm.widthPixels-newTransX-(DockerMarginR+DockerMarginL));
+							mainfv.setLayoutParams(lpmy);
+							mainfv.setTranslationX(newTransX);
+						}else if(MOR){//move on the right
+							if(lpmy.width+dx<=FVMINWIDTH*dm.density) {//size trim
+								dx=(int) (FVMINWIDTH*dm.density-lpmy.width);
+							}
+							lpmy.width=lpmy.width+dx;
+							mainfv.setLayoutParams(lpmy);
+						}
+					}
+					//mainfv.setBottom(dm.heightPixels);
+					//ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
+					//lpmy.height=newTop;
+					//mainfv.setLayoutParams(lpmy);
+					//mainfv.postInvalidate();
+					lastX = e.getRawX();
+					lastY = e.getRawY();
+				} break;
+				case MotionEvent.ACTION_UP:{
+					if(wantsMaximize) {
+						float res_delta = e.getSource() == 100 ? 0 : _50_;
+						lpmy.width=dm.widthPixels-(DockerMarginR+DockerMarginL);
+						if (toggleFullScreen) {
+							toggleFullScreen = false;
+							int max = (int) (root.getHeight() - (DockerMarginB + DockerMarginT));
+							if (lpmy.height >= max) {
+								res_delta = _50_ * 1.5f;
+								mainfv.setTranslationY(max / 2 - res_delta);
+								lpmy.height = (int) (max / 2 + res_delta);
+							} else {
+								mainfv.setTranslationY(0);
+								lpmy.height = max;
+							}
+						} else {
+							FVW_UNDOCKED=(int) (lpmy.width-res_delta);
+							FVH_UNDOCKED=(int) (lpmy.height-res_delta);
+							lpmy.height=(int) (root.getHeight()-mainfv.getTranslationY()-(DockerMarginB+DockerMarginT));
+						}
+						mainfv.setTranslationX(0);
+						if (mainfv.getLayoutParams() != lpmy) {
+							mainfv.setLayoutParams(lpmy);
+						} else {
+							mainfv.requestLayout();
+						}
+						setDocked(true);
+						wantsMaximize=false;
+						wantedMaximize=false;
+						opt.setFVDocked(FVDOCKED=true);
+					}
+				} break;
+				default:
+					break;
+			}
+			return true;
+			
+		}
 	}
 
 	private OnGlobalLayoutListener keyObserver;
@@ -473,174 +662,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 			}});
 
-		GestureDetector mGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
-			public boolean onDoubleTap(MotionEvent e) {
-				return false;
-			}
-
-			@Override
-			public boolean onSingleTapUp(MotionEvent e) {
-				if (true && touch_id!=R.id.move0) {
-					exit();
-					return true;
-				}
-				return super.onSingleTapUp(e);
-			}
-
-			@Override
-			public boolean onSingleTapConfirmed(MotionEvent e) {
-				if (false) {
-					exit();
-					return true;
-				}
-				return super.onSingleTapConfirmed(e);
-			}
-		});
-
-		OnTouchListener Toucher = new OnTouchListener(){
-        	float lastX;
-        	float lastY;
-        	boolean wantsMaximize=false;
-        	boolean wantedMaximize=false;
-        	float DedockTheta;
-        	float DedockAcc;
-			@Override
-			public boolean onTouch(View v, MotionEvent e) {
-				DedockTheta=_50_/2;
-				touch_id=v.getId();
-				mGestureDetector.onTouchEvent(e);
-				ViewGroup.LayoutParams  lpmy = mfv_lp;
-				getWindowManager().getDefaultDisplay().getMetrics(dm);
-				switch(e.getAction()){
-					case MotionEvent.ACTION_DOWN:{
-						lastX = e.getRawX();
-						lastY = e.getRawY();
-						DedockAcc=0;
-					} break;
-					case MotionEvent.ACTION_MOVE:{
-						int dy = (int) (e.getRawY() - lastY);
-						int dx = (int) (e.getRawX() - lastX);
-						boolean bProceed=true;
-						boolean MOT=false,MOB=false,MOL=false,MOR=false;
-						wantsMaximize=false;
-						if (touch_id == R.id.move0) {
-							MOT = true;
-							if (FVDOCKED) {//解Dock
-								DedockAcc += dx;
-							}
-							if (DedockAcc > DedockTheta) {
-								if (FVDOCKED)
-									//if (bREMUDSIZE) {
-									if (FVW_UNDOCKED != -1 && FVH_UNDOCKED != -1) {
-										lpmy.width = FVW_UNDOCKED;
-										lpmy.height = FVH_UNDOCKED;
-										mainfv.setLayoutParams(lpmy);
-									}
-								opt.setFVDocked(FVDOCKED = false);
-							}
-
-							if (!FVDOCKED) {//未停靠
-								bProceed = false;
-								mainfv.setTranslationY(Math.min(dm.heightPixels - _50_, Math.max(mainfv.getTranslationY() + dy, 0)));
-								mainfv.setTranslationX(Math.min(dm.widthPixels - _50_, Math.max(mainfv.getTranslationX() + dx + DedockAcc, 0)));//应用累积项
-								DedockAcc = 0;
-								setDocked(false);
-								if (mainfv.getTranslationX() <= 1.45) {
-									wantsMaximize = true;
-									if (!wantedMaximize) {
-										lpmy.width = (int) (lpmy.width + _50_);
-										lpmy.height = (int) (lpmy.height + _50_);
-										mainfv.setLayoutParams(lpmy);
-										wantedMaximize = true;
-									}
-								} else if (wantedMaximize) {
-									lpmy.width = (int) (lpmy.width - _50_);
-									lpmy.height = (int) (lpmy.height - _50_);
-									setDocked(true);
-									mainfv.setLayoutParams(lpmy);
-									wantedMaximize = false;
-								}
-							}
-						}
-						if(bProceed){
-							if(MOT) {
-
-							}else {
-								if(lastY<=mainfv.getTranslationY())
-									MOT=true;
-								if(lastY>=mainfv.getTranslationY()+lpmy.height)
-									MOB=true;
-								if(lastX<=mainfv.getTranslationX())
-									MOL=true;
-								if(lastX>=mainfv.getTranslationX()+lpmy.width)
-									MOR=true;
-							}
-
-							if(MOT) {//move on the top
-								if(lpmy.height-dy<=_50_ && dy>0) {//size trim
-									dy=(int) (lpmy.height-_50_);
-								}
-								if(lpmy.height-dy>dm.heightPixels) dy=0;
-								int newTransY = (int) (mainfv.getTranslationY()+dy);
-								lpmy.height=Math.min(lpmy.height-dy, root.getHeight()-newTransY-(DockerMarginB+DockerMarginT));
-								mainfv.setLayoutParams(lpmy);
-
-								//int newTop = (int) (mainfv.getTop() + dy);
-								mainfv.setTranslationY(newTransY);
-							} else if(MOB) {//move on the bottom
-								if(lpmy.height+dy<=_50_ && dy<0) {//size trim
-									dy=(int) (_50_-lpmy.height);
-								}
-								lpmy.height=lpmy.height+dy;
-								mainfv.setLayoutParams(lpmy);
-							}
-
-							if(MOL){//move on the left
-								if(lpmy.width-dx<=FVMINWIDTH*dm.density) {//size trim
-									dx=(int) (lpmy.width-FVMINWIDTH*dm.density);
-								}
-								int newTransX = (int) (mainfv.getTranslationX()+dx);
-								lpmy.width=Math.min(lpmy.width-dx, dm.widthPixels-newTransX-(DockerMarginR+DockerMarginL));
-								mainfv.setLayoutParams(lpmy);
-								mainfv.setTranslationX(newTransX);
-							}else if(MOR){//move on the right
-								if(lpmy.width+dx<=FVMINWIDTH*dm.density) {//size trim
-									dx=(int) (FVMINWIDTH*dm.density-lpmy.width);
-								}
-								lpmy.width=lpmy.width+dx;
-								mainfv.setLayoutParams(lpmy);
-							}
-						}
-						//mainfv.setBottom(dm.heightPixels);
-						//ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
-						//lpmy.height=newTop;
-						//mainfv.setLayoutParams(lpmy);
-						//mainfv.postInvalidate();
-						lastX = e.getRawX();
-						lastY = e.getRawY();
-					} break;
-					case MotionEvent.ACTION_UP:{
-						if(wantsMaximize) {
-							FVW_UNDOCKED=(int) (lpmy.width-_50_);
-							FVH_UNDOCKED=(int) (lpmy.height-_50_);
-							lpmy.width=dm.widthPixels-(DockerMarginR+DockerMarginL);
-							lpmy.height=(int) (root.getHeight()-mainfv.getTranslationY()-(DockerMarginB+DockerMarginT));
-							mainfv.setTranslationX(0);
-							mainfv.setLayoutParams(lpmy);
-							setDocked(true);
-							wantsMaximize=false;
-							wantedMaximize=false;
-							opt.setFVDocked(FVDOCKED=true);
-						}
-					} break;
-					default:
-					break;
-				}
-				return true;
-			
-		}};
-		toolbar.findViewById(R.id.move0).setOnTouchListener(Toucher);
-        root.setOnTouchListener(Toucher);
+		toucher = new FloatViewToucher();
+		toolbar.findViewById(R.id.move0).setOnTouchListener(toucher);
+        root.setOnTouchListener(toucher);
 
     	systemIntialized=true;
     	
@@ -819,14 +843,14 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			//返回
 			case R.id.ivBack:{
 				if((etSearch_toolbarMode&1)==0) {
-					//CMN.debug("search::");
+					CMN.debug("search::");
 					//bWantsSelection=true;
 					if(etSearch.getText().toString().trim().length()>0) {
 						bIsFirstLaunch=true;
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 					}
 				} else {
-					//CMN.debug("back::");
+					CMN.debug("back::");
 					contentUIData.webcontentlister.setVisibility(View.GONE);
 					bWantsSelection=false;
 					if(webSingleholder.getChildCount()!=0) {
@@ -861,8 +885,23 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(isLongClicked) break;
 				weblistHandler.toggleFoldAll();
 			} break;
-            case R.id.toolbar_action2:{//切换词典
+			case R.id.max:{
 				if(isLongClicked) break;
+				toucher.wantsMaximize = true;
+				toucher.toggleFullScreen = true;
+				MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0);
+				evt.setSource(100);
+				toucher.onTouch(toolbar.findViewById(R.id.move0), evt);
+				evt.recycle();
+			} break;
+            case R.id.toolbar_action2:{//切换词典
+				if(isLongClicked){
+					if (isContentViewAttached()) {
+						weblistHandler.showJumpListDialog();
+						closeMenu = ret = true;
+					}
+					break;
+				}
 				showChooseDictDialog(0);
 			} break;
             case R.id.toolbar_action3:{//切换分组

@@ -287,7 +287,7 @@ public class ListViewAdapter extends BasicAdapter {
 //			weblistHandler. todo
 //		}
 		
-		if(PDICMainAppOptions.revisitOnBackPressed())
+		if(PDICMainAppOptions.revisitOnBackPressed() && !a.skipCleanPage)
 		if (/*userCLick && */lstClick || a.click_handled_not && PDICMainAppOptions.clearHistoryOnTurnPage()) {
 			mWebView.cleanPage = true;
 			//if (mWebView.isloading || mWebView.bPageStarted) mWebView.cleanPage = true;

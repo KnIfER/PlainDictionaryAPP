@@ -509,7 +509,8 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=34, shift=1) public void uncheckVersionBefore_5_4(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
 
-	@Metaline(flagPos=35) public boolean isMergedBook() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=35) public boolean isMergedBook_real() { firstFlag=firstFlag; throw new RuntimeException();}
+	public boolean isMergedBook() { return isMergedBook_real()||getDictionaryName().equals("empty"); }
 	@Metaline(flagPos=35) public void isMergedBook(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=36) public boolean getEntryJumpList(){ firstFlag=firstFlag; throw new RuntimeException(); }

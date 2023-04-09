@@ -1,5 +1,6 @@
 package com.knziha.plod.settings;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,7 +40,9 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 		super.onCreate(savedInstanceState);
 		
 		multiMode = PDICMainAppOptions.multiViewMode();
-		int where = getActivity().getIntent().getIntExtra("where", 0);
+		Intent intent = getActivity().getIntent();
+		int where = intent.getIntExtra("where", 0);
+		boolean float_ = intent.hasExtra("float");
 		String whStr = "cat"+where;
 		String whStr1 = where==2?"cat"+-1:null;
 		
@@ -96,8 +99,12 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 							init_switch_preference(this, "neo", PDICMainAppOptions.entryInNewWindowMerge(), null, null, p);
 							break;
 						case "debug":
-							init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null, p)
+							init_switch_preference(this, key, PDICMainAppOptions.debug(), null, null, p)
 									.setVisible(BuildConfig.DEBUG);
+							break;
+						case "bBtn":
+							init_switch_preference(this, key, PDICMainAppOptions.floatShowMutliViewBtn(), null, null, p)
+									.setVisible(float_);
 							break;
 						case "neo1":
 							init_switch_preference(this, "neo1", PDICMainAppOptions.entryInNewWindowSingle(), null, null, p);
@@ -295,6 +302,12 @@ public class Multiview extends PlainSettingsFragment implements Preference.OnPre
 					WebView.setWebContentsDebuggingEnabled(true);
 					MdictServerMobile.getRemoteServerRes("/李白全集.0.txt", true);
 					getSettingActivity().showT(MdictServerMobile.remoteDebugServer);
+				}
+			break;
+			case "bBtn":
+				PDICMainAppOptions.floatShowMutliViewBtn((Boolean) newValue);
+				if (!PDICMainAppOptions.floatShowMutliViewBtn()) {
+					getSettingActivity().showT("隐藏按钮后可从菜单打开");
 				}
 			break;
 			case "tz":

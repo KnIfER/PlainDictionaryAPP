@@ -36,4 +36,14 @@
 
 <!--15--><item android:title="点击查词 | 设置" android:id="@+id/tapSch1" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
+<!--16--><item android:title="查看剪贴板" android:id="@+id/viewPaste"  android:checkable="true" android:icon="@drawable/ic_baseline_clear_96" app:showAsAction="never"/>
+
+<!--17--><item android:title="切换最大化" android:id="@+id/max"  android:checkable="true" android:icon="@drawable/ic_fullscreen_black_96dp" app:showAsAction="always"/>
+
+<!--18--><item android:title="切换最大化" android:id="@+id/max"  android:checkable="true" android:icon="@drawable/ic_fullscreen_black_96dp" app:showAsAction="never"/>
+
+<!--19--><item android:title="主程序中搜索" android:id="@+id/main"  android:checkable="true" app:enabled="false" app:showAsAction="never" android:enabled="false"/>
+
+<!--20--><item android:title="多页面设置" android:id="@+id/viewMode1" android:icon="@drawable/ic_viewpager_carousel_vertical" app:showAsAction="never" />
+
 </menu>

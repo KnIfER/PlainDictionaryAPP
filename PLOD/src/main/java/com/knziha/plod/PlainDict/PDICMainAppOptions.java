@@ -3523,5 +3523,8 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	@Metaline(flagPos=49) public static boolean alwaysFetchAllDBrowser() { NinthFlag|=Z; throw new RuntimeException();}
 	@Metaline(flagPos=49) public static void alwaysFetchAllDBrowser(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
 	
+	@Metaline(flagPos=50, shift=1) public static boolean floatShowMutliViewBtn() { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static void floatShowMutliViewBtn(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
+	
 	
 }

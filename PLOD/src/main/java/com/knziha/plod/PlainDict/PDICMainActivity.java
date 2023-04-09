@@ -1008,7 +1008,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 		
 	// 															23/*随机词条*/
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 27/*, 4*/, 13, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 25, 24, 12);
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 27/*, 4*/, 13, 14/*翻译*/, 2, /*16*/28/*查看剪贴板*/, 3/*记忆位置*/, 9, 25, 24, 12);
 		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 27/*, 4*/, 13, 14, 1, 2/*, 15*/, 21/*记忆位置*/, 9, 25, 10, 24, 12);
 		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 27, 4, 0, 22, 28, 7/*翻阅模式*/, 8/*分字搜索*/, 26, 20/*搜索工具栏*//*, 17, 18*//*, 19*/);
 		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 27, 4, 0, 22/*, 19*/, 28, 7, 26, 20, 5, 6);
@@ -1872,7 +1872,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			//onMenuItemClick(anyMenu(R.id.viewPaste, null));
 			
-			if(CMN.testFLoatSearch)
+//			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 				
 				//showT(CMN.Log("getRemPos", opt.getRemPos(), "bottomNaVWeb", PDICMainAppOptions.bottomNavWeb1(), "cs", opt.singleTapSchMode()));

@@ -416,6 +416,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	boolean bShowLoadErr=true;
 	public boolean restLastSch;
 	public boolean isCombinedSearching;
+	public boolean skipCleanPage;
 	public String CombinedSearchTask_lastKey;
 	//public HashMap<CharSequence,byte[]> mBookProjects;
 	//public HashSet<CharSequence> dirtyMap;
@@ -810,27 +811,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						adaptermy.notifyDataSetChanged();
 						postPutName(550);
 						if (result != EmptyBook) {
+							//lv.setSelection(currentDictionary.lvPos);
+							lv.setSelectionFromTop(result.lvPos, result.lvPosOff);
 							if (TextUtils.getTrimmedLength(etSearch.getText()) > 0
 									&& (dictPicker.autoSchPDict()
 									|| this instanceof FloatSearchActivity
 									|| dictPicker.underlined != null && dictPicker.underlined.contains(currentDictionary.getId()))
 							) {
-								//CMN.Log("auto_search!......");
+								//CMN.debug("auto_search!......");
 								lv_matched = false;
 								if (prvNxt && opt.getDimScrollbarForPrvNxt()) {
 									ViewUtils.dimScrollbar(lv, false);
 								}
 								boolean tmp = isCombinedSearching;
 								isCombinedSearching = false;
+								skipCleanPage = true;
 								tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
 								isCombinedSearching = tmp;
+								skipCleanPage = false;
 								//lv.setFastScrollEnabled(true);
 								if (prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
 									return lv_matched;
 								}
-							} else {
-								//lv.setSelection(currentDictionary.lvPos);
-								lv.setSelectionFromTop(result.lvPos, result.lvPosOff);
 							}
 						} else if (prvNxt) {
 							return false;
@@ -3338,12 +3340,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** 0-搜索  1-返回  2-删除  4-撤销   */
 	public boolean etSearch_ToToolbarMode(int mode) {
 		//CMN.Log("etSearch_ToToolbarMode::", mode);
-		if(thisActType==ActType.PlainDict) {
+		if (thisActType == ActType.PlainDict) {
 //			ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
 //					.setIcon(!isContentViewAttached()?R.drawable.ic_search_24k:R.drawable.ic_back_material);
-			int id  = isContentViewAttached()&&!accessMan.isEnabled()?R.id.ivBack:R.id.multiline;
-			if(id!=ivBack.getId()) {
-				ivBack.setImageResource(id==R.id.multiline?R.drawable.ic_menu_material:R.drawable.back_toolbar);
+			int id = isContentViewAttached() && !accessMan.isEnabled() ? R.id.ivBack : R.id.multiline;
+			if (id != ivBack.getId()) {
+				ivBack.setImageResource(id == R.id.multiline ? R.drawable.ic_menu_material : R.drawable.back_toolbar);
 				ivBack.setId(id);
 			}
 			return true;
@@ -6743,24 +6745,61 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			case R.id.viewPaste:{
+				String prefx = "http://mdbr.com/view.jsp?q=";
+				String url = prefx + SU.encode(String.valueOf(getFloatBtn().getPrimaryClip()));
 				WebViewmy wv = weblistHandler.getMergedFrame();
-				weblistHandler.setViewMode(new resultRecorderCombined(this, new ArrayList<>(), ""), 1, wv);
-				weblistHandler.initMergedFrame(1, false, true);
-				if (this instanceof PDICMainActivity) {
-					((PDICMainActivity) this).retachContentView();
+				if (isContentViewAttached()
+						&& !(weblistHandler.getWebContext()==wv && wv.getUrl().startsWith(prefx))
+						|| false) {
+					WebViewmy finalWv = wlh.getWebContext();
+					wlh = getRandomPageHandler(true, true, null);
+					wv = wlh.getMergedFrame();
+					wlh.viewContent();
+					wlh.setViewMode(null, 0, wv);
+					wlh.bShowInPopup=true;
+					wlh.bMergeFrames=0;
+					wlh.initMergedFrame(0, true, false);
+					wlh.popupContentView(null, url);
+					wlh.pageSlider.setWebview(wv, null);
+					wlh.resetScrollbar();
+					if (finalWv!=null && finalWv.bIsActionMenuShown) {
+						WebViewmy finalWv1 = wv;
+						finalWv.evaluateJavascript("getSelection().toString()", value -> {
+							String newKey = "";
+							if (value.length() > 2) {
+								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+								if (value.length() > 0) {
+									newKey = value;
+								}
+							}
+							CMN.debug("newKey::", newKey);
+							if (!TextUtils.isEmpty(newKey)) {
+								finalWv1.loadUrl(prefx + SU.encode(newKey));
+							} else {
+								finalWv1.loadUrl(url);
+							}
+						});
+					} else {
+						wv.loadUrl(url);
+					}
 				} else {
-					viewContent(weblistHandler);
+					weblistHandler.setViewMode(new resultRecorderCombined(this, new ArrayList<>(), ""), 1, wv);
+					weblistHandler.initMergedFrame(1, false, true);
+					if (this instanceof PDICMainActivity) {
+						((PDICMainActivity) this).retachContentView();
+					} else {
+						viewContent(weblistHandler);
+					}
+					wv.loadUrl(url);
 				}
-				String url = "http://mdbr.com/view.jsp?q=" + SU.encode(String.valueOf(getFloatBtn().getPrimaryClip()));
-				wv.loadUrl(url);
-				CMN.debug(url);
 			} break;
-			case R.id.viewMode:{
+			case R.id.viewMode:
+			case R.id.viewMode1:{
 				boolean bSet = isLongClicked ^ PDICMainAppOptions.swapeMultiViewBtnFn();
 				if (bSet) {
 					launchSettings(Multiview.id, Multiview.requestCode);
 				}
-				MenuItemImpl tagHolder = getMenuSTd(mmi);
+				MenuItemImpl tagHolder = mmi.getItemId()==R.id.viewMode?getMenuSTd(mmi):getMenuSTd(mmi.getItemId());
 				//CMN.debug("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null || dd.isDark!=GlobalOptions.isDark) {
@@ -6846,6 +6885,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					toggleBatchSearch();
 				}
 			}  break;
+//			case R.id.setToMultiMode:{
+//				if(!isCombinedSearching) {
+//					toggleBatchSearch();
+//				}
+//			}  break;
 			case R.id.setToMultiMode:{
 				if(!isCombinedSearching) {
 					toggleBatchSearch();
@@ -7493,6 +7537,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		Intent intent = new Intent()
 				.putExtra("realm", id)
 				.setClass(this, SettingsActivity.class);
+		if (thisActType==ActType.FloatSearch) {
+			intent.putExtra("float", 1);
+		}
 		if (id==Multiview.id) {
 			int num = -1;
 			WebViewmy wv = weblistHandler.getWebContextNonNull();
@@ -8808,6 +8855,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return emptyResponse;
 				}
 				boolean merge = invoker.isMergedBook() || mWebView.merge;
+//				CMN.debug("merge::", merge, invoker, mWebView.merge);
 				if (mdbr) {
 					int slashIdx = url.indexOf("/", schemaIdx+7);
 					if(slashIdx<0) slashIdx = url.length();
@@ -9764,6 +9812,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (PDICMainAppOptions.showMoreOpt_intentForMultiView()) {
 					PDICMainAppOptions.showMoreOpt_intentForMultiView(false);
 					weblistHandler.getMergedFrame().evaluateJavascript("showSettings()", null);
+				}
+				if (thisActType==ActType.FloatSearch) {
+					MenuItem menu = ViewUtils.findInMenu(AllMenusStamp, R.id.viewMode);
+					if(menu!=null) menu.setVisible(PDICMainAppOptions.floatShowMutliViewBtn());
+					menu = ViewUtils.findInMenu(AllMenusStamp, R.id.viewMode1);
+					if(menu!=null) menu.setVisible(!PDICMainAppOptions.floatShowMutliViewBtn());
 				}
 			} break;
 			case NightMode.requestCode:{

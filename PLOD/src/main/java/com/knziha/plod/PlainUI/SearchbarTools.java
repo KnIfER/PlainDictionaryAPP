@@ -789,9 +789,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				refresh();
 			}
 		}
-		if (this==a.etTools && a.ivBack.getId()!=R.id.multiline) {
-			a.ivBack.setImageResource(R.drawable.ic_menu_material);
-			a.ivBack.setId(R.id.multiline);
+		if (a.thisActType == MainActivityUIBase.ActType.PlainDict) {
+			if (this==a.etTools && a.ivBack.getId()!=R.id.multiline) {
+				a.ivBack.setImageResource(R.drawable.ic_menu_material);
+				a.ivBack.setId(R.id.multiline);
+			}
 		}
 		//etSearch.setSelectAllOnFocus(PDICMainAppOptions.autoSelectAllEtTool());
 		if (PDICMainAppOptions.autoSelectAllEtTool() && !a.keyboardShown) {

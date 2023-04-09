@@ -147,6 +147,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	static {
 		try {
 			EmptyBook = new BookPresenter(new File("empty"), null, 1);
+			EmptyBook.isMergedBook(true);
 		} catch (IOException ignored) { }
 	}
 	public BookPresenter presenter = EmptyBook;

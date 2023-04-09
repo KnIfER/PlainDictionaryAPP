@@ -15,6 +15,14 @@
 		app:allowDividerBelow="true"
 		/>
 
+	<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		android:key="bBtn"
+		android:persistent="false"
+		android:defaultValue="true"
+		android:title="在浮动搜索显示设置按钮"
+		app:allowDividerBelow="true"
+		/>
+
 	<PreferenceCategory
 		android:key="cat-1"
 		android:title="单页面模式（同一词典）"
