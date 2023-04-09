@@ -1872,7 +1872,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			//onMenuItemClick(anyMenu(R.id.viewPaste, null));
 			
-//			if(CMN.testFLoatSearch)
+			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 				
 				//showT(CMN.Log("getRemPos", opt.getRemPos(), "bottomNaVWeb", PDICMainAppOptions.bottomNavWeb1(), "cs", opt.singleTapSchMode()));
