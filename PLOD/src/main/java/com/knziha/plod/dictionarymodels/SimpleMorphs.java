@@ -97,17 +97,20 @@ public class SimpleMorphs extends DictionaryAdapter {
 					//return lookUp(d, keyword.substring(0, len - 1));
 				}
 			}
-			else if (ch>='0'&&ch<='9') {
-				int ln = len - 1;
-				do {
-					if (ln-1 > 0) {
-						ln--;
-						ch = keyword.charAt(ln - 1);
-					} else {
-						break;
-					}
-				} while(ch>='0'&&ch<='9');
-				return lookUp(keyword.substring(0, ln));
+			else {
+				if (ch>='0'&&ch<='9') {
+					int ln = len;
+					do {
+						if (ln-1 > 0) {
+							ln--;
+							ch = keyword.charAt(ln - 1);
+						} else {
+							break;
+						}
+					} while(ch>='0'&&ch<='9');
+					//CMN.debug("ch>='0'&&ch<='9'", keyword.substring(0, ln), );
+					return lookUp(d, keyword.substring(0, ln));
+				}
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
