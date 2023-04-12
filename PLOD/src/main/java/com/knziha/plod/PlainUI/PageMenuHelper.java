@@ -145,10 +145,11 @@ public class PageMenuHelper {
 				case Nav_main:
 					ret = new int[]{
 						R.layout.page_nav_util
+						, R.string.fold_exp_all
 						,R.string.bmAdd
 						, R.string.page_fuzhi
 						, R.layout.page_dopt_refresh
-						, R.string.dict_opt
+						, R.string.dict_opt // dynamic
 						//, R.string.page_dakai
 						, R.string.page_ucc
 					};
@@ -199,7 +200,8 @@ public class PageMenuHelper {
 			utils.put(type.ordinal(), ret);
 		}
 		if(type==Nav_main) {
-			ret[4] = mWebView.merge?R.string.pageOpt:R.string.dict_opt;
+			ret[1] = (mWebView.merge||ViewUtils.getNthParentNonNull(mWebView.rl, 1).getId()==R.id.webholder)?R.string.fold_exp_all:0;
+			ret[5] = mWebView.merge?R.string.pageOpt:R.string.dict_opt;
 		}
 		return ret;
 	}

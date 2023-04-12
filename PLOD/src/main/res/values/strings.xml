@@ -170,6 +170,7 @@
 	<string name="save_bookmark">Save bookmark</string>
 	<string name="hint_search_result">Hint search result</string>
 	<string name="fold_all">Fold all</string>
+	<string name="fold_exp_all">Expand / Fold all</string>
 	<string name="Commit">commit</string>
 	<string name="reset">Reset</string>
 	<string name="save_as">Save as</string>

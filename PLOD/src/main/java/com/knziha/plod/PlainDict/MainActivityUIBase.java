@@ -7105,6 +7105,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		popupMenuHelper.dismiss();
 		switch (v.getId()) {
+			case R.string.fold_all:
+			case R.string.fold_exp_all:
+				if(weblist==null) weblist = weblistHandler;
+				weblist.toggleFoldAll();
+				break;
 			/* 添加书签 */
 			case R.string.bmAdd:
 				mWebView.presenter.toggleBookMark(mWebView, null, true);
@@ -8178,15 +8183,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageStarted::"+mWebView.wvclient, url);
+			CMN.debug("onPageStarted::", url, mWebView.wvclient);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
+				mWebView.recUrl(url);
 				final BookPresenter invoker = mWebView.presenter;
+				CMN.debug("invoker::", invoker);
 				if(invoker.getIsWebx()) {
 					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
 				}
 				mWebView.initScale();
-				mWebView.recUrl(url);
 			}
 			if(view==wordPopup.mWebView) {
 				wordPopup.onPageStart(url);

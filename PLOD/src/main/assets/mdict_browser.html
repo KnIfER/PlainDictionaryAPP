@@ -695,7 +695,7 @@
 			width:15px;
 			height:36px;
 			right:10px;
-			background-color: #03a9f4;
+			background-color: #03a8f4ca;
 			border-radius: 10px;
 			z-index:999;
 			display:none;
@@ -718,7 +718,7 @@
 			display: block;
 			transform: rotate(0deg);
 			xbackground-image: url(/MdbR/expand.svg);
-			transition: 100ms;
+			xtransition: 100ms;
 			background-repeat: no-repeat;
 			background-size: 1em 1em;
 			background-position-x: center;
@@ -2342,10 +2342,10 @@
 						return;
 					}
 				}
-				//debug('checkFrame-expand->', e, dex)
 				e.waiting = false;
 				var fx=getFrame(e);
 				fx.height=h;
+				//debug('checkFrame-expand->', fx.height, e, dex)
 				checkUrl(e);
 				if(e.title.parentNode && !e.box.parentNode){
 					defP.insertBefore(e.box, e.title.nextSibling);
@@ -3404,22 +3404,28 @@
 			for (var i=0,fx; fx=frames[i++];) {
 				if(!fx.fold){
 					fold = true;
-					fx.touched = true; if(_t&&!_t0)_t=0;
-					foldFrame(fx);
+					break;
 				}
 			}
-			if(!fold) {
+			if(!fold) 
 				unfoldAll();
-			}
+			else 
+				foldAll();
 		}
 
 		function unfoldAll(){
 			//if(opt.focusMode==1) set...
+			var tmp = opt.focusMode;
+			opt.focusMode = 0;
 			for (var i=0,fx; fx=frames[i++];) {
+				//debug('unfoldAll', i, fx, fx.fold, fx.waiting)
 				unfoldFrame(fx);
 				checkFrame(fx);
+				checkUrl(fx);
 				fx.touched = true; if(_t&&!_t0)_t=0;
 			}
+			opt.focusMode = tmp;
+			//startLazyLoadFrames(0);
 		}
 
 		function unFoldCurrent(){

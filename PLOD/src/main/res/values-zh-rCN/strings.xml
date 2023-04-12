@@ -161,6 +161,7 @@
 	<string name="save_bookmark">保存书签</string>
 	<string name="hint_search_result">提示结果</string>
 	<string name="fold_all">折叠全部</string>
+	<string name="fold_exp_all">展开 / 折叠全部</string>
 	<string name="Commit">词典选项</string>
 	<string name="inter_sel">间选 | 间不选</string>
 	<string name="sel_inter">间选</string>
