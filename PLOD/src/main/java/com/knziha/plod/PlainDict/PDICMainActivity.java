@@ -1203,6 +1203,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				this.extraText = extraText;
 				if(extraText!=null) {
+					restLastSch = false;
 					if (intent.hasExtra(FloatBtn.EXTRA_FROMPASTE)) {
 						if (extraText.equals(FloatBtn.EXTRA_GETTEXT)) {
 							extraText = null;
@@ -1763,11 +1764,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			showChooseDictDialog(0);
 		}
 		
-		restLastSch = opt.restoreLastSch();
-		if(restLastSch) {
-			etTools.LoadHistory(null);
-		}
-		
 		//tg
 		//com.knziha.plod.searchtasks.lucene.LuceneTest.test(this);
 		//showDictionaryManager();
@@ -1902,8 +1898,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//JumpToWord("crayon", 1);
 
 		//Intent i = new Intent(this,dict_manager_activity.class); startActivity(i);
+		restLastSch = opt.restoreLastSch();
 		processIntent(getIntent(), true);
-
+		
+		if(restLastSch) {
+			etTools.LoadHistory(null);
+		}
+		
 		refreshUIColors();
 
 		//lv.setFastScrollEnabled(false);
