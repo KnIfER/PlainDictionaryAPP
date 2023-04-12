@@ -715,7 +715,7 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	public final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes' class=\"_PDict\"><head><style class=\"_PDict\">html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}";
+	public final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes' class=\"_PDict\"><head><style class=\"_PDict\">html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}.PLOD_UL{border-bottom:2.5px solid black}";
 	public final static String htmlHeadEndTag = "</head>";
 	public final static String htmlEnd="</html>";
 
@@ -2290,6 +2290,11 @@ function debug(e){console.log(e)};
 					.append(zhoHor() ? "justify-content:center;" : "")
 					.append(verTex() ? (verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
 					.append("}");
+			if (verTex()) {
+				htmlBuilder.append(".PLOD_UL{");
+				htmlBuilder.append(verTexSt()?"border-right":"border-left");
+				htmlBuilder.append(": 2.5px solid rgba(0 0 0 / 58%);border-bottom:unset}");
+			}
 		}
 		if(styleOpened) {
 			htmlBuilder.append("</style>");

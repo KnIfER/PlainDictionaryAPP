@@ -6919,10 +6919,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					closeMenu=ret=true;
 				} else {
+					boolean brg = wlh.tapSel!=0;
+					if (brg) {
+						wlh.updateTapSel(0);
+						showT("已关闭点选模式");
+					}
 					if (wlh.tapDef) {
 						wlh.tapDef(false);
 						wlh.tapSch(true);
 					} else {
+						// 切换
+						if (brg && wlh.tapSch) {// 不让关
+							break;
+						}
 						wlh.tapSch(!wlh.tapSch);
 					}
 					wlh.updateContentMenu(mmi.mMenu.mItems);
@@ -6938,10 +6947,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					wordPopup.onClick(anyView(R.id.mode));
 					closeMenu=ret=true;
 				} else {
+					boolean brg = wlh.tapSel!=0;
+					if (brg) {
+						wlh.updateTapSel(0);
+						showT("已关闭点选模式");
+					}
 					if (!wlh.tapSch) {
 						wlh.tapSch(true);
 						wlh.tapDef(true);
 					} else {
+						if (brg && wlh.tapDef) {// 不让关
+							break;
+						}
 						wlh.tapDef(!wlh.tapDef);
 						wlh.tapSch(wlh.tapDef);
 					}
@@ -8127,11 +8144,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showT("未实现");
 				return;
 			} else if(id==R.id.tapSch || id==R.string.tapSch || id==R.string.tapDef) {
+				boolean brg = wlh.tapSel!=0;
+				if (brg) {
+					wlh.updateTapSel(0);
+					showT("已关闭点选模式");
+				}
 				if (id == R.string.tapDef) {
 					if (!wlh.tapSch) {
 						wlh.tapSch(true);
 						wlh.tapDef(true);
 					} else {
+						if(brg && wlh.tapDef) { // 不让关
+							if(dialog!=null) {
+								dialog.dismiss();
+							}
+							wlh.updateContentMenu(null);
+							return;
+						}
 						wlh.tapDef(!wlh.tapDef);
 						wlh.tapSch(wlh.tapDef);
 					}
@@ -8140,6 +8169,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						wlh.tapDef(false);
 						wlh.tapSch(true);
 					} else {
+						if(brg && wlh.tapSch) { // 不让关
+							if(dialog!=null) {
+								dialog.dismiss();
+							}
+							wlh.updateContentMenu(null);
+							return;
+						}
 						wlh.tapSch(!wlh.tapSch);
 					}
 				}

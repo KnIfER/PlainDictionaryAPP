@@ -870,6 +870,11 @@ public abstract class MdictServer extends NanoHTTPD {
 						.append(presenter.zhoHor() ? "justify-content:center;" : "")
 						.append(presenter.verTex() ? (presenter.verTexSt()?"writing-mode:vertical-lr;":"writing-mode:vertical-rl;") : "")
 						.append("}");
+				if (presenter.verTex()) {
+					MdPageBuilder.append(".PLOD_UL{");
+					MdPageBuilder.append(presenter.verTexSt()?"border-right":"border-left");
+					MdPageBuilder.append(": 2.5px solid rgba(0 0 0 / 58%);border-bottom:unset}");
+				}
 				MdPageBuilder.append("</style>");
 			}
 			MdPageBuilder.append("</head>")
