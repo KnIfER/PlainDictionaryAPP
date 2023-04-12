@@ -53,6 +53,7 @@ import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.CharSequenceKey;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PeruseView;
@@ -408,13 +409,30 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				if(!mdbr) {
 					//marked = presenter.hasBookmark(this);
 				}
-				if (mdbr && url.startsWith(".d", schemaIdx+7) && !url.startsWith(presenter.idStr10, schemaIdx+9)) {
-					long bid = IU.parseLong(url.substring(schemaIdx + 9, url.indexOf(".", schemaIdx + 10)), -1);
-					if (bid!=-1) {
-						BookPresenter book = presenter.a.getBookById(bid);
-						CMN.Log("fix::", book);
-						if (book!=presenter.a.EmptyBook) {
-							setPresenter(book);
+				if (mdbr) {
+					if(url.startsWith(".d", schemaIdx+7)) {
+						if (!url.startsWith(presenter.idStr10, schemaIdx+9)) {
+							long bid = IU.parseLong(url.substring(schemaIdx + 9, url.indexOf(".", schemaIdx + 10)), -1);
+							if (bid!=-1) {
+								BookPresenter book = presenter.a.getBookById(bid);
+								CMN.debug("fix::", book);
+								if (book!=presenter.a.EmptyBook) {
+									setPresenter(book);
+								}
+							}
+						}
+					}
+					else if(url.startsWith("c", schemaIdx+12)) { // http://mdbr.com/content/dOED_bC6
+						if (!url.startsWith(presenter.idStr, schemaIdx+20)) {
+							int idx = url.indexOf('_', schemaIdx + 20), ed = url.length();
+							long bid = presenter.a.getMdictServer().getBookIdByURLPath(url, schemaIdx + 20, idx);
+							if (bid!=-1) {
+								BookPresenter book = presenter.a.getBookById(bid);
+								CMN.debug("fix::", book);
+								if (book!=presenter.a.EmptyBook) {
+									setPresenter(book);
+								}
+							}
 						}
 					}
 				}
@@ -1689,6 +1707,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			v.setLayoutParams(lp);
 			titleBar.addView(v);
 			progressBar = v;
+		} else {
+			progressBar.getBackground().setAlpha(255);
 		}
 		progressBar.getBackground().setLevel(1500);
 		VU.setVisible(progressBar, true);
