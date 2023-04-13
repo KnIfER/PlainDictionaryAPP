@@ -46,8 +46,10 @@ import com.knziha.text.ColoredTextSpan;
 import com.knziha.text.ColoredTextSpan2;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by KnIfER on 2021/11/16.
@@ -585,6 +587,9 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			vh.preview.setText(note);
 			vh.preview.setTextColor(c);
 			vh.preview.setTextSize(size);
+			
+			//SimpleDateFormat timemachine = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+			//CMN.debug("onBindViewHolder::", lex, timemachine.format(new Date(reader.sort_numbers[1]))); // maybe null
 		} else {
 			ViewUtils.setVisible(vh.preview, false);
 			ViewUtils.setVisible(holder.dotVue, false);
@@ -603,15 +608,22 @@ public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> i
 			//ssb.setSpan(new ColoredTextSpan2(color, 4.f, type == 1 ? 2 : 1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
 		}
 		if (type == 0) {
-			ssb.setSpan(new ColoredTextSpan(color, 4.f, type == 1 ? 2 : 1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-		} else {
+			if (PDICMainAppOptions.bookNoteDirStyle()) { // todo more indicator
+				ssb.setSpan(new ColoredTextSpan(color, 4.f, type == 1 ? 2 : 1), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+			}
+		} else { // 下划线
 			DecorativeTextview rtv = (DecorativeTextview) vh.title;
-			rtv.textDecorator.type = type == 1 ? 2 : 1;
-			rtv.textDecorator.thickness = 7.5f;
-			rtv.textDecorator.lineOffset = .35f;
-			rtv.textDecorator.lineOffset = 0f;
-			rtv.textDecorator.paintUnderline.setColor(color);
-			ssb.setSpan(rtv.textDecorator, 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+			if (PDICMainAppOptions.bookNoteDirStyle()) { // todo more indicator
+				rtv.textDecorator.type = type == 1 ? 2 : 1;
+				rtv.textDecorator.thickness = 7.5f;
+				rtv.textDecorator.lineOffset = .35f;
+				rtv.textDecorator.lineOffset = 0f;
+				rtv.textDecorator.paintUnderline.setColor(color);
+				ssb.setSpan(rtv.textDecorator, 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+				//rtv.textDecorator.type = 0;
+			} else {
+				rtv.textDecorator.type = 0;
+			}
 		}
 		
 		//ssb.setSpan(new BookNameSpan(0xFFb0b0b0), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);

@@ -1756,7 +1756,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			bar.setTag(pageSchEdit.getText());
 			SearchOnPage(null);
-			bar.getLayoutParams().height = a.actionBarSize;
+			//pageSchBar.getLayoutParams().height = a.actionBarSize; todo
 			resetImmersivePageSchBar();
 		}
 		else {
@@ -1910,7 +1910,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						, new String[]{"普通搜索", "使用通配符", "以空格划分关键词", "通配符不匹配空格", "通搜变音字母"}
 						, new String[]{"通用", "区分大小写", "始终自动跳转"/*, "从列表查看内容页面时，自动跳转"*/, "打字时自动搜索", "打字时自动跳转",}
 						, new String[]{"视图设置", /*"翻页时自动跳转"*/ "自动弹出键盘"}
-						, new String[]{"搜索框位置", "页面顶部", "页面底部"} // 显示位置
+						, new String[]{"搜索框位置", "页面顶部 ▲", "页面底部 ▼"} // 显示位置
 						, new String[]{"搜索框旁数字标志", "显示当前高亮序号", "显示词典名称"} // 显示位置
 					}
 					, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */

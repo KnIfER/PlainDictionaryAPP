@@ -21,7 +21,11 @@ public class NoScrollViewPager extends ViewPager {
   
     public void setNoScroll(boolean noScroll) {  
         this.noScroll = noScroll;  
-    }  
+    }
+	
+    public boolean getNoScroll() {
+        return noScroll;
+    }
   
     @Override  
     public void scrollTo(int x, int y) {  

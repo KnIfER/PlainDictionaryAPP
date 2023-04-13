@@ -120,7 +120,7 @@
 		}
 	}
 	function zh_tran(t) {
-		debug('zh_tran111', window._merge);
+		//debug('zh_tran111', window._merge);
 		choice = t;
 		prepareMap(t);
 		if(window._merge && !window.frameElement) {

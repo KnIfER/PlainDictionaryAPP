@@ -878,7 +878,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener, P
 					if(msg!=0) {
 						a.show(msg);
 					}
-					a.imm.hideSoftInputFromWindow(Searchbar.getWindowToken(), 0);
+					//a.imm.hideSoftInputFromWindow(Searchbar.getWindowToken(), 0);
 					dataChanged();
 				}
 			} break;

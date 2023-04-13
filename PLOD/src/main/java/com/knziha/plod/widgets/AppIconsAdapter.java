@@ -138,9 +138,9 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         indicator.setTextColor(target);
 		String title = shareTargetsInfo1[withIntent ? 2 : shareLink ? 1 : 0];
 		if (shareLink && url!=null) {
-			title += url;
+			if(!url.equals(title)) title += url;
 		} else if(text!=null){
-			title += text;
+			if(!text.equals(title)) title += text;
 		}
 		indicator.setText(title);
         bottomSheet.setBackground(GlobalOptions.isDark?GrayBG:null);

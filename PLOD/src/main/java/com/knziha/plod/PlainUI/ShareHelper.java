@@ -489,8 +489,8 @@ public class ShareHelper {
 		MainActivityUIBase.VerseKit vk = a.getVtk();
 		if(vk.bFromTextView){
 			a.handleIntentShare(vk.CurrentSelected, data);
-			if(a.thisActType== MainActivityUIBase.ActType.MultiShare) {
-				a.checkMultiVSTGO();
+			if(a.thisActType == MainActivityUIBase.ActType.MultiShare) {
+				a.checkMultiVSTGO(-1);
 			}
 		} else {
 			if(data.contains(Intent.EXTRA_HTML_TEXT)){
@@ -660,7 +660,13 @@ public class ShareHelper {
 	
 	public String getShareTitle() {
 		try {
-			return pages.get(lastClickedPos/pageSz)[lastClickedPos%pageSz];
+			int key = lastClickedPos / pageSz;
+			String[] data = pages.get(key);
+			if (data==null) {
+				readTargetNames(key);
+				data = pages.get(key);
+			}
+			return data[lastClickedPos%pageSz];
 		} catch (Exception e) {
 			CMN.debug(e);
 			return null;

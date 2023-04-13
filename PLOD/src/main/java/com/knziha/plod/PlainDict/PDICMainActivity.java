@@ -1868,7 +1868,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			//onMenuItemClick(anyMenu(R.id.viewPaste, null));
 			
-			showBookNotes(0);
+			//showBookNotes(0);
 			
 			if(CMN.testFLoatSearch)
 				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
@@ -2535,6 +2535,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		// UIData.dictNameFore.setTextColor(ColorUtils.blendARGB(MainAppBackground&0x88FFFFFF, 0x88FFFFFF, 0.8f));
 		resetWndColor();
 		resetStatusForeground(null);
+		
+//		etSearch.setHighlightColor(isHalo?0xef008577:0xff008577);
 	}
 	
 	public void resetWndColor() {

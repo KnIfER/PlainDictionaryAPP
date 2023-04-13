@@ -100,7 +100,10 @@ public class LuceneHelper {
 		if (results == null) {
 			results = new resultRecorderLucene(a, a.loadManager, hitsPerPage);
 			query = new QueryParser(Version.LUCENE_47, "content", analyzer).parse(phrase);
-			CMN.debug("breaked query::", query);
+			CMN.debug("breaked query::", query, "phrase="+phrase);
+			//CMN.debug("test break query::", new QueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("\uD87E\uDE1D"));
+			//CMN.debug("test break query::", new QueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("\uD880\uDC00"));
+			//CMN.debug("test break query::", new QueryParser(Version.LUCENE_47, "content", new SimpleAnalyzer(Version.LUCENE_47)).parse("\uD884\uDF50")); // 汉语大字典
 			boolean debug_query = false;// GlobalOptions.debug;
 			if (phrase.contains("\"") || debug_query) {
 				// https://blog.csdn.net/sinat_27171121/article/details/128172024

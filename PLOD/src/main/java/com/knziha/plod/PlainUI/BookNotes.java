@@ -156,7 +156,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				}
 			});
 			bottomShelf.post(() -> bottomShelf.selectToolIndex(1));
-			viewPager.setNoScroll(true);
+			viewPager.setNoScroll(PDICMainAppOptions.bookNoteLockViewPager());
 			viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 				int lastPos;
 				@Override public void onPageScrollStateChanged(int arg0) { }
@@ -172,6 +172,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 					bottomShelf.selectToolIndex(lastPos = i);
 					lv = viewList[i];
 					
+					// here
 					/*切页初始化*/AnnotAdapter ada = getAnnotationAdapter(false, lv, i);
 					if (lv.getAdapter()==null) {
 						lv.setAdapter(ada);
@@ -193,7 +194,26 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			});
 			toolbar.inflateMenu(R.xml.menu_book_note);
 			toolbar.setOnMenuItemClickListener(this);
+			MenuBuilder menu = ((MenuBuilder) toolbar.getMenu());
+			menu.mOverlapAnchor = false;
+			menu.checkDrawable = a.AllMenus.checkDrawable;
+			menu.mOnTrackMenuListener = new Toolbar.OnMenuItemClickListener(){
+				@Override
+				public boolean onMenuItemClick(MenuItem menuItem) {
+					//CMN.debug("onMenuItemClick");
+					menu.findItem(R.id.direct_style).setChecked(PDICMainAppOptions.bookNoteDirStyle());
+					menu.findItem(R.id.lock_viewpager).setChecked(viewPager.getNoScroll());
+					ViewGroup vg = (ViewGroup) bottomShelf.getParent();
+					menu.findItem(R.id.nav_top).setChecked(vg.getChildAt(1)==bottomShelf);
+					return false;
+				}
+			};
 			settingsLayout = drawer;
+			if (PDICMainAppOptions.bookNoteTopNavbar()) {
+				ViewGroup vg = (ViewGroup) bottomShelf.getParent();
+				ViewUtils.removeView(bottomShelf);
+				ViewUtils.addViewToParent(bottomShelf, vg, 1);
+			}
 		}
 	}
 	
@@ -658,46 +678,72 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		int id = item.getItemId();
+		int itemId = item.getItemId();
+		int id = itemId;
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:a.getDummyMenuImpl(id);
 		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked!=0;
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
-		if (item.getItemId()==R.drawable.ic_sort_path_asc) {
-			pressedV.clear();
-			if (viewPager.getCurrentItem()<=2) {
-				PopupMenuHelper popupMenu = getSortByPopupMenu();
-				
-				int[] vLocationOnScreen = new int[2];
-				toolbar.getLocationOnScreen(vLocationOnScreen);
-				int x = toolbar.getWidth(), y = toolbar.getHeight();
-				popupMenu.show(toolbar, x+vLocationOnScreen[0], y+vLocationOnScreen[1]);
-				ViewUtils.preventDefaultTouchEvent(toolbar, x, y);
-			}
-		}
-		if (item.getItemId()==R.drawable.ic_baseline_undo_24) {
-			if (a.annotUndoStack.size() > 0) {
-				ContentValues undo = a.annotUndoStack.remove(a.annotUndoStack.size() - 1);
-				
-				SQLiteDatabase database = a.prepareHistoryCon().getDB();
-				long res = database.insertWithOnConflict(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, undo, CONFLICT_FAIL);
-				if (res==-1) {
-					undo.remove("id");
-					res = database.insertWithOnConflict(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, undo, CONFLICT_ABORT);
+		boolean checked = item.isChecked();
+		boolean checking = !checked;
+		switch (itemId) {
+			case R.drawable.ic_sort_path_asc: {
+				pressedV.clear();
+				if (viewPager.getCurrentItem() <= 2) {
+					PopupMenuHelper popupMenu = getSortByPopupMenu();
+					int[] vLocationOnScreen = new int[2];
+					toolbar.getLocationOnScreen(vLocationOnScreen);
+					int x = toolbar.getWidth(), y = toolbar.getHeight();
+					popupMenu.show(toolbar, x + vLocationOnScreen[0], y + vLocationOnScreen[1]);
+					ViewUtils.preventDefaultTouchEvent(toolbar, x, y);
 				}
-				
-				if (res != -1) {
-					a.showT("撤销成功!");
-					int i = viewPager.getCurrentItem();
-					RecyclerView lv = viewList[i];
-					if (lv.getAdapter() != null) {
-						lv.suppressLayout(true);
-						AnnotAdapter adapter = getAnnotationAdapter(false, lv, i);
-						/*撤销删除*/adapter.rebuildCursor(a.prepareHistoryCon().getDB(), null, this, null);
+			} break;
+			case R.drawable.ic_baseline_undo_24: {
+				if (a.annotUndoStack.size() > 0) {
+					ContentValues undo = a.annotUndoStack.remove(a.annotUndoStack.size() - 1);
+					SQLiteDatabase database = a.prepareHistoryCon().getDB();
+					long res = database.insertWithOnConflict(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, undo, CONFLICT_FAIL);
+					if (res == -1) {
+						undo.remove("id");
+						res = database.insertWithOnConflict(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, undo, CONFLICT_ABORT);
+					}
+					if (res != -1) {
+						a.showT("撤销成功!");
+						int i = viewPager.getCurrentItem();
+						RecyclerView lv = viewList[i];
+						if (lv.getAdapter() != null) {
+							lv.suppressLayout(true);
+							AnnotAdapter adapter = getAnnotationAdapter(false, lv, i);
+							/*撤销删除*/
+							adapter.rebuildCursor(a.prepareHistoryCon().getDB(), null, this, null);
+						}
 					}
 				}
-			}
+			} break;
+			case R.id.direct_style: {
+				item.setChecked(checking);
+				PDICMainAppOptions.bookNoteDirStyle(checking);
+				for (int i = 0; i < 3; i++) {
+					try {
+						viewList[i].getAdapter().notifyDataSetChanged();
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			} break;
+			case R.id.lock_viewpager: {
+				item.setChecked(checking);
+				PDICMainAppOptions.bookNoteLockViewPager(checking);
+				viewPager.setNoScroll(checking);
+			} break;
+			case R.id.nav_top: {
+				item.setChecked(checking);
+				PDICMainAppOptions.bookNoteTopNavbar(checking);
+				ViewGroup vg = (ViewGroup) bottomShelf.getParent();
+				ViewUtils.removeView(bottomShelf);
+				ViewUtils.addViewToParent(bottomShelf, vg, checked?vg.getChildCount()-1:1);
+			} break;
 		}
 		if(closeMenu)
 			a.closeIfNoActionView(mmi);

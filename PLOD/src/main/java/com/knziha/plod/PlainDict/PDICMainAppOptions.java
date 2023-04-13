@@ -923,14 +923,15 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 		putString(key, name);
 	}
 	
-	public void putLastVSGoNumber(int position) {
-		if(getLastVSGoNumber()!=position) {
-			putInt("VSGo", position);
+	public void putLastVSGoNumber(int id, int position, int page) {
+		String save = id+"_"+position+"_"+page;
+		if(!save.equals(getLastVSGoNumber())) {
+			putString("VSGO", save);
 		}
 	}
 	
-	public int getLastVSGoNumber() {
-		return getInt("VSGo", -1);
+	public String getLastVSGoNumber() {
+		return getString("VSGO", null);
 	}
 	
 	public int getExpandTopPageNum() {
@@ -3525,6 +3526,15 @@ public class PDICMainAppOptions //implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=50, shift=1) public static boolean floatShowMutliViewBtn() { NinthFlag|=Z; throw new RuntimeException();}
 	@Metaline(flagPos=50, shift=1) public static void floatShowMutliViewBtn(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
+	
+	@Metaline(flagPos=51, shift=1) public static boolean bookNoteDirStyle() { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static void bookNoteDirStyle(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
+	
+	@Metaline(flagPos=52, shift=1) public static boolean bookNoteLockViewPager() { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static void bookNoteLockViewPager(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
+	
+	@Metaline(flagPos=53) public static boolean bookNoteTopNavbar() { NinthFlag|=Z; throw new RuntimeException();}
+	@Metaline(flagPos=53) public static void bookNoteTopNavbar(boolean v) { NinthFlag|=Z; throw new RuntimeException();}
 	
 	
 }

@@ -21,6 +21,8 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.PlainUI.FloatBtn;
+import com.knziha.plod.PlainUI.ShareHelper;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.PageSlide;
 
@@ -33,6 +35,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	public boolean NewIntentCalled;
 	private boolean startLis;
 	public boolean supressNxtPauseLis;
+	private boolean hasFocus;
 	
 	@Override
 	public void onBackPressed() {
@@ -131,7 +134,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	private void processIntent(Intent intent) {
-		//CMN.Log(intent.getExtras());
 		NewIntentCalled = true;
 		String text = null;
 		//if(intent != null)
@@ -144,11 +146,25 @@ public class MultiShareActivity extends MainActivityUIBase {
 		}
 		ucc = getVtk();
 		ucc.setInvoker(null, null, null, extraText);
-		int VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():-1;
+		String VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():null;
+		CMN.debug("Multi::processIntent", extraText, VSGO);
 		//VSGO=-1;
-		if(VSGO>=0) {
-			supressNxtPauseLis = true;
-			ucc.onItemClick(null, null, 0, VSGO, false, false);
+		if(VSGO!=null) {
+			try {
+				supressNxtPauseLis = true;
+				//ucc.onItemClick(null, null, 0, VSGO, false, false);
+				String[] arr = VSGO.split("_");
+				int id = ShareHelper.defPageStrIds[IU.parsint(arr[0], 0)];
+				int position = IU.parsint(arr[1], 0);
+				shareHelper.page = IU.parsint(arr[2], 0);
+				shareHelper.lastClickedPos = position;
+				ucc.panelClick(id, position, false, 0, null);
+				if (!opt.getPinVSDialog()) {
+				
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
 		} else {
 			ucc.onClick(null);
 		}
@@ -216,7 +232,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	private void showUcc() {
-		//CMN.Log("showUcc");
+		CMN.debug("showUcc");
 		getVtk().setInvoker(null, null, null, extraText);
 		getVtk().onClick(null);
 	}
@@ -252,6 +268,18 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	public void guaranteeBackground(int globalPageBackground) {}
+	
+	public void checkMultiVSTGO(int delay) {
+//		try {
+//			throw new RuntimeException("watch stacktrace!");
+//		} catch (RuntimeException e) {
+//			CMN.debug(e);
+//		}
+		CMN.debug("checkMultiVSTGO...", NewIntentCalled , opt.getVSPanelGOTransient());
+		if(NewIntentCalled && !getPinVSDialog()) {
+			hdl.postDelayed(checkAndHideRun, delay<0?200:delay);
+		}
+	}
 	
 	private static class MyHandler extends BaseHandler{
 		private final WeakReference<Toastable_Activity> activity;
@@ -333,7 +361,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		//CMN.debug("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
+		CMN.debug("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
 		//CMN.debug("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (peruseView ==null|| peruseView.isWindowDetached()));
 		if(!NewIntentCalled && systemIntialized && startLis) {
 			//RestoreUccOrExit(1);
@@ -345,11 +373,44 @@ public class MultiShareActivity extends MainActivityUIBase {
 		}
 	}
 	
+	final boolean focaZeroIsTrue() {
+		return (foreground & (1 << thisActType.ordinal())) != 0 && allHidden() && (ucc == null || ucc.detached()) && (peruseView == null || peruseView.isWindowDetached());
+	}
+	
+	Runnable checkAndHideRun = new Runnable() {
+		@Override
+		public void run() {
+			if (hasFocus && focaZeroIsTrue()) {
+				moveTaskToBack(false);
+			}
+		}
+	};
+	
+	Runnable focaRun = new Runnable() {
+		@Override
+		public void run() {
+			if (focaZeroIsTrue()) {
+				showUcc();
+			}
+		}
+	};
+	
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
+		CMN.debug("onWindowFocusChanged::", hasFocus, "NewIntentCalled::", NewIntentCalled);
+		this.hasFocus = hasFocus;
 		if(hasFocus) {
 			supressNxtPauseLis = false;
+//			if(allHidden() && (ucc==null||ucc.detached()) && (peruseView ==null|| peruseView.isWindowDetached())) {
+//				showUcc();
+//			}
+			if (!NewIntentCalled || getPinVSDialog()) {
+				//RestoreUccOrExit(1);
+				hdl.postDelayed(focaRun, 31);
+			} else {
+				checkMultiVSTGO(31);
+			}
 		}
 	}
 	

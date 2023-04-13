@@ -4660,251 +4660,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PreferredToolId = (int) id;
 					if (thisActType == ActType.MultiShare && opt.getRememberVSPanelGo()
 							&& isUserClick && !isLongClicked) {
-						opt.putLastVSGoNumber(PreferredToolId);
+						opt.putLastVSGoNumber(shareHelper.lastClickedPos, position, shareHelper.page);
 					}
-					switch ((int) id) {//xx
-						/* 收藏 */
-						case R.string.favor_sel: {
-							// to impl
-							if (bFromTextView) {
-								if (CurrentSelected.length() > 0)
-									keepWordAsFavorite(CurrentSelected, null);
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									if (word.length() > 2) {
-										keepWordAsFavorite(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView.weblistHandler);
-									}
-								});
-							}
-							if (thisActType == ActType.MultiShare) {
-								checkMultiVSTGO();
-							}
-						}
-						break;
-						/* 全选 */
-						case R.string.select_all: {
-							if (isLongClicked) {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									if (word.length() > 2) {
-										ttsHub.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
-									}
-								});
-								return true;
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
-							}
-						} break;
-						/* 间选 */
-						case R.string.sel_inter: {
-							mWebView.evaluateJavascript(WebViewmy.SelectBetween, null);
-							dissmisstype = 1;
-						} break;
-						/* 颜色 */
-						case R.string.hi_color:
-							break;
-						/* 高亮 */
-						case R.string.highlight: {
-							if (isLongClicked) {
-								annotMarkUI(mWebView, 0);
-							} else {
-								Annot(mWebView, 0, null);
-							}
-						}
-						break;
-						/* 高亮笔记 */
-						case R.string.annote: {
-							//todo check webview
-							mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
-								@Override
-								public void onReceiveValue(String value) {
-									annotText(mWebView, 0, "1".equals(value)?SU.EmptyString:null);
-								}
-							});
-						}
-						break;
-						/* 下划线 */
-						case R.string.underline: {
-							if (isLongClicked) {
-								annotMarkUI(mWebView, 1);
-							} else {
-								Annot(mWebView, 1, null);
-							}
-						}
-						break;
-						/* 下划线笔记 */
-						case R.string.undernote: {
-							//mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
-							mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
-								@Override
-								public void onReceiveValue(String value) {
-									annotText(mWebView, 1, null);
-								}
-							});
-						}
-						break;
-						case R.string.search_dot:
-						case R.string.send_dot:
-							{
-							if (position == 9) {
-//								if (isLongClicked) {
-//								} else {
-//									mWebView.evaluateJavascript("getSelection().toString()", value -> {
-//										String newKey = "";
-//										if (value.length() > 2) {
-//											value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-//											if (value.length() > 0) {
-//												newKey = value;
-//											}
-//										}
-//										shareUrlOrText(null, newKey, 0);
-//									});
-//									return true;
-//								}
-							}
-							if (shareHelper.execVersatileShare(isLongClicked, position)) {
-								return true;
-							}
-						}
-						break;
-						/* 页内搜索 */
-						case R.string.send_inpage: {
-							if (isLongClicked) return false;
-							if (bFromTextView) {
-								if (CurrentSelected.length() > 0)
-									HandleLocateTextInPage(CurrentSelected);
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									if (word.length() > 2) {
-										HandleLocateTextInPage(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-									}
-								});
-							}
-							dissmisstype = 1;
-						}
-						break;
-						/* TTS */
-						case R.string.tts: {
-							if (isLongClicked) return false;
-							if (bFromTextView) {
-								if (CurrentSelected.length() > 0)
-									ttsHub.ReadText(CurrentSelected, null);
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									if (word.length() > 2) {
-										ttsHub.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
-									}
-								});
-							}
-							if (thisActType == ActType.MultiShare) {
-								checkMultiVSTGO();
-							}
-							dissmisstype = 2;
-						}
-						break;
-						/* 点译 */
-						case R.string.pop_sch: {
-							if (thisActType == ActType.MultiShare) {
-								populateDictionaryList();
-							}
-							if (isLongClicked) return false;
-							if (bFromTextView) {
-								if (CurrentSelected.length() > 0) {
-									popupWord(CurrentSelected, null, -1, mWebView, false);
-								}
-								bNeedClearTextSelection = true;
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									mWebView.simulateScrollEffect();
-									bNeedStopScrollEffect = true;
-									if (word.length() > 2) {
-										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt, mWebView, false);
-									}
-								});
-							}
-							dissmisstype = 1;
-						}
-						break;
-						/* 翻阅模式 */
-						case R.string.peruse_sch: {
-							if (thisActType == ActType.MultiShare) {
-								populateDictionaryList();
-							}
-							if (isLongClicked) {
-								AttachPeruseView(false);
-								return true;
-							}
-							if (bFromTextView) {
-								if (CurrentSelected.length() > 0)
-									JumpToPeruseModeWithWord(CurrentSelected);
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									if (word.length() > 2) {
-										JumpToPeruseModeWithWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-									}
-								});
-							}
-							dissmisstype = 1;
-						}
-						break;
-						/* 发送到搜索框 */
-						case R.string.send_etsch: {
-							if (isLongClicked) return false;
-							if (thisActType == ActType.MultiShare) {
-								AgentApplication app = (AgentApplication) getApplication();
-								if (app.floatApp != null && app.floatApp.isFloating()) {
-									app.floatApp.getFloatBtn().search(extraText, false);
-								} else {
-									Intent newTask = new Intent(Intent.ACTION_MAIN);
-									newTask.putExtra(Intent.EXTRA_TEXT, extraText);
-									//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
-									newTask.setClass(getBaseContext(), PDICMainActivity.class);
-									newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-									startActivity(newTask);
-								}
-								dissmisstype = 0;
-								checkMultiVSTGO();
-							} else {
-								if (bFromTextView) {
-									PlainAppPanel pv = peruseView == null ? null : peruseView.dummyPanel;
-									for (int i = settingsPanels.size()-1; i >= 0; i--) {
-										PlainAppPanel pane = settingsPanels.get(i);
-										hideSettingsPanel(pane);
-										if (pane == pv) {
-											break;
-										}
-									}
-									if (CurrentSelected.length() > 0)
-										HandleSearch(CurrentSelected);
-								} else {
-									mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-										if (word.length() > 2) {
-											HandleSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-										}
-									});
-								}
-								dissmisstype = 1;
-							}
-						}
-						break;
-						/* 浮动搜索 */
-						case R.string.fapp_name: {
-							if (isLongClicked) return false;
-							if (bFromTextView) {
-								if (CurrentSelected.length() > 0)
-									JumpToFloatSearch(CurrentSelected);
-							} else {
-								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-									if (word.length() > 2) {
-										JumpToFloatSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-									}
-								});
-							}
-							dissmisstype = 1;
-							if (thisActType == ActType.MultiShare) {
-								checkMultiVSTGO();
-							}
-						}
-						break;
+					Bag flag = new Bag(false);
+					dissmisstype = panelClick(id, position, isLongClicked, dissmisstype, flag);
+					if (flag.val||flag.tag!=null) {
+						return flag.val;
 					}
 				}
 				if(d!=null) {
@@ -4929,6 +4690,260 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			clearTextFocus();
 			
 			return false;
+		}
+		
+		public int panelClick(int id, int position, boolean isLongClicked, int dissmisstype, Bag flag) {
+			switch ((int) id) {//xx
+				/* 收藏 */
+				case R.string.favor_sel: {
+					// to impl
+					if (bFromTextView) {
+						if (CurrentSelected.length() > 0)
+							keepWordAsFavorite(CurrentSelected, null);
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							if (word.length() > 2) {
+								keepWordAsFavorite(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView.weblistHandler);
+							}
+						});
+					}
+					if (thisActType == ActType.MultiShare) {
+						checkMultiVSTGO(-1);
+					}
+				}
+				break;
+				/* 全选 */
+				case R.string.select_all: {
+					if (isLongClicked) {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							if (word.length() > 2) {
+								ttsHub.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+							}
+						});
+						if (flag!=null) flag.val = true;
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
+					}
+				} break;
+				/* 间选 */
+				case R.string.sel_inter: {
+					mWebView.evaluateJavascript(WebViewmy.SelectBetween, null);
+					dissmisstype = 1;
+				} break;
+				/* 颜色 */
+				case R.string.hi_color:
+					break;
+				/* 高亮 */
+				case R.string.highlight: {
+					if (isLongClicked) {
+						annotMarkUI(mWebView, 0);
+					} else {
+						Annot(mWebView, 0, null);
+					}
+				}
+				break;
+				/* 高亮笔记 */
+				case R.string.annote: {
+					//todo check webview
+					mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String value) {
+							annotText(mWebView, 0, "1".equals(value)?SU.EmptyString:null);
+						}
+					});
+				}
+				break;
+				/* 下划线 */
+				case R.string.underline: {
+					if (isLongClicked) {
+						annotMarkUI(mWebView, 1);
+					} else {
+						Annot(mWebView, 1, null);
+					}
+				}
+				break;
+				/* 下划线笔记 */
+				case R.string.undernote: {
+					//mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
+					mWebView.evaluateJavascript("NidsInRange(1)", new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String value) {
+							annotText(mWebView, 1, null);
+						}
+					});
+				}
+				break;
+				case R.string.search_dot:
+				case R.string.send_dot:
+				{
+					if (position == 9) {
+//							if (isLongClicked) {
+//							} else {
+//								mWebView.evaluateJavascript("getSelection().toString()", value -> {
+//									String newKey = "";
+//									if (value.length() > 2) {
+//										value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+//										if (value.length() > 0) {
+//											newKey = value;
+//										}
+//									}
+//									shareUrlOrText(null, newKey, 0);
+//								});
+//								return true;
+//							}
+					}
+					if (shareHelper.execVersatileShare(isLongClicked, position)) {
+						if (flag!=null) flag.val = true;
+					}
+				}
+				break;
+				/* 页内搜索 */
+				case R.string.send_inpage: {
+					if (flag!=null) flag.tag = flag;
+					if (isLongClicked) break;
+					if (bFromTextView) {
+						if (CurrentSelected.length() > 0)
+							HandleLocateTextInPage(CurrentSelected);
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							if (word.length() > 2) {
+								HandleLocateTextInPage(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+							}
+						});
+					}
+					dissmisstype = 1;
+				}
+				break;
+				/* TTS */
+				case R.string.tts: {
+					if (flag!=null) flag.tag = flag;
+					if (isLongClicked) break;
+					if (bFromTextView) {
+						if (CurrentSelected.length() > 0)
+							ttsHub.ReadText(CurrentSelected, null);
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							if (word.length() > 2) {
+								ttsHub.ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+							}
+						});
+					}
+					if (thisActType == ActType.MultiShare) {
+						checkMultiVSTGO(-1);
+					}
+					dissmisstype = 2;
+				}
+				break;
+				/* 点译 */
+				case R.string.pop_sch: {
+					if (thisActType == ActType.MultiShare) {
+						populateDictionaryList();
+					}
+					if (flag!=null) flag.tag = flag;
+					if (isLongClicked) break;
+					if (bFromTextView) {
+						if (CurrentSelected.length() > 0) {
+							popupWord(CurrentSelected, null, -1, mWebView, false);
+						}
+						bNeedClearTextSelection = true;
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							mWebView.simulateScrollEffect();
+							bNeedStopScrollEffect = true;
+							if (word.length() > 2) {
+								popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt, mWebView, false);
+							}
+						});
+					}
+					dissmisstype = 1;
+				}
+				break;
+				/* 翻阅模式 */
+				case R.string.peruse_sch: {
+					if (thisActType == ActType.MultiShare) {
+						populateDictionaryList();
+					}
+					if (isLongClicked) {
+						AttachPeruseView(false);
+						if (flag!=null) flag.val = true;
+						break;
+					}
+					if (bFromTextView) {
+						if (CurrentSelected.length() > 0)
+							JumpToPeruseModeWithWord(CurrentSelected);
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							if (word.length() > 2) {
+								JumpToPeruseModeWithWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+							}
+						});
+					}
+					dissmisstype = 1;
+				}
+				break;
+				/* 发送到搜索框 */
+				case R.string.send_etsch: {
+					if (flag!=null) flag.tag = flag;
+					if (isLongClicked) break;
+					if (thisActType == ActType.MultiShare) {
+						AgentApplication app = (AgentApplication) getApplication();
+						if (app.floatApp != null && app.floatApp.isFloating()) {
+							app.floatApp.getFloatBtn().search(extraText, false);
+						} else {
+							Intent newTask = new Intent(Intent.ACTION_MAIN);
+							newTask.putExtra(Intent.EXTRA_TEXT, extraText);
+							//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
+							newTask.setClass(getBaseContext(), PDICMainActivity.class);
+							newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							startActivity(newTask);
+						}
+						dissmisstype = 0;
+						checkMultiVSTGO(-1);
+					} else {
+						if (bFromTextView) {
+							PlainAppPanel pv = peruseView == null ? null : peruseView.dummyPanel;
+							for (int i = settingsPanels.size()-1; i >= 0; i--) {
+								PlainAppPanel pane = settingsPanels.get(i);
+								hideSettingsPanel(pane);
+								if (pane == pv) {
+									break;
+								}
+							}
+							if (CurrentSelected.length() > 0)
+								HandleSearch(CurrentSelected);
+						} else {
+							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+								if (word.length() > 2) {
+									HandleSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+								}
+							});
+						}
+						dissmisstype = 1;
+					}
+				}
+				break;
+				/* 浮动搜索 */
+				case R.string.fapp_name: {
+					if (flag!=null) flag.tag = flag;
+					if (isLongClicked) break;
+					if (bFromTextView) {
+						if (CurrentSelected.length() > 0)
+							JumpToFloatSearch(CurrentSelected);
+					} else {
+						mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+							if (word.length() > 2) {
+								JumpToFloatSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+							}
+						});
+					}
+					dissmisstype = 1;
+					if (thisActType == ActType.MultiShare) {
+						checkMultiVSTGO(-1);
+					}
+				}
+				break;
+			}
+			return id;
 		}
 		
 		public void clearTextFocus() {
@@ -5350,13 +5365,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return thisActType==ActType.MultiShare ?opt.getPinVSDialog():opt.getPinDialog();
 	}
 	
-	public void checkMultiVSTGO() {
-		CMN.debug("checkMultiVSTGO...", ((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled , opt.getVSPanelGOTransient());
-		if(((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled && !getPinVSDialog()) {
-			root.postDelayed(()->moveTaskToBack(false), 200);
-			//moveTaskToBack(false);
-		}
-	}
+	public void checkMultiVSTGO(int i) { }
 	
 	public void execVersatileShare(String text, int id) {
 		CMN.debug("execVersatileShare", id);
@@ -5780,6 +5789,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public boolean isContentViewAttached() {
+		if (contentview==null) return false;
 		if(contentviewDetachType==0)
 			return contentview.getVisibility()==View.VISIBLE; // float
 		return contentview.getParent()!=null;
@@ -11109,11 +11119,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					break;
 				}
 			}
-			WebViewmy view;
-			if (wlh==weblistHandler && !isContentViewAttached() && !wlh.isPopupShowing()) {
-				view = null;
-			} else {
-				view = wlh.getWebContext();
+			WebViewmy view = null;
+			if (wlh!=null) {
+				if (wlh==weblistHandler && !isContentViewAttached() && !wlh.isPopupShowing()) {
+				} else {
+					view = wlh.getWebContext();
+				}
 			}
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			if (view!=null && view.canGoBack()) {

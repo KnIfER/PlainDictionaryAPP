@@ -1316,7 +1316,7 @@
 							}
 							else if(inf.ver) {
 								var de = fx.contentWindow.document.documentElement;
-								if(de.scrollWidth <= de.clientWidth+15 ) {
+								if(inf.lastHeight>0 && de.scrollWidth <= de.clientWidth+15) {
 									h=inf.lastHeight;
 								}
 								else if(h>defP.offsetHeight-75) {

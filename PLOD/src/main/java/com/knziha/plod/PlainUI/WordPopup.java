@@ -1232,7 +1232,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (!pin()) {
 				ViewGroup targetRoot = lastTargetRoot;
 				CMN.Log("poping up ::: ", a.ActivedAdapter);
-				if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !moveView.FVDOCKED) {
+				if (popupKey!=null && a.thisActType!=MainActivityUIBase.ActType.MultiShare
+						&& (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !moveView.FVDOCKED) {
 					float ty = 0;
 					float now = 0;
 					if (a.ActivedAdapter != null || popupFrame<0) {
