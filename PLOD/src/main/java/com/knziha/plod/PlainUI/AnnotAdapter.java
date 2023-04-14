@@ -51,10 +51,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * Created by KnIfER on 2021/11/16.
- */
-
 public class AnnotAdapter extends RecyclerView.Adapter<AnnotAdapter.VueHolder> implements View.OnClickListener, PagingCursorAdapter.OnLoadListener, View.OnLongClickListener {
 	public boolean showDelete;
 	int textViewResourceID;

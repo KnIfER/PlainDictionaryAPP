@@ -22,6 +22,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.polymer.wget.WGet;
 import com.knziha.polymer.wget.info.DownloadInfo;
 
@@ -49,7 +50,7 @@ public class FFDB extends SQLiteOpenHelper {
 	boolean bUniqueTable;
 	ExecutorService threadPool;
 	
-	public static FFDB getInstance(MainActivityUIBase context) {
+	public static FFDB getInstance(Toastable_Activity context) {
 		if (instance==null) {
 			synchronized (FFDB.class) {
 				try {
@@ -65,7 +66,7 @@ public class FFDB extends SQLiteOpenHelper {
 	
 	public SQLiteDatabase getDB(){return database;}
 	
-	public FFDB(MainActivityUIBase context, String name) {
+	public FFDB(Toastable_Activity context, String name) {
 		super(context, context.opt.pathToFFDB(name), null, CMN.dbVersionCode);
 		onConfigure();
 	}

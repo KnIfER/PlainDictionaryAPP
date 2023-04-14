@@ -1,0 +1,43 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <group android:scaleX="0.57"
+      android:scaleY="0.57"
+      android:translateX="23.22"
+      android:translateY="23.22">
+  	android:viewportHeight="108">
+
+  	<path android:pathData="M15.85,71.39c0,0 10.56,-18.15 19.97,-21.61c11.88,-4.29 42.9,-2.31 42.9,-2.31l62.87,62.87L141.25,145.63l-52.8,-1.65L15.85,71.39z"
+  		>
+  		<aapt:attr name="android:fillColor">
+  			<gradient
+  				android:endX="70"
+  				android:endY="110"
+  				android:startX="39"
+  				android:startY="45"
+  				android:type="linear">
+  				<item
+  					android:color="#80000000"
+  					android:offset="0.0" />
+  				<item
+  					android:color="#00000000"
+  					android:offset="1.0" />
+  			</gradient>
+  		</aapt:attr>
+  	</path>
+
+  	<path
+  		android:fillColor="#effa87a9"
+  		android:fillType="evenOdd"
+  		android:pathData="M30.9,37.5C25.8,37.5 21.66,41.58 21.66,46.74V72.84C21.66,77.88 25.8,82.08 30.9,82.08H77.1C82.2,82.08 86.34,77.88 86.34,72.84V46.74C86.34,41.58 82.2,37.5 77.1,37.5H30.9Z" />
+
+  	<path android:fillColor="#fff" android:fillType="evenOdd" android:pathData="M31.86,27.42C30.18,25.8 30.18,23.1 31.86,21.48C33.48,19.92 36,19.92 37.62,21.48L46.5,30.06C46.74,30.3 46.98,30.6 47.16,30.9H60.66C60.78,30.6 61.02,30.3 61.26,30.06L70.2,21.48C71.76,19.92 74.34,19.92 75.9,21.48C77.58,23.1 77.58,25.8 75.9,27.42L72.3,30.9H75C84.3,30.9 91.8,38.4 91.8,47.7V70.8C91.8,80.1 84.3,87.6 75,87.6H33C23.7,87.6 16.2,80.1 16.2,70.8V47.7C16.2,38.4 23.7,30.9 33,30.9H35.46L31.86,27.42ZM33,39C28.38,39 24.6,42.72 24.6,47.4V71.1C24.6,75.72 28.38,79.5 33,79.5H75C79.62,79.5 83.4,75.72 83.4,71.1V47.4C83.4,42.72 79.62,39 75,39H33Z
+
+  M42.6,64.96L41.64,64C38.04,60.76 35.7,58.66 35.7,56.02C35.7,53.92 37.38,52.18 39.48,52.18C40.68,52.18 41.82,52.78 42.6,53.62C43.38,52.78 44.46,52.18 45.72,52.18C47.82,52.18 49.5,53.92 49.5,56.02C49.5,58.66 47.16,60.76 43.56,64L42.6,64.96Z
+
+  M65.4,64.96L64.44,64C60.84,60.76 58.5,58.66 58.5,56.02C58.5,53.92 60.18,52.18 62.28,52.18C63.54,52.18 64.62,52.78 65.4,53.62C66.18,52.78 67.32,52.18 68.52,52.18C70.62,52.18 72.3,53.92 72.3,56.02C72.3,58.66 70.02,60.76 66.36,64L65.4,64.96Z"/>
+  </group>
+</vector>
