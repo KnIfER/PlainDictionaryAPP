@@ -3,6 +3,7 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
 
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -14,6 +15,7 @@ public class NiceDrawerLayout extends DrawerLayout {
 	private float mLastMotionX;
 	private float mLastMotionY;
 	public boolean dragging;
+	public boolean dragEnabled = true;
 	
 	public NiceDrawerLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -74,9 +76,18 @@ public class NiceDrawerLayout extends DrawerLayout {
 		}
 		try {
 			return super.onTouchEvent(ev);
-		} catch (IllegalArgumentException ex) {
+		} catch (Exception ex) {
 		}
 		return false;
 	}
- 
+	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+		if (!dragEnabled) {
+			View child = getChildAt(1);
+			if(child!=null)
+				return child.dispatchTouchEvent(ev);
+		}
+		return super.dispatchTouchEvent(ev);
+	}
 }

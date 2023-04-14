@@ -10,7 +10,7 @@
 
 <!--2--><item android:title="直接模拟标记样式" android:id="@+id/direct_style" android:icon="@drawable/ic_sort" app:showAsAction="never" android:checkable="true"/>
 
-<!--2--><item android:title="锁定左右滑动" android:id="@+id/lock_viewpager" android:icon="@drawable/ic_sort" app:showAsAction="never" android:checkable="true" android:enabled="false"/>
+<!--2--><item android:title="锁定左右滑动" android:id="@+id/lock_viewpager" android:icon="@drawable/ic_sort" app:showAsAction="never" android:checkable="true" />
 
 <!--2--><item android:title="导航栏显示在上方" android:id="@+id/nav_top" android:icon="@drawable/ic_sort" app:showAsAction="never" android:checkable="true" />
 

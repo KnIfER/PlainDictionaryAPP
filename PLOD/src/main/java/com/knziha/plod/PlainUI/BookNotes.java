@@ -157,6 +157,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 			});
 			bottomShelf.post(() -> bottomShelf.selectToolIndex(1));
 			viewPager.setNoScroll(PDICMainAppOptions.bookNoteLockViewPager());
+			drawer.dragEnabled = PDICMainAppOptions.bookNoteLockViewPager();
 			viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 				int lastPos;
 				@Override public void onPageScrollStateChanged(int arg0) { }
@@ -736,6 +737,7 @@ public class BookNotes extends PlainAppPanel implements DrawerLayout.DrawerListe
 				item.setChecked(checking);
 				PDICMainAppOptions.bookNoteLockViewPager(checking);
 				viewPager.setNoScroll(checking);
+				drawer.dragEnabled = checking;
 			} break;
 			case R.id.nav_top: {
 				item.setChecked(checking);
