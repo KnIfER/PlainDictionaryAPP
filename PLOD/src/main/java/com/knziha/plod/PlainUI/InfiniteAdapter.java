@@ -1,26 +1,44 @@
 package com.knziha.plod.PlainUI;
 
-import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
+import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.net.Uri;
 import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.graphics.ColorUtils;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.annotation.Nullable;
+import androidx.appcompat.view.VU;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.alibaba.fastjson.JSONObject;
-import com.knziha.filepicker.widget.MaterialCheckbox;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
+import com.knziha.paging.AppIconCover.AppIconCover;
+import com.knziha.paging.AppIconCover.AppLoadableBean;
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorAdapter;
 import com.knziha.paging.CursorReader;
@@ -28,7 +46,7 @@ import com.knziha.paging.CursorReaderMultiSortNum;
 import com.knziha.paging.MultiFieldPagingCursorAdapter;
 import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
-import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.FFDB;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CharSequenceKey;
@@ -36,14 +54,12 @@ import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.plaindict.MainActivityUIBase.ViewHolder;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.WebViewListHandler;
-import com.knziha.plod.widgets.Javelin.DecorativeTextview;
 import com.knziha.plod.widgets.ViewUtils;
-import com.knziha.text.ColoredTextSpan;
 
-import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Objects;
 
 public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHolder> implements View.OnClickListener, PagingCursorAdapter.OnLoadListener, View.OnLongClickListener {
 	Toastable_Activity a;
@@ -59,7 +75,9 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 	private long bid;
 	String expUrl = "";
 	public int mViewVer = -1;
-	final static String data_fields = "url,title,subtitle,userurl,username,tag0,length,thumbnailurl";
+	final static String data_fields = "url,title,subtitle,userurl,username,tag0,length,thumbnailurl,thumbnail is not null";
+	
+	ArrayList<String> tags = new ArrayList<>();
 	
 	public InfiniteAdapter(Toastable_Activity a
 			, SQLiteDatabase database, String tableName, String tag
@@ -69,16 +87,98 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 		this.tableName = tableName;
 		this.tag = tag;
 		this.lv = lv;
+		try {
+			database.execSQL("CREATE INDEX if not exists " + tableName + "_tag0_index ON " + tableName + " (tag0, time, id)"); // 分类视图
+			CMN.debug("indexed built::业精于勤分类、善总结、多把握");
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		//database.execSQL("Drop INDEX if exists " + tableName + "_tag0_index"); // 分类视图
+		
+		CMN.rt();
+		String lastTag = "";
+		Cursor cursor;
+		while ((cursor = database.rawQuery("select tag0 from " + tableName + " where (tag0,time)>(?,?) order by tag0 ASC,time ASC,id ASC limit 1", new String[]{lastTag, Long.MAX_VALUE+""})).moveToNext()) {
+			lastTag = cursor.getString(0);
+			tags.add(lastTag);
+			cursor.close();
+		}
+		CMN.pt("扫描tag耗时::");
+		CMN.debug(tags);
 		rebuildCursor(database, null); /*构造刷新*/
+		
+		VU.TintListFilter tintListFilter = a.tintListFilter;
+		if (tintListFilter.sRipple==null) {
+			tintListFilter.sRipple = new RippleDrawable(ColorStateList.valueOf(0xfffa87a9), null, null);
+			//rippleBGrippleBG.setColor(ColorStateList.valueOf(Color.WHITE));
+			try {
+				tintListFilter.sRippleState = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, tintListFilter.sRipple);
+				tintListFilter.sRippleStateField = (Field) ViewUtils.evalFieldMethod(tintListFilter.sRipple.getClass(), tintListFilter.sRipple, new String[]{"ex", "mState"}, new HashMap<>(), ViewUtils.reflectionPool);
+				TypedArray ta = a.obtainStyledAttributes(new int[]{android.R.attr.actionBarItemBackground});
+				tintListFilter.sRippleToolbar = (RippleDrawable) ta.getDrawable(0);
+				ta.recycle();
+				CMN.debug("mState::", tintListFilter.sRippleState, tintListFilter.sRippleStateField);
+				tintListFilter.sRippleStateToolbar = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, tintListFilter.sRippleToolbar);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
 	}
 	
+	// click
 	@Override
 	public void onClick(View v) {
+		VueHolder holder = (VueHolder) v.getTag();
+		
+		try {
+			InfiniteReader reader = dataAdapter.getReaderAt(holder.getLayoutPosition(), false);
+			String url = reader.url;
+			if(!url.startsWith("http"))
+				url = "https://www.bilibili.com/video/"+url;
+			a.showT(url);
+			Uri uri = Uri.parse(url);
+			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			a.startActivity(intent);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
 	@Override
 	public boolean onLongClick(View v) {
 		return true;
+	}
+	
+	public void setAdapter(RecyclerView lv, ListView tagList) {
+		lv.setAdapter(this);
+		tagList.setAdapter(new BaseAdapter() {
+			@Override
+			public int getCount() {
+				CMN.debug("getCount::", tags.size());
+				return tags.size();
+			}
+			@Override
+			public Object getItem(int position) {
+				return null;
+			}
+			@Override
+			public long getItemId(int position) {
+				return 0;
+			}
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				if (convertView == null) {
+					convertView = a.getLayoutInflater().inflate(R.layout.inifinite_tag_left, parent, false);
+					VU.TintListFilter tintListFilter = a.tintListFilter;
+					tintListFilter.ModRippleColor(convertView.getBackground(), tintListFilter.sRippleState);
+				}
+				TextView tv = (TextView) convertView;
+				String tagName = tags.get(position);
+				tv.setText(tagName);
+				return convertView;
+			}
+		});
 	}
 	
 	
@@ -89,6 +189,8 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 		/** the marked range */
 		public String url;
 		public String title;
+		public String username;
+		public boolean hasThumbnail;
 		int multiSorts = 0;
 		@Override
 		public void ReadCursor(PagingAdapterInterface adapter, Cursor cursor, long rowID, long[] sortNums) {
@@ -110,6 +212,10 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 			}
 			url = cursor.getString(multiSorts+2);
 			title = cursor.getString(multiSorts+3);
+			
+			username = cursor.getString(multiSorts+6);
+			
+			hasThumbnail = cursor.getInt(multiSorts+10)==1;
 		}
 		
 		@Override
@@ -322,21 +428,76 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 	@NonNull
 	@Override
 	public InfiniteAdapter.VueHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		VueHolder vh = new VueHolder(a, parent, LayoutInflater.from(a).inflate(R.layout.listview_item01_book_notes, parent, false));
+		VueHolder vh = new VueHolder(a, parent, LayoutInflater.from(a).inflate(R.layout.inifinite_list, parent, false));
 		vh.itemView.setOnClickListener(this);
 		vh.itemView.setOnLongClickListener(this);
+		VU.TintListFilter tintListFilter = a.tintListFilter;
+		tintListFilter.ModRippleColor(vh.itemView.getBackground(), tintListFilter.sRippleState);
 		return vh;
+	}
+	
+	public static class DBThumbnailFetecher implements AppLoadableBean {
+		final long rowId;
+		final String tableName;
+		
+		public DBThumbnailFetecher(long rowId, String tableName) {
+			this.rowId = rowId;
+			this.tableName = tableName;
+		}
+		
+		public Drawable load() {
+			Drawable ret = null;
+			boolean save = PDICMainAppOptions.storeIcon();
+			{
+				//CMN.rt("package::"+appid);
+				Cursor c = FFDB.getInstance(null).getDB().rawQuery("select thumbnail from " + tableName + " where id=? limit 1", new String[]{"" + rowId});
+				if(!c.moveToNext()) return null; // todo
+				if (save) {
+					byte[] tmp = c.getBlob(0);
+					try {
+						if (tmp != null) {
+							Bitmap bm = BitmapFactory.decodeByteArray(tmp, 0, tmp.length);
+							if(bm!=null)
+								ret = new BitmapDrawable(null, bm);
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+					//CMN.pt("获取成功 package::"+ret);
+				}
+				c.close();
+				//CMN.debug("package::"+pkgName);
+			}
+			return ret;
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			DBThumbnailFetecher that = (DBThumbnailFetecher) o;
+			return rowId==that.rowId && tableName.equals(that.tableName);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(rowId);
+		}
 	}
 	
 	@Override
 	public void onBindViewHolder(@NonNull InfiniteAdapter.VueHolder holder, int position) {
 		ViewHolder vh = holder.vh;
 		String title;
+		String thumbnailurl = null;
+		boolean hasThumbnail = false;
 		InfiniteReader reader = null;
 		try {
 			reader = dataAdapter.getReaderAt(position, true);
 			title = reader.title;
+			hasThumbnail = reader.hasThumbnail;
 		} catch (Exception e) {
+			// todo null
 			title = "!!!Error: " + e.getLocalizedMessage();
 		}
 		holder.tag = reader; //???
@@ -345,7 +506,11 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 		ssb.append(title == null ? title + "" : title);
 		ssb.append(" ");
 		
+		//ssb.append(hasThumbnail?"hasThumbnail":"");
+		
 		vh.title.setTextColor(a.AppBlack);
+		
+		vh.subtitle.setText(reader.username);
 		
 		ViewUtils.setVisible(vh.subtitle, true);
 		
@@ -355,8 +520,38 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 			//CMN.debug("onBindViewHolder::", lex, timemachine.format(new Date(reader.sort_numbers[1]))); // maybe null
 		} else {
 			ViewUtils.setVisible(vh.preview, false);
-			ViewUtils.setVisible(holder.dotVue, false);
 		}
+		
+		if (hasThumbnail) {
+			RequestOptions options = new RequestOptions()
+					.format(DecodeFormat.PREFER_ARGB_8888)//DecodeFormat.PREFER_ARGB_8888
+					.skipMemoryCache(false)
+					.diskCacheStrategy(DiskCacheStrategy.NONE)
+					//.onlyRetrieveFromCache(true)
+					.fitCenter()
+					.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+					;
+			
+			Glide.with(a)
+					.load(new AppIconCover(new DBThumbnailFetecher(reader.row_id, tableName), false))
+					.apply(options)
+					.listener(new RequestListener<Drawable>() {
+						@Override
+						public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+							return false;
+						}
+						@Override
+						public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+//							DescriptiveImageView medium_thumbnail = (DescriptiveImageView) ((ImageViewTarget<?>) target).getView();
+//							//todo check glide
+//							medium_thumbnail.setText(((AppInfoBean)((AppIconCover)model).getBeanInMemory()).appName);
+							return false;
+						}
+					})
+					.into(holder.iv);
+			//holder.iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+		}
+		
 		
 		vh.title.setText(ssb);
 		
@@ -385,7 +580,7 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 	
 	static class VueHolder extends RecyclerView.ViewHolder{
 		final ViewHolder vh;
-		MaterialCheckbox dotVue;
+		ImageView iv;
 		View typVue;
 		InfiniteReader tag;
 		VueHolder(Toastable_Activity a, ViewGroup parent, View view) {
@@ -393,8 +588,7 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 			view.setTag(this);
 			ViewGroup vg = (ViewGroup)view;
 			ViewHolder vh = new ViewHolder(a, 0, (ViewGroup)vg.getChildAt(1));
-			dotVue = vg.getChildAt(0).findViewById(R.id.dotVue);
-			dotVue.bgFrame = 0xff999999;
+			iv = vg.findViewById(R.id.dotVue);
 			typVue = vg.getChildAt(2);
 			this.vh = vh;
 			//ViewUtils.setPadding(vh.itemView, (int) (GlobalOptions.density*15), -1, -1, -1);

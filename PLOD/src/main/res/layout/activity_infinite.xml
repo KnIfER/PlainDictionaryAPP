@@ -21,11 +21,12 @@
 			app:contentInsetLeft="0dp"
 			app:contentInsetStart="0dp"
 			app:contentInsetStartWithNavigation="0dp"
-			android:background="?attr/colorPrimary"
 			app:layout_scrollFlags="scroll|enterAlways|snap"
 			android:clipToPadding="false"
 			android:clipChildren="false"
 			android:minWidth="250dp"
+			android:background="#fa87a9"
+			app:titleTextColor="#fff"
 			>
 		</androidx.appcompat.widget.Toolbar>
 
@@ -45,12 +46,13 @@
 		<LinearLayout
 			android:id="@+id/bottombar"
 			android:layout_width="match_parent"
-			android:layout_height="@dimen/barSzBot"
+			android:layout_height="10dp"
 			android:layout_gravity="bottom"
 			android:gravity="center_vertical|fill_horizontal"
 			android:orientation="horizontal"
-			android:background="?attr/colorPrimary"
 			android:elevation="5dp"
+			android:background="#fa87a9"
+			android:visibility="gone"
 			>
 		</LinearLayout>
 	</LinearLayout>

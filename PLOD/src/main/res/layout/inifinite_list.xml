@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+	android:background="?attr/listChoiceBackgroundIndicator"
+	>
+	<ImageView
+		android:id="@+id/dotVue"
+		style="@style/MaterialCheckbox"
+		android:layout_height="match_parent"
+		android:minHeight="100dp"
+		android:layout_width="145dp"
+		android:layout_marginRight="0dp"
+		android:paddingRight="0dp"
+		android:layout_marginLeft="9dp"
+		/>
+<!--	<FrameLayout-->
+<!--		android:layout_height="100dp"-->
+<!--		android:layout_width="150dp"-->
+<!--		android:paddingLeft="9dp"-->
+<!--		>-->
+<!--	</FrameLayout>-->
+<!--	<include-->
+<!--		android:layout_width="0dp"-->
+<!--		android:layout_weight="1"-->
+<!--		android:layout_height="wrap_content"-->
+<!--		layout="@layout/listview_item01"-->
+<!--		/>-->
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		xmlns:tools="http://schemas.android.com/tools"
+		android:orientation="vertical"
+		android:paddingBottom="7dp"
+		>
+		<com.knziha.plod.widgets.Javelin.DecorativeTextview
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			tools:text="搜索引擎"
+			android:id="@+id/text"
+			android:layout_marginLeft="10dp"
+			android:layout_marginTop="3.5dp"
+			android:textColor="#000"
+			android:textSize="@dimen/lvtextsize"
+			android:maxLines="3"
+			/>
+		<com.knziha.ankislicer.customviews.WahahaTextView
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:text=""
+			android:id="@+id/preview"
+			tools:text="exponential sim 指数和，三角和"
+			android:layout_marginLeft="10dp"
+			android:textSize="@dimen/lvsubtextsize"
+			android:textColor="#888"
+			android:paddingTop="2dp"
+			android:paddingBottom="2dp"
+			/>
+<!--		<View-->
+<!--			android:layout_width="match_parent"-->
+<!--			android:layout_height="0dp"-->
+<!--			android:layout_weight="1" />-->
+		<com.knziha.ankislicer.customviews.WahahaTextView
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:text=""
+			tools:text="牛津英语词典"
+			android:id="@+id/subtext"
+			android:layout_marginLeft="10dp"
+			android:textSize="@dimen/lvsubtextsize"
+			android:textColor="#999"
+			android:paddingTop="2dp"
+			android:paddingEnd="8dp"
+			android:textStyle="bold"
+			/>
+	</LinearLayout>
+	<TextView
+		android:layout_height="match_parent"
+		android:layout_width="40dp"
+		android:text=" "
+		android:visibility="gone"
+		android:id="@+id/subtext"
+		android:textSize="35dp"
+		android:textColor="#888"
+		android:textStyle="bold"
+		android:gravity="center"
+		tools:text="T"
+		tools:visibility="visible"
+		tools:ignore="DuplicateIds" />
+</LinearLayout>
+
