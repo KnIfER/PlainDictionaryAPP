@@ -81,7 +81,10 @@ import androidx.appcompat.widget.ActionMenuView;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.FileProvider;
+import androidx.core.content.pm.ShortcutInfoCompat;
+import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.ColorUtils;
+import androidx.core.graphics.drawable.IconCompat;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuCompat;
 import androidx.databinding.DataBindingUtil;
@@ -1773,7 +1776,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			CMN.debug(e);
 //		}
 
-
+//		Intent intent = new Intent(Intent.ACTION_MAIN)
+//				.setClassName(getPackageName(), InifiniteActivity.class.getName())
+//				.putExtra("main", true)
+//				;
+//		ShortcutInfoCompat shortcutInfo = new ShortcutInfoCompat.Builder(this, "knziha.infinite.tv")
+//				.setIcon(IconCompat.createWithResource(this, R.mipmap.infinite_history))
+//				.setShortLabel("无限历史")
+//				.setIntent(intent)
+//				.build();
+//		ShortcutManagerCompat.requestPinShortcut(this, shortcutInfo, null);
 
 //		try {
 //			new SettingsSearcherTest().buildIndex(this);

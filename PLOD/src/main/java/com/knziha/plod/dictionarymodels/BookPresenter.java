@@ -765,6 +765,16 @@ function debug(e){console.log(e)};
 			opt = THIS.opt;
 		}
 		
+		if(THIS!=null) {
+			readConfigs(THIS, THIS.prepareHistoryCon());
+			if (isWebx && hasWebEntrances()) {
+				getWebx().readEntrances(false);
+			}
+			if (allowFZero()) {
+				bookImpl.plugFZero(true, true, true);
+			}
+		}
+		
 		if((pseudoInit&1)==0) {
 			//init(getStreamAt(0)); // MLSN
 			File p = fullPath.getParentFile();
@@ -786,16 +796,6 @@ function debug(e){console.log(e)};
 				if(externalFile.exists()) {
 					cover = Drawable.createFromPath(externalFile.getPath());
 				}
-			}
-		}
-		
-		if(THIS!=null) {
-			readConfigs(THIS, THIS.prepareHistoryCon());
-			if (isWebx && hasWebEntrances()) {
-				getWebx().readEntrances(false);
-			}
-			if (allowFZero()) {
-				bookImpl.plugFZero(true, true, true);
 			}
 		}
 		

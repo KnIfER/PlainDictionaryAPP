@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.VU;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -64,8 +66,9 @@ import java.util.Objects;
 public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHolder> implements View.OnClickListener, PagingCursorAdapter.OnLoadListener, View.OnLongClickListener {
 	Toastable_Activity a;
 	public boolean darkMode;
+	final SQLiteDatabase db;
 	final String tableName;
-	final String tag;
+	String tag;
 	final RecyclerView lv;
 	
 	private PagingAdapterInterface<InfiniteReader> DummyReader = new CursorAdapter<>(EmptyCursor, new InfiniteReader());
@@ -77,7 +80,7 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 	public int mViewVer = -1;
 	final static String data_fields = "url,title,subtitle,userurl,username,tag0,length,thumbnailurl,thumbnail is not null";
 	
-	ArrayList<String> tags = new ArrayList<>();
+	public final ArrayList<String> tagsSheet = new ArrayList<>();
 	
 	public InfiniteAdapter(Toastable_Activity a
 			, SQLiteDatabase database, String tableName, String tag
@@ -86,6 +89,7 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 		this.a=a;
 		this.tableName = tableName;
 		this.tag = tag;
+		this.db = database;
 		this.lv = lv;
 		try {
 			database.execSQL("CREATE INDEX if not exists " + tableName + "_tag0_index ON " + tableName + " (tag0, time, id)"); // 分类视图
@@ -100,11 +104,11 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 		Cursor cursor;
 		while ((cursor = database.rawQuery("select tag0 from " + tableName + " where (tag0,time)>(?,?) order by tag0 ASC,time ASC,id ASC limit 1", new String[]{lastTag, Long.MAX_VALUE+""})).moveToNext()) {
 			lastTag = cursor.getString(0);
-			tags.add(lastTag);
+			tagsSheet.add(lastTag);
 			cursor.close();
 		}
 		CMN.pt("扫描tag耗时::");
-		CMN.debug(tags);
+		CMN.debug(tagsSheet);
 		rebuildCursor(database, null); /*构造刷新*/
 		
 		VU.TintListFilter tintListFilter = a.tintListFilter;
@@ -135,7 +139,7 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 			String url = reader.url;
 			if(!url.startsWith("http"))
 				url = "https://www.bilibili.com/video/"+url;
-			a.showT(url);
+			//a.showT(url);
 			Uri uri = Uri.parse(url);
 			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -150,35 +154,89 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 		return true;
 	}
 	
+	public class TagSheetAdapter extends BaseAdapter implements View.OnClickListener {
+		@Override
+		public int getCount() {
+			CMN.debug("getCount::", tagsSheet.size());
+			return tagsSheet.size();
+		}
+		@Override
+		public Object getItem(int position) {
+			return null;
+		}
+		@Override
+		public long getItemId(int position) {
+			return 0;
+		}
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			TextView tv;
+			if (convertView == null) {
+				convertView = a.getLayoutInflater().inflate(R.layout.inifinite_tag_left, parent, false);
+				VU.TintListFilter tintListFilter = a.tintListFilter;
+				tv = convertView.findViewById(R.id.tv);
+				try {
+					RippleDrawable sRipple = new RippleDrawable(ColorStateList.valueOf(0xfffa87a9), null, null);
+					sRipple.setColor(ColorStateList.valueOf(0x81ffffff));
+					Object sRippleState = ViewUtils.execSimple("$.mState", ViewUtils.reflectionPool, sRipple);
+					tintListFilter.ModRippleColor(tv.getBackground(), sRippleState);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			} else {
+				tv = convertView.findViewById(R.id.tv);
+			}
+			String tagName = tagsSheet.get(position);
+			tv.setText(tagName);
+			if (tagName.equals(tag)) {
+				//tv.setTextColor(0xff7C7CB7);
+				convertView.setBackgroundColor(0x38ffffff);
+			} else {
+				//tv.setTextColor(Color.WHITE);
+				convertView.setBackgroundColor(Color.TRANSPARENT);
+			}
+			tv.setOnClickListener(this);
+			View label = convertView.findViewById(R.id.label);
+			int recentLevel = recentTags.indexOf(tagName);
+			if (recentLevel >= 0) {
+				label.setVisibility(View.VISIBLE);
+				float lev = 7, grad = 1 / (lev + 1), lv = recentTags.size() - 1 - recentLevel;
+				label.setBackgroundColor(ColorUtils.blendARGB(0xffFFA500, 0xff000000, Math.min(1, grad * lv)));
+			} else {
+				label.setVisibility(View.INVISIBLE);
+			}
+			convertView.setTag(position);
+			return convertView;
+		}
+		
+		@Override
+		public void onClick(View v) {
+			View convertView = (View) v.getParent();
+			TextView tv = convertView.findViewById(R.id.tv);
+			View label = convertView.findViewById(R.id.label);
+			int position = (Integer) convertView.getTag();
+			selectTag(position);
+			String thisTag = tv.getText().toString();
+			recentTags.remove(thisTag);
+			recentTags.add(thisTag);
+			while (recentTags.size()>20) {
+				recentTags.remove(0);
+			}
+			tagSheetAdapter.notifyDataSetChanged();
+		}
+	};
+	
+	ArrayList<String> recentTags = new ArrayList<>();
+	TagSheetAdapter tagSheetAdapter = new TagSheetAdapter();
+	
 	public void setAdapter(RecyclerView lv, ListView tagList) {
 		lv.setAdapter(this);
-		tagList.setAdapter(new BaseAdapter() {
-			@Override
-			public int getCount() {
-				CMN.debug("getCount::", tags.size());
-				return tags.size();
-			}
-			@Override
-			public Object getItem(int position) {
-				return null;
-			}
-			@Override
-			public long getItemId(int position) {
-				return 0;
-			}
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				if (convertView == null) {
-					convertView = a.getLayoutInflater().inflate(R.layout.inifinite_tag_left, parent, false);
-					VU.TintListFilter tintListFilter = a.tintListFilter;
-					tintListFilter.ModRippleColor(convertView.getBackground(), tintListFilter.sRippleState);
-				}
-				TextView tv = (TextView) convertView;
-				String tagName = tags.get(position);
-				tv.setText(tagName);
-				return convertView;
-			}
-		});
+		tagList.setAdapter(tagSheetAdapter);
+	}
+	
+	public void selectTag(int position) {
+		tag = tagsSheet.get(position);
+		rebuildCursor(db, null);
 	}
 	
 	
@@ -279,6 +337,9 @@ public class InfiniteAdapter extends RecyclerView.Adapter<InfiniteAdapter.VueHol
 					dataAdapter.bindTo(lv)
 							.setAsyncLoader(a, pageAsyncLoader)
 							.sortBy(tableName, sortBy, desc, data_fields);
+					if (tag != null) {
+						dataAdapter.where("tag0=?", new String[]{tag});
+					}
 					long[] sorts = null;
 					//long[] pos = savedPositions.get(getFragmentId());
 					dataAdapter.startPaging(sorts, 0, 20, 15, this);

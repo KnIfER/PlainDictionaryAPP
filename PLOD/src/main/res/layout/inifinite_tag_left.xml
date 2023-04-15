@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
+<LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:orientation="horizontal"
-	android:background="?attr/listChoiceBackgroundIndicator"
-	android:textColor="#e0ffffff"
-	android:gravity="center_vertical"
-	android:paddingTop="5dp"
-	android:paddingStart="7dp"
-	android:paddingBottom="5dp"
-	android:textSize="15sp"
-	android:maxLines="1"
-/>
+	>
+	<View
+		android:id="@+id/label"
+		android:layout_width="5dp"
+		android:layout_height="match_parent"
+		android:background="#FFA500"
+		android:layout_marginEnd="2dp"
+		/>
+	<TextView
+		android:id="@+id/tv"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:background="?attr/listChoiceBackgroundIndicator"
+		android:textColor="#e0ffffff"
+		android:gravity="center_vertical"
+		android:paddingTop="5dp"
+		android:paddingBottom="5dp"
+		android:textSize="15sp"
+		android:maxLines="1"
+	/>
+</LinearLayout>
